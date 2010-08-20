@@ -1,0 +1,4 @@
+src/ -- Harmattan Qt-based implementation
+debian/ -- packaging stuff
+alte-sachen/legacy/ -- Fremantle daemons alarm and clock
+alte-sachen/timed/ -- Legacy timed, merged from alarmd and clockd

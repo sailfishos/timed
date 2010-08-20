@@ -1,0 +1,8 @@
+customization_t =
+[
+  { name = "format24", type = $bytes, value = "True" },
+  { name = "useNitz", type = $bytes, value = "True" },
+  { name = "autoTime", type = $bytes, value = "True" },
+  { name = "guessTz", type = $bytes, value = "True" },
+  { name = "tz", type = $bytes, value = "Europe/Helsinki" }
+] .

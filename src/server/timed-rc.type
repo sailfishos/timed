@@ -1,0 +1,27 @@
+const_t =
+[
+  # change the value, if you wish to load rc file from some other location
+  { name = "rc_location", type = $bytes, value = "/etc/timed.rc" }
+],
+
+# never change the values below this line, edit the rc file at above path instead
+
+timed_rc_t =
+[
+  { name = "queue_threshold_long", type = $integer, value = 5000 },
+  { name = "queue_threshold_short", type = $integer, value = 1000 },
+  { name = "queue_path", type = $bytes, value = "/var/cache/timed/events.data" },
+  { name = "settings_path", type = $bytes, value = "/var/cache/timed/settings.data" },
+
+  { name = "default_timezone", type = $bytes, value = "Europe/Helsinki" },
+  { name = "default_gmt_offset", type = $integer, value = 7200 }, /* Finnish winter: GTM+2 */
+
+  { name = "voland_ping_retries", type = $integer, value = 5 },
+  { name = "voland_ping_sleep",   type = $integer, value = 3000 /* 3 seconds */},
+
+  { name = "dialog_discard_threshold", type = $integer, value = 1440 /* one day */ },
+
+  { name = "saved_utc_time_path", type = $bytes, value = "/var/cache/timed/utc.time" }
+]
+
+.

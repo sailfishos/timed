@@ -1,0 +1,124 @@
+event_queue_t =
+[
+ { name = "next_cookie",    type = $integer, value = 1 },
+ { name = "default_snooze", type = $integer, value = 300 },
+ { name = "alarms",         type = $integer, value = 1 },
+ { name = "events",         type = $array|$record, record = "event_t"}
+],
+
+/*
+event_io_t =
+[
+  { name = "ticker",     type = $integer,       value = 0 },
+  { name = "t_year",     type = $integer,       value = 0 },
+  { name = "t_month",    type = $integer,       value = 0 },
+  { name = "t_day",      type = $integer,       value = 0 },
+  { name = "t_hour",     type = $integer,       value = 0 },
+  { name = "t_minute",   type = $integer,       value = 0 },
+  { name = "t_zone",     type = $bytes,         value = "" },
+  { name = "attr",       type = $record,        record="attribute_t"},
+  { name = "dialog",     type = $record,        record="dialog_io_t"},
+  { name = "actions",    type = $array|$record, record="action_t"},
+  { name = "recrs",      type = $array|$record, record="recurrence_pattern_t"},
+  { name = "recr_secs",  type = $integer,       value = 0 },
+  { name = "recr_count", type = $integer,       value = 0 }
+],
+*/
+
+/* TODO: point out, this is a child class of event_io_t */
+# it's not a child anymore ;-)
+
+/*
+event_t =
+[
+  { name = "ticker",     type = $integer,       value = 0 },
+  { name = "t_year",     type = $integer,       value = 0 },
+  { name = "t_month",    type = $integer,       value = 0 },
+  { name = "t_day",      type = $integer,       value = 0 },
+  { name = "t_hour",     type = $integer,       value = 0 },
+  { name = "t_minute",   type = $integer,       value = 0 },
+  { name = "t_zone",     type = $bytes,         value = "" },
+  { name = "attr",       type = $record,        record="attribute_t"},
+  { name = "dialog",     type = $record,        record="dialog_io_t"},
+  { name = "actions",    type = $array|$record, record="action_t"},
+  { name = "recrs",      type = $array|$record, record="recurrence_pattern_t"},
+  { name = "recr_secs",  type = $integer,       value = 0 },
+  { name = "recr_count", type = $integer,       value = 0 },
+// ----8<----
+  { name = "trigger",         type = $integer|$mandatory },
+  { name = "snoozed_trigger", type = $integer, value = 0 },
+  { name = "cookie",          type = $integer|$mandatory },
+  { name = "due_state",       type = $integer, value=0 }
+],
+
+*/
+
+broken_down_t =
+[
+  { name = "year",     type = $integer,       value = 0 },
+  { name = "month",    type = $integer,       value = 0 },
+  { name = "day",      type = $integer,       value = 0 },
+  { name = "hour",     type = $integer,       value = 0 },
+  { name = "minute",   type = $integer,       value = 0 }
+],
+
+event_t =
+[
+  { name = "cookie",      type = $integer|$mandatory },
+  { name = "ticker",      type = $integer,       value = 0 },
+  { name = "t",           type = $record,        record="broken_down_t"},
+  { name = "tz",          type = $bytes,         value = "" },
+  { name = "attr",        type = $record,        record="attribute_t"},
+  { name = "flags",       type = $bitmask,       value=$0 },
+  { name = "recrs",       type = $array|$record, record="recurrence_pattern_t"},
+  { name = "actions",     type = $array|$record, record="action_t"},
+# { name = "dialog",      type = $record,        record="dialog_io_t"},
+  { name = "snooze",      type = $array|$integer                     },
+  { name = "b_attr",      type = $array|$record, record="attribute_t"},
+
+  // start of user notification, needed to discard old events
+  { name = "dialog_time", type = $integer, value=0 },
+
+  // timeout snooze, maximum and counter
+  { name = "tsz_max",     type = $integer, value=0 },
+  { name = "tsz_counter", type = $integer, value=0 }
+],
+
+attribute_t =
+[
+  { name = "txt",          type = $array|$bytes }
+//   { name = "flags",        type = $bitmask, value=$0 }
+],
+
+/*
+dialog_io_t =
+[
+  { name = "attr",       type = $record,  record="attribute_t"},
+  { name = "buttons",    type = $array|$record, record="button_t"}
+],
+*/
+
+/*
+button_t =
+[
+  { name = "attr",       type = $record,  record="attribute_t"},
+  { name = "snooze",     type = $integer, value = 0 }
+],
+*/
+
+action_t =
+[
+  { name = "flags",      type = $bitmask,       value=$0 },
+  { name = "attr",       type = $record,  record="attribute_t"}
+],
+
+recurrence_pattern_t =
+[
+  { name = "mins", type=$bitmask, value=$any_mins },
+  { name = "hour", type=$bitmask, value=$any_hour },
+  { name = "mday", type=$bitmask, value=$any_mday },
+  { name = "wday", type=$bitmask, value=$any_wday },
+  { name = "mons", type=$bitmask, value=$any_mons }
+]
+
+.

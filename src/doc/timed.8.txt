@@ -1,0 +1,193 @@
+TIMED(8)
+========
+
+
+NAME
+----
+
+timed - the maemo time daemon
+
+
+SYNOPSIS
+--------
+
+  Timed is managing time issues in a Maemo device: System Time, RTC, Network Operator Time,
+  Timezones and time events.
+
+DBUS
+----
+
+The D-Bus interface of the timed can be used directly or via the C++
+Qt-buindings. See the description of the class
+'Maemo::Timed::Interface' in 'libtimed(3)' manual page for how to use it.
+
+D-Bus Methods: ::
+
+  *add_event* - add a new event to be triggered at given time.
+  +
+  Input: *struct Maemo::Timed::Event* of signature 'XXX' (todo: put here the
+  signature) describing the new event, see 'libtimed(3)' for
+  the meaning of its fields.
+  +
+  Output: *UINT32* - an event cookie: a unique positive value used for the identification of
+  the new event. If zero value returned, the call is failed and no new event is
+  added.
+  +
+  *cancel* - remove the given event from the event database. If a reminder
+  dialog is currently open, timed will request the notification service
+  'voland(8)' to close it.
+  +
+  Input: *UINT32* cookie - the event identificator.
+  +
+  Output: *BOOLEAN* - indicate successful removal of the event. If no event
+  with the given cookie was known to the database, this method returns true as
+  well.
+  +
+  *replace_event* - add a new event and cancel an another event, the whole
+  operation it atomic. This method is to be used to change settings of an
+  alarm event.
+  +
+  Input: *struct Maemo::Timed::Event* - the same as the parameter of the
+  'add_event' method.
+  +
+  Input: *UINT32* cookie - the identificator of the event to be removed.
+  +
+  Output: *UINT32* - the cookie of the new event. If the zero value is returned,
+  the call is failed and no new event is added, no event is removed, the event
+  database is not changed.  The call will fail if there is no event with given
+  cookie in the database. If the reminder dialog is opened for the event to be
+  removed, timed will request the reminder service to close this dialog, but
+  the new event will not be necessarily trigger immediately.
+  +
+  *query* - returns a list of cookies for alarms satisfying given conditions.
+  +
+  Input: *STRING/STRING HASHTABLE* attributes - the conditions are given as a
+  hash table.
+  An event is satisfying all the conditions if
+  for every key 'k' with a non-empty value 'v' in this table, the
+  event has the attribute 'k' with value 'v' and for every key 'k' with empty
+  value the event doesn\'t have an attribute with key 'k'. Thus if the hash
+  table is empty, every event is satisfying the query conditions.
+  +
+  Output: *ARRAY OF UINT32* - possibly empty list of all event satisfying
+  conditions.
+  +
+  *query_attributes* - returns the attribute table of the given cookie as a
+  string-to-string mapping. If an event with given cookie doesn't exists,
+  the returned mapping is empty. For an existing event at least two values are returned:
+  the decimal representation of the cookie (key 'COOKIE') and the current state
+  of the event (key 'STATE').
+  +
+  Input: *UINT32* cookie - the identificator of the event to be queried.
+  +
+  Output: *STRING/STRING HASHTABLE* - event text attributes.
+  +
+  *enable_alarms* - enables or disables any event with 'alarm' flag set.
+  Usually this flag should be set for the wake up alarms set by the human user
+  manually in Clock UI.
+  +
+  Input *BOOLEAN* enable - true iff alarm events are to be enabled.
+  +
+  *alarms_enabled* - shows if the events with 'alarm' flag are enabled.
+  +
+  Output *BOOLEAN* - true iff alarms are enabled.
+  +
+  *set_default_snooze* - defines the length of the default snooze in seconds.
+  The default snooze length is applied in three cases: first if the user is not
+  responding to the alarm for a long time (usually a minute, but it's not
+  defined by timed), second if the user snoozed alarm by an "out of dialog"
+  action (exact meaning is to be defined by the 'voland(8)' component),
+  or if the client application explicitely defines a snoozing button with
+  default snooze. In the last case the value of the default snooze at the
+  triggering time is important, not the value at the time of setting alarm.
+  +
+  Input *INT32* value - the length in seconds, must be at least half a minute.
+  +
+  Output *BOOLEAN* - indicates successful operation.
+  +
+  *get_default_snooze* - returns the current value of the default snooze in
+  seconds.
+  +
+  Output *INT32* - the current value.
+  +
+  *dialog_response* - this method is to be called by 'voland(8)' reminder
+  service, when the human user is responding in some way to the notification
+  dialog. The client application should _never_ call this method.
+  +
+  Input: *UINT32* cookie, *INT32* response. The 'cookie' is the timed identificator
+  of the event, the value of the 'response' parameter describes the human user
+  answer: it's zero if she not answered to notification or used "out of
+  screen" action. It's positive if the application specific button was
+  selected, the value shows which button (counted from 1 upwards) was selected.
+  It's negative if the platform-wide button was selected, the value (conunted
+  from -1 downwards) shows which platform button was selected.
+  +
+  Output: *BOOLEAN* - indicates the succesful operation, but the semantics of the response has to be defined later in
+  cooperation with 'voland(8)' component.
+
+D-Bus signals: ::
+  To be written
+
+CONTEXT FRAMEWORK
+-----------------
+
+Properties exposed by 'timed' via context framework: ::
+//  *Time.AlarmPresent* (bool) -
+  *Alarm.Present* (bool) -
+  indicates if one of the queued events has 'alarm' flag set.
+  Usually the 'alarm' flag has to be set for an alarm event created by clock
+  application user interface.
+  Thus such an event is called 'alarm event'.
+  This property is set to true even in
+  the case when the alarm events are temporarily disabled (see 'enable_alarms'
+  D-Bus method above).
+  +
+//  *Time.AlarmsEnabled* (bool) -
+  *Alarm.Enabled* (bool) -
+  Indicates that the alarms are currently enabled.
+  In the absence of alarms this property is automatically set to true (?).
+  +
+  *Alarm.Trigger* (map) -
+  trigger time of all alarm events. The keys of the map are decimal
+  representations of the alarm cookies. A value is the next trigger time of
+  the event with given cookie in nanoseconds from the UNIX epoch (it's the
+  usual time representation in the Context framework).
+//  *Time.NextAlarmCookie* (integer)
+//  The cookie of the next alarm to be triggered, if any. The value is Unknown,
+//  if there is no alarm events.
+//  +
+//  *Time.NextAlarmTime* (time)
+//  The trigger time of the next alarm. This property is set
+//  even if the alarms are disabled. If no alarm is queued,
+//  the property is unset.
+//  +
+//  *Time.NextAlarmTitle* (string)
+//  The human readable description of the next alarm, as given by
+//  the "TITLE" event  attribute in the event database. If
+//  the attribute is not set, this property is set to the zero length
+//  string. If no alarm is present, the value is Unknown.
+
+LOG FILE
+--------
+  to be written
+
+QUEUE FILE
+----------
+  to be written
+
+RC FILE
+-------
+  to be written
+
+SEE ALSO
+--------
+
+'libtimed(3)', 'libtimed-voland(3)', 'voland(8)', 'iodata(5)'
+
+Context types: '/usr/share/contextkit/types/core.types'
+
+COLOPHON
+--------
+
+This page is part of timed, the Maemo time daemon.
+

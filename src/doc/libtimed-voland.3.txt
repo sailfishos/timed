@@ -1,0 +1,174 @@
+LIBTIMED-VOLAND(3)
+==================
+
+NAME
+----
+
+libtimed-voland - communication from time daemon (timed) to reminder dispatcher (voland)
+
+ABSTRACT
+--------
+
+The time daemon defines the D-Bus interface to be used between it and the reminder
+dispatcher service. It includes the D-Bus names the reminder dispatcher has to
+use and the data structure to be transmitted. Beside of that an additional
+interface is defined, which has to be implemented by the reminder dispatcher
+to enable the automated testing.
+
+SYNOPSIS
+--------
+
+[verse]
+*#include <timed-voland/reminder>*
+
+[verse]
+*class Maemo::Timed::Voland::Reminder;*
+
+[verse]
+*#include <timed-voland/interface>*
+
+[verse]
+*QDBusConnection Maemo::Timed::Voland::bus() ;*
+*const char * Maemo::Timed::Voland::service() ;*
+*const char * Maemo::Timed::Voland::inteface() ;*
+*const char * Maemo::Timed::Voland::objpath() ;*
+
+[verse]
+*class Maemo::Timed::Voland::AbstractAdaptor ;*
+
+[verse]
+*#include <timed-voland/ta_interface>*
+
+[verse]
+*const char * Maemo::Timed::Voland::ta_inteface() ;*
+*const char * Maemo::Timed::Voland::ta_objpath() ;*
+
+[verse]
+*class Maemo::Timed::Voland::TaAbstractAdaptor ;*
+
+
+DESCRIPTION
+-----------
+
+*class Maemo::Timed::Voland::Reminder ;* ::
+  is a read only structure describing the reminder dialog to be dispatched and
+  lauched by voland(8).
+  +
+  Member functions:
+  +
+  unsigned *cookie()* - gets the cookie value identifying timed event
+  +
+  QString *attr(const QString &amp; key)* - gets the event attribute for the
+  given key.
+  +
+  const QMap<QString,QString> &amp; *attributes*() - returns a reference to the
+  mapping containing all the attributes of the event. The reference is only valid until
+  the Reminder object is destoyed. If it has to be used after that, the content of the mapping has to be copied.
+  +
+  unsigned *buttonAmount()* - returns the amount of buttons supplied by the
+  client application for the reminder dialog. The return value can be zero
+  as well.
+  +
+  bool *suppressTimeoutSnooze()* - indicates if
+  the client application has requested not to
+  snooze the notification after one minute, which usually will be done.
+  +
+  bool *hideSnoozeButton1()* - indicates if the client application has
+  requested not to show the default platform wide snoozing button.
+  +
+  bool *hideCancelButton2()* - the same regarding the 'cancel' button.
+  +
+  bool *isMissed()* - indicates if the event was triggered 1 or more minute after the scheduled time
+  +
+  QString *buttonAttr(int x, const QString &amp; key)* - gets attribute for the
+  'x'-th button, where 'x' is a positive integer: the buttons are counted from 1
+  (not from zero).
+
+*QDBusConnection Maemo::Timed::Voland::bus() ;* ::
+  defines the connection to the D-Bus daemon to be used for communication.
+  Currently it's QDBusConnection::sessionBus().
+  +
+*const char * Maemo::Timed::Voland::service() ;* ::
+  defines the D-Bus service name (well known name) for the reminder dispatcher service.
+  Currently it's 'com.nokia.voland'
+  +
+*const char * Maemo::Timed::Voland::inteface() ;* ::
+  defines the D-Bus interface name of the reminder dispatcher service
+  implementing the
+  reminder service method calls needed by the time daemon.
+  Currently it's 'com.nokia.voland'
+  +
+*const char * Maemo::Timed::Voland::objpath() ;* ::
+  defines the D-Bus object path for the object implementing the
+  reminder service method calls needed by the time daemon.
+  Currently it's '/com/nokia/voland'.
+  +
+*class Maemo::Timed::Voland::AbstractAdaptor ;* ::
+  is a pure virtual class derived from QDBusAbstractInterface
+  defininig D-Bus method calls to be implemented in the
+  reminder dispatcher.
+  +
+  Member functions:
+  +
+  virtual bool *open(const Maemo::Timed::Voland::Reminder &amp; data)* -
+  requests the reminder dispatcher to open a dialog described by 'data'.
+  Returns true, if the dialog can be dispatched, false otherwise.
+  Even if the dialog with the same cookie id is already being dispatched, this
+  method returns true.
+  +
+  virtual bool *close(uint cookie)* -
+  requests the reminder notification to cancel a dialog identified by the
+  cookie. Returns true if successfull or there is no dialog with given cookie.
+
+*const char * Maemo::Timed::Voland::ta_inteface() ;* ::
+  defines the D-Bus interface name of the reminder dispatcher service
+  implementing the
+  reminder service method calls needed by the time daemon.
+  Currently it's 'com.nokia.voland_ta'
+  +
+*const char * Maemo::Timed::Voland::ta_objpath() ;* ::
+  defines the D-Bus object path for the object implementing the
+  reminder service method calls needed by the time daemon.
+  Currently it's '/com/nokia/voland_ta'.
+  +
+*class Maemo::Timed::Voland::TaAbstractAdaptor ;* ::
+  is a pure virtual class derived from QDBusAbstractInterface
+  defininig D-Bus method calls to be implemented in the
+  reminder dispatcher to enable the automated testing.
+  +
+  Member functions:
+  +
+  virtual int *pid()* - returns a PID of the reminder service
+  +
+  virtual bool *answer(uint cookie, int button)* - emulates a human user
+  selecting the given button in the reminder dialog for the timed event with
+  given cookie. Returns true if the parameters are valid and the action is
+  performed, false otherwise.
+  +
+  virtual uint *top()* - returns the timed cookie of the topmost opened reminder
+  dialog, or invalid cookie (zero) if there is no opened dialog.
+  +
+  virtual void *quit()* - ask the notification service to terminate.
+
+
+BUGS
+----
+
+Due to limitations of the Qt macro processor moc(1) the value returned by
+the Maemo::Timed::Voland::inteface() has to be harcoded in the Q_CLASSINFO
+directive in class implementating the Maemo::Timed::Voland::AbstractAdaptor
+interface (the same is true for 'ta_interface'). Example:
+--------------------
+    Q_CLASSINFO("D-Bus Interface", "com.nokia.voland") ;
+--------------------
+
+
+SEE ALSO
+--------
+
+'timed'(8), 'libtimed'(3), 'voland'(8)
+
+COLOPHON
+--------
+
+This page is part of timed, the Maemo time daemon.

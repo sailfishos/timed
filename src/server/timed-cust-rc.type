@@ -1,0 +1,17 @@
+const_t =
+[
+  # change the value, if you wish to load rc file from some other location
+  { name = "rc_location", type = $bytes, value = "/etc/timed-cust.rc" }
+],
+
+# never change the values below this line, edit the rc file at above path instead
+
+timed_cust_rc_t =
+[
+  { name = "time_nitz", type = $bytes, value = "yes" },
+  { name = "format_24", type = $bytes, value = "r" },
+  { name = "default_tz", type = $bytes, value = "327" },
+  { name = "hash", type = $bytes, value = "" }
+]
+
+.

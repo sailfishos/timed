@@ -1,0 +1,49 @@
+<testdefinition version="0.1">
+  <suite name="timed-tests" domain="System Software">
+
+    <set name="exploring_cita_teste-nvironment" feature="System Control" requirement="MaSSW-815, MaSSW-1167">
+      <get>
+        <file>/tmp/environment</file>
+      </get>
+      <environments><scratchbox>false</scratchbox><hardware>true</hardware></environments>
+      <case name="get_environment" description="running uptime, whoami etc" subfeature="TimeAlarm">
+        <step>touch /tmp/environment</step>
+        <step>echo "Hello, world..."            | tee -a /tmp/environment</step>
+        <step>ls -l /var/cache/timed/SYSTEM_TIME_LOST 2>&amp;1 | tee -a /tmp/environment</step>
+        <step>uptime                            | tee -a /tmp/environment</step>
+        <step>date                              | tee -a /tmp/environment</step>
+        <step>cat /tmp/STATE                    | tee -a /tmp/environment</step>
+        <step>whoami                            | tee -a /tmp/environment</step>
+        <step>set                               | tee -a /tmp/environment</step>
+        <step>ps | grep timed | grep -v grep    | tee -a /tmp/environment</step>
+        <step>cat /tmp/session_bus_address.user | tee -a /tmp/environment</step>
+      </case>
+    </set>
+
+    <set name="simple_tests" description="basic timed functionality" feature="System Control" requirement="MaSSW-815, MaSSW-1167">
+      <get>
+        <file>/timed.log</file>
+        <file>/home/user/triggered</file>
+      </get>
+      <environments><scratchbox>false</scratchbox><hardware>true</hardware></environments>
+
+      <case name="ping" description="print the daemon status" subfeature="TimeAlarm">
+        <step>source /tmp/session_bus_address.user ; simple-client ping</step>
+      </case>
+
+      <case name="set-n-check" description="check if a simple alarm is executed" subfeature="TimeAlarm">
+        <step>rm -f /home/user/triggered</step>
+        <step>source /tmp/session_bus_address.user ; simple-client alarms</step>
+        <step>source /tmp/session_bus_address.user ; simple-client alarms off</step>
+        <step>if test -e /var/cache/timed/SYSTEM_TIME_LOST ; then source /tmp/session_bus_address.user ; simple-client date time=12:34 ; fi</step>
+        <step>source /tmp/session_bus_address.user ; simple-client a alarm-silent/8/</step>
+        <step>sleep 10</step>
+        <step>if grep TRIGGERED /home/user/triggered ; then false ; else true ; fi</step>
+        <step>source /tmp/session_bus_address.user ; simple-client alarms on</step>
+        <step>sleep 5</step>
+        <step>grep TRIGGERED /home/user/triggered</step>
+      </case>
+    </set>
+  </suite>
+</testdefinition>
+

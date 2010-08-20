@@ -1,0 +1,33 @@
+<aegis>
+  <provide>
+    <credential name="TimeControl"/>
+    <credential name="TimeBackup"/>
+    <dbus name="com.nokia.time" bus="session">
+      <node name="/com/nokia/time">
+        <interface name="com.nokia.time">
+          <method name="wall_clock_settings">
+	    <annotation name="com.maemo.Aegis" value="TimeControl"/>
+	  </method>
+        </interface>
+      </node>
+    </dbus>
+    <dbus name="com.nokia.time" bus="session">
+      <node name="/com/nokia/time">
+        <interface name="com.nokia.backupclient">
+          <method name="backupStarts">
+	    <annotation name="com.maemo.Aegis" value="TimeBackup"/>
+	  </method>
+          <method name="backupFinished">
+	    <annotation name="com.maemo.Aegis" value="TimeBackup"/>
+	  </method>
+          <method name="restoreStarts">
+	    <annotation name="com.maemo.Aegis" value="TimeBackup"/>
+	  </method>
+          <method name="restoreFinished">
+	    <annotation name="com.maemo.Aegis" value="TimeBackup"/>
+	  </method>
+        </interface>
+      </node>
+    </dbus>
+  </provide>
+</aegis>

@@ -1,0 +1,859 @@
+LIBTIMED(3)
+===========
+
+
+NAME
+----
+libtimed - library to communicate with the time daemon
+
+
+SYNOPSIS
+--------
+[verse]
+*#include <timed/interface>*
+
+[verse]
+*class Maemo::Timed::Interface ;*
+
+[verse]
+*#include <timed/wallclock>*
+
+[verse]
+*class Maemo::Timed::WallClock ;*
+*class Maemo::Timed::WallClock::Info ;*
+*class Maemo::Timed::WallClock::Settings ;*
+
+[verse]
+*#include <timed/event>*
+
+[verse]
+*class Maemo::Timed::Event ;*
+*class Maemo::Timed::Event::Action ;*
+*class Maemo::Timed::Event::Button ;*
+*class Maemo::Timed::Event::Recurrence ;*
+
+[verse]
+*#include <timed/exception>*
+
+[verse]
+*class Maemo::Timed::Exception ;*
+
+
+DAEMON INTERFACE
+----------------
+
+*class Maemo::Timed::Interface*::
+  The class is a child class of QDBusAbstractInterface,
+  representing the D-Bus interface to the time daemon.
+  +
+  bool *settings_changed_connect*(QObject &ast; object, const char &ast; slot) -
+  connects the given object/slot pair to the D-Bus signal sent by the daemon
+  in case of time setting change. Return value indicates if the connection was
+  performed.
+  +
+  The 'slot' must have the signature
+  'void settings_changed(const Maemo::Timed::WallClock::Info &info, bool
+  time_changed)'. If not, then the call will fail, no signal will be delivered, and a
+  warning
+  will be printed by Qt library (which is nowhere documented through).
+  The meaning of the slot parameters: the Info structure is described below in
+  'WALL CLOCK HANDLING'. The 'time_changed' flas is set iff the system time
+  was changed (not only the settings).
+//  +
+//  Qt signals provided by the class and mirroring the D-Bus signals sent by the
+//  daemon:
+//  +
+//  daylight_saving_switched() - sent as the time in the current timezone was
+//  switched from summer time to winter time or vice versa.
+//  +
+//  settings_changed(Maemo::Timed::WallClock::Info) - some of the settings are
+//  changed. The Info class is a read only structure describing the setting of
+//  the daemon concerning wall clock and timezone handling. See below for the
+//  description of this structure.
+  +
+  For every method 'xxx' of the D-Bus interface
+  described in 'timed(8)'
+  the class has
+  two member functions with the same parameter set:
+  +
+  QDBusMessage *xxx_sync*(...input parameters...) ;
+  +
+  QDBusPengingCall *xxx_async*(...input parameters...) ;
+  +
+  The former function is performing a synchronous D-Bus call and is returning the reply
+  message. The method call return parameters can be retrieved by casting the
+  returned message value to
+  *QDBusReply<output_params>*,
+  where 'output_params' is the list representing the output
+  parameter types of the given D-Bus call.
+  +
+  The latter function is starting an asynchronous D-Bus call and returning a Qt
+  object needed to watch the call execution and to retrieve the return
+  value (see the Qt documentation for class QDBusPendingCall for details).
+  +
+  For the detailed description of time daemon D-Bus interface methods and their parameters
+  see the section DBUS in 'timed(8)' manual page.
+  +
+  The following list shows the usage of the synchronous interface functions.
+  The type on the left side is _not_ the type of the returning value (which is
+  always QDBusMessage), but more the suggested template parameters
+  for the class QDBusReply<> needed to define the
+  type for the return value to be casted to.
+  The usage of the asynchronous equivalents is similar.
+  +
+  <Maemo::Timed::WallClock::Info> 'get_wall_clock_info_sync'() ;
+  +
+  <bool> 'wall_clock_settings_sync'(Maemo::Timed::WallClock::Settings) ;
+  +
+  <uint> 'add_event_sync'(Maemo::Timed::Event) ;
+  +
+  <bool> 'cancel_sync'(uint) ;
+  +
+  <uint> 'replace_event_sync'(Maemo::Timed::Event, uint) ;
+  +
+  <QList<QVariant>> 'query_sync'(QMap<QString,QVariant>) ;
+  +
+  <QMap<QString,QVariant>> 'query_attributes_sync'(uint) ;
+  +
+  <void> 'enable_alarms_sync'(bool) ;
+  +
+  <bool> 'alarms_enabled_sync'() ;
+  +
+  <bool> 'set_default_snooze_sync'(int) ;
+  +
+  <int> 'get_default_snooze_sync'() ;
+  +
+  <bool> 'dialog_response_sync'(uint, int) ;
+
+    Example: ::
+-----------------------
+/* Perform synchronous call to 'pid' method */
+Maemo::Timed::Interface ifc ;
+QDBusReply<int> res = ifc.pid_sync() ;
+if(res.isValid())
+  cerr << "D-Bus call failed" << endl ;
+else
+  cout << "Time daemon pid is " << res.value() << endl ;
+-----------------------
+
+
+WALL CLOCK HANDLING
+-------------------
+
+Wall clock and time zone information in the time daemon::
+  +
+  The wall clock is represented in the time daemon by three entities and
+  several flags.
+  +
+  First entity, the Unix time (called 'system time'
+  as well) represents the current time according to the Coordinated Universal Time
+  (abbreviated as 'UTC'). This is the only time known by the Linux kernel and
+  usually represented by a 31 bit integer value (in seconds) or a double
+  precision integer value (in nano-seconds) as a time elapsed from the begining
+  of the year 1970.
+  +
+  Second entity, the symbolic timezone description, representing an entry in the
+  'Olson database'. A database entry describes the rules how the local time
+  at given location has to be calculated for given UTC time value. That
+  includes the rules for 'Daylight Saving Time' (abbreviated as 'DST', also
+  informally known as summer/winter time switch) for
+  given location based on local legislation. The examples of the database
+  entries are 'Euprope/Helsinki' and 'Asia/Jerusalem'.
+  The Olson data is used for localtime calculation and automatic DST switch.
+  +
+  Third entity, the numerical offset between the local time and the UTC time,
+  which is a multiple of a 15 minutes unit, usually positive to the east of
+  Greenwich and negative to the west.
+  This value is only used for calculation of the local time,
+  if the user has explicitely disabled the automatic DST switching.
+  +
+  All these entities can be obtained from different sources,
+  depending on the flags described below and availability of data sources.
+  +
+  Flag *time_nitz* - indicates that the UTC time should be obtained from
+  the cellular network operator if available
+  (NITZ is an abbreviation for 'Network
+  Identity and Time Zone'). If the flag is set, but the NITZ is not available,
+  the daemon falls back to manual settings.
+  +
+  Flags *time_gps* and *time_ntp* - are reserved for future use.
+  +
+  Flag *local_cellular* - indicated that the local time information should be
+  obtained by the information given by the cellular network operator. As the
+  NITZ is only providing the numerical offset information, the MCC (Mobile
+  Network Code) information is used to deduce the current symbolic timezone,
+  if possible. If this flag is not set, the user application (usually the
+  Clock UI based on human input) is selecting the offset or symbolic timezone.
+  If the flag is set, but the cellular network provider information
+  is not available,
+  the daemon falls back to manual settings.
+  +
+  Flag *auto_dst* - indicates, if the symbolic
+  timezone names are in use (allowing the automatical UTC offset adjustment in
+  spring or autumn), or the numerical UTC offset is used.
+
+*class Maemo::Timed::WallClock*::
+  +
+  The class is a namespace container for clock handling types.
+  +
+  enum *Maemo::Timed::WallClock::UtcSource* { 'UtcManual', 'UtcNitz', 'UtcGps', 'UtcNtp' }
+  -
+  enumerates the sources of the system time.
+  'UtcManual' represents the time set by any client application, usually (but not
+  exclusively) it's the Clock UI based on user input.
+  'UtcNitz'
+  represents time received from the cellular network operator.
+  The values 'UtcGps' and 'UtcNtp' (representing the time information received from the
+  Global Positioning System and by Network Time Protocol respectively) are
+  reserved for future use.
+  +
+  enum *Maemo::Timed::WallClock::TimezoneSource* { 'TimezoneManual', 'TimezoneCellular' }
+  -
+  enumerates the sources of the time zone information.
+  'TimezoneManual' represents the symbolic time zone set by a client application,
+  usually (but not
+  exclusively) it's the Clock UI based on user input.
+  'TimezoneCellular' represents
+  the timezone information deduced from NITZ and MCC
+  information given by the cellular network operator.
+  +
+  enum *Maemo::Timed::WallClock::OffsetSource* { 'OffsetManual', 'OffsetNitz' }
+  -
+  enumerates the sources of the time offset to UTC.
+  'OffsetManual' represents
+  the offset set by any client application, usually (but not
+  exclusively) it's the Clock UI based on user input.
+  'OffsetNitz' represents the time offset given by the network operator.
+
+class *Maemo::Timed::WallClock::Info*::
+  +
+  is representing a read only structure containing information about current
+  time settings. It's being sent to the client application either wenn
+  explicitly requested by the 'get_wall_clock_info' D-Bus method, or by receiving
+  the 'settings_changed' D-Bus signal.
+  +
+  Member functions:
+  +
+  bool *flagTimeNitz*() const - the value of 'time_nitz' flag decribed above.
+  +
+  bool *flagLocalCellular*() const - the value of 'local_cellular' flag decribed above.
+  +
+  bool *flagAutoDst*() const - the value of 'auto_dst' flag decribed above.
+  +
+  bool *flagFormat24*() const - whether or not the 24 hour time formatting
+  (like 21:34) is in use (if not, 12 hour like "9:34pm" is used).
+//  +
+//  This method is a shortcut for 'utc(UtcSource())' - see below.
+  +
+  QString *etcLocaltime*() const - returnes the path to the time zone
+  description file. Usually the '/etc/localtime' is a symbolic link to this
+  value.
+  +
+  QString *humanReadableTz*() const - depending on the value of 'auto_dst'
+  flag returns either the current entry in Olson database (like
+  'Europe/Berlin'), or
+  the string representation of the numerical offset in the form 'GMT+2',
+  'GMT+5:30' and so on. The plus sign is used for the locations to the East of
+  Greenwitch. The zero offset is not explicitely shown.
+  +
+  int *secondsEastOfGmt()* const - shows current offset to GMT in seconds.
+  Positive values are in the East.
+  +
+  QString *tzAbbreviation()* const - the symbolic name of current time zone
+  like 'EEST', 'MSK' an so on. It depends on location as well as on 'auto_dst'
+  flag and sometimes on the current season.
+  +
+  time_t *utc*() const - returns the current UTC time according to the data
+  received. Two consequent calls may return different time, because the data
+  structure doesn'n contain exact time stamp, internaly the difference between
+  the time and Linux monotinoc clock is stored. The return value should
+  coincide with the Linux system time (unless the latter is changed).
+  +
+  Maemo::Timed::WallClock::UtcSource *utcSource*() const - returns the current
+  source of the UTC time information. Note: even if 'time_nitz' flag is set,
+  this function will return 'UtcManual' if the operator time is not available
+  currently. The similar is true for the next two methods.
+  +
+  Maemo::Timed::WallClock::TimezoneSource *timezoneSource*() const - returns the
+  current source of the symbolic timezone information.
+  +
+  Maemo::Timed::WallClock::OffsetSource *offsetSource*() const - returns the
+  current source of the UTC offset information.
+  +
+  bool *utcAvalable*(Maemo::Timed::WallClock::UtcSource) const - indicates if
+  the given UTC time source is currently available. The current source is
+  always available. The 'UtcManual' source is always available as well.
+  +
+  bool *timezoneAvailable*(Maemo::Timed::WallClock::TimezoneSource) const - indicates if the
+  given source of the symbolic timezone informaion is available. If the
+  'auto_dst' flag is set, the current source is available.
+  +
+  bool *offsetAvailable*(Maemo::Timed::WallClock::OffsetSource) const -
+  indicates if the given source of the UTC offset informaion is available.
+  The current source is always available.
+  +
+  time_t *utc*(Maemo::Timed::WallClock::UtcSource) const - returns the current
+  UTC time from the given source. If the given source is not available,
+  returns the invalid value (time_t)(-1).
+  Two consequent calls may return different time values as described above
+  (see the 'utc()' method).
+  +
+  QString *timezone*(Maemo::Timed::WallClock::TimezoneSource) const -
+  returns the timezone from given source, if available. If not, the null
+  string is returned.
+  +
+  int *offset*(Maemo::Timed::WallClock::OffsetSource) const -
+  returns the offset of the local time according to the given source.
+  The value is amount of seconds, divisible by 900 (which is equivalent
+  to 15min steps). If the source is not available, the special invalid value
+  -1 is returned. Note: the valid value could be negative (in the west).
+//  +
+//  static QString *offsetStr*(int value) - converts the offset value
+//  to a string representation like 'GMT' or 'GMT+2' or even
+//  'GMT+5:30'. If the value is not valid (XXX: the list of all valid values can be
+//  obtained who knows how, but I think, it will be some context property)
+//  the null string is returned.
+  +
+  struct timespec *clockDiffNano*() - after the system time change is signalled,
+  this method returnes the time difference between the old and the new system time
+  (which is positive, if the clock was moved back). The
+  'timespec' structure contains the time difference in nano-seconds,
+  its fields are described in the manual page 'clock_gettime(2)'
+  +
+  time_t *clockDiff*() - the same value as above, rounded to the whole seconds.
+  +
+  QString *str*() const -
+  returns a human readable representation of the structure
+  usable for printing on a single line and debugging.
+  The client application should never depend on this method,
+  as sometimes an empty string could be returned.
+
+class *Maemo::Timed::WallClock::Settings*::
+  +
+  is representing a write only structure
+  used to change the current time settings.
+  It's being sent by the client application
+  to the time daemon by the 'wall_clock_settings'
+  D-Bus call.
+  +
+  If many settings are to be changed, the client application is encouraged
+  to fill all of them to a single instance of this structure and submit to
+  the time daemon in a single call.
+  Beside of reducing D-Bus usage, that procedure helps to avoid race
+  conditions.
+  +
+  If the D-Bus method call is failed or rejected by the daemon,
+  not a single setting will be changed. The failure could be
+  detected by the return value, the exact reason is
+  currently have to be found in daemon's log file.
+  +
+  Member functions:
+  +
+  void *setFlag24*(bool format24) - depending on the parameter set 12 or 24
+  hours time
+  formatting. This setting is shared by all applications on the device.
+  +
+  void *setTimeNitz*() - sets the flag 'time_nitz'
+  +
+  void *setTimeManual*() - clears the flag 'time_nitz'. It it was set before,
+  and the network operator time is available, the manual time is set to the
+  current value of network time.
+  +
+  void *setTimeManual*(time_t value) - clears the flag 'time_nitz'. Sets
+  the manual time source to the given value, which must be valid.
+  +
+  void *setOffsetCellular*() - sets the flag 'local_cellular' and clears the flag
+  'auto_dst'. This method could be called to enable the automatical time zone
+  tracking without automatocal DST switch.
+  +
+  void *setOffsetManual*() - clears both the flags 'local_cellular' and
+  'auto_dst'. Depending on the value of those flags before the call,
+  the manual offset value is set to something. XXX: what exactly?
+  +
+  void *setOffsetManual*(int value) - clears both flags 'local_cellular' and
+  'auto_dst', the manual offset value is set according to the parameter.
+  +
+  void *setTimezoneCellular*() - set both the flags 'local_cellular' and
+  'auto_dst'. If neither the manual nor the cellular timezone source is
+  available, the manual timezone is to be set by guessing. The guess quality
+  could be very low, thus calling of this method should be avoided in such
+  case. If the application knows more about the location, the following
+  method should be used instead.
+  +
+  void *setTimezoneCellular*(QString fallback_zone) - set both the flags
+  'local_cellular' and 'auto_dst', set the source of the manual zone (which
+  will be used unltil the cellular timezome is available) to the value of
+  'fallback_zone' parameter. No guessing is performed.
+  +
+  void *setTimezoneManual*(QString zone) - set the flag 'auto_dst' and clear
+  the flag 'local_cellular'. Set the value of 'zone' as the manual time zone
+  source.
+  +
+  bool *check*() const - simple validity check. If it fails, the structure
+  can't be submitted to the daemon. It the application try to submit it,
+  an exception will occur. Even if this function returnes the true value,
+  it can't be guaranteed that the daemon will accept the request, but
+  the structure will be submitted via D-Bus without any exception thrown.
+  +
+  QString *str*() const -
+  returns a human readable representation of the structure
+  usable for printing on a single line and debugging.
+  The client application should never relay on the return value,
+  which can be even empty.
+  +
+  Note: the API doesn't contain a parameter-less method setTimezoneManual().
+  XXX:  need an explanation here, why not and what to do.
+  +
+  Note: all three 'setTime...' functions are mutually exclusive. If the client
+  is making more than one call to them, the structure becomes invalid.
+  All six 'set{Offset,Timezone}...' functions are mutually exclusive as well.
+
+
+EVENT HANDLING
+--------------
+
+*class Maemo::Timed::Event*::
+  +
+  The class represents a new event to be inserted to the event queue of the
+  time daemon by the D-Bus method.
+  +
+  Member functions:
+  +
+  void *setTicker(time_t ticker)* - sets the trigger time counted in seconds
+  after the beginning of the year 1970 AD (UTC). Even if a timezone is given for
+  the event, the timezone information will be only used for the recurrencies
+  calculation.
+  +
+  void *setTime(unsigned year, unsigned month, unsigned day, unsigned hour,
+  unsigned minute)* - sets the trigger time in the broken down representation.
+  The calculation of the trigger time is performed according to the timezone set
+  for the given event. If no timezone is set, the device timezone will
+  be used, it means the trigger time will be changed, if the device timezone is
+  changed.
+  The input values must
+  satisfy 1971<=year<=2037, month<=12, day<=31, hour<24, minute<60 and it's
+  not allowed to specify non-existing dates like April, 31 or 1973-02-29.
+  +
+  void *setTimezone(QString tz)* - sets the timezone for the event. The timezone
+  info is used first for the calculation of the trigger time (if the trigger
+  time was given in the broken down representation). Then it's used for the
+  calculation of the recurrencies.
+  +
+  Maemo::Timed::Event::Action &amp; *addAction*() - adds a new action for the
+  event and returns a reference to the action object.
+  +
+  Maemo::Timed::Event::Button &amp; *addButton*() - adds a new application
+  specific button to the
+  notification dialog shown for the event and returns a reference to the
+  button object. A custom dialog for the event will be shown if and only if
+  the event has at least one button defined by this method. To show a system
+  default dialog use the setReminderFlag() method.
+  The maximal amount of application specific buttons of an event dialog is
+  equal to (FIXME: I don't know how many exactly, a dozen maybe? Who cares,
+  whatever). This value
+  can be changed in the future, use the method 'getMaximalButtonAmount()' to retrieve it.
+  +
+  Maemo::Timed::Event::Recurrence &amp; *addRecurrence*() - adds a new recurrence
+  rule for the event and returns a reference to the recurrence rule object.
+  +
+  static unsigned *getMaximalButtonAmount*() - returns the maximal
+  possible amount of application specific buttons in the reminder dialog.
+  +
+  static unsigned *getSysButtonAmount*() - returns the amount
+  of platform wide buttons in the reminder dialog. Currently this method returned 2 (one 'cancel'
+  button and one 'snooze' button).
+  +
+  void *setAlarmFlag*() - sets the 'alarm' flag. All the events with this flag can be
+  enabled (or disabled) at once by calling the D-Bus method
+  'enable_alarms'. Usually the clock UI application should use this flag
+  for the user defined wake up alarms; an alarm symbol should be shown to the human
+  end user if there are any events with this flag queued.
+  +
+  void *setTriggerIfMissedFlag()* - sets the flag enabling the triggering of
+  the event even if its triiger time was missed by more than 59 seconds.
+  Ususally such an event is not triggered.
+  +
+  void *setUserModeFlag()* - disables the triggering of the event in the
+  acting dead mode of the device.
+  +
+  void *setAlignedSnoozeFlag()* - usually an event snoozed by human end user
+  for 'N' seconds
+  is triggered after exactly 'N' seconds after the human interaction. With
+  this flag set the difference between the new trigger time and the snoozed
+  trigger time has to be a multiply of snoozing time period 'N'.
+  +
+  void *setReminderFlag()* - the event requires an end user notification
+  provided by the notification service. This function is called by addButton()
+  function, thus it's only has to be called explicitly for the default
+  notification dialog.
+  +
+  void *setBootFlag()* - the event requires the device to be powered on and
+  booted into the acting dead state 60 seconds before the trigger time, if the
+  device is powered off before that.
+  +
+  void *setKeepAliveFlag*() - the event will not be removed until explicit
+  requested by the application. It's possible to have an event with this flag without
+  any triggering information (like broken down trigger time, ticker, timezone or
+  recurrence patterns).
+  +
+  void *setFakeFlag()* - alias for 'setKeepAliveFlag', never use this method.
+  +
+  void *setSingleShotFlag*() - any recurrence information will be removed after the
+  first trigger.
+  +
+  void *suppressTimeoutSnooze()* - the notification dialog will not be snoozed
+  by default after a minute.
+  +
+  void *hideSnoozeButton1()* - do not include the default snooze button into
+  the reminder dialog.
+  +
+  void *hideCancelButton2()* - do not include the default cancel button into
+  the reminder dialog.
+  +
+  void *setMaximalTimeoutSnoozeCounter(int tsz_max_counter)* - restricts snoozing
+  by user's inactivity in the notification dialog to given repeat amount. The event
+  will be marked as served in case of one more inactivity. The counter will be
+  reset by any manual snoooze.
+  +
+  void *setTimeoutSnooze(int tsz_length)* - set the length of snooze caused by
+  user inactivity in the notification dialog to givem length in seconds,
+  instead of system wide default value. The length must be a least 10 seconds.
+  +
+  void *setAttribute(QString key, QString value)* - sets the text attribute
+  with given key/value pair. Both the key and the value can be neither empty
+  nor null. An event can have any amount of attributes, the same is true for the
+  event actions and event buttons. Some attribute keys have a spetial meaning
+  for the time daemon. Other are just transmitted to the notification daemon
+  (button attributes)
+  or other applications (during executing of actions).
+  +
+  Keys having a special meaning for the time daemon (the exact
+  explanation of the meaning can be found somewhere in this manual page) are:
+  "APPLICATION", "TITLE", "TEST",
+  "COMMAND", "USER", "DBUS_SERVICE", "DBUS_PATH", "DBUS_INTERFACE",
+  "DBUS_METHOD", "DBUS_SIGNAL", "PLUGIN", "BACKUP".
+  +
+  The usage of other upper case keys is deprecated, the client application can
+  use low or mixed case keys for its own data.
+  +
+  Every client application must set an APPLICATION attribute to a string
+  consisting of latin letters, digits and underscores and not beginning with a
+  digit.
+  +
+  The value of the TEST attribute (if given) is printed by the daemon together with the
+  event cookie after the event is inserted into the event queue, it could be used
+  for debugging.
+  +
+  int *check(QString *s=NULL, bool exc=true)* - performes simple sanity checks for the event. This
+  method does not throw an exception, unless requested. The return value is zero if the event
+  seems to be sane and can be submitted to the time daemon (but this does not mean
+  the event will be accepted). If the check fails and the a non null pointer to an
+  existing QString instance is given as a parameter, the human readable
+  description is written there. If the check fails, parameter 's' is NULL and
+  the parameter 'exc' is true, an exception of the type
+  Maemo::Timed::Exception will be thrown.
+  The methods 'add_event' and 'replace_event' of
+  the interface are calling check() without parameters, which will cause
+  throwing of the exception,  if it fails.
+
+*class Maemo::Timed::Event::Recurrence*::
+  The class represents a pattern describing the event recurrence rules.
+  +
+  If an event has no recurrence pattern, it will be triggered only once and it
+  can be repeated only by snoozing for a short period of time: after that it
+  will be removed from the event queue. To make an event to be re-triggered on a
+  regular basis, the application can set one or more recurrence pattern.
+  +
+  If an
+  event has multiply patterns, the one producing the earliest recurrence is used
+  during every re-calculation. The patterns are using broken down time, thus the
+  event time zone is used for the calculation. If no time zone is given for the
+  event, the device time zone is used.
+  +
+  Every pattern consists of five bit masks (one for months, one for days of month,
+  one for days of week, one for hours and one for minutes), which are only accessible for adding
+  bits via the member functions listed below. The quintuple
+  (month, day\_of\_month, day\_of\_week, hour, minute) is said to be _matching_ the given
+  pattern if the pattern has the bits corresponding to the quintuple values set.
+  The last day of every month is a  special case: it can be matched not only by
+  the bit in day\_of\_month corresponding to its ordinal, but by the special
+  bit, which can be set with the appropriate method below.
+  +
+  A pattern is said to be 'empty' if it can't be matched at all, even in a leap
+  year starting on appropriate day of week. A pattern
+  without any bit is empty, but not vice versa.
+  Even if a pattern is *not* empty, it can't be guarantied that it will be
+  matched some day, see the example below producing an non-empty pattern,
+  which will be never matched due to current local daylight saving time
+  legislation. The example after that shows a non-empty pattern which is matched
+  not very frequently.
+  +
+  Member functions:
+  +
+  bool *isEmpty()* const - returns true if the recurrence pattern can be
+  _never_ satisfied. Such a pattern can't be used for an event. Initially every
+  freshly created pattern is empty, because it doesn't contain any bits. It
+  has to be filled before the event is submitted to the daemon.
+  +
+  void *addMonth(int x)* - makes the pattern match the month 'x' (counted from
+  1=Jan to 12=Dec).
+  +
+  void *everyMonth()* - makes the pattern match every month.
+  +
+  void *addDayOfMonth(int x)* - makes the pattern match the given day, 'x' is
+  counted from 1.
+  +
+  void *addLastDayOfMonth()* - makes the pattern match the last day of month.
+  +
+  void *everyDayOfMonth()* - makes the pattern match every day of month.
+  +
+  void *addDayOfWeek(int x)* - makes the pattern match the given week day, the
+  days are encoded as follows: 0=Su, 1=Mo, 2=Tu, 3=We, 4=Th, 5=Fr, 6=Sa, 7=Su.
+  +
+  void *everyDayOfWeek()* - makes the pattern match the whole week.
+  +
+  void *addHour(int x)* - makes the pattern match the given hour, counted from 0 to
+  23.
+  +
+  void *addMinute(int x)* - makes the pattern match the given minute, counted from
+  0 to 59.
+
+    Example, an event triggering every Monday at five pm: ::
+
+-----------------------
+Maemo::Timed::Event e ;
+Maemo::Timed::Event::Recurrence &five_o_clock = e.addRecurrence() ;
+five_o_clock.addDayOfWeek(1) ;
+five_o_clock.addHour(17), five_o_clock.addMinute(00) ;
+five_o_clock.everyDayOfMonth(), five_o_clock.everyMonth() ;
+-----------------------
+
+    Example, an event triggering every European working day at 11am: ::
+
+-----------------------
+Maemo::Timed::Event e ;
+Maemo::Timed::Event::Recurrence &lunch = e.addRecurrence() ;
+for(int i=1; i<=5; ++i) lunch.addDayOfWeek(i) ;
+lunch.addHour(11), lunch.addMinute(00) ;
+lunch.everyDayOfMonth(), lunch.everyMonth() ;
+-----------------------
+
+    Example, an event triggering every leap year on Feb 29 at 13:54, and every last May Sunday at noon: ::
+
+-----------------------
+Maemo::Timed::Event e ;
+Maemo::Timed::Event::Recurrence &feb29 = e.addRecurrence() ;
+Maemo::Timed::Event::Recurrence &maySu = e.addRecurrence() ;
+feb29.everyDayOfWeek() ;
+feb29.addHour(13), feb29.addMinute(54) ;
+feb29.addMonth(2), feb29.addDay(29) ;
+maySu.addMonth(5), maySu.addHour(12), maySu.addMinute(0) ;
+maySu.addDayOfWeek(0 /* or 7, it doesn't matter  */) ;
+for(int i=0; i<7; ++i) maySu.addDay(31-i) ;
+-----------------------
+
+    Example, a non empty pattern, which will not be matched unless the Finnish legislation will be changed: ::
+
+-----------------------
+Maemo::Timed::Event e ;
+e.setTimezone(":Europe/Helsinki")
+Maemo::Timed::Event::Recurrence &x = e.addRecurrence() ;
+x.addDayOfWeek(7) ; /* It's Sunday */
+for(int i=0; i<7; ++i) x.addDay(31-i) ; /* The last week */
+x.addMonth(3) ; /* March */
+   /* 3:15 is between 3:00 and 4:00 */
+x.addHour(3), x.addMinute(15) ;
+assert(!x.isEmpty()) ; /* not empty */
+-----------------------
+
+    Example, a pattern will be matched every 28 years, beginning 2036: ::
+
+-----------------------
+Maemo::Timed::Event e ;
+Maemo::Timed::Event::Recurrence &x = e.addRecurrence() ;
+x.addDayOfWeek(5) ; /* It is Friday */
+x.addDay(29), x.addMonth(2) ; /* Feb, 29 */
+x.addHour(12), x.addMinute(00) ;
+/* see you in 28 years */
+-----------------------
+
+
+class *Maemo::Timed::Event::Button*::
+  The class represents a dialog button corresponding to a possible human answer
+  in the notification dialog. This information is transmitted to the
+  notification service.
+  +
+  Member functions:
+  +
+  void *setAttribute(QString key, QString value)* - sets a button attribute.
+  +
+  void *setSnooze(int secs)* - sets the length of snooze caused by human
+  selecting the given button. If the snooze value is not set, no snooze will
+  be performed. The parameter can't be less than 10 seconds.
+  +
+  void *setSnoozeDefault()* - marks the button as having the system wide default
+  snooze value. This value can be changed anytime by a D-Bus method call.
+
+class *Maemo::Timed::Event::Action*::
+  The class represents an action executed due to the processing of an event.
+  The action can launch an external command (by calling '/bin/sh -c'), send a
+  D-Bus message or do both of above.
+  An event can have any amount of actions.
+  An action can be connected to the arbitrary subset of the set
+  of internal event states and it will be executed every time the event is
+  entering one of those states.
+  +
+  Member functions:
+  +
+  void *setAttribute(QString key, QString value)* - sets an attribute, which is  specific
+  for the given action. Every time an action is to be performed, all the needed
+  attributes have to be found in the action attributes, set by this method.
+  If an attribute is not found, the daemon will look for it in the event
+  attributes, set by the method of the class Maemo::Timed::Event.
+  +
+  void *runCommand()* - the time daemon will execute an external command,
+  given in COMMAND attribute. Before that the user will be change to
+  the user ID given in the USER attribute (if no
+  USER attribute is given, "user" is used) and the current working directory
+  will be changed to the home directory of the given user, unless it's the
+  "root" user.
+  Only the superuser can add an event executing a command by another user but
+  itself.
+  +
+  void *runCommand(QString cmd)* - is equivalent to
+  setAttribute("COMMAND",cmd) ; runCommand() ;
+  +
+  void *runCommand(QString cmd, QString user)* - is equivalent to
+  setAttribute("USER",user) ; runCommand(cmd) ;
+  +
+  void *dbusMethodCall()* - the time daemon will start an asynchronous method
+  call on the session bus (unless the flag useSystemBus described below is set).
+  The D-Bus call service name, object path, interface (optional) and method
+  name will be taken from the attributes "DBUS_SERVICE", "DBUS_PATH",
+  "DBUS_INTERFACE" and "DBUS_METHOD" respectively.
+  The method call has the only parameter of the type string array.
+  This array contains two strings (key and value) for every token to be sent.
+  A token can be either an action attribute (only if the 'sendAttribute' flag
+  is set for the action) or an event attribute (only if the 'sendEventAttributes'
+  flag is set) or the event cookie (only if the 'sendCookie' flag
+  is set).
+  The following attributes will not be sent in the parameter list:
+  "COMMAND", "USER", "DBUS_SERVICE", "DBUS_PATH", "DBUS_INTERFACE",
+  "DBUS_METHOD", "DBUS_SIGNAL".
+  +
+  void *dbusMethodCall(QString srv, QString mtd, QString obj, QString ifc="")* -
+  calls dbusMethodCall() method and
+  sets the atributes DBUS_SERVICE, DBUS_METHOD, DBUS_PATH according to
+  parameters 'srv', 'mtd', 'obj'. Sets the DBUS_INTERFACE attribute only if
+  the last parameter is a non-empty string.
+  +
+  void *dbusSignal()* - the time daemon will send a D-Bus signal. The D-Bus
+  connection, object path, interface and message parameters are the same as for
+  'dbusMethodCall' above. The interface parameter is obligatory. The signal name
+  is set by the "DBUS_SIGNAL" attribute.
+  +
+  void *dbusSignal(QString obj, QString sig, QString ifc)* - is equivalent to
+  dbusSignal() ;
+  setAttribute("DBUS_PATH", obj) ;
+  setAttribute("DBUS_SIGNAL", sig) ;
+  setAttribute("DBUS_INTERFACE", ifc) ;
+  +
+  void *setSendCookieFlag()* - set the flag causing
+  the daemon to send the
+  event cookie during execution of the action.
+  The command to be executed (given in the COMMAND attribute) will be modified:
+  the upper case word COOKIE as well as a string "<COOKIE>" will be replaced by
+  the decimal representation of the cookie value.
+  The parameter list of the D-Bus call will include the string "COOKIE" followed
+  by the string containing the decimal representation of the cookie.
+  +
+  void *setSendAttributesFlag()* - causes the action attributes to be sent via
+  dbus as described above.
+  +
+  void *setSendEventAttributesFlag()* - causes the event attributes to be sent via
+  dbus as described above.
+  +
+  void *setUseSystemBusFlag()* - causes time daemon to use the connection to the
+  system bus (instead of session bus) for execution of the D-Bus action.
+  +
+  The following methods are connecting the action to one one more internal
+  states the event is going through during its lifetime. An event can go to
+  a particular state more than once, but it can also never reach some states.
+  +
+  void *whenQueued()* - an event is waiting until the trigger time. Not every
+  event ever achieves this state, for example events needing the device's User
+  Mode, are waiting indifinetely if the device is in any oher mode.
+  +
+  void *whenDue()* - the trigger time of the queued event is reached.
+  +
+  void *whenMissed()* - if the trigger time of the event lies more than 59
+  seconds back, the event is said to be 'missed'. It still can be triggered,
+  but only if the triggerIfMissedFlag is set.
+  +
+  void *whenTriggered()* - the event is to be triggered
+  +
+  void *whenSnoozed()* - the user has decided to snooze the event
+  +
+  void *whenServed()* - the event was either triggered or missed, and the
+  whole trigger loop (if any) was completed.
+  +
+  void *whenAborted()* - the event is cancelled by the application
+  +
+  void *whenTranquil()* - the event reaches the 'tranqiol' state, which means
+  it will be never triggered and just keeped there to be queried until
+  the client application decides to remove it.
+  +
+  void *whenFailed()* - the daemon was not able to schedule the event, usually
+    it happens because of the data given by the application.
+  +
+  void *whenFinalized()* - that is the last state for the event, before it's
+  beeng discarded
+  +
+  void *whenButton(const Maemo::Timed::Event::Button &amp; x)* - the user
+  has selected the application specific
+  button introduced by the call to Event::addButton() method.
+  +
+  void *whenSysButton(int x)* - the user has selected the x-th platform wide
+  notification dialog button. The value of 'x' is a non-negative integer
+  number not exceeding the value returning by Event::getSysButtonAmount() method
+  (which is the amount of the platform wide
+  buttons, currently it's 2, but it can change later). The value 'x=0' is a special value for the
+  out-of-screen user actions.
+
+EXCEPTIONS
+----------
+
+class *Maemo::Timed::Exception*::
+  An instance of this std::exception subclass will be thrown by one of the
+  functions described above in case of inconsistent input.
+  +
+  Methods:
+  +
+  const char * *what()*- returns a human readable message
+  describing the problem and function caused the exception.
+
+
+SEE ALSO
+--------
+
+'timed(8)', 'libtimed-voland(3)', voland(8)
+
+WIKIPEDIA
+---------
+
+http://en.wikipedia.org/wiki/Coordinated_Universal_Time
+http://en.wikipedia.org/wiki/Daylight_saving_time
+http://en.wikipedia.org/wiki/Mobile_Country_Code
+http://en.wikipedia.org/wiki/Mobile_Network_Code
+http://en.wikipedia.org/wiki/NITZ
+http://en.wikipedia.org/wiki/Olson_database
+
+QT-DOCUMENTATION
+----------------
+
+QDBusAbstractInterface etc
+
+COLOPHON
+--------
+
+This page is part of timed, the Maemo time daemon.

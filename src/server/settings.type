@@ -1,0 +1,34 @@
+settings_t =
+[
+  { name = "time_nitz",      type=$integer,      value = 1 },
+  { name = "local_cellular", type=$integer,      value = 1 },
+  { name = "auto_dst",       type=$integer,      value = 1 },
+  { name = "format_24",      type=$integer,      value = 1 },
+
+  { name = "manual_utc",     type=$record,       record="empty_t" },
+  { name = "nitz_utc",       type=$record,       record="empty_t" },
+  { name = "gps_utc",        type=$record,       record="empty_t" },
+  { name = "ntp_utc",        type=$record,       record="empty_t" },
+
+  { name = "manual_offset",  type=$record,       record="manual_offset_t" },
+  { name = "nitz_offset",    type=$record,       record="empty_t" },
+
+  { name = "manual_zone",    type=$record,       record="manual_zone_t" },
+  { name = "cellular_zone",  type=$record,       record="empty_t" }
+],
+
+empty_t =
+[
+] ,
+
+manual_offset_t=
+[
+  { name = "value",          type=$integer,     value=-1 }
+],
+
+manual_zone_t=
+[
+  { name = "value",          type=$bytes,       value="" }
+]
+
+.

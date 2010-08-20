@@ -1,0 +1,16 @@
+tz_single_t = [ { name="list", type=$array|$record|$mandatory, record="tz_single_info_t" } ],
+tz_distinct_t = [ { name="list", type=$array|$record|$mandatory, record="tz_distinct_info_t" } ],
+
+// tz_olson_t =[ { name="list", type=$bytes|$mandatory } ]
+
+tz_single_info_t =
+[
+  { name = "mcc", type = $integer|$mandatory },
+  { name = "tz", type = $bytes|$mandatory }
+],
+
+tz_distinct_info_t =
+[
+  { name = "mcc", type = $integer|$mandatory },
+  { name = "tz", type = $array|$bytes|$mandatory }
+] .

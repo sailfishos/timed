@@ -1,0 +1,17 @@
+# the old: usr/bin/timed
+usr/bin/timed
+
+usr/share/timed/typeinfo
+
+usr/share/contextkit/providers/com.nokia.time.context
+
+# backup framework
+usr/share/backup-framework/applications/timedbackup.conf
+
+# move it one day to tzdata:
+usr/share/zoneinfo
+usr/share/tzdata-timed
+
+# halt timed and clear cache directory
+/etc/osso-cud-scripts
+/etc/osso-rfs-scripts

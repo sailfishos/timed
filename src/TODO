@@ -1,0 +1,61 @@
+* doc about context
+* QmTime
+* Time example in qmsystem
+
+done * context framework
+done * save enable/disable alarms status
+done * combined remove_old+add_new_event method for atomic replacing
+done * make readable recurrence patterns
+
+* connect to cellular api
+* save time for the sake of rebooting
+* reading /var/spool/timed/ directory
+
+* reprogramm RTC boot time
+
+* dsme stuff:
+- signal the next alarm, talk to Semi
+- boot up? talk to Karl-Heinz and Semi
+
+(*) change time without hwclock
+(*) ask dsme how to expose rtc
+(*) log only to file,  /home/user/timed.log ?
+(*) get rid of TZ and TZDIR at start up [make TZDIR an option?]
+
+done 1) Time/Timezone change/notification
+done *) offset calculation
+done *) expose offset/human zone
+done *) create symlink
+done *) getter functions in Info
+
+done *) entry point for zone/mode change
+done *) dependency to tzdata
+done *) check offset via GMT+5
+done *) check zone via .../file
+
+done * fake-event/query-attribute , one-time-recurrence
+done * reshuffle events
+
+done *) fake event state B
+done *) fake flag goes to fake state B
+done *) even recurrence goes, if fake B
+done *) one time recurrence event! B
+done *) query_attribute B
+
+done *) rewrite docu about fake events
+
+done *) save/restore alarm machine
+done *) upstart file to Pekka
+done *) use qt 4.5 only
+done *) don't depend on staging
+done *) snooze
+done *) use session bus
+done *) tests
+done *) recurrence
+
+0) Next-trigger-time for alarm, which is currently being playing is
+empty (already confirmed, just to keep the whole list it in one place)
+done 1) dbus method for getting all the text attributes
+done 2) "fake" event, which will never trigger
+3) combined remove_old+add_new_event method for atomic replacing
+3) Mapping cookie=>trigger-time via Context Framework
