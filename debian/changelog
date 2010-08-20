@@ -1,8 +1,11 @@
 timed (2.10) unstable; urgency=low
 
-  * new version
+  * removed dependency on libcellular-qt, if compiling for meego
+  * removed alte sachen
+  * removed pdf documentation
+  * gitorious+meego stuff done
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 19 Aug 2010 17:37:39 +0300
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Fri, 20 Aug 2010 16:23:36 +0300
 
 timed (2.9) unstable; urgency=low
 
