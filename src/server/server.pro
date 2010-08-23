@@ -39,7 +39,7 @@ rfs.path = $$(DESTDIR)/etc/osso-rfs-scripts
 
 INSTALLS += target xml typeinfo backupconf cud rfs
 
-CONFIG(MEEGO)
+CONFIG(MEEGO) \
 {
   message("MEEGO flag is set")
   DEFINES += __MEEGO__

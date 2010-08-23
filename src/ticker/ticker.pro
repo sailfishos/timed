@@ -17,7 +17,7 @@ HEADERS = ticker.h
 INSTALLS += target
 target.path = $$(DESTDIR)/usr/bin
 
-CONFIG(MEEGO)
+CONFIG(MEEGO) \
 {
   message("MEEGO flag is set")
   DEFINES += __MEEGO__
