@@ -52,15 +52,18 @@ int main(int ac, char **av)
     string halt = server->is_halted() ;
     if (!halt.empty())
     {
-      if(halt=="reset")
+      const char *cud = "clear-device", *rfs = "restore-original-settings" ;
+      if(halt==cud || halt==rfs)
       {
-        log_info("removing all the cache files") ;
-        const char *rm = "rm -rf /var/cache/timed/*" ;
-        int res = system(rm) ;
+        log_info("halt: '%s' requested", halt.c_str()) ;
+        const char *rm_all_files = "rm -rf /var/cache/timed/*" ;
+        const char *rm_settings = "rm -rf /var/cache/timed/settings*" ;
+        const char *cmd = halt==cud ? rm_all_files : rm_settings ;
+        int res = system(cmd) ;
         if (res != 0)
-          log_critical("'%s' failed with res=%d: %m", rm, res) ;
+          log_critical("'%s' failed with res=%d: %m", cmd, res) ;
         else
-          log_info("cache files erased successfully") ;
+          log_info("cache files erased successfully by '%s'", cmd) ;
       }
       else
         log_warning("unknown parameter in halt() request: '%s'", halt.c_str()) ;

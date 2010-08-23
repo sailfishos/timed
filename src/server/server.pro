@@ -4,7 +4,7 @@ QT += dbus
 TEMPLATE = app
 TARGET = timed
 
-VERSION = 2.8
+VERSION = 2.11
 
 INCLUDEPATH += ../h
 
@@ -31,10 +31,10 @@ typeinfo.path = $$(DESTDIR)/usr/share/timed/typeinfo
 backupconf.files = timedbackup.conf
 backupconf.path = $$(DESTDIR)/usr/share/backup-framework/applications
 
-cud.files = timed-halt-and-clear.sh
+cud.files = timed-clear-device.sh
 cud.path = $$(DESTDIR)/etc/osso-cud-scripts
 
-rfs.files = timed-halt-and-clear.sh
+rfs.files = timed-restore-original-settings.sh
 rfs.path = $$(DESTDIR)/etc/osso-rfs-scripts
 
 INSTALLS += target xml typeinfo backupconf cud rfs
