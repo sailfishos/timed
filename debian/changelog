@@ -1,8 +1,10 @@
 timed (2.11) unstable; urgency=low
 
-  * new version
+  * fixed qmake call (conditional on MEEGO option)
+  * fixed lost settings
+  * Fixes: NB#186119 - alarms were deleted after doing restore original settings
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 23 Aug 2010 18:09:38 +0300
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Tue, 24 Aug 2010 12:31:53 +0300
 
 timed (2.10) unstable; urgency=low
 
