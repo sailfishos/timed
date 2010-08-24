@@ -700,6 +700,7 @@ bool source_settings::wall_clock_settings(const Maemo::Timed::WallClock::wall_se
         signal_needed = signal_utc = true ;
     }
 #endif
+    signal_needed = true ;
   }
 
   if(uint32_t op_12_24 = p.opcodes & Op_Set_Format_12_24_Mask)
