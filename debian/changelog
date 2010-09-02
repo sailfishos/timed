@@ -1,8 +1,8 @@
 timed (2.12) unstable; urgency=low
 
-  * new version
+  * nitz offset handling
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 02 Sep 2010 14:18:39 +0300
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 02 Sep 2010 15:34:51 +0300
 
 timed (2.11) unstable; urgency=low
 
