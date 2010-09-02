@@ -158,8 +158,10 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   if(!res_obj)
     log_critical("can't register D-Bus object: %s", Maemo::Timed::bus().lastError().message().toStdString().c_str()) ;
 
-  ses_iface = Maemo::Timed::Voland::bus().interface() ;
-  QObject::connect(ses_iface, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
+  // ses_iface = Maemo::Timed::Voland::bus().interface() ;
+  voland_watcher = new QDBusServiceWatcher((QString)Maemo::Timed::Voland::service(), Maemo::Timed::Voland::bus()) ;
+  // QObject::connect(ses_iface, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
+  QObject::connect(voland_watcher, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
   QObject::connect(this, SIGNAL(voland_registered()), am, SIGNAL(voland_registered())) ;
   QObject::connect(this, SIGNAL(voland_unregistered()), am, SIGNAL(voland_unregistered())) ;
 
@@ -245,6 +247,8 @@ void Timed::system_owner_changed(const QString &name, const QString &oldowner, c
 #define __qstr(a) (a.isEmpty()?"<empty>":a.toStdString().c_str())
   if(name_match)
     log_info("Service %s owner changed from %s to %s", __qstr(name), __qstr(oldowner), __qstr(newowner)) ;
+  else
+    log_error("expecing notification about '%s' got about '%s'", Maemo::Timed::Voland::service(), name.toStdString().c_str()) ;
 #undef __qstr
 }
 

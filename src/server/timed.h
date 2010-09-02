@@ -25,6 +25,7 @@
 #include <QCoreApplication>
 #include <QMetaMethod>
 #include <QDBusConnectionInterface>
+#include <QDBusServiceWatcher>
 
 #include <iodata/storage>
 
@@ -76,6 +77,7 @@ public:
   int get_default_gmt_offset() { return default_gmt_offset ; }
 
 private:
+  QDBusServiceWatcher *voland_watcher ;
   iodata::storage *event_storage, *settings_storage, *timed_rc_storage ;
 
   simple_timer *short_save_threshold_timer, *long_save_threshold_timer ;
