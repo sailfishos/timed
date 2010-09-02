@@ -362,15 +362,15 @@ class *Maemo::Timed::WallClock::Settings*::
   void *setTimeManual*(time_t value) - clears the flag 'time_nitz'. Sets
   the manual time source to the given value, which must be valid.
   +
-  void *setOffsetCellular*() - sets the flag 'local_cellular' and clears the flag
+  void *setOffsetCellular*() - [THIS METHOD IS DEPRECATED, NEVER USE IT] sets the flag 'local_cellular' and clears the flag
   'auto_dst'. This method could be called to enable the automatical time zone
   tracking without automatocal DST switch.
   +
-  void *setOffsetManual*() - clears both the flags 'local_cellular' and
+  void *setOffsetManual*() - [THIS METHOD IS DEPRECATED, NEVER USE IT] clears both the flags 'local_cellular' and
   'auto_dst'. Depending on the value of those flags before the call,
   the manual offset value is set to something. XXX: what exactly?
   +
-  void *setOffsetManual*(int value) - clears both flags 'local_cellular' and
+  void *setOffsetManual*(int value) - [THIS METHOD IS DEPRECATED, NEVER USE IT] clears both flags 'local_cellular' and
   'auto_dst', the manual offset value is set according to the parameter.
   +
   void *setTimezoneCellular*() - set both the flags 'local_cellular' and
