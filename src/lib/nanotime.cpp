@@ -28,7 +28,7 @@
 
 #include "nanotime.h"
 
-nanotime_t nanotime_t::systime_at_zero()
+nanotime_t nanotime_t::systime_at_zero() // TODO: rename it to start_up_time()
 {
   nanotime_t s = systime_now() ;
   nanotime_t m = monotonic_now() ;
