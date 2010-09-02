@@ -21,9 +21,11 @@
 ***************************************************************************/
 #include <map>
 #include <string>
-
 using namespace std ;
 
+#include <qm/log>
+
+#include "timeutil.h"
 #include "olson.h"
 
 map<string, olson*> olson::zonetab ;
@@ -38,4 +40,21 @@ olson *olson::by_name(const string &zone)
   if(it==zonetab.end())
     it = zonetab.insert(make_pair(zone, new olson(zone))).first ;
   return it->second ;
+}
+
+bool olson::match(time_t at, int offset, int dst_flag)
+{
+  switch_timezone xx(zone_name) ;
+  struct tm tm ;
+  if(localtime_r(&at, &tm)==NULL)
+  {
+    log_warning("localtime_r(%ld) for TZ='%s' failed: %m", at, zone_name.c_str()) ;
+    return false ;
+  }
+  bool result = offset == tm.tm_gmtoff ;
+  if(result && dst_flag>=0 && tm.tm_isdst>=0) // check dst flag, both value are available
+    result = (dst_flag==0) == (tm.tm_isdst==0) ;
+  log_debug("input: at=%ld, offset=%d, dst_flag=%d; zone: name=%s, gmt_off=%ld isdst=%d; return: %s",
+     at, offset, dst_flag, zone_name.c_str(), tm.tm_gmtoff, tm.tm_isdst, result?"YES":"NO") ;
+  return result ;
 }

@@ -35,6 +35,7 @@ class olson
 public:
   std::string name() { return zone_name ; }
   static olson *by_name(const std::string &) ;
+  bool match(time_t at, int offset, int dst_flag) ;
 } ;
 
 #endif
