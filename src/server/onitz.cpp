@@ -116,7 +116,7 @@ void cellular_handler::old_nitz_signal(QDateTime dt, int timezone, int dst)
   if(timezone != -1 && timezone % (15*60) == 0)
   {
     ci.flag_offset = true ;
-    ci.offset_value = timezone / 15*60  ;
+    ci.offset_value = timezone /* 15*60 */ ;
 
   // 2. UTC time, only possible, of the timezone offset is valid
 
@@ -181,7 +181,7 @@ void cellular_handler::fake_nitz_signal(int mcc, int offset, int time, int dst)
   ci.timestamp_value = nanotime_t::monotonic_now() ;
 
   ci.flag_offset = true ;
-  ci.offset_value = offset/(15*60) ;
+  ci.offset_value = offset/*(15*60)*/ ;
 
   ci.flag_time = true ;
   ci.time_at_zero_value = nanotime_t::from_time_t((time_t)time) - ci.timestamp_value ;
@@ -217,7 +217,7 @@ void cellular_handler::new_nitz_signal(const NetworkTimeInfo &cnti)
   if(timezone != -1 && timezone % (15*60) == 0)
   {
     ci.flag_offset = true ;
-    ci.offset_value = timezone / (15*60)  ;
+    ci.offset_value = timezone /* (15*60) */ ;
 
   // 2. UTC time, only possible, of the timezone offset is valid
 
