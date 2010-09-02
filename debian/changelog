@@ -1,3 +1,9 @@
+timed (2.13) unstable; urgency=low
+
+  * Fixes: NB#187551 - Timed is listening to all serviceOwnerChanged messages on DBus
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 02 Sep 2010 23:40:00 +0300
+
 timed (2.12) unstable; urgency=low
 
   * Fixes: NB#172092 - Maemo::Timed::WallClock::Settings::setOffsetManual() documentation needs clarification
