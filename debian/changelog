@@ -1,8 +1,13 @@
 timed (2.12) unstable; urgency=low
 
+  * Fixes: NB#172092 - Maemo::Timed::WallClock::Settings::setOffsetManual() documentation needs clarification
+  * Fixes: NB#179906 - Wrong Timezone is displayed in System settings after Automatic Time update
+  * Fixes: NB#182400 - Time doesnt get updated on UE when Auto Update is kept on
+  * Fixes: NB#189551 - Alarm status in Status menu is displaying a date 6 days ahead of the actual alarm date, when a Repeat alarm is set with an elapsed alarm time
   * nitz offset handling
+  * small but important fix in recurrence calculation
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 02 Sep 2010 15:34:51 +0300
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 02 Sep 2010 23:12:55 +0300
 
 timed (2.11) unstable; urgency=low
 
