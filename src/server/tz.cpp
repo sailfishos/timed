@@ -63,7 +63,7 @@ tz_oracle_t::tz_oracle_t()
     log_warning("mcc-to-distinct-tz database corrupted or not present") ;
   }
 
-  log_assert(false, "please initialize xy_to_tz!") ;
+  // log_assert(false, "please initialize xy_to_tz!") ;
 
   read_timezones_by_country() ;
 #if 0
@@ -78,7 +78,7 @@ void tz_oracle_t::read_timezones_by_country()
 {
   iodata::record *rec = open_database("/usr/share/tzdata-timed/zones-by-country.data", "zones_by_country_t") ;
   log_assert(rec!=NULL) ;
-  const iodata::array *a = rec->arr() ;
+  const iodata::array *a = rec->get("xy_to_tz")->arr() ;
   for(unsigned i=0; i<a->size(); ++i)
   {
     const iodata::record *country = a->get(i)->rec() ;
