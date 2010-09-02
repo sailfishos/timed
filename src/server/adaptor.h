@@ -221,6 +221,12 @@ public slots:
     log_debug() ;
     return timed->cust_settings->get_values();
   }
+
+  bool fake_nitz_signal(int mcc, int offset, int time, int dst)
+  {
+    cellular_handler::object()->fake_nitz_signal(mcc, offset, time, dst) ;
+    return true ; // TODO make above method returning bool (not void) and check parameters
+  }
 #if 0
   uint32_t update_event(uint32_t c, const Alarm::event_t &a)
   {

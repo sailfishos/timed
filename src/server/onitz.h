@@ -151,6 +151,7 @@ signals:
   void cellular_data_received(const cellular_info_t &) ;
 public:
   static cellular_handler *object() ;
+  void fake_nitz_signal(int mcc, int offset, int time, int dst) ;
 #if 0
   void invoke_signal() ;
 #endif

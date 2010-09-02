@@ -90,6 +90,7 @@ namespace Maemo
       qtdbus_method(pid, (void)) ;
       qtdbus_method(parse, (const QString &text), text) ;
       qtdbus_method(customization_values, (void)) ;
+      qtdbus_method(fake_nitz_signal, (int mcc, int offset, int time, int dst), mcc, offset, time, dst) ;
     } ;
   }
 }

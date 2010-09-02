@@ -173,6 +173,34 @@ void cellular_handler::old_nitz_signal(QDateTime dt, int timezone, int dst)
 }
 #endif
 
+void cellular_handler::fake_nitz_signal(int mcc, int offset, int time, int dst)
+{
+  log_debug("fake nitz requested: mcc=%d offset=%d, time=%d, dst=%d", mcc, offset, time, dst) ;
+  cellular_info_t ci ;
+
+  ci.timestamp_value = nanotime_t::monotonic_now() ;
+
+  ci.flag_offset = true ;
+  ci.offset_value = offset/(15*60) ;
+
+  ci.flag_time = true ;
+  ci.time_at_zero_value = nanotime_t::from_time_t((time_t)time) - ci.timestamp_value ;
+
+  ci.flag_dst = ! (dst<0) ;
+  ci.dst_value = dst ;
+
+  ci.flag_mcc = true ;
+  ci.mcc_value = mcc ;
+
+  ci.flag_mnc = true ;
+  ci.mnc_value = "fake" ;
+
+  log_info("emitting fake nitz signal: ci=%s", ci.to_string().c_str()) ;
+  emit cellular_data_received(ci) ;
+  log_debug() ;
+}
+
+
 #if USE_CELLULAR_QT
 void cellular_handler::new_nitz_signal(const NetworkTimeInfo &cnti)
 {
