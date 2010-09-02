@@ -151,7 +151,12 @@ void tz_oracle_t::handle_offset(const cellular_info_t &ci)
 
   // 2.
   vector<olson *> match ;
-  time_t at = ci.has_time() ? ci.timestamp().to_time_t() : time(NULL) ;
+  time_t at = time(NULL) ;
+  if(ci.has_time())
+  {
+    nanotime_t nitz_time = ci.timestamp() + nanotime_t::systime_at_zero() ;
+    at = nitz_time.to_time_t() ;
+  }
   int dst_flag = ci.has_dst() ? ci.dst() : -1 ;
   for(vector<string>::const_iterator it=tz_list.begin(); it!=tz_list.end(); ++it)
   {
@@ -185,13 +190,13 @@ string tz_oracle_t::mcc_to_xy(int mcc_value)
   if(!loaded)
   {
     loaded = true ;
-    iodata::record *rec = open_database("/usr/share/tzdata-timed/single.data", "mcc_to_xy_t") ;
+    iodata::record *rec = open_database("/usr/share/tzdata-timed/country-by-mcc.data", "mcc_to_xy_t") ;
     if(rec==NULL)
     {
       log_warning("mcc to country code database not available") ;
       return "" ;
     }
-    const iodata::array *a = rec->arr() ;
+    const iodata::array *a = rec->get("mcc_to_xy")->arr() ;
     for(unsigned i=0; i<a->size(); ++i)
     {
       int mcc = a->get(i)->get("mcc")->value() ;
