@@ -138,11 +138,12 @@ PF	-2308-13457	Pacific/Gambier	Gambier Islands
 # MCC=550, Micronesia (FM), 3 distinct Olson Names
 FM	+0725+15147	Pacific/Truk	Truk (Chuuk) and Yap
 FM	+0658+15813	Pacific/Ponape	Ponape (Pohnpei)
-FM	+0519+16259	Pacific/Kosrae	Kosrae
+# Kosrae seems to be the zone as Ponape
+# FM	+0519+16259	Pacific/Kosrae	Kosrae
 
 # MCC=722, Argentina (AR), many Olson names, 2 major
 AR	-3436-05827	America/Argentina/Buenos_Aires	Buenos Aires (BA, CF)
-AR	-3319-06621	America/Argentina/San_Luis	San Luis (SL)
+# TODO: unkomment it since 2009 AR	-3319-06621	America/Argentina/San_Luis	San Luis (SL)
 
 # MCC=724, Brazilia (BR), many zones, totaly weird
 # 3 in summer, 3 in winter, but 5 combinations.
