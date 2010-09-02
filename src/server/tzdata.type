@@ -1,3 +1,6 @@
+# TODO: check the names before moving stuff to tzdata package
+#       "list" is a horrible name, other are not much better!
+
 tz_single_t = [ { name="list", type=$array|$record|$mandatory, record="tz_single_info_t" } ],
 tz_distinct_t = [ { name="list", type=$array|$record|$mandatory, record="tz_distinct_info_t" } ],
 
@@ -13,4 +16,19 @@ tz_distinct_info_t =
 [
   { name = "mcc", type = $integer|$mandatory },
   { name = "tz", type = $array|$bytes|$mandatory }
-] .
+],
+
+# file country-by-mcc.data
+mcc_country_pair_t = [ { name = "mcc", type=$integer|$mandatory}, { name = "country", type=$bytes|$mandatory} ],
+mcc_to_xy_t = [ { name = "mcc_to_xy", type=$array|$record|$mandatory, record="mcc_country_pair_t" } ],
+
+# file zones-by-country.data
+country_record_t =
+[
+  { name = "xy", type = $bytes|$mandatory },
+  { name = "major", type = $array|$bytes|$mandatory },
+  { name = "minor", type = $array|$bytes|$mandatory }
+],
+zones_by_country_t = [ { name = "xy_to_tz", type = $array|$record|$mandatory, record = "country_record_t" } ]
+
+.
