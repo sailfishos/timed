@@ -2,6 +2,7 @@
 use strict ;
 
 my $DEFAULT_ZONE_TAB = "/usr/share/zoneinfo/zone.tab" ;
+my $DEFAULT_ZONE_DIR = "/usr/share/zoneinfo" ;
 
 usage(), exit 1 unless @ARGV ;
 
@@ -13,10 +14,16 @@ sub main
   my $MCC = read_mcc_list_by_parameter("mcc-main") ;
 
   # 1. Find all the wiki page on the command line and take the latest one
+  #    Returned data: $wiki->{$mcc} = { mcc=>$1, xy=>$2, comment=>$3 } ;
   my $wiki = read_wiki() ;
 
   # 2. Find and open zone.tab file on the command line: --olson=.......
+  #    Returned data:
+  #      *) { xy=>[ {tz=>"olson/zone", comment=>"comment"}, ... ] }
+  #      *) [ { tz=>"olson/zone", comment=>"other comment" }, ... ]
   my ($olson_tab, $full_list) = read_zonetab_by_parameter("olson", "$DEFAULT_ZONE_TAB") ;
+  #    signature = { "olson/name" => "alsjdajdnaksjdnaksjdn" }
+  my $signature = read_signatures($full_list) ;
   # ... and --single
   my ($single_tab) = read_zonetab_by_parameter("single") ;
   # ... and --distinct
@@ -26,14 +33,19 @@ sub main
   my $single1 = find_countries(1, $MCC, $wiki, $olson_tab) ;
   my $single2 = find_countries(1, $MCC, $wiki, $single_tab) ;
   my @single = (sort { $a->{tz} cmp $b->{tz} } @$single1, @$single2) ;
+  check_single_are_really_single($single_tab, $olson_tab, $signature) ;
 
   # 4. Process countries with clear defined timezones (not like US): --distinct=...
   my $distinct = find_countries(0, $MCC, $wiki, $distinct_tab) ;
+  # same format for major and minor: { xy => [ "olson/name", ... ] }
+  my ($major, $minor) = find_major_and_minor_zones($olson_tab, $distinct_tab, $signature) ;
 
   # $1. Output tables
   output_single(\@single, "single-output") ;
   output_distinct($distinct, "distinct-output") ;
   output_full($full_list, "full-output") ;
+  output_country_by_mcc($wiki, "country-by-mcc-output") ; # TODO: reduce this list, remove single country stuff
+  output_zones_by_country($major, $minor, "zones-by-country-output") ;
 
   # $$. Check unused flags
   usage() and die "Invalid command line parameters: " . join(", ", @ARGV) . "\n" if @ARGV ;
@@ -144,7 +156,7 @@ sub find_countries
     }
     elsif($tiny==0) # Many distinct timzones
     {
-      print STDERR "Warning: a single timezone in a large country: MCC=$mcc ($xy)\n" and next if @$zones == 1 ;
+      print STDERR "WARNING: a single timezone in a large country: MCC=$mcc ($xy)\n" if @$zones == 1 ;
       print STDERR "Warning: MCC=$mcc alreasy processed!\n" and next if defined $MCC->{$mcc} ;
       my $array = [] ;
       push @$array, $_->{tz} foreach (@$zones) ;
@@ -228,6 +240,46 @@ sub output_full
   print "Full list of geographical Olson names (", scalar @$list, " zones) is written to '$file'\n" ;
 }
 
+sub output_country_by_mcc
+{
+  my ($wiki, $flag) = (shift,shift) ;
+  my $file = extract_single_parameter($flag, 1) ;
+  return unless $file ;
+  open FILE, ">", "$file" or die "can't write to $file: $!" ;
+  my $q = '"' ;
+
+  my $txt = join (",\n  ",
+    map {
+      "{ mcc=$_, country=" . $q . $wiki->{$_}->{xy} . "$q" . "}"
+    } sort keys %$wiki
+  ) ;
+  print FILE "# NEVER TOUCH THIS GENERATED FILE\n" ;
+  print FILE "mcc_to_xy =\n[\n  $txt\n] .\n" ;
+  close FILE or die "can't write to $file: $!" ;
+  print "Country by mcc mapping (", scalar keys %$wiki, " entries) is written to '$file'\n" ;
+}
+
+sub output_zones_by_country
+{
+  my ($major, $minor, $flag) = (shift,shift,shift) ;
+  my $file = extract_single_parameter($flag, 1) ;
+  return unless $file ;
+  open FILE, ">", "$file" or die "can't write to $file: $!" ;
+  my $q = '"' ;
+
+  my @countries ;
+  for my $xy (sort keys %$major)
+  {
+    my $maj_txt = join (", ", map { "$q$_$q" } @{$major->{$xy}}) ;
+    my $min_txt = join (", ", map { "$q$_$q" } @{$minor->{$xy}}) ;
+    push @countries, "  { xy=$q$xy$q, major=[$maj_txt], minor=[$min_txt] }" ;
+  }
+  my $txt = join (",\n  ", @countries) ;
+  print FILE "# NEVER TOUCH THIS GENERATED FILE\n" ;
+  print FILE "xy_to_tz =\n[\n  $txt\n] .\n" ;
+  close FILE or die "can't write to $file: $!" ;
+  print "Major and minor time zones are written to '$file'\n" ;
+}
 
 sub extract_single_parameter
 {
@@ -241,6 +293,95 @@ sub extract_single_parameter
   @ARGV = grep { ! m/$re/ } @ARGV ;
   return $value ;
 }
+
+sub read_signatures
+{
+  my ($olson) = (shift) ;
+  print "Calculating time zone signatures ... " ;
+  my %signatures ;
+  for my $zone (@$olson)
+  {
+    my $tz = $zone->{tz} ;
+    # print "$tz: ", $zone->{comment}, "\n" ;
+    my $cmd = "$ENV{SIMPLE_DUMP}" . " " ;
+    $cmd .= "$DEFAULT_ZONE_DIR/$tz" ;
+    open PIPE, "$cmd |"  or die "can't exec simple dump: $!" ;
+    my $sign="" ;
+    read PIPE, $sign, 1024, length $sign until eof PIPE ;
+    chomp $sign ;
+    # print length($sign), "\n" ;
+    $signatures{$tz} = $sign ;
+  }
+  print scalar(keys %signatures), " signatures read\n" ;
+  return \%signatures ;
+}
+
+sub check_single_are_really_single
+{
+  my ($single, $olson, $signatures) = (shift,shift,shift) ;
+  for my $xy (keys %$single)
+  {
+    print "checking $xy ... " ;
+    my $zones = $olson->{$xy} ;
+    print " only one zone\n" if scalar(@$zones) == 1 ;
+    next if scalar @$zones == 1 ;
+    print scalar(@$zones), " zones ... " ;
+    my $tz0 = $zones->[0]->{tz} ;
+    for my $tz_i (@$zones)
+    {
+      my $tzi = $tz_i->{tz} ;
+      die "$tz0 and $tzi differ" unless $signatures->{$tz0} eq $signatures->{$tzi} ;
+    }
+    print "ok\n" ;
+  }
+}
+
+sub find_major_and_minor_zones
+{
+  my ($olson_tab, $distinct_tab, $signatures) = (shift,shift,shift) ;
+  my ($major, $minor) = ({}, {}) ;
+  for my $xy (keys %$distinct_tab)
+  {
+    my $major_xy = [] ;
+    my $minor_xy = [] ;
+    $major->{$xy} = $major_xy ;
+    $minor->{$xy} = $minor_xy ;
+    print "processing multy zone country $xy ... " ;
+    my $known_sig = {} ;
+    my $processed = {} ;
+    # first ckeck, that major zones differ
+    my $list1 = $distinct_tab->{$xy} ;
+    for my $z (@$list1)
+    {
+      my $tz = $z->{tz} ;
+      my $sig = $signatures->{$tz} ;
+      die "$tz is the same as ".$known_sig->{$sig} if exists $known_sig->{$sig} ;
+      $known_sig->{$sig} = $tz ;
+      $processed->{$tz} = 1 ;
+      push @$major_xy, $tz ;
+    }
+    # now go throw the full Olson list and filter out duplicates
+    my $list2 = $olson_tab->{$xy} ;
+    my $dupl_count = 0 ;
+    for my $z (@$list2)
+    {
+      my $tz = $z->{tz} ;
+      my $sig = $signatures->{$tz} ;
+      ++$dupl_count if exists $known_sig->{$sig} and not exists $processed->{$tz} ;
+      next if exists $known_sig->{$sig} ;
+      $known_sig->{$sig} = $tz ;
+      $processed->{$tz} = 1 ;
+      push @$minor_xy, $tz ;
+    }
+    print scalar(@$major_xy), " majors: [", join(",", @$major_xy), "], " ;
+    print scalar(@$minor_xy), " minors: [", join(",", @$minor_xy), "], " if @$minor_xy ;
+    print "$dupl_count skipped" if $dupl_count > 0 ;
+    print "\n" ;
+  }
+  return ($major, $minor) ;
+}
+
+
 
 # Usage
 sub usage
