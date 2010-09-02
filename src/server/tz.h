@@ -74,8 +74,12 @@ signals:
   void tz_detected(olson *tz, tz_suggestions_t) ;
 
 private:
+  void handle_offset(const cellular_info_t &) ;
+  string mcc_to_xy(int mcc) ; // maps mcc to country code (2 chars)
+  map<string, vector<string> > xy_to_tz ; // time zones by country code
   iodata::validator *validator() ;
   iodata::record *open_database(const char *path, const char *type) ;
+  void read_timezones_by_country() ;
 
   tz_single_t *tz_single ;
   tz_distinct_t *tz_distinct ;

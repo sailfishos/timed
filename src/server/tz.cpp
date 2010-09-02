@@ -63,12 +63,38 @@ tz_oracle_t::tz_oracle_t()
     log_warning("mcc-to-distinct-tz database corrupted or not present") ;
   }
 
+  log_assert(false, "please initialize xy_to_tz!") ;
+
+  read_timezones_by_country() ;
 #if 0
   tz_default = NULL ;
 #endif
 
   delay = new QTimer ;
   delay->setSingleShot(true) ;
+}
+
+void tz_oracle_t::read_timezones_by_country()
+{
+  iodata::record *rec = open_database("/usr/share/tzdata-timed/zones-by-country.data", "zones_by_country_t") ;
+  log_assert(rec!=NULL) ;
+  const iodata::array *a = rec->arr() ;
+  for(unsigned i=0; i<a->size(); ++i)
+  {
+    const iodata::record *country = a->get(i)->rec() ;
+    string xy = country->get("xy")->str() ;
+    vector<string> &zone_list = xy_to_tz[xy] ;
+    // we are just ignoring major/minor for now
+    static const char *keys[] = { "major", "minor" } ;
+    for(int k=0; k<2; ++k)
+    {
+      string key = keys[k] ;
+      const iodata::array *zones = country->get(key)->arr() ;
+      for(unsigned j=0; j<zones->size(); ++j)
+        zone_list.push_back(zones->get(j)->str()) ;
+    }
+  }
+  delete rec ;
 }
 
 void tz_oracle_t::mcc_delay_timeout()
@@ -80,15 +106,107 @@ void tz_oracle_t::nitz_data(const cellular_info_t &ci)
 {
   log_debug() ;
   if(ci.has_offset())
-    log_warning("offset handling not implemented") ;
+    handle_offset(ci) ;
   else if(ci.has_mcc() && ci.has_mnc())
     mcc_data(ci.mcc(), ci.mnc()) ;
   else
     log_critical("oops") ;
 }
 
+void tz_oracle_t::handle_offset(const cellular_info_t &ci)
+{
+  // preliminary implementation:
+  // 1. take the full list of zones for given mcc
+  // 2. filter out not matching
+  // 3. if nothing remains: take iso_* zone, set all the zones as "secondary candidates"
+  // 4. if a single zone remains: take it as "certain"
+  // 5. if multiply zones remain: take the first one, all other are "primary candidates"
+
+  // 1. find the country info based on mcc
+  if(! ci.has_mcc())
+  {
+    log_error("cellular info doesn't contain mcc, ignoring it. ci=%s", ci.to_string().c_str()) ;
+    return ;
+  }
+  if(! ci.has_offset())
+  {
+    log_error("cellular info doesn't contain offset, ignoring it. ci=%s", ci.to_string().c_str()) ;
+    return ;
+  }
+  string xy = mcc_to_xy(ci.mcc()) ;
+  if(xy.empty())
+  {
+    log_error("can't map cellular info's mcc to country code, ci=%s", ci.to_string().c_str()) ;
+    return ;
+  }
+
+  map<string, vector<string> >::const_iterator tz_it = xy_to_tz.find(xy) ;
+  if(tz_it==xy_to_tz.end())
+  {
+    log_error("can't find zone list for the country '%s'", xy.c_str()) ;
+    return ;
+  }
+
+  const vector<string> &tz_list = tz_it->second ;
+
+  // 2.
+  vector<olson *> match ;
+  time_t at = ci.has_time() ? ci.timestamp().to_time_t() : time(NULL) ;
+  int dst_flag = ci.has_dst() ? ci.dst() : -1 ;
+  for(vector<string>::const_iterator it=tz_list.begin(); it!=tz_list.end(); ++it)
+  {
+    olson *zone = olson::by_name(*it) ;
+    bool ok = zone->match(at, ci.offset(), dst_flag) ;
+    log_debug("time zone '%s' %s match", zone->name().c_str(), ok ? "does" : "does not") ;
+    if(ok)
+      match.push_back(zone) ;
+  }
+
+  // 3. Just take the fist one. TODO: implement the other stuff
+
+  if(match.size()>0)
+  {
+    tz_suggestions_t s ;
+    s.gq = Reliable ;
+    emit tz_detected(match[0], s) ;
+    return ;
+  }
+  else
+  {
+    log_error("can't find matching zone for '%s'", ci.to_string().c_str()) ;
+    return ;
+  }
+}
+
+string tz_oracle_t::mcc_to_xy(int mcc_value)
+{
+  static bool loaded = false ;
+  static map<int, string> mcc_to_xy ;
+  if(!loaded)
+  {
+    loaded = true ;
+    iodata::record *rec = open_database("/usr/share/tzdata-timed/single.data", "mcc_to_xy_t") ;
+    if(rec==NULL)
+    {
+      log_warning("mcc to country code database not available") ;
+      return "" ;
+    }
+    const iodata::array *a = rec->arr() ;
+    for(unsigned i=0; i<a->size(); ++i)
+    {
+      int mcc = a->get(i)->get("mcc")->value() ;
+      string xy = a->get(i)->get("country")->str() ;
+      mcc_to_xy[mcc] = xy ;
+    }
+    delete rec ;
+  }
+  map<int, string>::const_iterator it = mcc_to_xy.find(mcc_value) ;
+  return it==mcc_to_xy.end() ? "" : it->second ;
+}
+
 void tz_oracle_t::user_input(olson *tz)
 {
+  // not used yet, no UI for that
   tz_suggestions_t s ;
   s.gq = Reliable ;
   emit tz_detected(tz, s) ;
