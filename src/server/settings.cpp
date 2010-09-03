@@ -82,12 +82,12 @@ iodata::record *manual_offset_t::save() const
   return r ;
 }
 
-void manual_zone_t::load(const iodata::record *r)
+void zone_source_t::load(const iodata::record *r)
 {
   value = r->get("value")->str() ;
 }
 
-iodata::record *manual_zone_t::save() const
+iodata::record *zone_source_t::save() const
 {
   iodata::record *r = new iodata::record ;
   r->add("value", value) ;
@@ -634,18 +634,22 @@ void source_settings::fix_etc_localtime()
 
 void source_settings::postload_fix_manual_zone()
 {
-  string target = symlink_target(manual_zone->zone()) ;
+  log_debug() ;
+  string tz = local_cellular ? cellular_zone->value : manual_zone->value ;
+  string target = symlink_target(tz) ;
   if(check_target(target) < 0) // invalid time zone
   {
     if(auto_dst)
     {
-      manual_zone->value = o->get_default_timezone() ;
+      tz = o->get_default_timezone() ;
       if(check_target(symlink_target(manual_zone->value)) < 0)
-        manual_zone->value = "Etc/GMT" ;
+        tz = "Etc/GMT" ;
     }
     else
       manual_zone->value = "" ;
   }
+  (local_cellular ? cellular_zone->value : manual_zone->value) = tz ;
+  log_debug() ;
 }
 
 void source_settings::postload_fix_manual_offset()

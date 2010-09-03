@@ -13,8 +13,8 @@ settings_t =
   { name = "manual_offset",  type=$record,       record="manual_offset_t" },
   { name = "nitz_offset",    type=$record,       record="empty_t" },
 
-  { name = "manual_zone",    type=$record,       record="manual_zone_t" },
-  { name = "cellular_zone",  type=$record,       record="empty_t" }
+  { name = "manual_zone",    type=$record,       record="generic_zone_t" },
+  { name = "cellular_zone",  type=$record,       record="generic_zone_t" }
 ],
 
 empty_t =
@@ -26,7 +26,9 @@ manual_offset_t=
   { name = "value",          type=$integer,     value=-1 }
 ],
 
-manual_zone_t=
+// This is used by manual AND cellular zone. Will be changed to
+// manual_zone_t and cellular_zone_t some day.
+generic_zone_t=
 [
   { name = "value",          type=$bytes,       value="" }
 ]

@@ -607,6 +607,8 @@ void Timed::invoke_signal(const nanotime_t &back)
 
 void Timed::send_time_settings()
 {
+  log_debug() ;
+  log_info("settings->cellular_zone='%s'", settings->cellular_zone->zone().c_str()) ;
   nanotime_t diff = systime_back ;
   clear_invokation_flag() ;
   save_settings() ;

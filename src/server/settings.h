@@ -106,13 +106,13 @@ struct zone_source_t : public source_t
   string value ;
   virtual string zone() const { return value ; }
   bool available() const { return !value.empty() ; }
+  void load(const iodata::record *) ;
+  iodata::record *save() const ;
 } ;
 
 struct manual_zone_t : public zone_source_t
 {
   const char *name() const { return "manual_zone" ; }
-  void load(const iodata::record *) ;
-  iodata::record *save() const ;
 } ;
 
 struct cellular_zone_t : public zone_source_t
