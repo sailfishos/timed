@@ -1,3 +1,9 @@
+timed (2.14+nmu2) unstable; urgency=low
+
+  * Uses libcreds for controlling execute action permissions
+
+ -- Simo Piiroinen <simo.piiroinen@nokia.com>  Thu, 16 Sep 2010 11:14:03 +0300
+
 timed (2.14+nmu1) unstable; urgency=low
 
   * Fixes: NB#187991 - In Clock application the backed up alarms are
