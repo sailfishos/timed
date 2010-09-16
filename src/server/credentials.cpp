@@ -44,53 +44,6 @@
 #define SEPARATOR " "
 
 /* ------------------------------------------------------------------------- *
- * get_sender_name
- * ------------------------------------------------------------------------- */
-
-static
-const char *
-get_sender_name(const QDBusMessage &msg)
-{
-  /* FIXME: A cunning plan aka really horrible hack to get
-   * the sender name from dbus message. If there is a sane
-   * way to do this, fix immediately as the "solution" below
-   * relies on duplicating the required private parts of
-   * QDBusMessage and exposing them as public -> this will
-   * not work if the layout of the private parts changes, and
-   * the result will not be compilation problem but something
-   * odd happening during run time... */
-
-  const char *Goodbyeee = 0;
-
-  struct BaldrickMessagePrivate
-  {
-    QList<QVariant> arguments;
-    QString service, path, interface, name, message, signature;
-    DBusMessage *msg;
-  };
-
-  struct BaldrickMessage
-  {
-    BaldrickMessagePrivate *d_ptr;
-  };
-
-  const BaldrickMessage *private_plane = (const BaldrickMessage *)&msg;
-  log_warning("@@@ private_plane = %p", (const void *)private_plane);
-
-  DBusMessage  *major_star    = private_plane->d_ptr->msg;
-  log_warning("@@@ major_star = %p", (const void *)major_star);
-
-  if( major_star != 0 )
-  {
-    Goodbyeee = dbus_message_get_sender(major_star);
-  }
-
-  log_warning("@@@ sender = '%s'", Goodbyeee ?: "<null>");
-
-  return Goodbyeee;
-}
-
-/* ------------------------------------------------------------------------- *
  * get_owner_pid
  * ------------------------------------------------------------------------- */
 
@@ -366,15 +319,15 @@ credentials_get_from_dbus(QDBusConnection &bus,
 {
   QString  result; // assume null string
 
-  const char *sender = 0;
-  pid_t       owner  = -1;
+  pid_t    owner  = -1;
+  QString  sender = msg.service(); /* returns "sender" on inbound messages
+                                    * and "service" on outbound messages
+                                    * which saves one QString object and
+                                    * confuses at least me ... */
 
-  if( (sender = get_sender_name(msg)) == 0 )
-  {
-    goto cleanup;
-  }
+  log_warning("@@@ service/sender = '%s'", CS(sender));
 
-  if( (owner = get_owner_pid(bus, sender)) == -1 )
+  if( (owner = get_owner_pid(bus, sender.toUtf8().constData())) == -1 )
   {
     goto cleanup;
   }
