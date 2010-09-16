@@ -16,6 +16,7 @@ SOURCES += main.cpp timed.cpp states.cpp automata.cpp timeutil.cpp event.cpp mis
 
 SOURCES += credentials.cpp
 HEADERS += credentials.h
+LIBS    += -lcreds
 
 SOURCES += olson.cpp tz.cpp
 HEADERS += tz.h
