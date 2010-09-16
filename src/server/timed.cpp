@@ -198,7 +198,7 @@ void Timed::check_voland_service()
   }
 }
 
-cookie_t Timed::add_event(cookie_t remove, const Maemo::Timed::event_io_t &x)
+cookie_t Timed::add_event(cookie_t remove, const Maemo::Timed::event_io_t &x, const QString &credentials)
 {
   if(remove.is_valid() && am->find_event(remove)==NULL)
   {
@@ -218,7 +218,7 @@ cookie_t Timed::add_event(cookie_t remove, const Maemo::Timed::event_io_t &x)
   return c ;
 }
 
-void Timed::add_events(const Maemo::Timed::event_list_io_t &events, QList<QVariant> &res)
+void Timed::add_events(const Maemo::Timed::event_list_io_t &events, QList<QVariant> &res, const QString &credentials)
 {
   if(events.ee.size()==0)
   {

@@ -48,8 +48,10 @@ struct Timed : public QCoreApplication
 
   void load_events() ;
   void check_voland_service() ;
-  cookie_t add_event(cookie_t remove, const Maemo::Timed::event_io_t &event) ;
-  void add_events(const Maemo::Timed::event_list_io_t &events, QList<QVariant> &res) ;
+  cookie_t add_event(cookie_t remove, const Maemo::Timed::event_io_t &event,
+		     const QString &credentials) ;
+  void add_events(const Maemo::Timed::event_list_io_t &events, QList<QVariant> &res,
+		  const QString &credentials) ;
   bool dialog_response(cookie_t c, int value) ;
   bool cancel(cookie_t c) { return am->cancel(c) ; }
   bool alarm_gate(bool set=false, bool value=true) { return am->alarm_gate(set, value) ; }

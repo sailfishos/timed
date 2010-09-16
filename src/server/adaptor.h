@@ -38,6 +38,9 @@
 
 #include "timed.h"
 #include "misc.h"
+#include "credentials.h"
+
+#include <timed/interface> // TODO: is Maemo::Timed::bus() the correct way?
 
 /*
  * xxx
@@ -121,22 +124,34 @@ public slots:
     return timed->add_event(x).value() ;
   }
 #else
-  uint add_event(const Maemo::Timed::event_io_t &x)
+  uint add_event(const Maemo::Timed::event_io_t &x, const QDBusMessage &msg)
   {
     log_debug() ;
-    return timed->add_event(cookie_t(), x).value() ;
+    QDBusConnection bus = Maemo::Timed::bus();
+    QString credentials = credentials_get_from_dbus(bus, msg);
+    // FIXME: remove debug logging later ...
+    log_warning("CREDS = '%s'", credentials.toLocal8Bit().constData());
+    return timed->add_event(cookie_t(), x, credentials).value() ;
   }
-
-  void add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVariant> &res)
+  
+  void add_events(const Maemo::Timed::event_list_io_t &lst, const QDBusMessage &msg, QList<QVariant> &res)
   {
     log_debug() ;
-    return timed->add_events(lst, res) ;
+    QDBusConnection bus = Maemo::Timed::bus();
+    QString credentials = credentials_get_from_dbus(bus, msg);
+    // FIXME: remove debug logging later ...
+    log_warning("CREDS = '%s'", credentials.toLocal8Bit().constData());
+    timed->add_events(lst, res, credentials) ;
   }
-
-  uint replace_event(const Maemo::Timed::event_io_t &x, uint old)
+  
+  uint replace_event(const Maemo::Timed::event_io_t &x, uint old, const QDBusMessage &msg)
   {
     log_debug() ;
-    return timed->add_event(cookie_t(old), x).value() ;
+    QDBusConnection bus = Maemo::Timed::bus();
+    QString credentials = credentials_get_from_dbus(bus, msg);
+    // FIXME: remove debug logging later ...
+    log_warning("CREDS = '%s'", credentials.toLocal8Bit().constData());
+    return timed->add_event(cookie_t(old), x, credentials).value() ;
   }
 #endif
 
