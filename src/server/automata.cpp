@@ -55,6 +55,7 @@ using namespace std ;
 #include "event.h"
 #include "misc.h"
 #include "timed/nanotime.h"
+#include "credentials.h"
 
 #if 0
 namespace Alarm
@@ -513,26 +514,27 @@ namespace Alarm
     log_debug() ;
   }
 
-  cookie_t machine::add_event(const Maemo::Timed::event_io_t *eio, bool process_queue)
+  cookie_t machine::add_event(const Maemo::Timed::event_io_t *eio, bool process_queue, const QString &credentials)
   {
     if(event_t *e = event_t::from_dbus_iface(eio))
     {
+      e->attr.txt["CREDENTIALS"] = string(credentials.toUtf8().constData());
       request_state(events[e->cookie = cookie_t(next_cookie++)] = e, "START") ;
       if(process_queue)
         invoke_process_transition_queue() ;
       log_info("event cookie=%d", e->cookie.value()) ;
       return e->cookie ;
     }
-    else
-      return cookie_t(0) ;
+
+    return cookie_t(0) ;
   }
 
-  void machine::add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVariant> &res)
+  void machine::add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVariant> &res, const QString &credentials)
   {
     bool valid = false ;
     for(int i=0; i<lst.ee.size(); ++i)
     {
-      unsigned cookie = add_event(&lst.ee[i], false).value() ;
+      unsigned cookie = add_event(&lst.ee[i], false, credentials).value() ;
       res.push_back(cookie) ;
       if (cookie)
       {
@@ -969,10 +971,21 @@ namespace Alarm
   {
     string cmd, user ;
     prepare_command(a, cmd, user) ;
+    
+    string cred = attr(string("CREDENTIALS"));
+    if( cred.empty() ) 
+    {
+      log_warning("skipped execute action without credentials attribute") ;
+      return ;
+    }
+    // FIXME: remove debug logging later
+    log_debug("execute: %s", cmd.c_str());
+    log_debug("credentials: %s", cred.c_str());
     errno = 0 ;
-    struct passwd *pw = getpwnam(user.c_str()) ;
-    if(pw==NULL)
-      throw event_exception((string)"getpwname() failed"+strerror(errno)) ;
+// FIXME: what to do with the old setgid()/setuid() code?
+// QUARANTINE     struct passwd *pw = getpwnam(user.c_str()) ;
+// QUARANTINE     if(pw==NULL)
+// QUARANTINE       throw event_exception((string)"getpwname() failed"+strerror(errno)) ;
     pid_t pid = fork() ;
     if(pid<0)
       throw event_exception((string)"fork() failed"+strerror(errno)) ;
@@ -987,22 +1000,29 @@ namespace Alarm
     {
       if(setsid()<0)
         throw event_exception((string)"setsid() failed"+strerror(errno)) ;
-      if(user!="root")
-      {
-        if(chdir(pw->pw_dir)<0)
-          throw event_exception((string)"chdir('"+pw->pw_dir+"') failed"+strerror(errno)) ;
-        if(setgid(pw->pw_gid)<0)
-          throw event_exception((string)"setgid() failed"+strerror(errno)) ;
-        if(setuid(pw->pw_uid)<0)
-          throw event_exception((string)"setuid() failed"+strerror(errno)) ;
-      }
+      QString credentials = QString::fromUtf8(cred.c_str());
+      if( !credentials_set(credentials) )
+	throw event_exception((string)"creds_set('" + cred + ")") ;
+      if(chdir("/")<0)
+        throw event_exception((string)"chdir('/') failed"+strerror(errno)) ;
+      
+// FIXME: what to do with the old setgid()/setuid() code?
+// QUARANTINE       if(user!="root")
+// QUARANTINE       {
+// QUARANTINE         if(chdir(pw->pw_dir)<0)
+// QUARANTINE           throw event_exception((string)"chdir('"+pw->pw_dir+"') failed"+strerror(errno)) ;
+// QUARANTINE         if(setgid(pw->pw_gid)<0)
+// QUARANTINE           throw event_exception((string)"setgid() failed"+strerror(errno)) ;
+// QUARANTINE         if(setuid(pw->pw_uid)<0)
+// QUARANTINE           throw event_exception((string)"setuid() failed"+strerror(errno)) ;
+// QUARANTINE       }
       execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL) ;
       throw event_exception((string)"execl('/bin/sh', '-c', '"+cmd+"') failed"+strerror(errno)) ;
     }
     catch(const event_exception &e)
     {
       log_error("event %d, child process failed: %s", cookie.value(), e.message.c_str()) ;
-      exit(1) ;
+      _exit(1) ;
     }
   }
 

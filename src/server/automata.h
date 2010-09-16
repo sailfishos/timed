@@ -162,8 +162,8 @@ namespace Alarm
     bool transition_in_progress() { return transition_start_time.is_valid() ; }
     ticker_t transition_started() { return transition_start_time ; }
     uint32_t attr(uint32_t mask) ;
-    cookie_t add_event(const Maemo::Timed::event_io_t *, bool process_queue) ;
-    void add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVariant> &res) ;
+    cookie_t add_event(const Maemo::Timed::event_io_t *, bool process_queue, const QString &credentials) ;
+    void add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVariant> &res, const QString &credentials) ;
     void query(const QMap<QString,QVariant> &words, QList<QVariant> &res ) ;
     void get_event_attributes(cookie_t c, QMap<QString,QVariant> &a) ;
     bool cancel(cookie_t c) ;
