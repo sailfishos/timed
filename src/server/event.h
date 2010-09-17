@@ -140,6 +140,7 @@ struct event_t
   string broken_str() ;
   bool compute_recurrence() ;
   void process_dialog_ack() ;
+  int fork_and_set_credentials(const action_t &action, bool &error) ;
 
   static iodata::bit_codec *codec ;
   static void codec_initializer() ;

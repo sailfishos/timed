@@ -57,6 +57,18 @@ using namespace std ;
 #include "timed/nanotime.h"
 #include "credentials.h"
 
+static void log_child(const char *fmt, ...)
+{
+  // FIXME: remove this & replace with log_(error|warning|xxx)
+  // helper for making child logging more visible
+  va_list va;
+  va_start(va, fmt);
+  char *s = 0;
+  vasprintf(&s, fmt, va);
+  va_end(va);
+  if( s != 0 ) dprintf(2, "%s\n", s), free(s);
+}
+
 #if 0
 namespace Alarm
 {
@@ -884,6 +896,7 @@ namespace Alarm
       x.insert(string_std_to_q(it->first), QVariant::fromValue(string_std_to_q(it->second))) ;
   }
 
+#if 0
   void event_t::execute_dbus(const action_t &a)
   {
     QString path = string_std_to_q(find_action_attribute("DBUS_PATH", a)) ;
@@ -900,6 +913,15 @@ namespace Alarm
       QString sgnl = string_std_to_q(find_action_attribute("DBUS_SIGNAL", a)) ;
       m = QDBusMessage::createSignal(path, ifac, sgnl) ;
     }
+    // QDBusConnection QDBusConnection::connectToBus ( BusType type, const QString & name);
+    // void QDBusConnection::disconnectFromBus ( const QString & name )
+    // BusType ctype = QDBusConnection::SessionBus;
+    // if( a.flags & ActionFlags::Use_System_Bus ) ctype = QDBusConnection::SystemBus;
+    // QString cname = "timed-private";
+    // QDBusConnection c = QDBusConnection::connectToBus(ctype, cname);
+    // c.send(m);
+    // QDBusConnection::disconnectFromBus(cname);
+
     QDBusConnection c = (a.flags & ActionFlags::Use_System_Bus) ? QDBusConnection::systemBus() : QDBusConnection::sessionBus() ;
     QMap<QString,QVariant> param ;
     if(a.flags & ActionFlags::Send_Cookie)
@@ -914,6 +936,125 @@ namespace Alarm
     else
       log_error("[%d]: Failed to send a message on D-Bus: %s", cookie.value(), c.lastError().message().toStdString().c_str()) ;
   }
+#else
+  void event_t::execute_dbus(const action_t &a)
+  {
+    bool error = true;
+    int  child = fork_and_set_credentials(a, error);
+
+    if( child != 0 )
+    {
+      // parent
+    }
+    else if( error )
+    {
+      // child init failed, just terminate
+      // cause of error logged @ fork_and_set_credentials()
+      _exit(1);
+    }
+    else
+    {
+      // child init ok
+
+      // set up message to be sent
+      QString path = string_std_to_q(find_action_attribute("DBUS_PATH", a)) ;
+      QString ifac = string_std_to_q(find_action_attribute("DBUS_INTERFACE", a, (a.flags & ActionFlags::DBus_Signal)!=0)) ;
+
+      QDBusMessage m ;
+
+      if(a.flags & ActionFlags::DBus_Method)
+      {
+	QString serv = string_std_to_q(find_action_attribute("DBUS_SERVICE", a)) ;
+	QString meth = string_std_to_q(find_action_attribute("DBUS_METHOD", a)) ;
+	m = QDBusMessage::createMethodCall(serv, path, ifac, meth) ;
+      }
+      else
+      {
+	QString sgnl = string_std_to_q(find_action_attribute("DBUS_SIGNAL", a)) ;
+	m = QDBusMessage::createSignal(path, ifac, sgnl) ;
+      }
+
+      QMap<QString,QVariant> param ;
+      if(a.flags & ActionFlags::Send_Cookie)
+      {
+	param["COOKIE"] = QString("%1").arg(cookie.value()) ;
+      }
+      if(a.flags & ActionFlags::Send_Event_Attributes)
+      {
+	add_strings(param, attr.txt) ;
+      }
+      if(a.flags & ActionFlags::Send_Action_Attributes)
+      {
+	add_strings(param, a.attr.txt) ;
+      }
+      m << QVariant::fromValue(param) ;
+
+
+      // TODO: is it safe to use dbus bindings after fork?
+      // TODO: do we really get a fresh private connection or not?
+      // TODO: should we use libdbus? or exec a helper?
+
+      // send using fresh private connection
+      QString cname = "timed-private";
+      QDBusConnection::BusType ctype = QDBusConnection::SessionBus;
+
+      if( a.flags & ActionFlags::Use_System_Bus ) ctype = QDBusConnection::SystemBus;
+
+      QDBusConnection c = QDBusConnection::connectToBus(ctype, cname);
+
+      int xc = 0;
+
+      if( !c.send(m) )
+      {
+	log_child("#### [%d]: Failed to send a message on D-Bus: %s", cookie.value(), c.lastError().message().toStdString().c_str()) ;
+	xc = 1;
+      }
+      else
+      {
+	log_child("#### [%d]: D-Bus Message sent", cookie.value()) ;
+
+	// as we are about to exit immediately after queuing
+	// and there seems to be no way to flush the connection
+	// and be sure that we have actually transmitted the
+	// message -> do a dummy synchronous query from dbus
+	// daemon and hope ...
+
+	pid_t   result    = -1;
+	QString service   = "org.freedesktop.DBus";
+	QString path      = "/org/freedesktop/DBus";
+	QString interface = "org.freedesktop.DBus";
+	QString method    = "GetConnectionUnixProcessID";
+
+	QDBusMessage req  = QDBusMessage::createMethodCall(service,
+							   path,
+							   interface,
+							   method);
+	req << c.baseService();
+
+	QDBusMessage rsp = c.call(req);
+
+	if( rsp.type() == QDBusMessage::ReplyMessage )
+	{
+	  QList<QVariant> args = rsp.arguments();
+	  if( !args.isEmpty() )
+	  {
+	    bool ok = false;
+	    int reply = rsp.arguments().first().toInt(&ok);
+	    log_warning("@@@ rsp.ok = %d, rsp.reply = %d", ok, reply);
+	    if( ok ) result = reply;
+	  }
+	}
+
+	// it should be us ...
+	log_child("#### my pid: %d, connection owner pid: %d", getpid(), result);
+      }
+
+      QDBusConnection::disconnectFromBus(cname);
+
+      _exit(xc);
+    }
+  }
+#endif
 
   void event_t::prepare_command(const action_t &a, string &cmd, string &user)
   {
@@ -967,13 +1108,195 @@ namespace Alarm
 #endif
   }
 
+  int event_t::fork_and_set_credentials(const action_t &action, bool &error)
+  {
+    // assume failure
+    int    pid  = -1;
+    bool   err  = true;
+
+    string user = find_action_attribute("USER", action, false) ;
+    string cred = attr(string("CREDENTIALS"));
+
+    struct passwd *pw = 0;
+
+    // FIXME: remove debug logging later
+    log_debug("as user: %s", user.c_str());
+    log_debug("credentials: %s", cred.c_str());
+
+    // bailout if credentials attribute is not set
+    if( cred.empty() )
+    {
+      log_warning("no credential attribute, action skipped") ;
+      goto cleanup;
+    }
+
+    // get user details if user attribute is set
+    if( !user.empty() && !(pw = getpwnam(user.c_str())) )
+    {
+      // TODO: do log_xxx functions preserve errno?
+      log_warning("getpwnam(%s) failed: %m", user.c_str()) ;
+      goto cleanup;
+    }
+
+    // FORK: both child and parent will return with the
+    // pid returned by fork(), the caller must inspect
+    // also the error parameter to know whether the
+    // child initialization was succesful or not
+
+    // parent process
+
+    if( (pid = fork()) != 0 )
+    {
+      if( pid > 0 )
+      {
+	// child was successfully started
+	err = false;
+	st->om->emit_child_created(cookie.value(), pid) ;
+      }
+      goto cleanup;
+    }
+
+    // child process
+
+    // detach from session
+    if( setsid() < 0 )
+    {
+      // TODO: do log_xxx functions preserve errno?
+      log_child("#### setsid() failed: %m") ;
+      goto cleanup;
+    }
+
+    // take stored client credentials in to use
+    if( !credentials_set(QString::fromUtf8(cred.c_str())) )
+    {
+      log_child("#### credentials_set() failed") ;
+      goto cleanup;
+    }
+
+    uid_t ruid, euid, suid;
+    gid_t rgid, egid, sgid;
+
+    ruid = euid = suid = -1;
+    rgid = egid = sgid = -1;
+
+    if( getresgid(&rgid, &egid, &sgid) < 0 )
+    {
+      log_child("#### getresgid() failed: %m") ;
+      goto cleanup;
+    }
+    if( getresuid(&ruid, &euid, &suid) < 0 )
+    {
+      log_child("#### getresuid() failed: %m") ;
+      goto cleanup;
+    }
+    log_child("#### uid: r=%d, e=%d, s=%d", ruid, euid, suid);
+    log_child("#### gid: r=%d, e=%d, s=%d", rgid, egid, sgid);
+
+
+    if( setresgid(egid, egid, egid) < 0 )
+    {
+      log_child("#### setresgid() failed: %m") ;
+      goto cleanup;
+    }
+    if( setresuid(euid, euid, euid) < 0 )
+    {
+      log_child("#### setresuid() failed: %m") ;
+      goto cleanup;
+    }
+
+    if( getresgid(&rgid, &egid, &sgid) < 0 )
+    {
+      log_child("#### getresgid() failed: %m") ;
+      goto cleanup;
+    }
+    if( getresuid(&ruid, &euid, &suid) < 0 )
+    {
+      log_child("#### getresuid() failed: %m") ;
+      goto cleanup;
+    }
+    log_child("#### uid: r=%d, e=%d, s=%d", ruid, euid, suid);
+    log_child("#### gid: r=%d, e=%d, s=%d", rgid, egid, sgid);
+
+
+
+    // if user attribute was not set, we will use the home directory
+    // of the user id effective after setting the credentials
+    if( pw == 0 )
+    {
+      uid_t uid = geteuid();
+
+      if( !(pw = getpwuid(uid)) )
+      {
+	// TODO: do log_xxx functions preserve errno?
+	log_child("#### getpwuid(%d) failed: %m", uid);
+	goto cleanup;
+      }
+    }
+
+    log_child("#### workdir: %s", pw->pw_dir);
+
+    // set home directory as current working directory
+    if( chdir(pw->pw_dir)<0 )
+    {
+      const char fallback[] = "/";
+
+      log_child("#### chdir(\"%s\") failed: %m, trying \"%s\"", pw->pw_dir, fallback);
+
+      if( chdir(fallback)<0 )
+      {
+	log_child("#### chdir(\"%s\") failed: %m", fallback);
+	goto cleanup;
+      }
+    }
+
+    // if user attribute was set, we will try to do the
+    // uid and gid setting after setting the credentials
+    // this allows actions added from root process to
+    // be executed as user, but not the other way around
+    if( !user.empty() )
+    {
+      if( setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) < 0 )
+      {
+	log_child("#### setresgid() failed: %m") ;
+	goto cleanup;
+      }
+
+      if( setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid) < 0 )
+      {
+	log_child("#### setresuid() failed: %m") ;
+	goto cleanup;
+      }
+    }
+
+    if( getresgid(&rgid, &egid, &sgid) < 0 )
+    {
+      log_child("#### getresgid() failed: %m") ;
+      goto cleanup;
+    }
+    if( getresuid(&ruid, &euid, &suid) < 0 )
+    {
+      log_child("#### getresuid() failed: %m") ;
+      goto cleanup;
+    }
+    log_child("#### uid: r=%d, e=%d, s=%d", ruid, euid, suid);
+    log_child("#### gid: r=%d, e=%d, s=%d", rgid, egid, sgid);
+
+    // if we got here, all of the child process initialization
+    // was succesfully completed
+    err = false;
+
+cleanup:
+    return error = err, pid;
+  }
+
+#if 0
   void event_t::execute_command(const action_t &a)
   {
     string cmd, user ;
     prepare_command(a, cmd, user) ;
-    
+
     string cred = attr(string("CREDENTIALS"));
-    if( cred.empty() ) 
+    if( cred.empty() )
     {
       log_warning("skipped execute action without credentials attribute") ;
       return ;
@@ -1005,7 +1328,7 @@ namespace Alarm
 	throw event_exception((string)"creds_set('" + cred + ")") ;
       if(chdir("/")<0)
         throw event_exception((string)"chdir('/') failed"+strerror(errno)) ;
-      
+
 // FIXME: what to do with the old setgid()/setuid() code?
 // QUARANTINE       if(user!="root")
 // QUARANTINE       {
@@ -1025,6 +1348,41 @@ namespace Alarm
       _exit(1) ;
     }
   }
+#else
+  void event_t::execute_command(const action_t &a)
+  {
+    string cmd, user ;
+    prepare_command(a, cmd, user) ;
+
+    log_debug("execute: %s", cmd.c_str());
+
+    bool error = true;
+    int  child = fork_and_set_credentials(a, error);
+
+    if( child != 0 )
+    {
+      // parent
+      log_debug("execute: child pid = %d", child);
+    }
+    else if( error )
+    {
+      log_child("#### execute: child init failure");
+      // cause of error logged @ fork_and_set_credentials()
+      _exit(1);
+    }
+    else
+    {
+      log_child("#### execute: child init OK");
+      // exec*() calls return only on failure
+      log_child("#### execute: %s", cmd.c_str());
+      execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL) ;
+
+      // TODO: do log_xxx functions preserve errno?
+      log_child("#### %s: failed: %m", cmd.c_str());
+      _exit(1);
+    }
+  }
+#endif
 
   iodata::record *event_t::save()
   {
