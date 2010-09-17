@@ -127,6 +127,7 @@ public slots:
   uint add_event(const Maemo::Timed::event_io_t &x, const QDBusMessage &msg)
   {
     log_debug() ;
+    // TODO: is Maemo::Timed::bus() the correct way?
     QDBusConnection bus = Maemo::Timed::bus();
     QString credentials = credentials_get_from_dbus(bus, msg);
     // FIXME: remove debug logging later ...
@@ -137,6 +138,7 @@ public slots:
   void add_events(const Maemo::Timed::event_list_io_t &lst, const QDBusMessage &msg, QList<QVariant> &res)
   {
     log_debug() ;
+    // TODO: is Maemo::Timed::bus() the correct way?
     QDBusConnection bus = Maemo::Timed::bus();
     QString credentials = credentials_get_from_dbus(bus, msg);
     // FIXME: remove debug logging later ...
@@ -147,6 +149,7 @@ public slots:
   uint replace_event(const Maemo::Timed::event_io_t &x, uint old, const QDBusMessage &msg)
   {
     log_debug() ;
+    // TODO: is Maemo::Timed::bus() the correct way?
     QDBusConnection bus = Maemo::Timed::bus();
     QString credentials = credentials_get_from_dbus(bus, msg);
     // FIXME: remove debug logging later ...
