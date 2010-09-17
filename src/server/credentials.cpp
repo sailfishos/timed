@@ -398,11 +398,11 @@ credentials_set(QString credentials)
     }
   }
 
-  if( (cr_type = creds_list(cr_want, 0, &cr_val)) != CREDS_BAD )
+  if( (cr_type = creds_list(cr_have, 0, &cr_val)) != CREDS_BAD )
   {
     // other than asked for credentials left
-      BOINK();
-      success = false;
+    BOINK();
+    success = false;
   }
 
 cleanup:
