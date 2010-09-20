@@ -236,11 +236,19 @@ static
 creds_t
 credentials_from_string(const char *input)
 {
-  creds_t  creds = creds_init();
-  char    *work  = strdup(input);
+  bool     error = true;   // assume failure
+  creds_t  creds = 0;      // value to return
 
-  char    *now;
+  char    *work  = 0;      // non const copy of the input string
+  char    *now;            // parsing pointers
   char    *zen;
+
+  if( !input || !(work = strdup(input)) )
+  {
+    goto cleanup;
+  }
+
+  creds = creds_init(); // no checking: NULL is valid credential too
 
   for( now = work; now; now = zen )
   {
@@ -254,23 +262,31 @@ credentials_from_string(const char *input)
 
     if( (c_type = creds_str2creds(now, &c_val)) == CREDS_BAD )
     {
-      log_warning("%s: returned %s=CREDS_BAD", "creds_str2creds", "type");
-      continue;
+      log_warning("%s: %s -> %s", "creds_str2creds", "now", "bad type");
+      goto cleanup;
     }
-
     if( c_val == CREDS_BAD )
     {
-      log_warning("%s: returned %s=CREDS_BAD", "creds_str2creds", "value");
-      continue;
+      log_warning("%s: %s -> %s", "creds_str2creds", "now", "bad value");
+      goto cleanup;
     }
 
     if( creds_add(&creds, c_type, c_val) == -1 )
     {
       log_warning("%s: failed", "creds_add");
+      goto cleanup;
     }
   }
 
+  error = false;
+
+cleanup:
+
+  // all or nothing
+  if( error ) creds_free(creds), creds = 0;
+
   free(work);
+
   return creds;
 }
 
