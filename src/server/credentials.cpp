@@ -26,15 +26,6 @@
 #include <sys/creds.h>
 
 #include <stdlib.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
-
-#include <dbus/dbus.h>
 
 #define CSTR(s) (s).toLocal8Bit().constData()
 #define UTF8(s) (s).toUtf8().constData()
@@ -48,8 +39,8 @@
 pid_t
 credentials_get_name_owner(QDBusConnection &bus, const QString &name)
 {
+  pid_t   result    = -1; // assume failure
 
-  pid_t   result    = -1;
   QString service   = "org.freedesktop.DBus";
   QString path      = "/org/freedesktop/DBus";
   QString interface = "org.freedesktop.DBus";
@@ -63,9 +54,12 @@ credentials_get_name_owner(QDBusConnection &bus, const QString &name)
 
   QDBusMessage rsp = bus.call(req);
 
+  // FIXME: there must be more elegant ways to handle error
+  // replies and type errors...
+
   if( rsp.type() != QDBusMessage::ReplyMessage )
   {
-    log_warning("%s: did not get a valid reply", UTF8(method));
+    log_warning("%s: did not get a valid reply", CSTR(method));
   }
   else
   {
@@ -73,7 +67,7 @@ credentials_get_name_owner(QDBusConnection &bus, const QString &name)
 
     if( args.isEmpty() )
     {
-      log_warning("%s: reply has no return values", UTF8(method));
+      log_warning("%s: reply has no return values", CSTR(method));
     }
     else
     {
@@ -82,7 +76,7 @@ credentials_get_name_owner(QDBusConnection &bus, const QString &name)
 
       if( !ok )
       {
-        log_warning("%s: return values is not an integer", UTF8(method));
+        log_warning("%s: return values is not an integer", CSTR(method));
       }
       else
       {
@@ -122,7 +116,7 @@ xrealloc(void *pptr, size_t size)
   }
 
   *(void **)pptr = curr;
-  return true;
+  return res;
 }
 
 /* ------------------------------------------------------------------------- *
@@ -429,7 +423,7 @@ credentials_set(QString credentials)
     }
   }
 
-  // list credentials we have, but did not ask for
+  // iterate credentials we have, but did not ask for
   for( i = 0; (cr_type = creds_list(cr_have, i, &cr_val)) != CREDS_BAD ; ++i )
   {
     success = false;
