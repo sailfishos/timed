@@ -913,14 +913,6 @@ namespace Alarm
       QString sgnl = string_std_to_q(find_action_attribute("DBUS_SIGNAL", a)) ;
       m = QDBusMessage::createSignal(path, ifac, sgnl) ;
     }
-    // QDBusConnection QDBusConnection::connectToBus ( BusType type, const QString & name);
-    // void QDBusConnection::disconnectFromBus ( const QString & name )
-    // BusType ctype = QDBusConnection::SessionBus;
-    // if( a.flags & ActionFlags::Use_System_Bus ) ctype = QDBusConnection::SystemBus;
-    // QString cname = "timed-private";
-    // QDBusConnection c = QDBusConnection::connectToBus(ctype, cname);
-    // c.send(m);
-    // QDBusConnection::disconnectFromBus(cname);
 
     QDBusConnection c = (a.flags & ActionFlags::Use_System_Bus) ? QDBusConnection::systemBus() : QDBusConnection::sessionBus() ;
     QMap<QString,QVariant> param ;
@@ -1273,20 +1265,10 @@ cleanup:
     string cmd, user ;
     prepare_command(a, cmd, user) ;
 
-    string cred = attr(string("CREDENTIALS"));
-    if( cred.empty() )
-    {
-      log_warning("skipped execute action without credentials attribute") ;
-      return ;
-    }
-    // FIXME: remove debug logging later
-    log_debug("execute: %s", cmd.c_str());
-    log_debug("credentials: %s", cred.c_str());
     errno = 0 ;
-// FIXME: what to do with the old setgid()/setuid() code?
-// QUARANTINE     struct passwd *pw = getpwnam(user.c_str()) ;
-// QUARANTINE     if(pw==NULL)
-// QUARANTINE       throw event_exception((string)"getpwname() failed"+strerror(errno)) ;
+    struct passwd *pw = getpwnam(user.c_str()) ;
+    if(pw==NULL)
+      throw event_exception((string)"getpwname() failed"+strerror(errno)) ;
     pid_t pid = fork() ;
     if(pid<0)
       throw event_exception((string)"fork() failed"+strerror(errno)) ;
@@ -1301,22 +1283,16 @@ cleanup:
     {
       if(setsid()<0)
         throw event_exception((string)"setsid() failed"+strerror(errno)) ;
-      QString credentials = QString::fromUtf8(cred.c_str());
-      if( !credentials_set(credentials) )
-	throw event_exception((string)"creds_set('" + cred + ")") ;
-      if(chdir("/")<0)
-        throw event_exception((string)"chdir('/') failed"+strerror(errno)) ;
 
-// FIXME: what to do with the old setgid()/setuid() code?
-// QUARANTINE       if(user!="root")
-// QUARANTINE       {
-// QUARANTINE         if(chdir(pw->pw_dir)<0)
-// QUARANTINE           throw event_exception((string)"chdir('"+pw->pw_dir+"') failed"+strerror(errno)) ;
-// QUARANTINE         if(setgid(pw->pw_gid)<0)
-// QUARANTINE           throw event_exception((string)"setgid() failed"+strerror(errno)) ;
-// QUARANTINE         if(setuid(pw->pw_uid)<0)
-// QUARANTINE           throw event_exception((string)"setuid() failed"+strerror(errno)) ;
-// QUARANTINE       }
+      if(user!="root")
+      {
+        if(chdir(pw->pw_dir)<0)
+          throw event_exception((string)"chdir('"+pw->pw_dir+"') failed"+strerror(errno)) ;
+        if(setgid(pw->pw_gid)<0)
+          throw event_exception((string)"setgid() failed"+strerror(errno)) ;
+        if(setuid(pw->pw_uid)<0)
+          throw event_exception((string)"setuid() failed"+strerror(errno)) ;
+      }
       execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL) ;
       throw event_exception((string)"execl('/bin/sh', '-c', '"+cmd+"') failed"+strerror(errno)) ;
     }
