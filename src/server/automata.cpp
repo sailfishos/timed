@@ -913,7 +913,6 @@ namespace Alarm
       QString sgnl = string_std_to_q(find_action_attribute("DBUS_SIGNAL", a)) ;
       m = QDBusMessage::createSignal(path, ifac, sgnl) ;
     }
-
     QDBusConnection c = (a.flags & ActionFlags::Use_System_Bus) ? QDBusConnection::systemBus() : QDBusConnection::sessionBus() ;
     QMap<QString,QVariant> param ;
     if(a.flags & ActionFlags::Send_Cookie)
@@ -1264,7 +1263,6 @@ cleanup:
   {
     string cmd, user ;
     prepare_command(a, cmd, user) ;
-
     errno = 0 ;
     struct passwd *pw = getpwnam(user.c_str()) ;
     if(pw==NULL)
@@ -1283,7 +1281,6 @@ cleanup:
     {
       if(setsid()<0)
         throw event_exception((string)"setsid() failed"+strerror(errno)) ;
-
       if(user!="root")
       {
         if(chdir(pw->pw_dir)<0)
@@ -1299,7 +1296,7 @@ cleanup:
     catch(const event_exception &e)
     {
       log_error("event %d, child process failed: %s", cookie.value(), e.message.c_str()) ;
-      _exit(1) ;
+      exit(1) ;
     }
   }
 #else
