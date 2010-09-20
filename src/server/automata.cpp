@@ -1017,36 +1017,14 @@ namespace Alarm
 	// and there seems to be no way to flush the connection
 	// and be sure that we have actually transmitted the
 	// message -> do a dummy synchronous query from dbus
-	// daemon and hope ...
+	// daemon and hope that is enough to get the actual
+	// message to be delivered ...
 
-	pid_t   result    = -1;
-	QString service   = "org.freedesktop.DBus";
-	QString path      = "/org/freedesktop/DBus";
-	QString interface = "org.freedesktop.DBus";
-	QString method    = "GetConnectionUnixProcessID";
-
-	QDBusMessage req  = QDBusMessage::createMethodCall(service,
-							   path,
-							   interface,
-							   method);
-	req << c.baseService();
-
-	QDBusMessage rsp = c.call(req);
-
-	if( rsp.type() == QDBusMessage::ReplyMessage )
-	{
-	  QList<QVariant> args = rsp.arguments();
-	  if( !args.isEmpty() )
-	  {
-	    bool ok = false;
-	    int reply = rsp.arguments().first().toInt(&ok);
-	    log_warning("@@@ rsp.ok = %d, rsp.reply = %d", ok, reply);
-	    if( ok ) result = reply;
-	  }
-	}
+	QString name  = c.baseService();
+	pid_t   owner = credentials_get_name_owner(c, name);
 
 	// it should be us ...
-	log_child("#### my pid: %d, connection owner pid: %d", getpid(), result);
+	log_child("#### my pid: %d, connection owner pid: %d", getpid(), owner);
       }
 
       QDBusConnection::disconnectFromBus(cname);

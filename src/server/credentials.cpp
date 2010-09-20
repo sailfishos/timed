@@ -44,22 +44,12 @@
 #define SEPARATOR " "
 
 /* ------------------------------------------------------------------------- *
- * get_owner_pid
+ * credentials_get_name_owner
  * ------------------------------------------------------------------------- */
 
-static
 pid_t
-get_owner_pid(QDBusConnection &bus, const char *name)
+credentials_get_name_owner(QDBusConnection &bus, const QString &name)
 {
-  /* FIXME: this makes a synchronous roundtrip to dbus daemon
-   * and back during which time the timed process will be blocked.
-   *
-   * Note: We can't really handle this asynchronously without
-   * handling the whole add_event asynchronously and this would
-   * require modifications to the timed event state machine and
-   * delaying sending add_event replies from QDBusAbstractAdaptor.
-   * At the moment I do not know how to handle either of those ...
-   */
 
   pid_t   result    = -1;
   QString service   = "org.freedesktop.DBus";
@@ -71,7 +61,7 @@ get_owner_pid(QDBusConnection &bus, const char *name)
                                                      path,
                                                      interface,
                                                      method);
-  req << QString(name);
+  req << name;
 
   QDBusMessage rsp = bus.call(req);
 
@@ -317,6 +307,16 @@ QString
 credentials_get_from_dbus(QDBusConnection &bus,
                           const QDBusMessage &msg)
 {
+  /* FIXME: this makes a synchronous roundtrip to dbus daemon
+   * and back during which time the timed process will be blocked.
+   *
+   * Note: We can't really handle this asynchronously without
+   * handling the whole add_event asynchronously and this would
+   * require modifications to the timed event state machine and
+   * delaying sending add_event replies from QDBusAbstractAdaptor.
+   * At the moment I do not know how to handle either of those ...
+   */
+
   QString  result; // assume null string
 
   pid_t    owner  = -1;
@@ -327,7 +327,7 @@ credentials_get_from_dbus(QDBusConnection &bus,
 
   log_warning("@@@ service/sender = '%s'", CS(sender));
 
-  if( (owner = get_owner_pid(bus, sender.toUtf8().constData())) == -1 )
+  if( (owner = credentials_get_name_owner(bus, sender)) == -1 )
   {
     goto cleanup;
   }
