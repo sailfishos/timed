@@ -36,10 +36,8 @@
 
 #include <dbus/dbus.h>
 
-#define CS(s) (s).toLocal8Bit().constData()
-#define US(s) (s).toUtf8().constData()
-
-#define BOINK() log_warning("!!! %s:%d: BOINK\n", __FILE__,__LINE__)
+#define CSTR(s) (s).toLocal8Bit().constData()
+#define UTF8(s) (s).toUtf8().constData()
 
 #define SEPARATOR " "
 
@@ -65,19 +63,33 @@ credentials_get_name_owner(QDBusConnection &bus, const QString &name)
 
   QDBusMessage rsp = bus.call(req);
 
-  if( rsp.type() == QDBusMessage::ReplyMessage )
+  if( rsp.type() != QDBusMessage::ReplyMessage )
+  {
+    log_warning("%s: did not get a valid reply", UTF8(method));
+  }
+  else
   {
     QList<QVariant> args = rsp.arguments();
-    if( !args.isEmpty() )
+
+    if( args.isEmpty() )
+    {
+      log_warning("%s: reply has no return values", UTF8(method));
+    }
+    else
     {
       bool ok = false;
-      int reply = rsp.arguments().first().toInt(&ok);
-      log_warning("@@@ rsp.ok = %d, rsp.reply = %d", ok, reply);
-      if( ok ) result = reply;
+      int pid = rsp.arguments().first().toInt(&ok);
+
+      if( !ok )
+      {
+        log_warning("%s: return values is not an integer", UTF8(method));
+      }
+      else
+      {
+        result = pid;
+      }
     }
   }
-
-  log_warning("@@@ owner pid = %d", (int)result);
 
   return result;
 }
@@ -172,7 +184,7 @@ credentials_to_string(creds_t creds)
   {
     if( (rc = creds_creds2str(cr_type, cr_val, cr_str, cr_len)) < 0 )
     {
-      BOINK();
+      log_warning("%s: failed", "creds_creds2str");
       continue;
     }
 
@@ -187,7 +199,7 @@ credentials_to_string(creds_t creds)
 
       if( creds_creds2str(cr_type, cr_val, cr_str, cr_len) != rc )
       {
-        BOINK();
+        log_warning("%s: failed", "creds_creds2str");
         goto cleanup;
       }
     }
@@ -242,19 +254,19 @@ credentials_from_string(const char *input)
 
     if( (c_type = creds_str2creds(now, &c_val)) == CREDS_BAD )
     {
-      BOINK();
+      log_warning("%s: returned %s=CREDS_BAD", "creds_str2creds", "type");
       continue;
     }
 
     if( c_val == CREDS_BAD )
     {
-      BOINK();
+      log_warning("%s: returned %s=CREDS_BAD", "creds_str2creds", "value");
       continue;
     }
 
     if( creds_add(&creds, c_type, c_val) == -1 )
     {
-      BOINK();
+      log_warning("%s: failed", "creds_add");
     }
   }
 
@@ -277,13 +289,13 @@ credentials_get_from_pid(pid_t pid)
 
   if( (creds = creds_gettask(pid)) == 0 )
   {
-    BOINK();
+    log_warning("%s: failed", "creds_gettask");
     goto cleanup;
   }
 
   if( (text = credentials_to_string(creds)) == 0 )
   {
-    BOINK();
+    // error logging @ credentials_to_string()
     goto cleanup;
   }
 
@@ -293,8 +305,6 @@ cleanup:
 
   free(text);
   creds_free(creds);
-
-  log_warning("@@@ pid=%d -> creds=%s", pid, CS(result));
 
   return result;
 }
@@ -325,8 +335,6 @@ credentials_get_from_dbus(QDBusConnection &bus,
                                     * which saves one QString object and
                                     * confuses at least me ... */
 
-  log_warning("@@@ service/sender = '%s'", CS(sender));
-
   if( (owner = credentials_get_name_owner(bus, sender)) == -1 )
   {
     goto cleanup;
@@ -346,63 +354,73 @@ cleanup:
 bool
 credentials_set(QString credentials)
 {
-  bool    success = false;
+  // assume failure
+  bool          success = false;
 
-  creds_t cr_want = 0;
-  creds_t cr_have = 0;
+  creds_t       cr_want = 0;
+  creds_t       cr_have = 0;
 
   creds_type_t  cr_type = CREDS_BAD;
   creds_value_t cr_val  = CREDS_BAD;
 
+  int i;
+  char t[64];
+
   if( credentials.isEmpty() ) // null string is also empty
   {
-    BOINK();
+    log_warning("not setting empty/null credentials");
     goto cleanup;
   }
 
-  cr_want = credentials_from_string(credentials.toUtf8().constData());
-  if( cr_want == 0 )
+  if( (cr_want = credentials_from_string(UTF8(credentials))) == 0 )
   {
-    BOINK();
+    log_warning("failed to convert string to credentials");
     goto cleanup;
   }
 
   if( creds_set(cr_want) < 0 )
   {
-    BOINK();
+    log_warning("%s: failed", "creds_set");
     goto cleanup;
   }
 
   if( (cr_have = creds_gettask(0)) == 0 )
   {
-    BOINK();
+    log_warning("%s: failed", "creds_gettask");
     goto cleanup;
   }
 
   // assume success at this point
   success = true;
 
-  int i;
-
+  // check if we actually have all the credentials requested
   for( i = 0; (cr_type = creds_list(cr_want, i, &cr_val)) != CREDS_BAD ; ++i )
   {
     if( creds_have_p(cr_have, cr_type, cr_val) )
     {
+      // remove credential -> the set will be empty if
+      // we got only credentials we asked for
       creds_sub(cr_have, cr_type, cr_val);
     }
     else
     {
       // missing a required credential
-      BOINK();
       success = false;
+
+      // TODO: is creds_creds2str() guaranteed to return valid C-string?
+      *t=0, creds_creds2str(cr_type, cr_val, t, sizeof t);
+      log_warning("failed to acquire credential: %s", t);
     }
   }
 
-  if( (cr_type = creds_list(cr_have, 0, &cr_val)) != CREDS_BAD )
+  // list credentials we have, but did not ask for
+  for( i = 0; (cr_type = creds_list(cr_have, i, &cr_val)) != CREDS_BAD ; ++i )
   {
-    // other than asked for credentials left
-    BOINK();
     success = false;
+
+    // TODO: is creds_creds2str() guaranteed to return valid C-string?
+    *t=0, creds_creds2str(cr_type, cr_val, t, sizeof t);
+    log_warning("failed to drop credential: %s", t);
   }
 
 cleanup:
