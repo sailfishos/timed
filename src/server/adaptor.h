@@ -130,8 +130,6 @@ public slots:
     // TODO: is Maemo::Timed::bus() the correct way?
     QDBusConnection bus = Maemo::Timed::bus();
     QString credentials = credentials_get_from_dbus(bus, msg);
-    // FIXME: remove debug logging later ...
-    log_warning("CREDS = '%s'", credentials.toLocal8Bit().constData());
     return timed->add_event(cookie_t(), x, credentials).value() ;
   }
   
@@ -141,8 +139,6 @@ public slots:
     // TODO: is Maemo::Timed::bus() the correct way?
     QDBusConnection bus = Maemo::Timed::bus();
     QString credentials = credentials_get_from_dbus(bus, msg);
-    // FIXME: remove debug logging later ...
-    log_warning("CREDS = '%s'", credentials.toLocal8Bit().constData());
     timed->add_events(lst, res, credentials) ;
   }
   
@@ -152,8 +148,6 @@ public slots:
     // TODO: is Maemo::Timed::bus() the correct way?
     QDBusConnection bus = Maemo::Timed::bus();
     QString credentials = credentials_get_from_dbus(bus, msg);
-    // FIXME: remove debug logging later ...
-    log_warning("CREDS = '%s'", credentials.toLocal8Bit().constData());
     return timed->add_event(cookie_t(old), x, credentials).value() ;
   }
 #endif

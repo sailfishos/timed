@@ -57,18 +57,6 @@ using namespace std ;
 #include "timed/nanotime.h"
 #include "credentials.h"
 
-static void log_child(const char *fmt, ...)
-{
-  // FIXME: remove this & replace with log_(error|warning|xxx)
-  // helper for making child logging more visible
-  va_list va;
-  va_start(va, fmt);
-  char *s = 0;
-  vasprintf(&s, fmt, va);
-  va_end(va);
-  if( s != 0 ) dprintf(2, "%s\n", s), free(s);
-}
-
 #if 0
 namespace Alarm
 {
@@ -997,12 +985,12 @@ namespace Alarm
 
       if( !c.send(m) )
       {
-	log_child("#### [%d]: Failed to send a message on D-Bus: %s", cookie.value(), c.lastError().message().toStdString().c_str()) ;
+	log_error("[%d]: Failed to send a message on D-Bus: %s", cookie.value(), c.lastError().message().toStdString().c_str()) ;
 	xc = 1;
       }
       else
       {
-	log_child("#### [%d]: D-Bus Message sent", cookie.value()) ;
+	log_debug("[%d]: D-Bus Message sent", cookie.value()) ;
 
 	// as we are about to exit immediately after queuing
 	// and there seems to be no way to flush the connection
@@ -1015,7 +1003,7 @@ namespace Alarm
 	pid_t   owner = credentials_get_name_owner(c, name);
 
 	// it should be us ...
-	log_child("#### my pid: %d, connection owner pid: %d", getpid(), owner);
+	log_debug("my pid: %d, connection owner pid: %d", getpid(), owner);
       }
 
       QDBusConnection::disconnectFromBus(cname);
@@ -1103,7 +1091,7 @@ namespace Alarm
     if( !user.empty() && !(pw = getpwnam(user.c_str())) )
     {
       // TODO: do log_xxx functions preserve errno?
-      log_warning("getpwnam(%s) failed: %m", user.c_str()) ;
+      log_error("getpwnam(%s) failed: %m", user.c_str()) ;
       goto cleanup;
     }
 
@@ -1116,12 +1104,16 @@ namespace Alarm
 
     if( (pid = fork()) != 0 )
     {
-      if( pid > 0 )
+      if( pid < 0 )
       {
-	// child was successfully started
-	err = false;
-	st->om->emit_child_created(cookie.value(), pid) ;
+	// TODO: do log_xxx functions preserve errno?
+	log_error("fork() failed: %m");
+	goto cleanup;
       }
+
+      // child was successfully started
+      st->om->emit_child_created(cookie.value(), pid) ;
+      err = false;
       goto cleanup;
     }
 
@@ -1131,14 +1123,14 @@ namespace Alarm
     if( setsid() < 0 )
     {
       // TODO: do log_xxx functions preserve errno?
-      log_child("#### setsid() failed: %m") ;
+      log_error("setsid() failed: %m") ;
       goto cleanup;
     }
 
     // take stored client credentials in to use
     if( !credentials_set(QString::fromUtf8(cred.c_str())) )
     {
-      log_child("#### credentials_set() failed") ;
+      log_error("credentials_set() failed") ;
       goto cleanup;
     }
 
@@ -1148,45 +1140,48 @@ namespace Alarm
     ruid = euid = suid = -1;
     rgid = egid = sgid = -1;
 
-    if( getresgid(&rgid, &egid, &sgid) < 0 )
-    {
-      log_child("#### getresgid() failed: %m") ;
-      goto cleanup;
-    }
-    if( getresuid(&ruid, &euid, &suid) < 0 )
-    {
-      log_child("#### getresuid() failed: %m") ;
-      goto cleanup;
-    }
-    log_child("#### uid: r=%d, e=%d, s=%d", ruid, euid, suid);
-    log_child("#### gid: r=%d, e=%d, s=%d", rgid, egid, sgid);
+    // only effective uid/gid is set, change real
+    // and saved ones too
 
+    if( (getresgid(&rgid, &egid, &sgid) < 0) ||
+	(getresuid(&ruid, &euid, &suid) < 0) )
+    {
+      // TODO: do log_xxx functions preserve errno?
+      log_error("getresgid() / getresuid() failed: %m") ;
+      goto cleanup;
+    }
 
     if( setresgid(egid, egid, egid) < 0 )
     {
-      log_child("#### setresgid() failed: %m") ;
+      // TODO: do log_xxx functions preserve errno?
+      log_error("setresgid(%d) failed: %m", (int)egid) ;
+      log_error("uid was: r=%d, e=%d, s=%d", ruid, euid, suid);
+      log_error("gid was: r=%d, e=%d, s=%d", rgid, egid, sgid);
       goto cleanup;
     }
     if( setresuid(euid, euid, euid) < 0 )
     {
-      log_child("#### setresuid() failed: %m") ;
+      // TODO: do log_xxx functions preserve errno?
+      log_error("setresuid(%d) failed: %m", (int)euid) ;
+      log_error("uid was: r=%d, e=%d, s=%d", ruid, euid, suid);
+      log_error("gid was: r=%d, e=%d, s=%d", rgid, egid, sgid);
       goto cleanup;
     }
 
-    if( getresgid(&rgid, &egid, &sgid) < 0 )
+    // update for later use
+    if( (getresgid(&rgid, &egid, &sgid) < 0) ||
+	(getresuid(&ruid, &euid, &suid) < 0) )
     {
-      log_child("#### getresgid() failed: %m") ;
+      // TODO: do log_xxx functions preserve errno?
+      log_error("getresgid() / getresuid() failed: %m") ;
       goto cleanup;
     }
-    if( getresuid(&ruid, &euid, &suid) < 0 )
+
+    // FIXME: debug block, remove later
     {
-      log_child("#### getresuid() failed: %m") ;
-      goto cleanup;
+      log_debug("uid now: r=%d, e=%d, s=%d", ruid, euid, suid);
+      log_debug("gid now: r=%d, e=%d, s=%d", rgid, egid, sgid);
     }
-    log_child("#### uid: r=%d, e=%d, s=%d", ruid, euid, suid);
-    log_child("#### gid: r=%d, e=%d, s=%d", rgid, egid, sgid);
-
-
 
     // if user attribute was not set, we will use the home directory
     // of the user id effective after setting the credentials
@@ -1197,23 +1192,25 @@ namespace Alarm
       if( !(pw = getpwuid(uid)) )
       {
 	// TODO: do log_xxx functions preserve errno?
-	log_child("#### getpwuid(%d) failed: %m", uid);
+	log_error("getpwuid(%d) failed: %m", (int)uid);
 	goto cleanup;
       }
     }
 
-    log_child("#### workdir: %s", pw->pw_dir);
+    log_debug("workdir: %s", pw->pw_dir);
 
     // set home directory as current working directory
     if( chdir(pw->pw_dir)<0 )
     {
       const char fallback[] = "/";
 
-      log_child("#### chdir(\"%s\") failed: %m, trying \"%s\"", pw->pw_dir, fallback);
+      // TODO: do log_xxx functions preserve errno?
+      log_warning("chdir(\"%s\") failed: %m, trying \"%s\"", pw->pw_dir, fallback);
 
       if( chdir(fallback)<0 )
       {
-	log_child("#### chdir(\"%s\") failed: %m", fallback);
+	// TODO: do log_xxx functions preserve errno?
+	log_error("chdir(\"%s\") failed: %m", fallback);
 	goto cleanup;
       }
     }
@@ -1226,29 +1223,35 @@ namespace Alarm
     {
       if( setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) < 0 )
       {
-	log_child("#### setresgid() failed: %m") ;
+	// TODO: do log_xxx functions preserve errno?
+	log_error("setresgid(%d) failed: %m", (int)pw->pw_gid) ;
+	log_error("uid was: r=%d, e=%d, s=%d", ruid, euid, suid);
+	log_error("gid was: r=%d, e=%d, s=%d", rgid, egid, sgid);
 	goto cleanup;
       }
 
       if( setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid) < 0 )
       {
-	log_child("#### setresuid() failed: %m") ;
+	// TODO: do log_xxx functions preserve errno?
+	log_error("setresuid(%d) failed: %m", (int)pw->pw_uid) ;
+	log_error("uid was: r=%d, e=%d, s=%d", ruid, euid, suid);
+	log_error("gid was: r=%d, e=%d, s=%d", rgid, egid, sgid);
 	goto cleanup;
       }
-    }
 
-    if( getresgid(&rgid, &egid, &sgid) < 0 )
-    {
-      log_child("#### getresgid() failed: %m") ;
-      goto cleanup;
+      // FIXME: debug block, remove later
+      {
+	if( (getresgid(&rgid, &egid, &sgid) < 0) ||
+	    (getresuid(&ruid, &euid, &suid) < 0) )
+	{
+	  // TODO: do log_xxx functions preserve errno?
+	  log_error("getresgid() / getresuid() failed: %m") ;
+	  goto cleanup;
+	}
+	log_debug("uid now: r=%d, e=%d, s=%d", ruid, euid, suid);
+	log_debug("gid now: r=%d, e=%d, s=%d", rgid, egid, sgid);
+      }
     }
-    if( getresuid(&ruid, &euid, &suid) < 0 )
-    {
-      log_child("#### getresuid() failed: %m") ;
-      goto cleanup;
-    }
-    log_child("#### uid: r=%d, e=%d, s=%d", ruid, euid, suid);
-    log_child("#### gid: r=%d, e=%d, s=%d", rgid, egid, sgid);
 
     // if we got here, all of the child process initialization
     // was succesfully completed
@@ -1303,6 +1306,12 @@ cleanup:
   void event_t::execute_command(const action_t &a)
   {
     string cmd, user ;
+
+    // TODO: since we no longer allow everybody to request execution
+    //       as somebody else it makes little sense to default to
+    //       "user" if USER attribute is not set -> the user set
+    //       from prepare_command is not used -> remove the whole
+    //       parameter?
     prepare_command(a, cmd, user) ;
 
     log_debug("execute: %s", cmd.c_str());
@@ -1310,28 +1319,36 @@ cleanup:
     bool error = true;
     int  child = fork_and_set_credentials(a, error);
 
+    // parent
     if( child != 0 )
     {
-      // parent
-      log_debug("execute: child pid = %d", child);
+      if( child < 0 )
+      {
+	log_error("execute: could not create child process");
+      }
+      else
+      {
+	log_debug("execute: child pid = %d", child);
+      }
+      return;
     }
-    else if( error )
+
+    // child
+    if( error )
     {
-      log_child("#### execute: child init failure");
-      // cause of error logged @ fork_and_set_credentials()
-      _exit(1);
+      log_error("execute: child init failure");
     }
     else
     {
-      log_child("#### execute: child init OK");
+      log_debug("execute: child init OK");
       // exec*() calls return only on failure
-      log_child("#### execute: %s", cmd.c_str());
+      log_debug("execute: %s", cmd.c_str());
       execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL) ;
 
       // TODO: do log_xxx functions preserve errno?
-      log_child("#### %s: failed: %m", cmd.c_str());
-      _exit(1);
+      log_error("%s: failed: %m", cmd.c_str());
     }
+    _exit(1);
   }
 #endif
 
