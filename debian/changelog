@@ -1,6 +1,7 @@
 timed (2.14+nmu2) unstable; urgency=low
 
-  * Uses libcreds for controlling execute action permissions
+  * When timed is performing execute or dbus actions, the credentials
+    of the process that added the event are used.
 
  -- Simo Piiroinen <simo.piiroinen@nokia.com>  Thu, 16 Sep 2010 11:14:03 +0300
 
