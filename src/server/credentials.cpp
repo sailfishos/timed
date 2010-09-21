@@ -59,7 +59,7 @@ credentials_get_name_owner(QDBusConnection &bus, const QString &name)
 
   if( rsp.type() != QDBusMessage::ReplyMessage )
   {
-    log_warning("%s: did not get a valid reply", CSTR(method));
+    log_error("%s: did not get a valid reply", CSTR(method));
   }
   else
   {
@@ -67,7 +67,7 @@ credentials_get_name_owner(QDBusConnection &bus, const QString &name)
 
     if( args.isEmpty() )
     {
-      log_warning("%s: reply has no return values", CSTR(method));
+      log_error("%s: reply has no return values", CSTR(method));
     }
     else
     {
@@ -76,7 +76,7 @@ credentials_get_name_owner(QDBusConnection &bus, const QString &name)
 
       if( !ok )
       {
-        log_warning("%s: return values is not an integer", CSTR(method));
+        log_error("%s: return values is not an integer", CSTR(method));
       }
       else
       {
@@ -178,8 +178,8 @@ credentials_to_string(creds_t creds)
   {
     if( (rc = creds_creds2str(cr_type, cr_val, cr_str, cr_len)) < 0 )
     {
-      log_warning("%s: failed", "creds_creds2str");
-      continue;
+      log_error("%s: failed", "creds_creds2str");
+      goto cleanup;
     }
 
     if( (size_t)rc >= cr_len )
@@ -193,7 +193,7 @@ credentials_to_string(creds_t creds)
 
       if( creds_creds2str(cr_type, cr_val, cr_str, cr_len) != rc )
       {
-        log_warning("%s: failed", "creds_creds2str");
+        log_error("%s: failed", "creds_creds2str");
         goto cleanup;
       }
     }
@@ -256,18 +256,18 @@ credentials_from_string(const char *input)
 
     if( (c_type = creds_str2creds(now, &c_val)) == CREDS_BAD )
     {
-      log_warning("%s: %s -> %s", "creds_str2creds", "now", "bad type");
+      log_error("%s: %s -> %s", "creds_str2creds", "now", "bad type");
       goto cleanup;
     }
     if( c_val == CREDS_BAD )
     {
-      log_warning("%s: %s -> %s", "creds_str2creds", "now", "bad value");
+      log_error("%s: %s -> %s", "creds_str2creds", "now", "bad value");
       goto cleanup;
     }
 
     if( creds_add(&creds, c_type, c_val) == -1 )
     {
-      log_warning("%s: failed", "creds_add");
+      log_error("%s: failed", "creds_add");
       goto cleanup;
     }
   }
@@ -299,13 +299,13 @@ credentials_get_from_pid(pid_t pid)
 
   if( (creds = creds_gettask(pid)) == 0 )
   {
-    log_warning("%s: failed", "creds_gettask");
+    log_error("%s: failed", "creds_gettask");
     goto cleanup;
   }
 
   if( (text = credentials_to_string(creds)) == 0 )
   {
-    // error logging @ credentials_to_string()
+    log_error("could not convert credentials to text");
     goto cleanup;
   }
 
@@ -347,6 +347,7 @@ credentials_get_from_dbus(QDBusConnection &bus,
 
   if( (owner = credentials_get_name_owner(bus, sender)) == -1 )
   {
+    log_error("could not get owner of dbus name");
     goto cleanup;
   }
 
@@ -378,25 +379,25 @@ credentials_set(QString credentials)
 
   if( credentials.isEmpty() ) // null string is also empty
   {
-    log_warning("not setting empty/null credentials");
+    log_error("not setting empty/null credentials");
     goto cleanup;
   }
 
   if( (cr_want = credentials_from_string(UTF8(credentials))) == 0 )
   {
-    log_warning("failed to convert string to credentials");
+    log_error("failed to convert string to credentials");
     goto cleanup;
   }
 
   if( creds_set(cr_want) < 0 )
   {
-    log_warning("%s: failed", "creds_set");
+    log_error("%s: failed", "creds_set");
     goto cleanup;
   }
 
   if( (cr_have = creds_gettask(0)) == 0 )
   {
-    log_warning("%s: failed", "creds_gettask");
+    log_error("%s: failed", "creds_gettask");
     goto cleanup;
   }
 
@@ -419,7 +420,7 @@ credentials_set(QString credentials)
 
       // TODO: is creds_creds2str() guaranteed to return valid C-string?
       *t=0, creds_creds2str(cr_type, cr_val, t, sizeof t);
-      log_warning("failed to acquire credential: %s", t);
+      log_error("failed to acquire credential: %s", t);
     }
   }
 
@@ -430,7 +431,7 @@ credentials_set(QString credentials)
 
     // TODO: is creds_creds2str() guaranteed to return valid C-string?
     *t=0, creds_creds2str(cr_type, cr_val, t, sizeof t);
-    log_warning("failed to drop credential: %s", t);
+    log_error("failed to drop credential: %s", t);
   }
 
 cleanup:
