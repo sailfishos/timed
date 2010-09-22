@@ -1,0 +1,9 @@
+<aegis>
+  <request>
+    <credential name="timed::TimeControl" />
+    <credential name="timed::TimeBackup" />
+    <credential name="CAP::kill" />
+    <for path="/usr/bin/simple-client" id="simple-client" />
+  </request>
+</aegis>
+
