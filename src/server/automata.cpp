@@ -1127,11 +1127,19 @@ namespace Alarm
       goto cleanup;
     }
 
-    // take stored client credentials in to use
-    if( !credentials_set(QString::fromUtf8(cred.c_str())) )
     {
-      log_error("credentials_set() failed") ;
-      goto cleanup;
+      creds_t creds1 = creds_gettask(getpid()) ;
+      const char *c1 = credentials_to_string(creds1) ;
+      log_debug("child old creds: '%s'", c1) ;
+      // take stored client credentials in to use
+      if( !credentials_set(QString::fromUtf8(cred.c_str())) )
+      {
+        log_error("credentials_set() failed") ;
+        goto cleanup;
+      }
+      creds_t creds2 = creds_gettask(getpid()) ;
+      const char *c2 = credentials_to_string(creds2) ;
+      log_debug("child new creds: '%s'", c2) ;
     }
 
     uid_t ruid, euid, suid;
