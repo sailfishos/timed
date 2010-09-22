@@ -155,9 +155,7 @@ cleanup:
  * credentials_to_string
  * ------------------------------------------------------------------------- */
 
-static
-char *
-credentials_to_string(creds_t creds)
+char *credentials_to_string(creds_t creds)
 {
   bool          success = false;
   char         *result  = 0;
