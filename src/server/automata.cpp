@@ -943,28 +943,28 @@ namespace Alarm
 
       if(a.flags & ActionFlags::DBus_Method)
       {
-	QString serv = string_std_to_q(find_action_attribute("DBUS_SERVICE", a)) ;
-	QString meth = string_std_to_q(find_action_attribute("DBUS_METHOD", a)) ;
-	m = QDBusMessage::createMethodCall(serv, path, ifac, meth) ;
+        QString serv = string_std_to_q(find_action_attribute("DBUS_SERVICE", a)) ;
+        QString meth = string_std_to_q(find_action_attribute("DBUS_METHOD", a)) ;
+        m = QDBusMessage::createMethodCall(serv, path, ifac, meth) ;
       }
       else
       {
-	QString sgnl = string_std_to_q(find_action_attribute("DBUS_SIGNAL", a)) ;
-	m = QDBusMessage::createSignal(path, ifac, sgnl) ;
+        QString sgnl = string_std_to_q(find_action_attribute("DBUS_SIGNAL", a)) ;
+        m = QDBusMessage::createSignal(path, ifac, sgnl) ;
       }
 
       QMap<QString,QVariant> param ;
       if(a.flags & ActionFlags::Send_Cookie)
       {
-	param["COOKIE"] = QString("%1").arg(cookie.value()) ;
+        param["COOKIE"] = QString("%1").arg(cookie.value()) ;
       }
       if(a.flags & ActionFlags::Send_Event_Attributes)
       {
-	add_strings(param, attr.txt) ;
+        add_strings(param, attr.txt) ;
       }
       if(a.flags & ActionFlags::Send_Action_Attributes)
       {
-	add_strings(param, a.attr.txt) ;
+        add_strings(param, a.attr.txt) ;
       }
       m << QVariant::fromValue(param) ;
 
@@ -985,25 +985,25 @@ namespace Alarm
 
       if( !c.send(m) )
       {
-	log_error("[%d]: Failed to send a message on D-Bus: %s", cookie.value(), c.lastError().message().toStdString().c_str()) ;
-	xc = 1;
+        log_error("[%d]: Failed to send a message on D-Bus: %s", cookie.value(), c.lastError().message().toStdString().c_str()) ;
+        xc = 1;
       }
       else
       {
-	log_debug("[%d]: D-Bus Message sent", cookie.value()) ;
+        log_debug("[%d]: D-Bus Message sent", cookie.value()) ;
 
-	// as we are about to exit immediately after queuing
-	// and there seems to be no way to flush the connection
-	// and be sure that we have actually transmitted the
-	// message -> do a dummy synchronous query from dbus
-	// daemon and hope that is enough to get the actual
-	// message to be delivered ...
+        // as we are about to exit immediately after queuing
+        // and there seems to be no way to flush the connection
+        // and be sure that we have actually transmitted the
+        // message -> do a dummy synchronous query from dbus
+        // daemon and hope that is enough to get the actual
+        // message to be delivered ...
 
-	QString name  = c.baseService();
-	pid_t   owner = credentials_get_name_owner(c, name);
+        QString name  = c.baseService();
+        pid_t   owner = credentials_get_name_owner(c, name);
 
-	// it should be us ...
-	log_debug("my pid: %d, connection owner pid: %d", getpid(), owner);
+        // it should be us ...
+        log_debug("my pid: %d, connection owner pid: %d", getpid(), owner);
       }
 
       QDBusConnection::disconnectFromBus(cname);
@@ -1106,9 +1106,9 @@ namespace Alarm
     {
       if( pid < 0 )
       {
-	// TODO: do log_xxx functions preserve errno?
-	log_error("fork() failed: %m");
-	goto cleanup;
+        // TODO: do log_xxx functions preserve errno?
+        log_error("fork() failed: %m");
+        goto cleanup;
       }
 
       // child was successfully started
@@ -1144,7 +1144,7 @@ namespace Alarm
     // and saved ones too
 
     if( (getresgid(&rgid, &egid, &sgid) < 0) ||
-	(getresuid(&ruid, &euid, &suid) < 0) )
+        (getresuid(&ruid, &euid, &suid) < 0) )
     {
       // TODO: do log_xxx functions preserve errno?
       log_error("getresgid() / getresuid() failed: %m") ;
@@ -1170,7 +1170,7 @@ namespace Alarm
 
     // update for later use
     if( (getresgid(&rgid, &egid, &sgid) < 0) ||
-	(getresuid(&ruid, &euid, &suid) < 0) )
+        (getresuid(&ruid, &euid, &suid) < 0) )
     {
       // TODO: do log_xxx functions preserve errno?
       log_error("getresgid() / getresuid() failed: %m") ;
@@ -1191,9 +1191,9 @@ namespace Alarm
 
       if( !(pw = getpwuid(uid)) )
       {
-	// TODO: do log_xxx functions preserve errno?
-	log_error("getpwuid(%d) failed: %m", (int)uid);
-	goto cleanup;
+        // TODO: do log_xxx functions preserve errno?
+        log_error("getpwuid(%d) failed: %m", (int)uid);
+        goto cleanup;
       }
     }
 
@@ -1209,9 +1209,9 @@ namespace Alarm
 
       if( chdir(fallback)<0 )
       {
-	// TODO: do log_xxx functions preserve errno?
-	log_error("chdir(\"%s\") failed: %m", fallback);
-	goto cleanup;
+        // TODO: do log_xxx functions preserve errno?
+        log_error("chdir(\"%s\") failed: %m", fallback);
+        goto cleanup;
       }
     }
 
@@ -1223,33 +1223,33 @@ namespace Alarm
     {
       if( setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) < 0 )
       {
-	// TODO: do log_xxx functions preserve errno?
-	log_error("setresgid(%d) failed: %m", (int)pw->pw_gid) ;
-	log_error("uid was: r=%d, e=%d, s=%d", ruid, euid, suid);
-	log_error("gid was: r=%d, e=%d, s=%d", rgid, egid, sgid);
-	goto cleanup;
+        // TODO: do log_xxx functions preserve errno?
+        log_error("setresgid(%d) failed: %m", (int)pw->pw_gid) ;
+        log_error("uid was: r=%d, e=%d, s=%d", ruid, euid, suid);
+        log_error("gid was: r=%d, e=%d, s=%d", rgid, egid, sgid);
+        goto cleanup;
       }
 
       if( setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid) < 0 )
       {
-	// TODO: do log_xxx functions preserve errno?
-	log_error("setresuid(%d) failed: %m", (int)pw->pw_uid) ;
-	log_error("uid was: r=%d, e=%d, s=%d", ruid, euid, suid);
-	log_error("gid was: r=%d, e=%d, s=%d", rgid, egid, sgid);
-	goto cleanup;
+        // TODO: do log_xxx functions preserve errno?
+        log_error("setresuid(%d) failed: %m", (int)pw->pw_uid) ;
+        log_error("uid was: r=%d, e=%d, s=%d", ruid, euid, suid);
+        log_error("gid was: r=%d, e=%d, s=%d", rgid, egid, sgid);
+        goto cleanup;
       }
 
       // FIXME: debug block, remove later
       {
-	if( (getresgid(&rgid, &egid, &sgid) < 0) ||
-	    (getresuid(&ruid, &euid, &suid) < 0) )
-	{
-	  // TODO: do log_xxx functions preserve errno?
-	  log_error("getresgid() / getresuid() failed: %m") ;
-	  goto cleanup;
-	}
-	log_debug("uid now: r=%d, e=%d, s=%d", ruid, euid, suid);
-	log_debug("gid now: r=%d, e=%d, s=%d", rgid, egid, sgid);
+        if( (getresgid(&rgid, &egid, &sgid) < 0) ||
+            (getresuid(&ruid, &euid, &suid) < 0) )
+        {
+          // TODO: do log_xxx functions preserve errno?
+          log_error("getresgid() / getresuid() failed: %m") ;
+          goto cleanup;
+        }
+        log_debug("uid now: r=%d, e=%d, s=%d", ruid, euid, suid);
+        log_debug("gid now: r=%d, e=%d, s=%d", rgid, egid, sgid);
       }
     }
 
@@ -1324,11 +1324,11 @@ cleanup:
     {
       if( child < 0 )
       {
-	log_error("execute: could not create child process");
+        log_error("execute: could not create child process");
       }
       else
       {
-	log_debug("execute: child pid = %d", child);
+        log_debug("execute: child pid = %d", child);
       }
       return;
     }
