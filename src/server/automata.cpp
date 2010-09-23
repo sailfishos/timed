@@ -836,7 +836,10 @@ namespace Alarm
   struct event_exception : public std::exception
   {
     string message ;
-    event_exception(const string &msg) : message(msg) { }
+    pid_t pid_value ;
+
+    pid_t pid() const { return pid_value ; }
+    event_exception(const string &msg) : message(msg), pid_value(getpid()) { }
    ~event_exception() throw() { }
   } ;
 
@@ -849,6 +852,10 @@ namespace Alarm
       if((a.flags & mask)==0)
         continue ;
       log_info("executing action %d[%d]", cookie.value(), i) ;
+
+      // we want to detect, it the exeption was thrown in the daemon itself or in a child
+      pid_t daemon = getpid() ;
+
       try
       {
         if(a.flags & (ActionFlags::DBus_Method | ActionFlags::DBus_Signal))
@@ -859,6 +866,12 @@ namespace Alarm
       catch(const event_exception &e)
       {
         log_error("action %d[%d] failed: %s", cookie.value(), i, e.message.c_str()) ;
+        pid_t process = e.pid() ;
+        if (process!=daemon)
+        {
+          log_info("terminating child (pid=%d) of daemon (pid=%d)", process, daemon) ;
+          ::exit(1) ;
+        }
       }
     }
   }
