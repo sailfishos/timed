@@ -172,6 +172,11 @@ void Maemo::Timed::Event::setSingleShotFlag()
   p->eio.flags |= EventFlags::Single_Shot ;
 }
 
+void Maemo::Timed::Event::setBackupFlag()
+{
+  log_debug("backup flag set for event, to be implemented yet: nothing wrong") ;
+}
+
 void Maemo::Timed::Event::setFakeFlag()
 {
   setKeepAliveFlag() ;

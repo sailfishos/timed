@@ -71,6 +71,7 @@ public:
   void setFakeFlag() ; // deprecated name
   void setKeepAliveFlag() ;
   void setSingleShotFlag() ;
+  void setBackupFlag() ; // to be implemented
   void suppressTimeoutSnooze() ;
   void hideSnoozeButton1() ;
   void hideCancelButton2() ;

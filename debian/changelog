@@ -1,3 +1,10 @@
+timed (2.16) unstable; urgency=low
+
+  * Dummy function Event::setBackupFlag() added to library
+  * Skipped 2.15 version due to dashboard mess
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 23 Sep 2010 13:31:03 +0300
+
 timed (2.14+nmu1) unstable; urgency=low
 
   * Fixes: NB#187991 - In Clock application the backed up alarms are
