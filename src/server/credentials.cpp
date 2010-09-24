@@ -45,6 +45,8 @@ credentials_get_name_owner(QDBusConnection &bus, const QString &name)
   QString path      = "/org/freedesktop/DBus";
   QString interface = "org.freedesktop.DBus";
   QString method    = "GetConnectionUnixProcessID";
+  // "GetConnectionUnixUser" gives us the client UID as UInt32
+  // It seems, we can't get GID just by asking.
 
   QDBusMessage req  = QDBusMessage::createMethodCall(service,
                                                      path,
@@ -73,6 +75,7 @@ credentials_get_name_owner(QDBusConnection &bus, const QString &name)
     {
       bool ok = false;
       int pid = rsp.arguments().first().toInt(&ok);
+      // int or unsigned? toInt or toUInt ?
 
       if( !ok )
       {
