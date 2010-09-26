@@ -132,7 +132,7 @@ public slots:
     QString credentials = credentials_get_from_dbus(bus, msg);
     return timed->add_event(cookie_t(), x, credentials).value() ;
   }
-  
+
   void add_events(const Maemo::Timed::event_list_io_t &lst, const QDBusMessage &msg, QList<QVariant> &res)
   {
     log_debug() ;
@@ -141,7 +141,7 @@ public slots:
     QString credentials = credentials_get_from_dbus(bus, msg);
     timed->add_events(lst, res, credentials) ;
   }
-  
+
   uint replace_event(const Maemo::Timed::event_io_t &x, uint old, const QDBusMessage &msg)
   {
     log_debug() ;
