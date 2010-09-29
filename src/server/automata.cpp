@@ -990,51 +990,56 @@ namespace Alarm
       if (a.flags & ActionFlags::Run_Command)
         exec_action_i = acts_i ;
 
-      // set up message to be sent
-      QString path = string_std_to_q(find_action_attribute("DBUS_PATH", a)) ;
-      QString ifac = string_std_to_q(find_action_attribute("DBUS_INTERFACE", a, (a.flags & ActionFlags::DBus_Signal)!=0)) ;
-
-      QDBusMessage message ;
-
-      if (a.flags & ActionFlags::DBus_Method)
+      try
       {
-        QString serv = string_std_to_q(find_action_attribute("DBUS_SERVICE", a)) ;
-        QString meth = string_std_to_q(find_action_attribute("DBUS_METHOD", a)) ;
-        message = QDBusMessage::createMethodCall(serv, path, ifac, meth) ;
+        // set up message to be sent
+        QString path = string_std_to_q(find_action_attribute("DBUS_PATH", a)) ;
+        QString ifac = string_std_to_q(find_action_attribute("DBUS_INTERFACE", a, (a.flags & ActionFlags::DBus_Signal)!=0)) ;
+
+        QDBusMessage message ;
+
+        if (a.flags & ActionFlags::DBus_Method)
+        {
+          QString serv = string_std_to_q(find_action_attribute("DBUS_SERVICE", a)) ;
+          QString meth = string_std_to_q(find_action_attribute("DBUS_METHOD", a)) ;
+          message = QDBusMessage::createMethodCall(serv, path, ifac, meth) ;
+        }
+        else
+        {
+          QString sgnl = string_std_to_q(find_action_attribute("DBUS_SIGNAL", a)) ;
+          message = QDBusMessage::createSignal(path, ifac, sgnl) ;
+        }
+
+        QMap<QString,QVariant> param ;
+
+        if (a.flags & ActionFlags::Send_Cookie)
+          param["COOKIE"] = QString("%1").arg(cookie.value()) ;
+
+        if (a.flags & ActionFlags::Send_Event_Attributes)
+          add_strings(param, attr.txt) ;
+
+        if (a.flags & ActionFlags::Send_Action_Attributes)
+          add_strings(param, a.attr.txt) ;
+
+        message << QVariant::fromValue(param) ;
+
+        int bus = (a.flags & ActionFlags::Use_System_Bus) ? 0 : 1 ;
+        QDBusConnection * &c = conn[bus] ;
+
+        if (c==NULL) // not used yes, have to create object and connect
+        {
+          QDBusConnection::BusType ctype = bus==0 ? QDBusConnection::SystemBus : QDBusConnection::SessionBus ;
+          c = new QDBusConnection(QDBusConnection::connectToBus(ctype, cname)) ;
+        }
+
+        if (c->send(message))
+          log_debug("%u[%d]: D-Bus Message sent", cookie.value(), acts_i) ;
+        else
+          throw event_exception(c->lastError().message().toStdString().c_str()) ;
       }
-      else
+      catch(const event_exception &e)
       {
-        QString sgnl = string_std_to_q(find_action_attribute("DBUS_SIGNAL", a)) ;
-        message = QDBusMessage::createSignal(path, ifac, sgnl) ;
-      }
-
-      QMap<QString,QVariant> param ;
-
-      if (a.flags & ActionFlags::Send_Cookie)
-        param["COOKIE"] = QString("%1").arg(cookie.value()) ;
-
-      if (a.flags & ActionFlags::Send_Event_Attributes)
-        add_strings(param, attr.txt) ;
-
-      if (a.flags & ActionFlags::Send_Action_Attributes)
-        add_strings(param, a.attr.txt) ;
-
-      message << QVariant::fromValue(param) ;
-
-      int bus = (a.flags & ActionFlags::Use_System_Bus) ? 0 : 1 ;
-      QDBusConnection * &c = conn[bus] ;
-
-      if (c==NULL) // not used yes, have to create object and connect
-      {
-        QDBusConnection::BusType ctype = bus==0 ? QDBusConnection::SystemBus : QDBusConnection::SessionBus ;
-        c = new QDBusConnection(QDBusConnection::connectToBus(ctype, cname)) ;
-      }
-
-      if (c->send(message))
-        log_debug("%u[%d]: D-Bus Message sent", cookie.value(), acts_i) ;
-      else
-      {
-        log_error("%u[%d]: Failed to send a message on D-Bus: %s", cookie.value(), acts_i, c->lastError().message().toStdString().c_str()) ;
+        log_error("%u[%d]: dbus-action not executed: %s", cookie.value(), acts_i, e.message.c_str()) ;
         ++ dbus_fail_counter ;
       }
     }
