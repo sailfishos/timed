@@ -14,9 +14,8 @@ LIBS += -ltimed -ltimed-voland
 HEADERS += adaptor.h timed.h states.h automata.h singleshot.h pinguin.h unix-signal.h onitz.h
 SOURCES += main.cpp timed.cpp states.cpp automata.cpp timeutil.cpp event.cpp misc.cpp settings.cpp unix-signal.cpp onitz.cpp
 
-SOURCES += credentials.cpp
+SOURCES += credentials.cpp creds.cpp
 HEADERS += credentials.h
-LIBS    += -lcreds
 
 SOURCES += olson.cpp tz.cpp
 HEADERS += tz.h
@@ -51,4 +50,5 @@ CONFIG(MEEGO) \
 else \
 {
   CONFIG += cellular-qt
+  LIBS    += -lcreds
 }
