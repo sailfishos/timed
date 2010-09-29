@@ -36,8 +36,10 @@
  * credentials_get_name_owner
  * ------------------------------------------------------------------------- */
 
+// F_SECURE && F_AEGIS
+
 pid_t
-credentials_get_name_owner(QDBusConnection &bus, const QString &name)
+credentials_get_name_owner(const QDBusConnection &bus, const QString &name)
 {
   pid_t   result    = -1; // assume failure
 
@@ -46,7 +48,7 @@ credentials_get_name_owner(QDBusConnection &bus, const QString &name)
   QString interface = "org.freedesktop.DBus";
   QString method    = "GetConnectionUnixProcessID";
   // "GetConnectionUnixUser" gives us the client UID as UInt32
-  // It seems, we can't get GID just by asking.
+  // It seems, we can't get GID just by asking dbus daemon.
 
   QDBusMessage req  = QDBusMessage::createMethodCall(service,
                                                      path,
@@ -336,6 +338,7 @@ credentials_get_from_dbus(QDBusConnection &bus,
    * require modifications to the timed event state machine and
    * delaying sending add_event replies from QDBusAbstractAdaptor.
    * At the moment I do not know how to handle either of those ...
+   * ;-(
    */
 
   QString  result; // assume null string

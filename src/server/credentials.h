@@ -32,7 +32,7 @@
 #include <QDBusMessage>
 #include <QDBusConnection>
 
-pid_t   credentials_get_name_owner(QDBusConnection &bus, const QString &name);
+pid_t   credentials_get_name_owner(const QDBusConnection &bus, const QString &name);
 QString credentials_get_from_dbus(QDBusConnection &bus, const QDBusMessage &msg);
 bool    credentials_set          (QString credentials);
 char *credentials_to_string(creds_t creds) ;
