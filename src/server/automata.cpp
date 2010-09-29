@@ -341,7 +341,7 @@ namespace Alarm
       if(new_state)
       {
         new_state->enter(e) ;
-        e->run_actions(new_state->get_action_mask()) ;
+        e->secure_run_actions(new_state->get_action_mask()) ;
       }
       else
       {
