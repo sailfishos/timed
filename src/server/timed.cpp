@@ -198,7 +198,7 @@ void Timed::check_voland_service()
   }
 }
 
-cookie_t Timed::add_event(cookie_t remove, const Maemo::Timed::event_io_t &x, const QString &credentials)
+cookie_t Timed::add_event(cookie_t remove, const Maemo::Timed::event_io_t &x, const QDBusMessage &message)
 {
   if(remove.is_valid() && am->find_event(remove)==NULL)
   {
@@ -206,7 +206,7 @@ cookie_t Timed::add_event(cookie_t remove, const Maemo::Timed::event_io_t &x, co
     return cookie_t() ;
   }
 
-  cookie_t c = am->add_event(&x, true, credentials) ;
+  cookie_t c = am->add_event(&x, true, NULL, &message) ; // message is given, but no creds
   log_debug() ;
   QMap<QString,QString>::const_iterator test = x.attr.txt.find("TEST") ;
   log_debug() ;
@@ -218,7 +218,7 @@ cookie_t Timed::add_event(cookie_t remove, const Maemo::Timed::event_io_t &x, co
   return c ;
 }
 
-void Timed::add_events(const Maemo::Timed::event_list_io_t &events, QList<QVariant> &res, const QString &credentials)
+void Timed::add_events(const Maemo::Timed::event_list_io_t &events, QList<QVariant> &res, const QDBusMessage &message)
 {
   if(events.ee.size()==0)
   {
@@ -228,7 +228,7 @@ void Timed::add_events(const Maemo::Timed::event_list_io_t &events, QList<QVaria
   QMap<QString,QString>::const_iterator test = events.ee[0].attr.txt.find("TEST") ;
   if(test!=events.ee[0].attr.txt.end())
     log_debug("TEST list of %d events: '%s'", events.ee.size(), test.value().toStdString().c_str()) ;
-  am->add_events(events, res, credentials) ;
+  am->add_events(events, res, message) ;
 }
 
 bool Timed::dialog_response(cookie_t c, int value)

@@ -34,11 +34,13 @@ using namespace std ;
 
 #include <timed/event>
 
+#include "timed/event-pimple.h"
 #include "timed/event-io.h"
 
 #include "wrappers.h"
 #include "timeutil.h"
 #include "flags.h"
+#include "creds.h"
 
 struct recurrence_pattern_t
 {
@@ -77,12 +79,28 @@ struct attribute_t
   void load(const iodata::record *a) ;
 } ;
 
+struct cred_modifier_t
+{
+  map<string, bool> tokens ;
+
+  set<string> tokens_by_value(bool accrue) const ;
+
+  iodata::array *save() const ;
+  void load(const iodata::array *a) ;
+
+  void load_from_dbus_interface(const QVector<Maemo::Timed::cred_modifier_io_t> &cmio) ;
+} ;
+
 struct action_t
 {
   attribute_t attr ;
   uint32_t flags ;
+  cred_modifier_t cred_modifier ;
 
   action_t() { flags = 0 ; }
+
+  string cred_key_value ;
+  string cred_key() ; // shold be const, but can't
 
   static iodata::bit_codec *codec ;
   iodata::record *save() const ;
@@ -103,6 +121,7 @@ struct event_t
   uint32_t flags ;
 
   uint32_t tsz_counter, tsz_max ;
+  cred_modifier_t cred_modifier ;
 
   vector<recurrence_pattern_t> recrs ;
   vector<action_t> actions ;
@@ -125,7 +144,20 @@ struct event_t
 
   state *get_state() { return st ; }
   void set_state(state *s) { st=s ; }
+  void secure_run_actions(uint32_t) ;
+  bool operator() (unsigned i, unsigned j) ; // actions security key comparison operator
+#if 0
+  // this must be a full blown up structure with
+  // 1. a owner field pointing to 'this' object
+  // 2. constructor initializing it
+  // 3. initializer in the event_t constuctor
+  // -> horror-horror...
+  struct action_comparison_t { bool operator() (unsigned i, unsigned j) ; } action_comparison ;
+#endif
   void run_actions(uint32_t) ;
+  void run_actions(const vector<unsigned> &a, unsigned begin, unsigned end) ;
+  bool drop_privileges(const action_t &a) ;
+  bool accrue_privileges(const action_t &a) ;
   void execute_dbus(const action_t &a) ;
   void execute_command(const action_t &a) ;
   void prepare_command(const action_t &a, string &cmd, string &user) ;
@@ -140,7 +172,11 @@ struct event_t
   string broken_str() ;
   bool compute_recurrence() ;
   void process_dialog_ack() ;
-  int fork_and_set_credentials(const action_t &action, bool &error) ;
+  pid_t fork_and_set_credentials(const action_t &action, bool &error) ;
+  pid_t fork_and_set_credentials_v2(const action_t &action, bool &error) ;
+  pid_t fork_and_set_credentials_v3(const action_t &action) ;
+
+  credentials_t client_creds ;
 
   static iodata::bit_codec *codec ;
   static void codec_initializer() ;

@@ -27,8 +27,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-
+#include <algorithm>
 #include <map>
+#include <set>
 #include <iostream>
 #include <sstream>
 using namespace std ;
@@ -514,11 +515,19 @@ namespace Alarm
     log_debug() ;
   }
 
-  cookie_t machine::add_event(const Maemo::Timed::event_io_t *eio, bool process_queue, const QString &credentials)
+  cookie_t machine::add_event(const Maemo::Timed::event_io_t *eio, bool process_queue, const credentials_t *p_creds, const QDBusMessage *p_message)
   {
+    // The credentials for the event are either already known (p_creds)
+    //   or have to be established by the QDBusMessage structure (from dbus daemon)
+    // Using pointers instead of usual C++ references, just because a NULL-reference
+    //   usually confuses people (though working just fine)
     if(event_t *e = event_t::from_dbus_iface(eio))
     {
+      if(e->actions.size() > 0)
+        e->client_creds = p_creds ? *p_creds : credentials_t::from_dbus_connection(*p_message) ;
+#if 0
       e->attr.txt["CREDENTIALS"] = string(credentials.toUtf8().constData());
+#endif
       request_state(events[e->cookie = cookie_t(next_cookie++)] = e, "START") ;
       if(process_queue)
         invoke_process_transition_queue() ;
@@ -529,12 +538,13 @@ namespace Alarm
     return cookie_t(0) ;
   }
 
-  void machine::add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVariant> &res, const QString &credentials)
+  void machine::add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVariant> &res, const QDBusMessage &message)
   {
+    credentials_t creds = credentials_t::from_dbus_connection(message) ;
     bool valid = false ;
     for(int i=0; i<lst.ee.size(); ++i)
     {
-      unsigned cookie = add_event(&lst.ee[i], false, credentials).value() ;
+      unsigned cookie = add_event(&lst.ee[i], false, &creds, NULL).value() ;
       res.push_back(cookie) ;
       if (cookie)
       {
@@ -794,6 +804,8 @@ namespace Alarm
 #if 0
       e->dialog.load(ee->get("dialog")->rec()) ;
 #endif
+      e->client_creds.load(ee->get("client_creds")->rec()) ;
+      e->cred_modifier.load(ee->get("cred_modifier")->arr()) ;
 
 #if 0
       e->recr_count = ee->get("recr_count")->value() ;
@@ -842,6 +854,281 @@ namespace Alarm
     event_exception(const string &msg) : message(msg), pid_value(getpid()) { }
    ~event_exception() throw() { }
   } ;
+
+  // what a mess... event_t::stuff should be in event.cpp
+#if 0
+  bool event_t::action_comparison_t::operator()(unsigned i, unsigned j)
+  {
+    return actions[i].cred_key() < actions[j].cred_key() ;
+  }
+#endif
+
+  bool event_t::operator()(unsigned i, unsigned j)
+  {
+    return actions[i].cred_key() < actions[j].cred_key() ;
+  }
+
+  void event_t::secure_run_actions(uint32_t mask)
+  {
+    if (mask==0) // TODO: check, if this check is not yet done on state_* layer...
+      return ;
+
+    // don't want to call unnecesary constructor here
+    vector <unsigned> *r = NULL ;
+
+    for (unsigned i=0; i<actions.size(); ++i)
+      if(actions[i].flags & mask) // something to run
+      {
+        if (r==NULL)
+          r = new vector <unsigned> ;
+        r->push_back(i) ;
+      }
+
+    if (r==NULL) // nothing to do
+      return ;
+
+    log_assert(r) ;
+
+    sort(r->begin(), r->end(), *this) ;
+#if 0
+    sort(r->begin(), r->end(), action_comparison) ;
+#endif
+
+    unsigned start_index = ~0 ; // invalid value
+    string current_key ; // empty key (invalid?)
+    for(unsigned i=0, have_exec=false; i < r->size(); ++i)
+    {
+      action_t &a = actions[(*r) [i]] ;
+      bool i_exec = a.flags & ActionFlags::Run_Command ; // current action is an exec action
+      bool start_now = a.cred_key() != current_key || (have_exec && i_exec) ; // either new key or second exec
+      if (start_now && i>0)
+        run_actions(*r, start_index, i) ;
+      if (start_now || i==0) // i==0 is probably redundant, as cred_key should never be empty
+      {
+        have_exec = i_exec ;
+        start_index = i ;
+        current_key = a.cred_key() ;
+      }
+    }
+
+    log_assert(r->size()>0) ; // to be sure for the run_actions() call below
+    run_actions(*r, start_index, r->size()) ;
+
+    delete r ;
+  }
+
+  template <class element_t>
+  string print_vector(const vector<element_t> &array, unsigned begin, unsigned end)
+  {
+    ostringstream os ;
+
+    for(unsigned i=begin, first=true; i<end; ++i)
+    {
+      os << ( first ? first=false, "[" : ", " ) ;
+      os << array[i] ;
+    }
+    os << "]" ;
+    return os.str() ;
+  }
+
+  template <class element_t> // an yet another hihgly inefficient function :-(
+  void set_change(set<element_t> &x, const set<element_t> &y, bool add)
+  {
+    for(typename set<element_t>::const_iterator it=y.begin(); it!=y.end(); ++it)
+      if(add)
+        x.insert(*it) ;
+      else
+        x.erase(*it) ;
+  }
+
+  void event_t::run_actions(const vector<unsigned> &acts, unsigned begin, unsigned end)
+  {
+    log_debug("begin=%d, end=%d, actions: %s", begin, end, print_vector(acts, begin, end).c_str()) ;
+    const action_t &a_begin = actions [acts[begin]] ;
+
+    // we want to detect, it the exeption was thrown in the daemon itself or in a child
+    pid_t daemon = getpid() ;
+
+    try
+    {
+      if (fork_and_set_credentials_v3(a_begin)>0) // parent
+        return ;
+    }
+    catch(const event_exception &e)
+    {
+      log_error("action list %d%s failed: %s", cookie.value(), print_vector(acts, begin, end).c_str(), e.message.c_str()) ;
+      pid_t process = e.pid() ;
+      if (process!=daemon)
+      {
+        log_info("terminating child (pid=%d) of daemon (pid=%d)", process, daemon) ;
+        ::exit(1) ;
+      }
+    }
+
+    // now we're running in the child with proper credentials, so let's execute dbus stuff !
+
+    unsigned exec_action_i = ~0 ; // not found yet
+    QDBusConnection *conn[2] = {NULL, NULL} ; // 0->system, 1->session
+    const QString cname = "timed-private" ;
+
+    int dbus_fail_counter = 0 ;
+
+    for (unsigned i=begin; i<end; ++i)
+    {
+      const unsigned acts_i = acts[i] ;
+      const action_t &a = actions [acts_i] ;
+      if (a.flags & ActionFlags::Run_Command)
+        exec_action_i = acts_i ;
+
+      // set up message to be sent
+      QString path = string_std_to_q(find_action_attribute("DBUS_PATH", a)) ;
+      QString ifac = string_std_to_q(find_action_attribute("DBUS_INTERFACE", a, (a.flags & ActionFlags::DBus_Signal)!=0)) ;
+
+      QDBusMessage message ;
+
+      if (a.flags & ActionFlags::DBus_Method)
+      {
+        QString serv = string_std_to_q(find_action_attribute("DBUS_SERVICE", a)) ;
+        QString meth = string_std_to_q(find_action_attribute("DBUS_METHOD", a)) ;
+        message = QDBusMessage::createMethodCall(serv, path, ifac, meth) ;
+      }
+      else
+      {
+        QString sgnl = string_std_to_q(find_action_attribute("DBUS_SIGNAL", a)) ;
+        message = QDBusMessage::createSignal(path, ifac, sgnl) ;
+      }
+
+      QMap<QString,QVariant> param ;
+
+      if (a.flags & ActionFlags::Send_Cookie)
+        param["COOKIE"] = QString("%1").arg(cookie.value()) ;
+
+      if (a.flags & ActionFlags::Send_Event_Attributes)
+        add_strings(param, attr.txt) ;
+
+      if (a.flags & ActionFlags::Send_Action_Attributes)
+        add_strings(param, a.attr.txt) ;
+
+      message << QVariant::fromValue(param) ;
+
+      int bus = (a.flags & ActionFlags::Use_System_Bus) ? 0 : 1 ;
+      QDBusConnection * &c = conn[bus] ;
+
+      if (c==NULL) // not used yes, have to create object and connect
+      {
+        QDBusConnection::BusType ctype = bus==0 ? QDBusConnection::SystemBus : QDBusConnection::SessionBus ;
+        c = new QDBusConnection(QDBusConnection::connectToBus(ctype, cname)) ;
+      }
+
+      if (c->send(message))
+        log_debug("%u[%d]: D-Bus Message sent", cookie.value(), acts_i) ;
+      else
+      {
+        log_error("%u[%d]: Failed to send a message on D-Bus: %s", cookie.value(), acts_i, c->lastError().message().toStdString().c_str()) ;
+        ++ dbus_fail_counter ;
+      }
+    }
+
+    for(int c=0; c<2; ++c)
+      if(QDBusConnection *cc = conn[c])
+      {
+        // as we are about to exit immediately after queuing
+        // and there seems to be no way to flush the connection
+        // and be sure that we have actually transmitted the
+        // message -> do a dummy synchronous query from dbus
+        // daemon and hope that is enough to get the actual
+        // message to be delivered ...
+        QString connection_name  = cc->baseService();
+        pid_t owner = credentials_get_name_owner(*cc, connection_name);
+
+        // it should be us ...
+        log_debug("my pid: %d, connection owner pid: %d", getpid(), owner);
+        QDBusConnection::disconnectFromBus(connection_name);
+        delete cc ;
+      }
+
+    if(dbus_fail_counter)
+      log_warning("failed to exeute %d out of %u dbus actions", dbus_fail_counter, end-begin) ;
+
+    if(exec_action_i == ~0u) // no exec action in this action package
+      ::exit(dbus_fail_counter<100 ? dbus_fail_counter : 100) ; // exit value can't be toooo large
+
+    // All the dbus actions are done. Now we have to execute the only command line action
+
+    const action_t &a = actions [exec_action_i] ;
+
+    string cmd = find_action_attribute("COMMAND", a) ;
+    if(a.flags & ActionFlags::Send_Cookie)
+    {
+      log_debug("cmd='%s', COOKIE to be replaced by value", cmd.c_str()) ;
+      using namespace pcrecpp ;
+      static RE exp("(<COOKIE>)|\\b(COOKIE)\\b", UTF8()) ;
+      ostringstream decimal ;
+      decimal << cookie.value() ;
+      exp.GlobalReplace(decimal.str(), &cmd);
+      log_debug("cmd='%s', COOKIE replaced", cmd.c_str()) ;
+    }
+    log_info("execuing command line action %u[%d]: '%s'", cookie.value(), exec_action_i, cmd.c_str());
+    execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL) ;
+    log_error("execl(/bin/sh -c '%s') failed: %m", cmd.c_str());
+
+    ::exit(1) ; // use dbus_fail_counter here as well?
+  }
+
+  bool event_t::accrue_privileges(const action_t &a)
+  {
+    credentials_t creds ;
+    creds.from_current_process() ;
+
+#if 1 // F_CREDS_AEGIS
+    const cred_modifier_t &E = cred_modifier, &A = a.cred_modifier ;
+
+    // tokens_to_accrue1 := EVENT.add - ACTION.drop
+    set<string> tokens_to_accrue1 = E.tokens_by_value(true) ;
+    set_change<string> (tokens_to_accrue1, A.tokens_by_value(false), false) ;
+
+    // tokens_to_accrue2 := ACTION.add - EVENT.drop
+    set<string> tokens_to_accrue2 = A.tokens_by_value(true) ;
+    set_change<string> (tokens_to_accrue2, E.tokens_by_value(false), false) ;
+
+    // creds += (tokens_to_accrue 1+2)
+    set_change<string> (creds.tokens, tokens_to_accrue1, true) ;
+    set_change<string> (creds.tokens, tokens_to_accrue2, true) ;
+#endif // F_CREDS_AEGIS
+
+    string uid = find_action_attribute("USER", a, false) ;
+    string gid = find_action_attribute("GROUP", a, false) ;
+
+    if (!uid.empty())
+      creds.uid = uid ;
+    if (!gid.empty())
+      creds.gid = gid ;
+
+    return creds.apply() ;
+  }
+
+  bool event_t::drop_privileges(const action_t &a)
+  {
+    credentials_t creds = client_creds ;
+
+#if 1 // F_CREDS_AEGIS
+    const cred_modifier_t &E = cred_modifier, &A = a.cred_modifier ;
+
+    // tokens_to_remove1 := EVENT.drop - ACTION.add
+    set<string> tokens_to_remove1 = E.tokens_by_value(false) ;
+    set_change<string> (tokens_to_remove1, A.tokens_by_value(true), false) ;
+
+    // tokens_to_remove2 := ACTION.drop - EVENT.add
+    set<string> tokens_to_remove2 = A.tokens_by_value(false) ;
+    set_change<string> (tokens_to_remove2, E.tokens_by_value(true), false) ;
+
+    // creds := client_creds - (tokens_to_remove 1+2)
+    set_change<string> (creds.tokens, tokens_to_remove1, false) ;
+    set_change<string> (creds.tokens, tokens_to_remove2, false) ;
+#endif // F_CREDS_AEGIS
+
+    return creds.apply() ;
+  }
 
   void event_t::run_actions(uint32_t mask)
   {
@@ -1076,6 +1363,93 @@ namespace Alarm
       log_info("Event [%d] in %s, executing '%s' returning %d", cookie.value(), st->name, sys_cmd, res) ;
     free(sys_cmd) ;
 #endif
+  }
+
+  pid_t event_t::fork_and_set_credentials_v3(const action_t &action)
+  {
+    pid_t pid = fork() ;
+
+    if (pid<0) // can't fork
+    {
+      log_error("fork() failed: %m") ;
+      throw event_exception("can't fork");
+    }
+    else if (pid>0) // parent
+    {
+      log_info("forked successfully, child pid: '%d'", pid) ;
+      st->om->emit_child_created(cookie.value(), pid) ;
+      return pid ;
+    }
+    else // child
+    {
+      log_info("event [%u]: in child process", cookie.value()) ;
+
+      if (setsid() < 0) // detach from session
+      {
+        log_error("setsid() failed: %m") ;
+        throw event_exception("can't detach from session") ;
+      }
+
+      if (!drop_privileges(action))
+        throw event_exception("can't drop privileges") ;
+
+      if (!accrue_privileges(action))
+        log_warning("can't accrue privileges, still continuing") ;
+
+      // Skipping all the uid/gid settings, because it's part of
+      // credentials_t::apply() (or it should be at least)
+
+      // TODO: go to home dir _here_ !
+
+      // That's it then, isn't it?
+
+      return pid ;
+    }
+  }
+
+  pid_t event_t::fork_and_set_credentials_v2(const action_t &action, bool &error)
+  {
+    pid_t pid = fork() ;
+
+    if (pid<0) // can't fork
+    {
+      log_error("fork() failed: %m") ;
+      return error = false, pid ;
+    }
+    else if (pid>0) // parent
+    {
+      log_info("forked successfully, child pid: '%d'", pid) ;
+      st->om->emit_child_created(cookie.value(), pid) ;
+      return error = false, pid ;
+    }
+    else // child
+    {
+      log_info("event [%u]: in child process", cookie.value()) ;
+
+      if (setsid() < 0) // detach from session
+      {
+        log_error("setsid() failed: %m") ;
+        return error = true, pid ;
+      }
+
+      if(! drop_privileges(action))
+      {
+        log_error("can't drop privileges") ;
+        return error = true, pid ;
+      }
+
+      if(! accrue_privileges(action))
+        log_warning("can't accrue privileges, still continuing") ;
+
+      // Skipping all the uid/gid settings, because it's part of
+      // credentials_t::apply() (or it should be)
+
+      // TODO: go to home dir _here_ !
+
+      // That's it then, isn't it?
+
+      return error = false, pid ;
+    }
   }
 
   int event_t::fork_and_set_credentials(const action_t &action, bool &error)
@@ -1332,7 +1706,7 @@ cleanup:
     //       as somebody else it makes little sense to default to
     //       "user" if USER attribute is not set -> the user set
     //       from prepare_command is not used -> remove the whole
-    //       parameter?
+    //       parameter? yes...
     prepare_command(a, cmd, user) ;
 
     log_debug("execute: %s", cmd.c_str());
@@ -1396,6 +1770,8 @@ cleanup:
 #endif
     r->add("tsz_max", tsz_max) ;
     r->add("tsz_counter", tsz_counter) ;
+    r->add("client_creds", client_creds.save()) ;
+    r->add("cred_modifier", cred_modifier.save()) ;
     return r ;
   }
 

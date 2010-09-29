@@ -124,31 +124,42 @@ public slots:
     return timed->add_event(x).value() ;
   }
 #else
-  uint add_event(const Maemo::Timed::event_io_t &x, const QDBusMessage &msg)
+  uint add_event(const Maemo::Timed::event_io_t &x, const QDBusMessage &message)
   {
+    // TODO: here we're not asking about credentials immediately
+    //       because an event could contain empty action set
+    //       --> forwarding the QDBusMessage to Timed::add_even
+    //       -->                        then to machine::add_event
     log_debug() ;
-    // TODO: is Maemo::Timed::bus() the correct way?
+#if 0
     QDBusConnection bus = Maemo::Timed::bus();
     QString credentials = credentials_get_from_dbus(bus, msg);
-    return timed->add_event(cookie_t(), x, credentials).value() ;
+#endif
+    return timed->add_event(cookie_t(), x, message).value() ;
   }
 
-  void add_events(const Maemo::Timed::event_list_io_t &lst, const QDBusMessage &msg, QList<QVariant> &res)
+  // Here we're asking credentials immediately, not like in add_event
+  void add_events(const Maemo::Timed::event_list_io_t &lst, const QDBusMessage &message, QList<QVariant> &res)
   {
     log_debug() ;
     // TODO: is Maemo::Timed::bus() the correct way?
+    //       yes, but:
+    //       Let's see, if there is a better way
+#if 0
     QDBusConnection bus = Maemo::Timed::bus();
     QString credentials = credentials_get_from_dbus(bus, msg);
-    timed->add_events(lst, res, credentials) ;
+#endif
+    timed->add_events(lst, res, message) ;
   }
 
-  uint replace_event(const Maemo::Timed::event_io_t &x, uint old, const QDBusMessage &msg)
+  uint replace_event(const Maemo::Timed::event_io_t &x, uint old, const QDBusMessage &message)
   {
     log_debug() ;
-    // TODO: is Maemo::Timed::bus() the correct way?
+#if 0
     QDBusConnection bus = Maemo::Timed::bus();
     QString credentials = credentials_get_from_dbus(bus, msg);
-    return timed->add_event(cookie_t(old), x, credentials).value() ;
+#endif
+    return timed->add_event(cookie_t(old), x, message).value() ;
   }
 #endif
 

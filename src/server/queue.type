@@ -81,7 +81,10 @@ event_t =
 
   // timeout snooze, maximum and counter
   { name = "tsz_max",     type = $integer, value=0 },
-  { name = "tsz_counter", type = $integer, value=0 }
+  { name = "tsz_counter", type = $integer, value=0 },
+
+  { name = "client_creds",    type = $record,  record="credentials_t" },
+  { name = "creds_modifier",  type = $record|$array, record="cred_modifier_t" }
 ],
 
 attribute_t =
@@ -109,7 +112,8 @@ button_t =
 action_t =
 [
   { name = "flags",      type = $bitmask,       value=$0 },
-  { name = "attr",       type = $record,  record="attribute_t"}
+  { name = "attr",       type = $record,        record="attribute_t" },
+  { name = "creds_modifier",  type = $record|$array, record="cred_modifier_t" }
 ],
 
 recurrence_pattern_t =
@@ -119,6 +123,19 @@ recurrence_pattern_t =
   { name = "mday", type=$bitmask, value=$any_mday },
   { name = "wday", type=$bitmask, value=$any_wday },
   { name = "mons", type=$bitmask, value=$any_mons }
+],
+
+credentials_t =
+[
+  { name = "uid", type=$bytes, value="nobody" },
+  { name = "gid", type=$bytes, value="nogroup" },
+  { name = "tokens", type=$bytes|$array }
+],
+
+cred_modifier_t =
+[
+  { name = "token", type=$bytes|$mandatory },
+  { name = "accrue", type=$integer, value=0 }
 ]
 
 .

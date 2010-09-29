@@ -19,6 +19,8 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
+#include <sstream>
+
 #include <pcrecpp.h>
 
 #include <timed/event>
@@ -133,8 +135,10 @@ event_t *event_t::from_dbus_iface(const event_io_t *eio)
   {
     e->actions[i].flags = eio->actions[i].flags ;
     map_q_to_std(eio->actions[i].attr.txt, e->actions[i].attr.txt) ;
+    e->actions[i].cred_modifier.load_from_dbus_interface(eio->actions[i].cred_modifiers) ;
     check_attr(str_printf("action #%d", i), e->actions[i].attr, true) ;
   }
+  e->cred_modifier.load_from_dbus_interface(eio->cred_modifiers) ;
 
   int B = eio->buttons.size() ;
   e->snooze.resize(B+1) ;
@@ -324,6 +328,49 @@ void attribute_t::load(const iodata::record *r)
   }
 }
 
+set<string> cred_modifier_t::tokens_by_value(bool value) const
+{
+  set<string> res ;
+  for (map<string,bool>::const_iterator it=tokens.begin(); it!=tokens.end(); ++it)
+    if (it->second==value)
+      res.insert(it->first) ;
+  return res ;
+}
+
+iodata::array *cred_modifier_t::save() const
+{
+  iodata::array *a = new iodata::array ;
+  for(map<string,bool>::const_iterator it=tokens.begin(); it!=tokens.end(); ++it)
+  {
+    iodata::record *r = new iodata::record ;
+    r->add("token", it->first) ;
+    r->add("accrue", !! it->second) ;
+    a->add(r) ;
+  }
+  return a ;
+}
+
+void cred_modifier_t::load(const iodata::array *a)
+{
+  for(unsigned i=0; i<a->size(); ++i)
+  {
+    const iodata::record *r = a->get(i)->rec() ;
+    const string &token = r->get("token")->str() ;
+    tokens[token] = !! r->get("accrue")->value() ;
+  }
+}
+
+void cred_modifier_t::load_from_dbus_interface(const QVector<Maemo::Timed::cred_modifier_io_t> &cmio)
+{
+  for(int i=0; i<cmio.size(); ++i)
+  {
+    string token = string_q_to_std(cmio[i].token) ;
+    if(tokens.find(token)!=tokens.end())
+      log_warning("duplicate token modifier '%s'", token.c_str()) ;
+    tokens[token] = cmio[i].accrue ;
+  }
+}
+
 iodata::record *recurrence_pattern_t::save() const
 {
   iodata::record *r = new iodata::record ;
@@ -344,11 +391,36 @@ void recurrence_pattern_t::load(const iodata::record *r)
   mons = r->get("mons")->decode(mons_codec) ;
 }
 
+string action_t::cred_key()
+{
+  if (cred_key_value.empty())
+  {
+    ostringstream os ;
+    bool first = true ;
+    for (map<string,bool>::const_iterator it=cred_modifier.tokens.begin(); it!=cred_modifier.tokens.end(); ++it)
+    {
+      os << (first?first=false,"tokens={":", ") ;
+      os << (it->second?"+":"-") ;
+      os << it->first ;
+    }
+    os << "}" ;
+    string uid = attr("USER"), gid = attr("GROUP") ;
+    if (!uid.empty())
+      os << ", uid=" << uid ;
+    if (!gid.empty())
+      os << ", gid=" << gid ;
+
+    cred_key_value = os.str() ;
+  }
+  return cred_key_value ;
+}
+
 iodata::record *action_t::save() const
 {
   iodata::record *r = new iodata::record ;
   r->add("attr", attr.save()) ;
   r->add("flags", new iodata::bitmask(flags, codec)) ;
+  r->add("cred_modifier", cred_modifier.save()) ;
   return r ;
 }
 
@@ -356,4 +428,5 @@ void action_t::load(const iodata::record *r)
 {
   attr.load(r->get("attr")->rec()) ;
   flags = r->get("flags")->decode(codec) ;
+  cred_modifier.load(r->get("cred_modifier")->arr()) ;
 }
