@@ -35,6 +35,7 @@ namespace Maemo
   namespace Timed
   {
     struct attribute_io_t ;
+    struct cred_modifier_io_t ;
     struct action_io_t ;
     struct button_io_t ;
     struct recurrence_io_t ;
@@ -48,10 +49,18 @@ struct Maemo::Timed::attribute_io_t
   QMap<QString, QString> txt ;
 } ;
 
+struct Maemo::Timed::cred_modifier_io_t
+{
+  QString token ;
+  bool accrue ;
+  cred_modifier_io_t() : accrue(false) { }
+} ;
+
 struct Maemo::Timed::action_io_t
 {
   attribute_io_t attr ;
   uint32_t flags ;
+  QVector<cred_modifier_io_t> cred_modifiers ;
   action_io_t() { flags = 0 ; }
 } ;
 
@@ -89,6 +98,7 @@ struct Maemo::Timed::event_io_t
   QVector<recurrence_io_t> recrs ;
   // 6. Additional parameters
   int32_t tsz_max, tsz_length ;
+  QVector<cred_modifier_io_t> cred_modifiers ;
   event_io_t() { ticker = t_year = t_month = t_day = t_hour = t_minute = flags = tsz_max = tsz_length = 0 ; }
 #if 0
  ~event_io_t() { }
@@ -109,6 +119,7 @@ struct Maemo::Timed::event_list_io_t
 } ;
 
 declare_qtdbus_io(Maemo::Timed::attribute_io_t) ;
+declare_qtdbus_io(Maemo::Timed::cred_modifier_io_t) ;
 declare_qtdbus_io(Maemo::Timed::action_io_t) ;
 declare_qtdbus_io(Maemo::Timed::button_io_t) ;
 declare_qtdbus_io(Maemo::Timed::recurrence_io_t) ;

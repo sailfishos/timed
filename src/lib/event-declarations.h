@@ -77,6 +77,8 @@ public:
   void setMaximalTimeoutSnoozeCounter(int tsz_max_counter) ;
   void setTimeoutSnooze(int tsz_length) ;
   void setAttribute(const QString &key, const QString &value) ;
+  void credentialDrop(const QString &token) ;
+  void credentialAccrue(const QString &token) ;
   int check(QString *err, bool exc) const ;
  ~Event() ;
 private:
@@ -114,6 +116,8 @@ public:
   void whenTranquil() ;
   void whenButton(const Event::Button &x) ;
   void whenSysButton(int x) ;
+  void credentialDrop(const QString &token) ;
+  void credentialAccrue(const QString &token) ;
 } ;
 
 class Maemo::Timed::Event::Button
