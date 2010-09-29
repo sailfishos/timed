@@ -863,10 +863,13 @@ namespace Alarm
   }
 #endif
 
+#if 0
   bool event_t::operator()(unsigned i, unsigned j)
   {
+    log_info("comparison of %u and %u called (keys are '%s' and '%s')", i, j, actions[i].cred_key().c_str(), actions[j].cred_key().c_str()) ;
     return actions[i].cred_key() < actions[j].cred_key() ;
   }
+#endif
 
   void event_t::secure_run_actions(uint32_t mask)
   {
@@ -889,7 +892,14 @@ namespace Alarm
 
     log_assert(r) ;
 
-    sort(r->begin(), r->end(), *this) ;
+    log_info("Beginning the action list dump") ;
+    for(vector<unsigned>::const_iterator it=r->begin(); it!=r->end(); ++it)
+      log_info("Action %d, cred_key: '%s'", *it, actions[*it].cred_key().c_str()) ;
+    log_info("Done:     the action list dump") ;
+
+    log_info("Beginning the action array sorting") ;
+    sort(r->begin(), r->end(), action_comparison_t(this)) ;
+    log_info("Done:     the action array sorting") ;
 #if 0
     sort(r->begin(), r->end(), action_comparison) ;
 #endif

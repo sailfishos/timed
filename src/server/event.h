@@ -31,6 +31,7 @@ using namespace std ;
 #include <QDBusPendingCallWatcher>
 
 #include <iodata/iodata.h>
+#include <qm/log>
 
 #include <timed/event>
 
@@ -146,14 +147,6 @@ struct event_t
   void set_state(state *s) { st=s ; }
   void secure_run_actions(uint32_t) ;
   bool operator() (unsigned i, unsigned j) ; // actions security key comparison operator
-#if 0
-  // this must be a full blown up structure with
-  // 1. a owner field pointing to 'this' object
-  // 2. constructor initializing it
-  // 3. initializer in the event_t constuctor
-  // -> horror-horror...
-  struct action_comparison_t { bool operator() (unsigned i, unsigned j) ; } action_comparison ;
-#endif
   void run_actions(uint32_t) ;
   void run_actions(const vector<unsigned> &a, unsigned begin, unsigned end) ;
   bool drop_privileges(const action_t &a) ;
@@ -181,6 +174,20 @@ struct event_t
   static iodata::bit_codec *codec ;
   static void codec_initializer() ;
   iodata::record *save() ;
+} ;
+
+struct action_comparison_t
+{
+  event_t *event ;
+  action_comparison_t(event_t *e) : event(e) { }
+  bool operator() (unsigned i, unsigned j)
+  {
+#if 0
+    log_info("comparison of %u and %u called (keys are '%s' and '%s')",
+       i, j, event->actions[i].cred_key().c_str(), event->actions[j].cred_key().c_str()) ;
+#endif
+    return event->actions[i].cred_key() < event->actions[j].cred_key() ;
+  }
 } ;
 
 #endif
