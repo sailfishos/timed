@@ -391,15 +391,16 @@ void recurrence_pattern_t::load(const iodata::record *r)
   mons = r->get("mons")->decode(mons_codec) ;
 }
 
-string action_t::cred_key()
+string action_t::cred_key() const
 {
   if (cred_key_value.empty())
   {
     ostringstream os ;
+    os << "tokens={" ;
     bool first = true ;
     for (map<string,bool>::const_iterator it=cred_modifier.tokens.begin(); it!=cred_modifier.tokens.end(); ++it)
     {
-      os << (first?first=false,"tokens={":", ") ;
+      os << (first?first=false,"":", ") ;
       os << (it->second?"+":"-") ;
       os << it->first ;
     }

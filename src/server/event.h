@@ -100,8 +100,8 @@ struct action_t
 
   action_t() { flags = 0 ; }
 
-  string cred_key_value ;
-  string cred_key() ; // shold be const, but can't
+  mutable string cred_key_value ;
+  string cred_key() const ;
 
   static iodata::bit_codec *codec ;
   iodata::record *save() const ;
@@ -178,8 +178,8 @@ struct event_t
 
 struct action_comparison_t
 {
-  event_t *event ;
-  action_comparison_t(event_t *e) : event(e) { }
+  const event_t *event ;
+  action_comparison_t(const event_t *e) : event(e) { }
   bool operator() (unsigned i, unsigned j)
   {
 #if 0
