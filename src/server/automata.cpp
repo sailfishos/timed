@@ -987,8 +987,12 @@ namespace Alarm
     {
       const unsigned acts_i = acts[i] ;
       const action_t &a = actions [acts_i] ;
+
       if (a.flags & ActionFlags::Run_Command)
         exec_action_i = acts_i ;
+
+      if((a.flags & ActionFlags::DBus_Action) == 0)
+        continue ;
 
       try
       {
