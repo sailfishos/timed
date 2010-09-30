@@ -202,13 +202,15 @@ bool credentials_t::apply() const
 #endif
 }
 
-void credentials_t::from_current_process()
+credentials_t credentials_t::from_current_process()
 {
 #if F_CREDS_AEGIS_LIBCREDS
   creds_t aegis_creds = creds_gettask(0) ;
-  *this = aegis_credentials_from_creds_t(aegis_creds) ;
+  credentials_t creds = aegis_credentials_from_creds_t(aegis_creds) ;
 
   creds_free(aegis_creds) ;
+
+  return creds ;
 #else // not F_CREDS_AEGIS_LIBCREDS
 #error credentials_t::from_current_process() is only implemented for F_CREDS_AEGIS_LIBCREDS
 #endif
@@ -219,8 +221,7 @@ bool credentials_t::apply_and_compare()
   if (! apply()) // can't apply: nothing to check
     return false ;
 
-  credentials_t current ;
-  current.from_current_process() ;
+  credentials_t current = credentials_t::from_current_process() ;
 
   ostringstream os ;
 

@@ -1097,8 +1097,7 @@ namespace Alarm
 
   bool event_t::accrue_privileges(const action_t &a)
   {
-    credentials_t creds ;
-    creds.from_current_process() ;
+    credentials_t creds = credentials_t::from_current_process() ;
 
 #if F_TOKENS_AS_CREDENTIALS
     const cred_modifier_t &E = cred_modifier, &A = a.cred_modifier ;
