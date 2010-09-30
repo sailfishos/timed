@@ -479,11 +479,6 @@ namespace Maemo
 
 QVariant Maemo::Timed::Event::dbus_output(const char *) const
 {
-#if 0
-  string err ;
-  if(check_std(&err))
-    throw Maemo::Timed::Exception(pretty, err.toStdString()) ;
-#endif
   return QVariant::fromValue(p->eio) ;
 }
 

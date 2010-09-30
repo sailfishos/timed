@@ -35,14 +35,9 @@ public:
   bool is_valid() const { return t>0 ; }
   bool operator<(const ticker_t &y) const { return value() < y.value() ; }
   bool operator<=(const ticker_t &y) const { return value() <= y.value() ; }
-#if 0
-  int diff(const ticker_t &y) const { return y.value()-value() ; }
-  ticker_t add(int diff) const { return ticker_t(value()+diff) ; }
-#else
   int operator-(const ticker_t &y) const { return value()-y.value() ; }
   ticker_t operator+(int diff) const { return ticker_t(value()+diff) ; }
   void operator-=(time_t diff) { t-=diff ; }
-#endif
 } ;
 
 struct cookie_t

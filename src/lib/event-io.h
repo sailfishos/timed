@@ -102,17 +102,6 @@ struct Maemo::Timed::event_io_t
   int32_t tsz_max, tsz_length ;
   QVector<cred_modifier_io_t> cred_modifiers ;
   event_io_t() { ticker = t_year = t_month = t_day = t_hour = t_minute = flags = tsz_max = tsz_length = 0 ; }
-#if 0
- ~event_io_t() { }
-#define _x(a) a(x.a)
-  event_io_t(const event_io_t &x) :
-    _x(ticker), _x(t_year), _x(t_month), _x(t_day), _x(t_hour), _x(t_minute), _x(t_zone),
-    _x(attr), _x(flags), _x(buttons), _x(actions), _x(recrs)
-  {
-    qDebug() << __PRETTY_FUNCTION__ ;
-  }
-#undef _x
-#endif
 } ;
 
 struct Maemo::Timed::event_list_io_t

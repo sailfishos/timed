@@ -132,7 +132,7 @@ public:
     {
       log_critical("%s", e.info().c_str()) ;
     }
-#if 0
+#if TODO // really: TODO
     catch(const event_exception &e)
     {
       log_critical("oops, unknown std::exception: %s", e.what()) ;

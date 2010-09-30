@@ -29,10 +29,6 @@ using namespace std ;
 
 #include <iodata/iodata.h>
 
-#if 0
-#include <timed/alarm.h>
-#endif
-
 struct recurrence_pattern_t ;
 
 #include "wrappers.h"

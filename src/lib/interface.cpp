@@ -23,23 +23,6 @@
 ***************************************************************************/
 #include "interface.h"
 
-#if 0
-struct Maemo::Timed::signal_receiver : public QObject
-{
-  Q_OBJECT ;
-public:
-  signal_receiver()
-  {
-    const char *s = Maemo::Timed::service() ;
-    const char *o = Maemo::Timed::objpath() ;
-    const char *i = Maemo::Timed::interface() ;
-    Maemo::Timed::bus().connect(s,o,i,"settings_changed_1",SIGNAL(settings_1(bool))) ;
-  }
-public Q_SIGNALS:
-  void settings_1(bool) ;
-} ;
-#endif
-
 bool Maemo::Timed::Interface::settings_changed_connect(QObject *object, const char *slot)
 {
   static const char *s = Maemo::Timed::service() ;
@@ -56,27 +39,6 @@ bool Maemo::Timed::Interface::settings_changed_connect(QObject *object, const ch
 }
 
 Maemo::Timed::Interface::Interface(QObject *parent)
-#if 0
-  : QDBusInterface("com.nokia.time", "/com/nokia/time", "com.nokia.time", QDBusConnection::sessionBus(), parent)
-#else
   : QDBusInterface(Maemo::Timed::service(), Maemo::Timed::objpath(), Maemo::Timed::interface(), Maemo::Timed::bus(), parent)
-#endif
 {
-#if 0
-  receiver = new signal_receiver ;
-#endif
-#if 0
-  // bus().connect(service(), objpath(), interface(), "settings_changed", this, ) ;
-  // bus().connect(service(), objpath(), interface(), "settings_changed_1", this, SIGNAL(settings_changed_1(bool))) ;
-  int res = QDBusConnection::sessionBus().connect(
-#if 0
-      service(), objpath(), interface(),
-#else
-      "com.nokia.time", "/com/nokia/time", "com.nokia.time",
-#endif
-      "settings_changed_1", this, SLOT(xxx(bool))) ;
-  qDebug() << __PRETTY_FUNCTION__ ;
-  qDebug() << ( isValid() ? "VALID" : "NOT VALID" ) << "res" << res ;
-  qDebug() << service() << objpath() << interface() ;
-#endif
 }

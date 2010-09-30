@@ -100,11 +100,7 @@ switch_timezone::switch_timezone(const string &s)
 
 switch_timezone::~switch_timezone()
 {
-#if 0
-  int res = old_tz ? unsetenv("TZ") : setenv("TZ", old_tz, true) ;
-#else
   int res = old_tz ? setenv("TZ", old_tz, true) : unsetenv("TZ") ;
-#endif
 
   if(res<0)
     log_critical("Can't change TZ environment: %s", strerror(errno)) ;

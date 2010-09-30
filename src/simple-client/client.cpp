@@ -37,16 +37,10 @@ using namespace std ;
 
 #include <pcrecpp.h>
 
-#if 0
-#include <timed/alarm.h>
-#include <timed/notification.h>
-#else
 #include <timed/interface>
 #include <timed/event>
 #include <timed-voland/interface>
 #include <timed-voland/ta_interface>
-#endif
-// #include <fake-ui-header.h>
 
 #include "timed/exception.h"
 
@@ -350,100 +344,6 @@ int add_event(const char *title)
   qDebug() << "added event, cookie:" << res.value() ;
   return 0 ;
 }
-
-#if 0
-int add_event(const char *title)
-{
-  Maemo::Timed::Event e ;
-  time_t ticker = time(NULL)+8 ;
-
-  Maemo::Timed::Event::Action &a_trig = e.addAction() ;
-  a_trig.whenTriggered() ;
-  a_trig.setSendCookieFlag() ;
-  a_trig.runCommand("echo cookie=[COOKIE]=<COOKIE> TRIGGERED $(date) >> /tmp/aa") ;
-  e.setAlarmFlag() ;
-
-  if(title!=NULL)
-  {
-    e.setAttribute("TITLE", title) ;
-    e.setAlignedSnoozeFlag() ;
-
-    if(pcrecpp::RE("boot").PartialMatch(title))
-    {
-      e.setBootFlag() ;
-      ticker += 3*60 - 8 ;
-    }
-
-    Maemo::Timed::Event::Button &b1 = e.addButton() ;
-    Maemo::Timed::Event::Button &b2 = e.addButton() ;
-    Maemo::Timed::Event::Button &b3 = e.addButton() ;
-    Maemo::Timed::Event::Button &b4 = e.addButton() ;
-
-    b1.setSnooze(10) ;
-    b2.setSnooze(17) ;
-    b3.setSnooze(60) ;
-    (void)b4 ;
-    // b4 doesn't snooze: it closes the dialog
-
-    Maemo::Timed::Event::Action &a1 = e.addAction() ;
-    a1.runCommand("echo [COOKIE] BUTTON #1 $(date) >> /tmp/aa") ;
-    a1.setSendCookieFlag() ;
-    a1.whenButton(b1) ;
-
-    Maemo::Timed::Event::Action &a2 = e.addAction() ;
-    a2.runCommand("echo [COOKIE] BUTTON #2 $(date) >> /tmp/aa") ;
-    a2.setSendCookieFlag() ;
-    a2.whenButton(b2) ;
-
-    Maemo::Timed::Event::Action &a3 = e.addAction() ;
-    a3.runCommand("echo [COOKIE] BUTTON #3 $(date) >> /tmp/aa") ;
-    a3.setSendCookieFlag() ;
-    a3.whenButton(b3) ;
-
-    Maemo::Timed::Event::Action &a4 = e.addAction() ;
-    a4.runCommand("echo [COOKIE] BUTTON #4 $(date) >> /tmp/aa") ;
-    a4.setSendCookieFlag() ;
-    a4.whenButton(b1) ;
-
-    Maemo::Timed::Event::Action &a_0 = e.addAction() ;
-    a_0.runCommand("echo [COOKIE] CANCELED BY USER $(date) >> /tmp/aa") ;
-    a_0.setSendCookieFlag() ;
-    a_0.whenSysButton(0) ;
-
-    Maemo::Timed::Event::Action &a_sys = e.addAction() ;
-    a_sys.runCommand("echo [COOKIE] FIRST SYSTEM BYTTON $(date) >> /tmp/aa") ;
-    a_sys.setSendCookieFlag() ;
-    a_sys.whenSysButton(1) ;
-  }
-  else // no title, let's add a recurrence
-  {
-    Maemo::Timed::Event::Recurrence &r = e.addRecurrence() ;
-    r.everyMonth() ;
-    r.everyDayOfMonth() ;
-    r.everyDayOfWeek() ;
-    r.addHour(12), r.addMinute(34) ;
-  }
-
-  e.setTicker(ticker) ;
-
-  Maemo::Timed::Interface ifc ;
-  if(!ifc.isValid())
-  {
-    qDebug() << "not valid interface:" << ifc.lastError() ;
-    return 1 ;
-  }
-
-  QDBusReply<uint> res = ifc.add_event_sync(e) ;
-  if(!res.isValid())
-  {
-    qDebug() << "call failed:" << res.error().message() ;
-    return 1 ;
-  }
-
-  qDebug() << "added event, cookie:" << res.value() ;
-  return 0 ;
-}
-#endif
 
 int send_quit()
 {

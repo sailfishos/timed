@@ -40,13 +40,6 @@
 #include "states.h"
 #include "onitz.h"
 
-#if 0
-string nt_to_str(const nanotime_t &t)
-{
-  return str_printf("%d.%09d", (int)t.sec(), t.nano()) ;
-}
-#endif
-
 void source_t::load(const iodata::record *)
 {
   // empty, do nothing
@@ -335,23 +328,7 @@ source_settings::source_settings(Timed *owner)
   _creat(manual_zone) ;
   _creat(cellular_zone) ;
 #undef _creat // spell it without 'e' ;-)
-#if 0
-  clear_invokation_flag() ;
-#endif
 }
-
-#if 0 // moved to timed
-void source_settings::invoke_signal(const nanotime_t &back)
-{
-  systime_back += back ;
-  if(signal_invoked)
-    return ;
-  signal_invoked = true ;
-  int methodIndex = o->metaObject()->indexOfMethod("send_time_settings()") ;
-  QMetaMethod method = o->metaObject()->method(methodIndex);
-  method.invoke(o, Qt::QueuedConnection);
-}
-#endif
 
 void source_settings::load(const iodata::record *r)
 {
@@ -385,15 +362,6 @@ iodata::record *source_settings::save() const
     r->add(it->first, it->second->save()) ;
   return r ;
 }
-
-#if 0
-source *source_settings::src_(const string &key) const
-{
-  map<string,source*>::const_iterator it = src.find(key) ;
-  log_assert(it!=src.end(), "the ley %s not found", key.c_str()) ;
-  return it->second ;
-}
-#endif
 
 Maemo::Timed::WallClock::wall_info_pimple_t *source_settings::get_wall_clock_info(const nanotime_t &back) const
 {
@@ -564,15 +532,6 @@ int source_settings::check_target(string path)
   return 0 ;
 }
 
-#if 0
-int source_settings::check_timezone(string zone)
-{
-  return check_target(symlink_target(zone)) ;
-}
-#endif
-
-// check_offset
-
 string source_settings::etc_localtime() const
 {
   if(auto_dst)
@@ -692,20 +651,6 @@ bool source_settings::wall_clock_settings(const Maemo::Timed::WallClock::wall_se
       log_error("setting invalid time request rejected") ;
       return false ;
     }
-#if 0 // NOT NEEDED
-    switch(op_time)
-    {
-      case Op_Set_Time_Nitz:
-        signal_needed = signal_needed || ! time_nitz ;
-        signal_utc = nitz_utc->available() ;
-        break ;
-      case Op_Set_Time_Manual:
-        signal_needed = signal_needed || time_nitz ;
-        break ;
-      case Op_Set_Time_Manual_Val:
-        signal_needed = signal_utc = true ;
-    }
-#endif
     signal_needed = true ;
   }
 
@@ -879,19 +824,4 @@ void source_settings::cellular_information(const cellular_info_t &ci)
       o->open_epoch() ;
     }
   }
-
-#if NOT_DONE_YET
-  string tz ;
-
-  tz = tz_single->guess_timezone(&ci) ;
-  // XXX TODO -- guess timezone based on mcc
-
-  if(!tz.empty())
-  {
-    cellular_zone->value = tz ;
-    if(local_cellular)
-    {
-    }
-  }
-#endif
 }

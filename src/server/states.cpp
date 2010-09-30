@@ -37,11 +37,6 @@
 #include "flags.h"
 #include "misc.h"
 
-#if 0
-namespace Alarm
-{
-#endif
-
 void state_start::enter(event_t *e)
 {
   state::enter(e) ;
@@ -201,35 +196,6 @@ void state_queued::leave(event_t *e)
   io_state::leave(e) ;
 }
 
-#if 0
-void state_queued::timer_start()
-{
-  int time_to_wait = -1 ;
-  if(queue.empty())
-    log_info("go to sleep, no alarm queued") ;
-  else
-  {
-    time_to_wait = queue.begin()->first - now() ;
-    if(time_to_wait<0)
-    {
-      log_info("no sleep today: an alarm is %d seconds overdue", -time_to_wait) ;
-      time_to_wait = 0 ;
-    }
-    else
-      log_info("go to sleep, next alarm in %d seconds", time_to_wait) ;
-  }
-  if(0<=time_to_wait)
-    alarm_timer->start(time_to_wait*1000) ;
-  if(0!=time_to_wait) // -1=infinity, or >0 -- sleeping
-    om->send_queue_context() ;
-#if 0
-  static unsigned next_user_cookie=0 ;
-  next_user_cookie ++ ;
-  static /*may be auto as well*/ ContextProvider::Property cookie_property("UserAlarm.NextCookie") ;
-  cookie_property.setValue(next_user_cookie) ; // unsetValue() set the value to null, but not deletes it
-#endif
-}
-#else
 void state_queued::timer_start()
 {
   if(queue.empty())
@@ -264,7 +230,6 @@ void state_queued::timer_start()
     om->send_queue_context() ;
   }
 }
-#endif
 
 void state_queued::timer_stop()
 {
@@ -333,24 +298,6 @@ bool state_flt_user::filter(event_t *e)
   return (e->flags & EventFlags::User_Mode) != 0 ;
 }
 
-#if 0
-void state_disabled::enable_user_alarms()
-{
-  // alarm_engine_pause x(om) ;
-  for(set<event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
-    om->request_state(*it, "NEW") ;
-  om->process_transition_queue() ;
-}
-
-void state_waitconn::internet_connection_established()
-{
-  // alarm_engine_pause x(om) ;
-  for(set<event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
-    om->request_state(*it, "NEW") ;
-  om->process_transition_queue() ;
-}
-#endif
-
 void state_missed::enter(event_t *e)
 {
   state::enter(e) ;
@@ -360,22 +307,8 @@ void state_missed::enter(event_t *e)
 
   if(e->flags & EventFlags::Trigger_If_Missed)
     next_state = "TRIGGERED" ;
-#if 0
-  else if(e->attr(Alarm::event_flags::Postpone_If_Missed))
-    next_state = "POSTPONED" ;
-#endif
   om->request_state(e, next_state) ;
 }
-
-#if 0
-void state_postponed::enter(event_t *e)
-{
-  const char *next_state = "NEW" ;
-  if(false) // what should be the condition for that ?
-    next_state = "DUE" ;
-  om->request_state(e, next_state) ;
-}
-#endif
 
 void state_due::enter(event_t *e)
 {
@@ -476,11 +409,7 @@ void state_recurred::enter(event_t *e)
   if(best_ticker.is_valid())
   {
     e->flags &= ~ EventFlags::Empty_Recurring ;
-#if 0
-    e->t = best ;
-#else
     e->trigger = best_ticker ;
-#endif
   }
   else
   {
@@ -542,11 +471,6 @@ void state_button::enter(event_t *e)
   {
     log_assert((unsigned)no < e->snooze.size()) ;
     snooze_length = e->snooze[no] ;
-#if 0
-    // and now we can use sign bit as alignment flag
-    if(b.attr(button_flags::Aligned_Snooze))
-      snooze_length = - snooze_length ; // if it's zero, nothing happens
-#endif
   }
 
   // handle special value, +1 means default snooze
@@ -557,18 +481,10 @@ void state_button::enter(event_t *e)
   if(snooze_length > 0)
   {
     e->to_be_snoozed = snooze_length ;
-#if 0
-    if(!e->snoozed_trigger.is_valid()) // first snooze
-      e->snoozed_trigger = e->trigger ;
-#endif
     om->request_state(e, "SNOOZED") ;
   }
   else
   {
-#if 0
-    e->snooze = 0 ; // no snooze
-    e->snoozed_trigger = ticker_t(0) ;
-#endif
     om->request_state(e, "SERVED") ;
   }
 }
@@ -592,13 +508,6 @@ void state_removed::enter(event_t *e)
 void state_finalized::enter(event_t *e)
 {
   state::enter(e) ;
-#if 0
-  uint32_t off = e->flags & EventFlags::Cluster_Mask ;
-  log_debug("off=0x%08X", off) ;
-  for(uint32_t b; b = (off ^ (off-1)), b &= off ; off ^= b)
-    om->clusters[b]->leave(e),
-    log_debug("b=0x%08X, off=0x%08X", b, off) ;
-#endif
   om->request_state(e, (state*)NULL) ;
   om->process_transition_queue() ;
 }
@@ -720,8 +629,3 @@ bool cluster_dialog::has_bootup_events()
 {
   return !bootup_events.empty() ;
 }
-
-#if 0
-}
-#endif
-// int alarm_engine_pause::counter = 0 ;

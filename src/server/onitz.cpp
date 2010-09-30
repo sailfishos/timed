@@ -35,13 +35,6 @@ cellular_handler::cellular_handler()
 #if USE_CELLULAR_QT
   cnt = new Cellular::NetworkTime ;
   cop = new Cellular::NetworkOperator ;
-#if 0
-  int res = QObject::connect(cnt, SIGNAL(dateTimeChanged(QDateTime, int, int)), this, SLOT(old_nitz_signal(QDateTime, int, int))) ;
-  if(!res)
-    log_error("can't connect to the old nitz signal 'dateTimeChanged(QDateTime,int,int)'") ;
-  else
-    log_debug("connected to the old nitz signal 'dateTimeChanged(QDateTime,int,int)'") ;
-#endif
   const char *signal1 = SIGNAL(timeInfoChanged(const NetworkTimeInfo &)) ;
   const char *signal2 = SIGNAL(timeInfoQueryCompleted(const NetworkTimeInfo &)) ;
   const char *my_slot = SLOT(new_nitz_signal(const NetworkTimeInfo &)) ;
@@ -74,26 +67,6 @@ void cellular_handler::emulate_operator_signal()
 #endif
 }
 
-#if 0
-void cellular_handler::send_signal()
-{
-  // log_debug() ;
-  // log_debug("cellular_time: %s", string_q_to_std(cellular_time->dateTime().toString()).c_str()) ;
-  // log_debug("cellular_time->timezone(): %d", cellular_time->timezone()) ;
-  // log_debug("cellular_time->dst(): %d", cellular_time->dst()) ;
-  log_debug("Calling 'old_nitz_signal' manually") ;
-  this->old_nitz_signal(cnt->dateTime(), cnt->timezone(), cnt->dst()) ;
-  // log_debug() ;
-}
-#endif
-
-#if 0
-void cellular_handler::invoke_signal()
-{
-  QMetaObject::invokeMethod(this, "send_signal", Qt::QueuedConnection) ;
-}
-#endif
-
 cellular_handler *cellular_handler::object()
 {
   static cellular_handler *obj = NULL ;
@@ -101,79 +74,6 @@ cellular_handler *cellular_handler::object()
     obj = new cellular_handler ;
   return obj ;
 }
-
-#if 0
-void cellular_handler::old_nitz_signal(QDateTime dt, int timezone, int dst)
-{
-  log_debug("QDateTime=%ld timezone=%d dst=%d", dt.isValid() ? dt.toTime_t() : -239, timezone, dst) ;
-  cellular_info_t ci ;
-
-  // First create a time stamp. No information from cellular daemon,
-  // thus we just fake it, taking the current monotonic time.
-  ci.timestamp_value = nanotime_t::monotonic_now() ;
-
-  // 1. Offset of the timezone.
-  // Invalid means '-1' probably ?
-  // Anyway it should divisible by a 15 mins unit
-  if(timezone != -1 && timezone % (15*60) == 0)
-  {
-    ci.flag_offset = true ;
-    ci.offset_value = timezone /* 15*60 */ ;
-
-  // 2. UTC time, only possible, of the timezone offset is valid
-
-    if(dt.isValid())
-    {
-      ci.flag_time = true ;
-      nanotime_t sent = nanotime_t::from_time_t(dt.toTime_t()) ;
-      ci.time_at_zero_value = sent - ci.timestamp_value ;
-
-  // 3. DST flag, only possible if 1&2 above are given
-
-      if(dst!=-1) // '-1' is probably the 'invalid' value
-      {
-        ci.flag_dst = true ;
-        ci.dst_value = dst ; // probably in hours
-      }
-    }
-  }
-  else
-    log_error("invalid timezone=%d value from cellular daemon", timezone) ;
-
-  // Now the network information
-  Cellular::NetworkOperator no ;
-  QString mcc = no.mcc() ;
-  QString mnc = no.mnc() ;
-
-  // MCC is being sent as a string (why?)
-  // Thus we have to convert it to an integer
-
-  if(!mcc.isEmpty())
-  {
-    string mcc_str = string_q_to_std(mcc) ;
-    int mcc_dec ;
-    static pcrecpp::RE integer = "(\\d+)" ;
-    if(integer.FullMatch(mcc_str, &mcc_dec))
-    {
-      ci.flag_mcc = true ;
-      ci.mcc_value = mcc_dec ;
-
-      // If we have a valid MCC, let's check for MNC
-      if(!mnc.isEmpty())
-      {
-        ci.flag_mnc = true ;
-        ci.mnc_value = string_q_to_std(mnc) ;
-      }
-    }
-    else
-      log_error("invalid mcc value from cellular daemon: '%s'", mcc.toStdString().c_str()) ;
-  }
-
-  log_debug() ;
-  emit cellular_data_received(ci) ;
-  log_debug() ;
-}
-#endif
 
 void cellular_handler::fake_nitz_signal(int mcc, int offset, int time, int dst)
 {

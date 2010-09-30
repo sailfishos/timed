@@ -34,7 +34,6 @@
 
 struct Maemo::Timed::event_pimple_t
 {
-  // event_pimple_t() ;
  ~event_pimple_t() ;
   struct event_io_t eio ;
   std::vector<event_action_pimple_t*> a ;
@@ -71,17 +70,5 @@ struct Maemo::Timed::event_list_pimple_t
  ~event_list_pimple_t() ;
  std::vector<Event *> events ;
 } ;
-
-#if 0
-int Maemo::Timed::Event::which_button(const Maemo::Timed::EventButton &B) const
-{
-  int res = -1 ;
-  for(unsigned i=0; res<0 && i<b.size(); ++i)
-    if(b[i]==&B)
-      res = i ;
-  return res ;
-}
-#endif
-
 
 #endif

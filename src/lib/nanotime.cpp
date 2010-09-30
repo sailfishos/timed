@@ -108,17 +108,4 @@ const QDBusArgument &operator>>(const QDBusArgument &in, nanotime_t &x)
   return in ;
 }
 
-#if 0
-#include <QDebug>
-
-static struct nanotime_initializer_t
-{
-  nanotime_initializer_t()
-  {
-    qDebug() << __PRETTY_FUNCTION__ ;
-    register_qtdbus_metatype(nanotime_t) ;
-  }
-} nanotime_initializer ;
-#else
 register_qtdbus_metatype(nanotime_t, 0) ;
-#endif

@@ -170,11 +170,5 @@ namespace RenameMeNameSpace
       Dsme_Poweroff_Threshold = 120
     } ;
 }
-#if 0
-  }
-}
-#endif
-
-
 
 #endif

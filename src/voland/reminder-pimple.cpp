@@ -145,18 +145,5 @@ QString Maemo::Timed::Voland::Reminder::buttonAttr(int x, const QString &key) co
     return it.value() ;
 }
 
-#if 0
-#include <QDebug>
-static struct reminder_initializer_t
-{
-  reminder_initializer_t()
-  {
-    qDebug() << __PRETTY_FUNCTION__ ;
-    register_qtdbus_metatype(Maemo::Timed::Voland::Reminder) ;
-    register_qtdbus_metatype(Maemo::Timed::Voland::button_io_t) ;
-  }
-} reminder_initializer ;
-#else
 register_qtdbus_metatype(Maemo::Timed::Voland::Reminder, 1) ;
 register_qtdbus_metatype(Maemo::Timed::Voland::button_io_t, 2) ;
-#endif

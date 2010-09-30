@@ -61,10 +61,6 @@ using namespace std ;
 #include "misc.h"
 #include "credentials.h"
 
-#if 0
-namespace Alarm
-{
-#endif
   state::state(const char *n, machine *m) : om(m)
   {
     name = strdup(n) ;
@@ -111,9 +107,6 @@ namespace Alarm
 
   void io_state::abort(event_t *e)
   {
-#if 0
-    log_debug() ;
-#endif
     om->request_state(e, "ABORTED") ;
     om->process_transition_queue() ;
   }
@@ -196,9 +189,7 @@ namespace Alarm
       new state_due(this),            // T
 
       new state_missed(this),         // T A
-#if 0
-      new state_postponed(this),      // T
-#endif
+//      new state_postponed(this),      // T
       new state_skipped(this),        // T
 
       new state_triggered(this),      // T A
@@ -328,14 +319,6 @@ namespace Alarm
       state *new_state = transition_queue.front().second ;
       log_assert(new_state!=old_state, "New state is the same as the old one (%s)", old_state->name) ;
 #define state_name(p) (p?p->name:"null")
-#if 0
-      log_debug("e=%p", e) ;
-      log_debug("cookie=%d", e->cookie.value()) ;
-      log_debug("From '%p'", old_state) ;
-      log_debug("To '%p'", new_state) ;
-      log_debug("From '%s'", state_name(old_state)) ;
-      log_debug("To '%s'", state_name(new_state)) ;
-#endif
       log_info("State transition %d:'%s'->'%s'", e->cookie.value(), state_name(old_state), state_name(new_state)) ;
 #undef state_name
       if(old_state)
@@ -470,24 +453,7 @@ namespace Alarm
   void machine::request_state(event_t *e, state *st)
   {
     transition_queue.push_back(make_pair(e, st)) ;
-#if 0
-    ostringstream os ;
-    typedef deque <pair <event_t*, state*> >::const_iterator iterator ;
-    bool start = true ;
-    for(iterator it=transition_queue.begin(); it!=transition_queue.end(); ++it, start=false)
-    {
-      cookie_t cookie=it->first->cookie ;
-      state *current = it->first->st, *requested = it->second ;
-      // const char *current = it->first->st->name ;
-      // const char *requested = it->second->name ;
-      if(!start)
-        os << ", " ;
-#define state_name(p) (p?p->name:"null")
-      os << "[" << cookie.value() << "," << state_name(current) << "]->" << state_name(requested) ;
-#undef state_name
-    }
-    log_debug("request queue: %s", os.str().c_str()) ;
-#endif
+    // TODO: I would like to log the current queue state
   }
 
   void machine::request_state(event_t *e, const char *state_name)
@@ -510,10 +476,6 @@ namespace Alarm
     cluster_queue *c_queue = dynamic_cast<cluster_queue*> (clusters[EventFlags::Cluster_Queue]) ;
     alarm_triggers_p.setValue(QVariant::fromValue(c_queue->alarm_triggers)) ;
     alarm_present_t.setValue(!c_queue->alarm_triggers.isEmpty()) ;
-#if 0
-    static ContextProvider::Property x239("UserAlarm.NextCookie") ;
-    x239.setValue(239) ;
-#endif
     context_changed = false ;
     log_debug() ;
   }
@@ -528,9 +490,6 @@ namespace Alarm
     {
       if(e->actions.size() > 0)
         e->client_creds = p_creds ? *p_creds : credentials_t::from_dbus_connection(*p_message) ;
-#if 0
-      e->attr.txt["CREDENTIALS"] = string(credentials.toUtf8().constData());
-#endif
       request_state(events[e->cookie = cookie_t(next_cookie++)] = e, "START") ;
       if(process_queue)
         invoke_process_transition_queue() ;
@@ -701,38 +660,6 @@ namespace Alarm
     dialog_req_watcher = NULL ;
   }
 
-#if 0
-  event_t::event_t(const event_io_t *eio)
-  : ticker(eio->ticker),
-    t(eio->t_year, eio->t_month, eio->t_day, eio->t_hour, eio->t_minute),
-    attr(eio->attr),
-    dialog(eio->dialog),
-    actions(eio->actions),
-    recrs(eio->recrs),
-    trigger(0),
-    last_triggered(0),
-    to_be_snoozed(0)
-  {
-    tz = eio->t_zone.isEmpty() ? NULL : strdup(eio->t_zone.toStdString().c_str()) ;
-    st = NULL ;
-    dialog_req_watcher = NULL ;
-  }
-#endif
-
-#if 0
-  event_t::~event_t()
-  {
-    if(tz)
-      free((void*)tz) ;
-  }
-#endif
-
-#if 0
-  event_t::event_t(const iodata::record *r)
-  {
-  }
-#endif
-
   uint32_t machine::attr(uint32_t mask)
   {
     return flags & mask ;
@@ -740,24 +667,17 @@ namespace Alarm
 
   iodata::record *machine::save()
   {
-    // log_debug() ;
     iodata::record *r = new iodata::record ;
     iodata::array *q = new iodata::array ;
 
-    // log_debug() ;
     for(map<cookie_t, event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
     {
-      // log_debug() ;
       q->add(it->second->save()) ;
-      // log_debug() ;
     }
 
-    // log_debug() ;
     r->add("events", q) ;
-    // log_debug() ;
     r->add("next_cookie", next_cookie) ;
     r->add("default_snooze", default_snooze_value) ;
-    // log_debug() ;
     filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
     r->add("alarms", flt_alrm->is_open ? 1 : 0) ;
 
@@ -775,26 +695,12 @@ namespace Alarm
       cookie_t c(ee->get("cookie")->value()) ;
       event_t *e = new event_t ;
       events[e->cookie = c] = e ;
-      // e->trigger = (ticker_t) ee->get("trigger")->value() ;
-      // e->snoozed_trigger = (ticker_t) ee->get("snoozed_trigger")->value() ;
 
       e->ticker = ticker_t(ee->get("ticker")->value()) ;
-#if 0
-      e->t_year = ee->get("t_year")->value() ;
-      e->t_month = ee->get("t_month")->value() ;
-      e->t_day = ee->get("t_day")->value() ;
-      e->t_hour = ee->get("t_hour")->value() ;
-      e->t_minute = ee->get("t_minute")->value() ;
-#else
       e->t.load(ee->get("t")->rec()) ;
-#endif
 
-#if 0
-      string tz_s = ee->get("tz")->str() ;
-      e->tz = tz_s.length() > 0 ? strdup(tz_s.c_str()) : NULL ;
-#else
       e->tz = ee->get("tz")->str() ;
-#endif
+
       e->attr.load(ee->get("attr")->rec()) ;
       e->flags = ee->get("flags")->decode(event_t::codec) ;
       iodata::load(e->recrs, ee->get("recrs")->arr()) ;
@@ -804,33 +710,17 @@ namespace Alarm
       e->last_triggered = ticker_t(ee->get("dialog_time")->value()) ;
       e->tsz_max = ee->get("tsz_max")->value() ;
       e->tsz_counter = ee->get("tsz_counter")->value() ;
-#if 0
-      e->dialog.load(ee->get("dialog")->rec()) ;
-#endif
       e->client_creds.load(ee->get("client_creds")->rec()) ;
       e->cred_modifier.load(ee->get("cred_modifier")->arr()) ;
 
-#if 0
-      e->recr_count = ee->get("recr_count")->value() ;
-#endif
-
-#if 0
-      log_debug("e=%p", e) ;
-      log_debug("cookie=%d", e->cookie.value()) ;
-      log_debug("From '%p'", e->get_state()) ;
-#endif
-
-#if 0
-      request_state(e, ee->get("due_state")->value() ? "DUE" : "NEW") ;
-#else
       const char *next_state = "START" ;
 
       if(e->flags & EventFlags::Empty_Recurring)
         e->invalidate_t() ;
 
       request_state(e, next_state) ;
-#endif
     }
+
     filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
     if(r->get("alarms")->value())
       flt_alrm->open() ;
@@ -861,20 +751,6 @@ namespace Alarm
   } ;
 
   // what a mess... event_t::stuff should be in event.cpp
-#if 0
-  bool event_t::action_comparison_t::operator()(unsigned i, unsigned j)
-  {
-    return actions[i].cred_key() < actions[j].cred_key() ;
-  }
-#endif
-
-#if 0
-  bool event_t::operator()(unsigned i, unsigned j)
-  {
-    log_info("comparison of %u and %u called (keys are '%s' and '%s')", i, j, actions[i].cred_key().c_str(), actions[j].cred_key().c_str()) ;
-    return actions[i].cred_key() < actions[j].cred_key() ;
-  }
-#endif
 
   void event_t::sort_and_run_actions(uint32_t mask)
   {
@@ -905,9 +781,6 @@ namespace Alarm
     log_info("Beginning the action array sorting") ;
     sort(r->begin(), r->end(), action_comparison_t(this)) ;
     log_info("Done:     the action array sorting") ;
-#if 0
-    sort(r->begin(), r->end(), action_comparison) ;
-#endif
 
     unsigned start_index = ~0 ; // invalid value
     string current_key ; // empty key (invalid?)
@@ -1153,54 +1026,14 @@ namespace Alarm
     return creds.apply_and_compare() ;
   }
 
-#if 0
-  void event_t::run_actions(uint32_t mask)
-  {
-    // log_debug("event=%d, actions.size()=%d", cookie.value(), actions.size()) ;
-    for(unsigned i=0; i<actions.size(); ++i)
-    {
-      const action_t &a = actions[i] ;
-      if((a.flags & mask)==0)
-        continue ;
-      log_info("executing action %d[%d]", cookie.value(), i) ;
-
-      // we want to detect, it the exeption was thrown in the daemon itself or in a child
-      pid_t daemon = getpid() ;
-
-      try
-      {
-        if(a.flags & (ActionFlags::DBus_Method | ActionFlags::DBus_Signal))
-          execute_dbus(a) ;
-        if(a.flags & ActionFlags::Run_Command)
-          execute_command(a) ;
-      }
-      catch(const event_exception &e)
-      {
-        log_error("action %d[%d] failed: %s", cookie.value(), i, e.message.c_str()) ;
-        pid_t process = e.pid() ;
-        if (process!=daemon)
-        {
-          log_info("terminating child (pid=%d) of daemon (pid=%d)", process, daemon) ;
-          ::exit(1) ;
-        }
-      }
-    }
-  }
-#endif
-
   string event_t::find_action_attribute(const string &key, const action_t &a, bool exc)
   {
-#if 0
-    QString action_value = a.attr(key) ;
-    return action_value.isEmpty() ? attr(key) : action_value ;
-#else
     string value = a.attr(key) ;
     if(value.empty())
       value = attr(key) ;
     if(value.empty() && exc)
       throw event_exception(string("empty attribute '")+key+"'") ;
     return value ;
-#endif
   }
 
   void event_t::add_strings(QMap<QString, QVariant> &x, const map<string,string> &y)
@@ -1208,188 +1041,6 @@ namespace Alarm
     for(map<string,string>::const_iterator it=y.begin(); it!=y.end(); ++it)
       x.insert(string_std_to_q(it->first), QVariant::fromValue(string_std_to_q(it->second))) ;
   }
-
-#if 0
-  void event_t::execute_dbus(const action_t &a)
-  {
-    QString path = string_std_to_q(find_action_attribute("DBUS_PATH", a)) ;
-    QString ifac = string_std_to_q(find_action_attribute("DBUS_INTERFACE", a, (a.flags & ActionFlags::DBus_Signal)!=0)) ;
-    QDBusMessage m ;
-    if(a.flags & ActionFlags::DBus_Method)
-    {
-      QString serv = string_std_to_q(find_action_attribute("DBUS_SERVICE", a)) ;
-      QString meth = string_std_to_q(find_action_attribute("DBUS_METHOD", a)) ;
-      m = QDBusMessage::createMethodCall(serv, path, ifac, meth) ;
-    }
-    else
-    {
-      QString sgnl = string_std_to_q(find_action_attribute("DBUS_SIGNAL", a)) ;
-      m = QDBusMessage::createSignal(path, ifac, sgnl) ;
-    }
-    QDBusConnection c = (a.flags & ActionFlags::Use_System_Bus) ? QDBusConnection::systemBus() : QDBusConnection::sessionBus() ;
-    QMap<QString,QVariant> param ;
-    if(a.flags & ActionFlags::Send_Cookie)
-      param["COOKIE"] = QString("%1").arg(cookie.value()) ;
-    if(a.flags & ActionFlags::Send_Event_Attributes)
-      add_strings(param, attr.txt) ;
-    if(a.flags & ActionFlags::Send_Action_Attributes)
-      add_strings(param, a.attr.txt) ;
-    m << QVariant::fromValue(param) ;
-    if(c.send(m))
-      log_debug("[%d]: D-Bus Message sent", cookie.value()) ;
-    else
-      log_error("[%d]: Failed to send a message on D-Bus: %s", cookie.value(), c.lastError().message().toStdString().c_str()) ;
-  }
-  void event_t::execute_dbus(const action_t &a)
-  {
-    bool error = true;
-    int  child = fork_and_set_credentials(a, error);
-
-    if( child != 0 )
-    {
-      // parent
-    }
-    else if( error )
-    {
-      // child init failed, just terminate
-      // cause of error logged @ fork_and_set_credentials()
-      _exit(1);
-    }
-    else
-    {
-      // child init ok
-
-      // set up message to be sent
-      QString path = string_std_to_q(find_action_attribute("DBUS_PATH", a)) ;
-      QString ifac = string_std_to_q(find_action_attribute("DBUS_INTERFACE", a, (a.flags & ActionFlags::DBus_Signal)!=0)) ;
-
-      QDBusMessage m ;
-
-      if(a.flags & ActionFlags::DBus_Method)
-      {
-        QString serv = string_std_to_q(find_action_attribute("DBUS_SERVICE", a)) ;
-        QString meth = string_std_to_q(find_action_attribute("DBUS_METHOD", a)) ;
-        m = QDBusMessage::createMethodCall(serv, path, ifac, meth) ;
-      }
-      else
-      {
-        QString sgnl = string_std_to_q(find_action_attribute("DBUS_SIGNAL", a)) ;
-        m = QDBusMessage::createSignal(path, ifac, sgnl) ;
-      }
-
-      QMap<QString,QVariant> param ;
-      if(a.flags & ActionFlags::Send_Cookie)
-      {
-        param["COOKIE"] = QString("%1").arg(cookie.value()) ;
-      }
-      if(a.flags & ActionFlags::Send_Event_Attributes)
-      {
-        add_strings(param, attr.txt) ;
-      }
-      if(a.flags & ActionFlags::Send_Action_Attributes)
-      {
-        add_strings(param, a.attr.txt) ;
-      }
-      m << QVariant::fromValue(param) ;
-
-
-      // TODO: is it safe to use dbus bindings after fork?
-      // TODO: do we really get a fresh private connection or not?
-      // TODO: should we use libdbus? or exec a helper?
-
-      // send using fresh private connection
-      QString cname = "timed-private";
-      QDBusConnection::BusType ctype = QDBusConnection::SessionBus;
-
-      if( a.flags & ActionFlags::Use_System_Bus ) ctype = QDBusConnection::SystemBus;
-
-      QDBusConnection c = QDBusConnection::connectToBus(ctype, cname);
-
-      int xc = 0;
-
-      if( !c.send(m) )
-      {
-        log_error("[%d]: Failed to send a message on D-Bus: %s", cookie.value(), c.lastError().message().toStdString().c_str()) ;
-        xc = 1;
-      }
-      else
-      {
-        log_debug("[%d]: D-Bus Message sent", cookie.value()) ;
-
-        // as we are about to exit immediately after queuing
-        // and there seems to be no way to flush the connection
-        // and be sure that we have actually transmitted the
-        // message -> do a dummy synchronous query from dbus
-        // daemon and hope that is enough to get the actual
-        // message to be delivered ...
-
-        QString name  = c.baseService();
-        pid_t   owner = credentials_get_name_owner(c, name);
-
-        // it should be us ...
-        log_debug("my pid: %d, connection owner pid: %d", getpid(), owner);
-      }
-
-      QDBusConnection::disconnectFromBus(cname);
-
-      _exit(xc);
-    }
-  }
-#endif
-
-#if DEAD_CODE
-  void event_t::prepare_command(const action_t &a, string &cmd, string &user)
-  {
-    user = find_action_attribute("USER", a, false) ;
-    if(user.empty())
-      user = "user" ;
-    cmd = find_action_attribute("COMMAND", a) ;
-    if(a.flags & ActionFlags::Send_Cookie)
-    {
-      log_debug("cmd='%s', COOKIE to be replaced by value", cmd.c_str()) ;
-      using namespace pcrecpp ;
-      static RE exp("(<COOKIE>)|\\b(COOKIE)\\b", UTF8()) ;
-      ostringstream decimal ;
-      decimal << cookie.value() ;
-      exp.GlobalReplace(decimal.str(), &cmd);
-      log_debug("cmd='%s', COOKIE replaced", cmd.c_str()) ;
-    }
-
-#if 0
-    QString cookie_val = QString("%1").arg(cookie.value()) ;
-    if(a.attr(action_flags::Send_Cookie))
-    {
-      static QRegExp cookie_exp("(<COOKIE>)|\\b(COOKIE)\\b") ;
-      while(cookie_exp.indexIn(cmd) != -1)
-      {
-        for(int i=1; i<=2; i++)
-          if(int len = cookie_exp.cap(i).length())
-          {
-            int pos = cookie_exp.pos(i) ;
-            cmd.replace(pos, len, cookie_val) ;
-            break ;
-          }
-      }
-    }
-
-#endif
-
-
-#if 0
-    qDebug() << "cmd" << cmd ;
-#endif
-
-#if 0
-    char *sys_cmd = strdup(cmd.toStdString().c_str()) ;
-    log_assert(sys_cmd) ;
-    int res = system(sys_cmd) ;// XXX: yes, yes, I know! TODO: fork + su as 'user' + exec
-    log_info("Event [%d] in %s, executing: %s", cookie.value(), st->name, sys_cmd) ;
-    if(res!=0)
-      log_info("Event [%d] in %s, executing '%s' returning %d", cookie.value(), st->name, sys_cmd, res) ;
-    free(sys_cmd) ;
-#endif
-  }
-#endif
 
   pid_t event_t::fork_and_set_credentials_v3(const action_t &action)
   {
@@ -1433,349 +1084,6 @@ namespace Alarm
     }
   }
 
-#if DEAD_CODE
-  pid_t event_t::fork_and_set_credentials_v2(const action_t &action, bool &error)
-  {
-    pid_t pid = fork() ;
-
-    if (pid<0) // can't fork
-    {
-      log_error("fork() failed: %m") ;
-      return error = false, pid ;
-    }
-    else if (pid>0) // parent
-    {
-      log_info("forked successfully, child pid: '%d'", pid) ;
-      st->om->emit_child_created(cookie.value(), pid) ;
-      return error = false, pid ;
-    }
-    else // child
-    {
-      log_info("event [%u]: in child process", cookie.value()) ;
-
-      if (setsid() < 0) // detach from session
-      {
-        log_error("setsid() failed: %m") ;
-        return error = true, pid ;
-      }
-
-      if(! drop_privileges(action))
-      {
-        log_error("can't drop privileges") ;
-        return error = true, pid ;
-      }
-
-      if(! accrue_privileges(action))
-        log_warning("can't accrue privileges, still continuing") ;
-
-      // Skipping all the uid/gid settings, because it's part of
-      // credentials_t::apply() (or it should be)
-
-      // TODO: go to home dir _here_ !
-
-      // That's it then, isn't it?
-
-      return error = false, pid ;
-    }
-  }
-#endif
-
-#if DEAD_CODE
-  int event_t::fork_and_set_credentials(const action_t &action, bool &error)
-  {
-    // assume failure
-    int    pid  = -1;
-    bool   err  = true;
-
-    string user = find_action_attribute("USER", action, false) ;
-    string cred = attr(string("CREDENTIALS"));
-
-    struct passwd *pw = 0;
-
-    // FIXME: remove debug logging later
-    log_debug("as user: %s", user.c_str());
-    log_debug("credentials: %s", cred.c_str());
-
-    // bailout if credentials attribute is not set
-    if( cred.empty() )
-    {
-      log_warning("no credential attribute, action skipped") ;
-      goto cleanup;
-    }
-
-    // get user details if user attribute is set
-    if( !user.empty() && !(pw = getpwnam(user.c_str())) )
-    {
-      // TODO: do log_xxx functions preserve errno?
-      log_error("getpwnam(%s) failed: %m", user.c_str()) ;
-      goto cleanup;
-    }
-
-    // FORK: both child and parent will return with the
-    // pid returned by fork(), the caller must inspect
-    // also the error parameter to know whether the
-    // child initialization was succesful or not
-
-    // parent process
-
-    if( (pid = fork()) != 0 )
-    {
-      if( pid < 0 )
-      {
-        // TODO: do log_xxx functions preserve errno?
-        log_error("fork() failed: %m");
-        goto cleanup;
-      }
-
-      // child was successfully started
-      st->om->emit_child_created(cookie.value(), pid) ;
-      err = false;
-      goto cleanup;
-    }
-
-    // child process
-
-    // detach from session
-    if( setsid() < 0 )
-    {
-      // TODO: do log_xxx functions preserve errno?
-      log_error("setsid() failed: %m") ;
-      goto cleanup;
-    }
-
-    {
-      creds_t creds1 = creds_gettask(getpid()) ;
-      const char *c1 = credentials_to_string(creds1) ;
-      log_debug("child old creds: '%s'", c1) ;
-      // take stored client credentials in to use
-      if( !credentials_set(QString::fromUtf8(cred.c_str())) )
-      {
-        log_error("credentials_set() failed") ;
-        goto cleanup;
-      }
-      creds_t creds2 = creds_gettask(getpid()) ;
-      const char *c2 = credentials_to_string(creds2) ;
-      log_debug("child new creds: '%s'", c2) ;
-    }
-
-    uid_t ruid, euid, suid;
-    gid_t rgid, egid, sgid;
-
-    ruid = euid = suid = -1;
-    rgid = egid = sgid = -1;
-
-    // only effective uid/gid is set, change real
-    // and saved ones too
-
-    if( (getresgid(&rgid, &egid, &sgid) < 0) ||
-        (getresuid(&ruid, &euid, &suid) < 0) )
-    {
-      // TODO: do log_xxx functions preserve errno?
-      log_error("getresgid() / getresuid() failed: %m") ;
-      goto cleanup;
-    }
-
-    if( setresgid(egid, egid, egid) < 0 )
-    {
-      // TODO: do log_xxx functions preserve errno?
-      log_error("setresgid(%d) failed: %m", (int)egid) ;
-      log_error("uid was: r=%d, e=%d, s=%d", ruid, euid, suid);
-      log_error("gid was: r=%d, e=%d, s=%d", rgid, egid, sgid);
-      goto cleanup;
-    }
-    if( setresuid(euid, euid, euid) < 0 )
-    {
-      // TODO: do log_xxx functions preserve errno?
-      log_error("setresuid(%d) failed: %m", (int)euid) ;
-      log_error("uid was: r=%d, e=%d, s=%d", ruid, euid, suid);
-      log_error("gid was: r=%d, e=%d, s=%d", rgid, egid, sgid);
-      goto cleanup;
-    }
-
-    // update for later use
-    if( (getresgid(&rgid, &egid, &sgid) < 0) ||
-        (getresuid(&ruid, &euid, &suid) < 0) )
-    {
-      // TODO: do log_xxx functions preserve errno?
-      log_error("getresgid() / getresuid() failed: %m") ;
-      goto cleanup;
-    }
-
-    // FIXME: debug block, remove later
-    {
-      log_debug("uid now: r=%d, e=%d, s=%d", ruid, euid, suid);
-      log_debug("gid now: r=%d, e=%d, s=%d", rgid, egid, sgid);
-    }
-
-    // if user attribute was not set, we will use the home directory
-    // of the user id effective after setting the credentials
-    if( pw == 0 )
-    {
-      uid_t uid = geteuid();
-
-      if( !(pw = getpwuid(uid)) )
-      {
-        // TODO: do log_xxx functions preserve errno?
-        log_error("getpwuid(%d) failed: %m", (int)uid);
-        goto cleanup;
-      }
-    }
-
-    log_debug("workdir: %s", pw->pw_dir);
-
-    // set home directory as current working directory
-    if( chdir(pw->pw_dir)<0 )
-    {
-      const char fallback[] = "/";
-
-      // TODO: do log_xxx functions preserve errno?
-      log_warning("chdir(\"%s\") failed: %m, trying \"%s\"", pw->pw_dir, fallback);
-
-      if( chdir(fallback)<0 )
-      {
-        // TODO: do log_xxx functions preserve errno?
-        log_error("chdir(\"%s\") failed: %m", fallback);
-        goto cleanup;
-      }
-    }
-
-    // if user attribute was set, we will try to do the
-    // uid and gid setting after setting the credentials
-    // this allows actions added from root process to
-    // be executed as user, but not the other way around
-    if( !user.empty() )
-    {
-      if( setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) < 0 )
-      {
-        // TODO: do log_xxx functions preserve errno?
-        log_error("setresgid(%d) failed: %m", (int)pw->pw_gid) ;
-        log_error("uid was: r=%d, e=%d, s=%d", ruid, euid, suid);
-        log_error("gid was: r=%d, e=%d, s=%d", rgid, egid, sgid);
-        goto cleanup;
-      }
-
-      if( setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid) < 0 )
-      {
-        // TODO: do log_xxx functions preserve errno?
-        log_error("setresuid(%d) failed: %m", (int)pw->pw_uid) ;
-        log_error("uid was: r=%d, e=%d, s=%d", ruid, euid, suid);
-        log_error("gid was: r=%d, e=%d, s=%d", rgid, egid, sgid);
-        goto cleanup;
-      }
-
-      // FIXME: debug block, remove later
-      {
-        if( (getresgid(&rgid, &egid, &sgid) < 0) ||
-            (getresuid(&ruid, &euid, &suid) < 0) )
-        {
-          // TODO: do log_xxx functions preserve errno?
-          log_error("getresgid() / getresuid() failed: %m") ;
-          goto cleanup;
-        }
-        log_debug("uid now: r=%d, e=%d, s=%d", ruid, euid, suid);
-        log_debug("gid now: r=%d, e=%d, s=%d", rgid, egid, sgid);
-      }
-    }
-
-    // if we got here, all of the child process initialization
-    // was succesfully completed
-    err = false;
-
-cleanup:
-    return error = err, pid;
-  }
-#endif
-
-#if 0
-  void event_t::execute_command(const action_t &a)
-  {
-    string cmd, user ;
-    prepare_command(a, cmd, user) ;
-    errno = 0 ;
-    struct passwd *pw = getpwnam(user.c_str()) ;
-    if(pw==NULL)
-      throw event_exception((string)"getpwname() failed"+strerror(errno)) ;
-    pid_t pid = fork() ;
-    if(pid<0)
-      throw event_exception((string)"fork() failed"+strerror(errno)) ;
-    log_info("forked successfully, fork() returned '%d'", pid) ;
-    if(pid>0)
-    {
-      st->om->emit_child_created(cookie.value(), pid) ;
-      return ;
-    }
-    // child process
-    try
-    {
-      if(setsid()<0)
-        throw event_exception((string)"setsid() failed"+strerror(errno)) ;
-      if(user!="root")
-      {
-        if(chdir(pw->pw_dir)<0)
-          throw event_exception((string)"chdir('"+pw->pw_dir+"') failed"+strerror(errno)) ;
-        if(setgid(pw->pw_gid)<0)
-          throw event_exception((string)"setgid() failed"+strerror(errno)) ;
-        if(setuid(pw->pw_uid)<0)
-          throw event_exception((string)"setuid() failed"+strerror(errno)) ;
-      }
-      execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL) ;
-      throw event_exception((string)"execl('/bin/sh', '-c', '"+cmd+"') failed"+strerror(errno)) ;
-    }
-    catch(const event_exception &e)
-    {
-      log_error("event %d, child process failed: %s", cookie.value(), e.message.c_str()) ;
-      exit(1) ;
-    }
-  }
-  void event_t::execute_command(const action_t &a)
-  {
-    string cmd, user ;
-
-    // TODO: since we no longer allow everybody to request execution
-    //       as somebody else it makes little sense to default to
-    //       "user" if USER attribute is not set -> the user set
-    //       from prepare_command is not used -> remove the whole
-    //       parameter? yes...
-    prepare_command(a, cmd, user) ;
-
-    log_debug("execute: %s", cmd.c_str());
-
-    bool error = true;
-    int  child = fork_and_set_credentials(a, error);
-
-    // parent
-    if( child != 0 )
-    {
-      if( child < 0 )
-      {
-        log_error("execute: could not create child process");
-      }
-      else
-      {
-        log_debug("execute: child pid = %d", child);
-      }
-      return;
-    }
-
-    // child
-    if( error )
-    {
-      log_error("execute: child init failure");
-    }
-    else
-    {
-      log_debug("execute: child init OK");
-      // exec*() calls return only on failure
-      log_debug("execute: %s", cmd.c_str());
-      execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL) ;
-
-      // TODO: do log_xxx functions preserve errno?
-      log_error("%s: failed: %m", cmd.c_str());
-    }
-    _exit(1);
-  }
-#endif
-
   iodata::record *event_t::save()
   {
     iodata::record *r = new iodata::record ;
@@ -1787,16 +1095,10 @@ cleanup:
     r->add("flags", new iodata::bitmask(flags &~ EventFlags::Cluster_Mask, codec)) ;
     r->add("recrs", iodata::save(recrs)) ;
     r->add("actions", iodata::save(actions)) ;
-//    r->add("dialog", dialog.save()) ;
     r->add("snooze", iodata::save_int_array(snooze)) ;
     r->add("b_attr", iodata::save(b_attr)) ;
 
-    // io_state *iost = dynamic_cast<io_state*> (st) ;
-#if 0
-    r->add("dialog_time", iost->save_in_due_state() ? 0 : last_triggered.value()) ;
-#else
     r->add("dialog_time", (flags & EventFlags::In_Dialog) ? last_triggered.value() : 0) ;
-#endif
     r->add("tsz_max", tsz_max) ;
     r->add("tsz_counter", tsz_counter) ;
     r->add("client_creds", client_creds.save()) ;
@@ -1809,7 +1111,3 @@ cleanup:
     log_assert(false, "obsolete function") ;
     return false ;
   }
-
-#if 0
-}
-#endif

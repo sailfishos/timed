@@ -42,7 +42,7 @@
 
 static void spam()
 {
-#if 0
+#if NO_SPAM
   time_t now = time(NULL) ;
   for(int i=0; i<12; ++i)
   {
@@ -52,13 +52,13 @@ static void spam()
     log_debug("i=%d, time:%ld, t.tm_gmtoff=%ld", i, then, t.tm_gmtoff) ;
   }
 #endif
-#if 0
+#if NO_SPAM
   qlonglong A=1111, B=2222 ;
   QString str = "bebe " ;
   str += QString(" timestamp: %1/%2").arg(A).arg(B) ;
   qDebug() << str ;
 #endif
-#if 0
+#if NO_SPAM
   log_info("AA") ;
   for(nanotime_t x(-2,0); x.sec()<3; x+=nanotime_t(0,100000000))
   {
@@ -140,14 +140,6 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   }
 
   log_info("service %s registered", Maemo::Timed::service()) ;
-
-#if 0
-  ContextProvider::Service *context_service = new ContextProvider::Service(Maemo::Timed::bus()) ; // not deleted at all
-  context_service->setAsDefault() ;
-  ContextProvider::Property("UserAlarm.NextCookie") ;
-#else
-  // moved up: (new ContextProvider::Service(Maemo::Timed::bus()))->setAsDefault() ;
-#endif
 
   // load the queue from file ....
   load_events() ;
@@ -373,72 +365,6 @@ void Timed::restore_finished()
   QCoreApplication::exit(1);
 }
 
-#if 0
-void Timed::load_rc_()
-{
-  iodata::record c ;
-  timed_rc_type->check_record_after_read(&c, "const_t") ;
-
-#define USE_NEW_VALIDATOR_FROM_FILE 1
-
-#if 0
-  iodata::bytes *location = dynamic_cast<iodata::bytes*> (c.x["rc_location"]) ;
-#else
-  string rc_file_path = c.get("rc_location")->str() ;
-#endif
-
-#if ! USE_NEW_VALIDATOR_FROM_FILE
-#if 0
-  ifstream if_rc(location->x.c_str()) ;
-#else
-  ifstream if_rc(rc_file_path.c_str()) ;
-#endif
-
-  iodata::record *r = NULL ;
-  try
-  {
-    iodata::parser p = if_rc ;
-    p.parse() ;
-    r = p.detach() ;
-    timed_rc_type->check_record_after_read(r, "timed_rc_t") ;
-  }
-  catch(iodata::exception &e)
-  {
-    log_error("Loading rcfile: %s", e.info().c_str()) ;
-#if 0
-    log_info("The file %s is corrupted or not present, using default values", location->x.c_str()) ;
-#else
-    log_info("The file %s is corrupted or not present, using default values", rc_file_path.c_str()) ;
-#endif
-    delete r ;
-    r = new iodata::record ;
-    timed_rc_type->check_record_after_read(r, "timed_rc_t") ;
-  }
-#else // USE_NEW_VALIDATOR_FROM_FILE
-  string msg ;
-  iodata::record *r = timed_rc_type->record_from_file(rc_file_path.c_str(), "timed_rc_t", msg) ;
-  log_assert(r!=NULL, "rc file is not loaded") ;
-  if(!msg.empty())
-    log_info("Loading rc file: %s", msg.c_str()) ;
-#endif
-
-  alarm_queue_path = r->get("queue_path")->str() ;
-  settings_path = r->get("settings_path")->str() ;
-  threshold_period_long = r->get("queue_threshold_long")->value() ;
-  threshold_period_short = r->get("queue_threshold_short")->value() ;
-  ping_period = r->get("notification_ping_period")->value() ;
-  ping_max_num = r->get("notification_ping_max_num")->value() ;
-  save_time_path = r->get("saved_utc_time_path")->str() ;
-
-  ostringstream str ;
-  iodata::output o(str) ;
-  o.output_record(r) ;
-  log_debug("Current rc settings: %s", str.str().c_str()) ;
-
-  delete r ;
-}
-#endif // 0
-
 void Timed::load_events()
 {
   event_storage = new iodata::storage ;
@@ -456,96 +382,7 @@ void Timed::load_events()
 
   delete events ;
 }
-#if 0
-void Timed::load_alarms()
-{
-  iodata::record *q = NULL ;
-  try
-  {
-    ifstream fs ;
-    // fs.exceptions(ifstream::failbit | ifstream::badbit) ;
-    fs.open(alarm_queue_path.c_str()) ;
-    iodata::parser p(fs) ;
-    p.parse() ;
-    q = p.detach() ;
-    alarm_queue_type->check_record_after_read(q, "alarm_queue_t") ;
-  }
-  catch(iodata::exception &e)
-  {
-    log_critical("Loading alarm queue failed: %s", e.info().c_str()) ;
-    delete q ;
-    return ;
-  }
-  am->load(q) ;
-}
-#endif // 0
 
-#if 0
-
-#if ! USE_NEW_VALIDATOR_FROM_FILE
-void Timed::save_alarm_queue()
-{
-  iodata::record *queue = am->save() ;
-  alarm_queue_type->check_record_before_write(queue, "alarm_queue_t") ;
-
-  ostringstream os ;
-  iodata::output out(os) ;
-  out.output_record(queue) ;
-
-  try
-  {
-    ofstream of ;
-    of.exceptions(ofstream::failbit | ofstream::badbit) ;
-    of.open(alarm_queue_path.c_str(), ofstream::out) ;
-    of << os.str() ;
-    of.close() ;
-    log_info("alarm queue written") ;
-  }
-  catch(const ofstream::failure &e)
-  {
-    log_critical("can't save alarm queue: %s", e.what()) ;
-    log_info("alarm queue follows: %s", os.str().c_str()) ;
-  }
-  delete queue ;
-}
-#else // USE_NEW_VALIDATOR_FROM_FILE
-void Timed::save_alarm_queue()
-{
-  iodata::record *queue = am->save() ;
-  string serialized ;
-  bool success = alarm_queue_type->record_to_file(alarm_queue_path.c_str(), "alarm_queue_t", queue, serialized) ;
-
-  if(success)
-  {
-    log_info("alarm queue written") ;
-  }
-  else
-  {
-    log_critical("can't save alarm queue") ;
-    log_info("alarm queue follows: %s", serialized.c_str()) ;
-  }
-  delete queue ;
-}
-void Timed::save_settings()
-{
-  iodata::record *r = settings->save() ;
-  string serialized ;
-  bool success = settings_type->record_to_file(settings_path.c_str(), "settings", r, serialized) ;
-
-  if(success)
-  {
-    log_info("wall clock settings written") ;
-  }
-  else
-  {
-    log_critical("can't save wall clock settings") ;
-    log_info("lost settings: %s", serialized.c_str()) ;
-  }
-  delete r ;
-}
-#endif // USE_NEW_VALIDATOR_FROM_FILE
-
-#endif // 0
 void Timed::save_event_queue()
 {
   iodata::record *queue = am->save() ;
@@ -610,22 +447,6 @@ void Timed::load_settings()
 
   delete tree ;
 }
-
-#if 0
-void Timed::load_settings()
-{
-  log_debug() ;
-  string msg ;
-  iodata::record *r = settings_type->record_from_file(settings_path.c_str(), "settings", msg) ;
-  log_assert(r!=NULL, "can't get settings") ;
-  if(!msg.empty())
-    log_info("Loading rc file: %s", msg.c_str()) ;
-  settings = new source_settings(this) ;
-  settings->load(r) ;
-  delete r ;
-  log_debug() ;
-}
-#endif // 0
 
 void Timed::invoke_signal(const nanotime_t &back)
 {

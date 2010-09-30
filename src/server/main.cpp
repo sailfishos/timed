@@ -21,13 +21,6 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#if 0
-
-#include <timed/alarm.h>
-using namespace Alarm ;
-
-#endif
-
 #include "adaptor.h"
 #include "timed.h"
 #include "event.h"

@@ -68,9 +68,6 @@ tz_oracle_t::tz_oracle_t()
   // log_assert(false, "please initialize xy_to_tz!") ;
 
   read_timezones_by_country() ;
-#if 0
-  tz_default = NULL ;
-#endif
 
   delay = new QTimer ;
   delay->setSingleShot(true) ;
@@ -255,13 +252,6 @@ void tz_oracle_t::mcc_data(int new_mcc, const string & /* mnc not used */)
 tz_single_t::tz_single_t(const iodata::record *list_r)
 {
   log_debug() ;
-#if 0
-  iodata::storage *mcc_tz = new iodata::storage ;
-  mcc_tz->set_validator(validator(), "tz_single_t") ;
-  mcc_tz->set_primary_path("/usr/share/tzdata-timed/single.data") ;
-  iodata::record *list_r = mcc_tz->load() ;
-  delete mcc_tz ;
-#endif
 
   if(list_r==NULL)
   {
@@ -330,30 +320,3 @@ olson * tz_distinct_t::guess_timezone(int mcc, tz_suggestions_t &list)
 
 // --------------------------------------------------
 
-#if 0
-
-void tz_state::gmt_offset(time_t now, int new_offset, int new_dst_flag)
-{
-  if(offset==new_offset && dst_flag==new_dst_flag)
-  {
-    update_time(now) ;
-    return ;
-  }
-
-  offset = new_offset ;
-  dst_flag = new_dst_flag ;
-
-  compute_candidates(now) ;
-}
-
-void tz_state::compute_candidates(time_t now)
-{
-  candidates.clear() ;
-  if(const olson *s=cnifo->sinle_zone())
-  {
-    candidates.insert(s) ;
-    return ;
-  }
-}
-
-#endif

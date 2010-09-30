@@ -29,12 +29,6 @@ using namespace std ;
 
 #include <qm/log>
 
-//#include <fake-ui-header.h>
-#if 0
-#include <timed/alarm.h>
-#include <timed/notification.h>
-#endif
-
 #include "timed-voland/interface"
 
 #include "fake-dialog-ui.h"
@@ -82,14 +76,6 @@ fake_dialog_ui::fake_dialog_ui(int ac, char **av)
   control = new QObject ;
   new fake_dialog_ui_control(control, this) ;
 
-#if 0
-  bool service3_result = Voland::bus().registerService(Voland::ta_service()) ;
-  if(!service3_result)
-  {
-    log_critical("can't register service '%s' on bus '%s': %s", Voland::ta_service(), Voland::bus().name().QC, Voland::bus().lastError().message().QC) ;
-    exit(1) ;
-  }
-#endif
   bool obj3_result = Maemo::Timed::Voland::bus().registerObject(Maemo::Timed::Voland::ta_objpath(), control) ;
   if(!obj3_result)
   {
@@ -97,22 +83,6 @@ fake_dialog_ui::fake_dialog_ui(int ac, char **av)
     exit(1) ;
   }
 }
-#if 0
-fake_dialog_ui::fake_dialog_ui(int ac, char **av) : QCoreApplication(ac, av)
-{
-  new fake_dialog_ui_adapter(this) ;
-  bool result = Alarm::register_dialogui_service(this) ;
-  if(!result)
-  {
-    cout << av[0] << ": can't register, bye..." ;
-    exit(1) ;
-  }
-  bool res_serv = ALARM_DIALOG_CONNECTION.registerService(DIALOG_DBUS_SERVICE) ;
-  qDebug() << "registerService" << DIALOG_DBUS_SERVICE << res_serv ;
-
-  bool res_obj = QDBusConnection::s.....Bus().registerObject(DIALOG_DBUS_OBJPATH, this) ;
-  qDebug() << "registerObject" << DIALOG_DBUS_OBJPATH<< res_obj ;
-#endif
 
 int main(int ac, char **av)
 {

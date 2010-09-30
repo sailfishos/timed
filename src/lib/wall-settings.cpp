@@ -177,17 +177,3 @@ const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::WallClock
 }
 
 register_qtdbus_metatype(Maemo::Timed::WallClock::wall_settings_pimple_t, 0) ;
-#if 0
-#include <QDebug>
-
-static struct nanotime_initializer_t
-{
-  nanotime_initializer_t()
-  {
-    qDebug() << __PRETTY_FUNCTION__ ;
-    register_qtdbus_metatype(nanotime_t) ;
-  }
-} nanotime_initializer ;
-#else
-// register_qtdbus_metatype(nanotime_t, 0) ; XXX already registered somewhere
-#endif

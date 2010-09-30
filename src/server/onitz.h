@@ -94,50 +94,6 @@ struct cellular_info_t
   }
 } ;
 
-#if 0
-namespace Cellular
-{
-  struct NetworkTimeInfo
-  {
-    QDateTime x_dateTime;
-    int x_offsetFromUtc;
-    int x_daylightAdjustment;
-    qlonglong x_timestampSeconds, x_timestampNanoSeconds ;
-    QString x_mcc, x_mnc ;
-
-    QDateTime dateTime() const { return x_dateTime; }
-    int offsetFromUtc() const { return x_offsetFromUtc; }
-    int daylightAdjustment() const { return x_daylightAdjustment; }
-
-    qlonglong timestampSeconds() const { return x_timestampSeconds ; }
-    qlonglong timestampNanoSeconds() const { return x_timestampNanoSeconds ; }
-    QString mobileCountryCode() const { return x_mcc ; }
-    QString mobileNetworkCode() const { return x_mnc ; }
-    bool isValid() const { return true ; }
-    QString toString() const
-    {
-      // log_debug() ;
-      QString res = "INVALID" ;
-      // log_debug() ;
-      if(isValid())
-      {
-        // log_debug() ;
-        res = dateTime().toString(Qt::ISODate) ;
-        // log_debug() ;
-        res += QString(" off: %1 dst: %2").arg(offsetFromUtc()).arg(daylightAdjustment()) ;
-        // log_debug() ;
-        res += QString(" timestamp: %1/%2").arg(timestampSeconds()).arg(timestampNanoSeconds()) ;
-        // log_debug() ;
-        res += QString(" mcc: '%1' mnc: '%2'").arg(mobileCountryCode()).arg(mobileNetworkCode()) ;
-        // log_debug() ;
-      }
-      // log_debug() ;
-      return res ;
-    }
-  } ;
-}
-#endif
-
 struct cellular_handler : public QObject
 {
   Q_OBJECT ;
@@ -146,22 +102,13 @@ struct cellular_handler : public QObject
   Cellular::NetworkOperator *cop ;
 #endif
   cellular_handler() ;
-#if 0
-  Q_INVOKABLE void send_signal() ;
-#endif
   Q_INVOKABLE void emulate_operator_signal() ;
 signals:
   void cellular_data_received(const cellular_info_t &) ;
 public:
   static cellular_handler *object() ;
   void fake_nitz_signal(int mcc, int offset, int time, int dst) ;
-#if 0
-  void invoke_signal() ;
-#endif
 private slots:
-#if 0
-  void old_nitz_signal(QDateTime dt, int timezone, int dst) ;
-#endif
 #if USE_CELLULAR_QT
   void new_nitz_signal(const NetworkTimeInfo &) ; // { log_assert(false, "to be implemented") ; }
 #endif

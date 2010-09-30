@@ -169,25 +169,14 @@ struct source_settings
   nanotime_t value_at_zero() const ;
 
   void set_system_time(const nanotime_t &) ;
-#if 0 // moved to timed
-  bool signal_invoked ;
-  nanotime_t systime_back ;
-#endif
 
   map<string,source_t*> src ;
 
-  // source *src_(const string &) const ;
   void load(const iodata::record *) ;
   iodata::record *save() const ;
 
   Maemo::Timed::WallClock::wall_info_pimple_t *get_wall_clock_info(const nanotime_t &) const ;
   bool wall_clock_settings(const Maemo::Timed::WallClock::wall_settings_pimple_t &p) ;
-
-#if 0 // moved to timed
-  void invoke_signal(const nanotime_t &) ;
-  void invoke_signal() { nanotime_t zero ; invoke_signal(zero) ; }
-  void clear_invokation_flag() { signal_invoked = false ; systime_back.invalidate() ; }
-#endif
 
   static string symlink_target(int offset_sec) ;
   static bool east_of_greenwich(string &result, int offset_sec, bool reverse=false) ;

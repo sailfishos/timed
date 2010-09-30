@@ -40,19 +40,10 @@
   friend QDBusArgument & ::operator<<(QDBusArgument &, const type_name &) ; \
   friend const QDBusArgument & ::operator>>(const QDBusArgument &in, type_name &x) ;
 
-#if 0
-#define qtdbus_print_class_name(type_name) qDebug() << __PRETTY_FUNCTION__ << #type_name <<
-#else
 #define qtdbus_print_class_name(type_name)
-#endif
 
-#if 0
-#define register_qtdbus_metatype(type_name) do { qDBusRegisterMetaType<type_name> () ; } while(0)
-#else
 #define register_qtdbus_metatype(type_name, I) namespace{static struct _reg_t##I{_reg_t##I(){ \
   qtdbus_print_class_name(type_name) qDBusRegisterMetaType<type_name> () ; } } _reg_t_object##I ; }
-#endif
-
 
 #define qtdbus_method(name, param_in, ...) \
     QDBusMessage name##_sync param_in { return call(#name, ## __VA_ARGS__) ; } \

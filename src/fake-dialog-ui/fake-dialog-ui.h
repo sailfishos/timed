@@ -35,11 +35,6 @@ using namespace std ;
 #include <QDBusAbstractAdaptor>
 #include <QTimer>
 
-#if 0
-#include <timed/alarm.h>
-#include <timed/notification.h>
-#endif
-
 #include <qm/log>
 
 #include <timed/interface>
@@ -188,32 +183,6 @@ public slots:
   }
 } ;
 
-#if 0
-struct fake_dialog_ui_control : public QDBusAbstractAdaptor
-{
-  fake_dialog_ui *owner ;
-
-  fake_dialog_ui_control(fake_dialog_ui *o) : QDBusAbstractAdaptor(o), owner(o) { }
-
-  Q_OBJECT ;
-  Q_CLASSINFO("D-Bus Interface", "com.nokia.notification_fakeuser") ;
-
-public slots:
-  void quit()
-  {
-    qApp->quit() ;
-  }
-  bool response(uint cookie, int value)
-  {
-    return owner->response(cookie, value) ;
-  }
-  bool response_last(int value)
-  {
-    return owner->response_last(value) ;
-  }
-} ;
-#endif
-
 struct fake_dialog_ui_control : public Maemo::Timed::Voland::TaAbstractAdaptor
 {
   fake_dialog_ui *owner ;
@@ -231,17 +200,10 @@ public slots:
   {
     return owner->response(cookie, value) ;
   }
-#if 0
-  bool response_last(int value)
-  {
-    return owner->response_last(value) ;
-  }
-#else
   uint top()
   {
     return 239 ;
   }
-#endif
   void quit()
   {
     qApp->quit() ;

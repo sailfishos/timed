@@ -46,10 +46,6 @@ class UnixSignal : public QObject
 public:
   static UnixSignal *object() ;
   int handle(int signo, bool enable=true) ;
-#if 0
-  enum Policy { Default, Ignore, Handle } ;
-  set_policy(int signo, Policy policy) ;
-#endif
 private slots:
   void process_signal(int fd) ;
 signals:

@@ -39,10 +39,6 @@ using namespace std ;
 #include "credentials.h"
 #include "timeutil.h"
 
-#if 0
-namespace Alarm
-{
-#endif
   struct state ;
   struct io_state ;
   struct gate_state ;
@@ -51,34 +47,10 @@ namespace Alarm
   struct machine ;
   struct queue_pause ;
 
-#if 0
-} ;
-#endif
-
 // some states:
 struct state_epoch ;
 
 struct event_t ;
-
-#if 0
-namespace Alarm
-{
-  namespace event_flags
-  {
-    enum
-    {
-      Snoozing        = _last_client_event_flag << 1,
-      Recurring       = _last_client_event_flag << 2,
-      Empty_Recurring = _last_client_event_flag << 3
-    } ;
-  }
-}
-#endif
-
-#if 0
-namespace Alarm
-{
-#endif
 
   struct state
   {
@@ -88,11 +60,9 @@ namespace Alarm
     uint32_t action_mask ;
     uint32_t get_action_mask() { return action_mask ; }
     void set_action_mask(uint32_t a) { action_mask = a ; }
-    // const char *get_name() ;
     virtual void enter(event_t *) ;
     virtual void leave(event_t *) ;
     virtual uint32_t cluster_bits() { return 0 ; }
-    // virtual void remove(event_t *) ;
   } ;
 
   struct io_state : public QObject, public state
@@ -211,9 +181,5 @@ namespace Alarm
     queue_pause(machine *m) : om(m) { om->emit_engine_pause(+1) ; }
    ~queue_pause() { om->emit_engine_pause(-1) ; }
   } ;
-
-#if 0
-} // namespace Alarm
-#endif
 
 #endif

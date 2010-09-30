@@ -120,12 +120,6 @@ public slots:
     return timed->settings->wall_clock_settings(p) ;
   }
 
-#if 0
-  uint add_event(const Alarm::event_io_t &x)
-  {
-    return timed->add_event(x).value() ;
-  }
-#else
   uint add_event(const Maemo::Timed::event_io_t &x, const QDBusMessage &message)
   {
     // TODO: here we're not asking about credentials immediately
@@ -133,10 +127,6 @@ public slots:
     //       --> forwarding the QDBusMessage to Timed::add_even
     //       -->                        then to machine::add_event
     log_debug() ;
-#if 0
-    QDBusConnection bus = Maemo::Timed::bus();
-    QString credentials = credentials_get_from_dbus(bus, msg);
-#endif
     return timed->add_event(cookie_t(), x, message).value() ;
   }
 
@@ -147,23 +137,14 @@ public slots:
     // TODO: is Maemo::Timed::bus() the correct way?
     //       yes, but:
     //       Let's see, if there is a better way
-#if 0
-    QDBusConnection bus = Maemo::Timed::bus();
-    QString credentials = credentials_get_from_dbus(bus, msg);
-#endif
     timed->add_events(lst, res, message) ;
   }
 
   uint replace_event(const Maemo::Timed::event_io_t &x, uint old, const QDBusMessage &message)
   {
     log_debug() ;
-#if 0
-    QDBusConnection bus = Maemo::Timed::bus();
-    QString credentials = credentials_get_from_dbus(bus, msg);
-#endif
     return timed->add_event(cookie_t(old), x, message).value() ;
   }
-#endif
 
   bool dialog_response(uint cookie, int value)
   {
@@ -252,33 +233,6 @@ public slots:
     cellular_handler::object()->fake_nitz_signal(mcc, offset, time, dst) ;
     return true ; // TODO make above method returning bool (not void) and check parameters
   }
-#if 0
-  uint32_t update_event(uint32_t c, const Alarm::event_t &a)
-  {
-    return timed->update_event(Alarm::cookie_t(c), a).value() ;
-  }
-
-  const Alarm::event_t &get_event(uint32_t c)
-  {
-    return timed->get_event(Alarm::cookie_t(c)) ;
-  }
-
-  bool del_event(uint32_t c)
-  {
-    return timed->del_event(Alarm::cookie_t(c)) ;
-  }
-
-  QVector<int> query_event(int start_time, int stop_time, int flag_mask, int flag_want)
-  {
-    return timed->query_event(start_time,stop_time, flag_mask, flag_want) ;
-  }
-  bool set_snooze(uint snooze) { return timed->set_snooze(snooze) ; }
-  uint get_snooze() { return timed->get_snooze() ; }
-
-signals:
-  void queue_status_ind(int alarms, int desktop, int actdead, int noboot) ;
-#endif
 } ;
-
 
 #endif

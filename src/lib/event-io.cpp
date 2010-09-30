@@ -87,9 +87,6 @@ const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::recurrenc
 
 QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::event_io_t &x)
 {
-#if 0
-  qDebug() << __PRETTY_FUNCTION__ ;
-#endif
   qdbusargument_structrure_wrapper o(out) ;
   // 1. alarm trigger time
   out << x.ticker ;
@@ -110,9 +107,6 @@ QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::event_io_t &x)
 
 const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::event_io_t &x)
 {
-#if 0
-  qDebug() << __PRETTY_FUNCTION__ ;
-#endif
   qdbusargument_structrure_wrapper_const i(in) ;
   // 1. alarm trigger time
   in >> x.ticker ;
@@ -143,22 +137,6 @@ const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::event_lis
   return in >> x.ee ;
 }
 
-#if 0
-#include <QDebug>
-
-static struct event_initializer_t
-{
-  event_initializer_t()
-  {
-    qDebug() << __PRETTY_FUNCTION__ ;
-    register_qtdbus_metatype(Maemo::Timed::attribute_io_t) ;
-    register_qtdbus_metatype(Maemo::Timed::action_io_t) ;
-    register_qtdbus_metatype(Maemo::Timed::button_io_t) ;
-    register_qtdbus_metatype(Maemo::Timed::recurrence_io_t) ;
-    register_qtdbus_metatype(Maemo::Timed::event_io_t) ;
-  }
-} event_initializer ;
-#else
 register_qtdbus_metatype(Maemo::Timed::attribute_io_t, 1) ;
 register_qtdbus_metatype(Maemo::Timed::cred_modifier_io_t, 7) ;
 register_qtdbus_metatype(Maemo::Timed::action_io_t, 2) ;
@@ -166,4 +144,3 @@ register_qtdbus_metatype(Maemo::Timed::button_io_t, 3) ;
 register_qtdbus_metatype(Maemo::Timed::recurrence_io_t, 4) ;
 register_qtdbus_metatype(Maemo::Timed::event_io_t, 5) ;
 register_qtdbus_metatype(Maemo::Timed::event_list_io_t, 6) ;
-#endif

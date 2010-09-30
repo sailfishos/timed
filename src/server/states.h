@@ -34,11 +34,6 @@
 #include "timeutil.h"
 #include "flags.h"
 
-#if 0
-namespace Alarm
-{
-#endif
-
   struct state_start : public state
   {
     state_start(machine *am) : state("START",am) {}
@@ -86,23 +81,14 @@ namespace Alarm
     typedef pair<ticker_t, event_t *> event_pair ;
     ticker_t next_bootup() ;
     ticker_t next_rtc_bootup() ;
-#if 0
-    set<event_pair> queue, user, conn ;
-#else
     set<event_pair> queue ;
     set<event_pair> bootup ;
-#endif
-    // bool save_in_due_state() { return false ; }
     uint32_t cluster_bits() { return EventFlags::Cluster_Queue ; }
     Q_OBJECT ;
   public Q_SLOTS:
     void engine_pause(int dx) ;
     void alarm_timeout() ;
     void filter_closed(filter_state *f_st) ;
-#if 0
-    void disable_user_alarms() ;
-    void internet_connection_lost() ;
-#endif
   } ;
 
 
@@ -111,14 +97,6 @@ namespace Alarm
     state_missed(machine *am) : state("MISSED",am) {}
     void enter(event_t *e) ;
   } ;
-
-#if 0
-  struct state_postponed : public state
-  {
-    state_postponed(machine *am) : state("POSTPONED",am) {}
-    void enter(event_t *e) ;
-  } ;
-#endif
 
   struct state_due : public state
   {
@@ -137,7 +115,6 @@ namespace Alarm
     state_flt_conn(machine *am) : filter_state("FLT_CONN", "QENTRY", "FLT_ALRM", am) { }
     uint32_t cluster_bits() { return EventFlags::Cluster_Queue ; }
     bool filter(event_t *) ;
-    // bool save_in_due_state() { return false ; }
     Q_OBJECT ;
   } ;
 
@@ -146,7 +123,6 @@ namespace Alarm
     state_flt_alrm(machine *am) : filter_state("FLT_ALRM", "QENTRY", "FLT_USER", am) { }
     uint32_t cluster_bits() { return EventFlags::Cluster_Queue ; }
     bool filter(event_t *) ;
-    // bool save_in_due_state() { return false ; }
     Q_OBJECT ;
   } ;
 
@@ -155,7 +131,6 @@ namespace Alarm
     state_flt_user(machine *am) : filter_state("FLT_USER", "QENTRY", "QUEUED", am) {}
     uint32_t cluster_bits() { return EventFlags::Cluster_Queue ; }
     bool filter(event_t *) ;
-    // bool save_in_due_state() { return false ; }
     Q_OBJECT ;
   } ;
 
@@ -195,7 +170,6 @@ namespace Alarm
   struct state_tranquil : public io_state
   {
     state_tranquil(machine *am) : io_state("TRANQUIL", am) { }
-    // bool save_in_due_state() { return false ; }
   } ;
 
   struct state_removed : public state
@@ -220,7 +194,6 @@ namespace Alarm
   {
   public:
     state_dlg_wait(machine *am) : gate_state("DLG_WAIT", "DLG_REQU", am) { }
-    // bool save_in_due_state() { return true ; }
     void enter(event_t *e) ;
     uint32_t cluster_bits() { return EventFlags::Cluster_Dialog ; }
   Q_SIGNALS:
@@ -232,7 +205,6 @@ namespace Alarm
   struct state_dlg_requ : public gate_state
   {
     state_dlg_requ(machine *am) : gate_state("DLG_REQU", "DLG_WAIT", am) { }
-    // bool save_in_due_state() { return true ; }
     void enter(event_t *e) ;
     uint32_t cluster_bits() { return EventFlags::Cluster_Dialog ; }
     void abort(event_t *e) ;
@@ -243,7 +215,6 @@ namespace Alarm
   struct state_dlg_user : public gate_state
   {
     state_dlg_user(machine *am) : gate_state("DLG_USER", "DLG_WAIT", am) { }
-    // bool save_in_due_state() { return true ; }
     uint32_t cluster_bits() { return EventFlags::Cluster_Dialog ; }
     void abort(event_t *e) ;
     Q_OBJECT ;
@@ -253,7 +224,6 @@ namespace Alarm
   struct state_dlg_resp : public state
   {
     state_dlg_resp(machine *am) : state("DLG_RESP", am) { }
-    // void enter(event_t *e) ;
   } ;
 
   struct cluster_queue : public abstract_cluster
@@ -272,8 +242,5 @@ namespace Alarm
     void leave(event_t *e) ;
     bool has_bootup_events() ;
   } ;
-#if 0
-}
-#endif
 
 #endif // STATES_H

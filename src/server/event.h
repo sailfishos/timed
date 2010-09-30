@@ -184,10 +184,6 @@ struct action_comparison_t
   action_comparison_t(const event_t *e) : event(e) { }
   bool operator() (unsigned i, unsigned j)
   {
-#if 0
-    log_info("comparison of %u and %u called (keys are '%s' and '%s')",
-       i, j, event->actions[i].cred_key().c_str(), event->actions[j].cred_key().c_str()) ;
-#endif
     return event->actions[i].cred_key() < event->actions[j].cred_key() ;
   }
 } ;

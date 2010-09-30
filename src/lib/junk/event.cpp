@@ -143,42 +143,10 @@ Maemo::Timed::Event::~Event()
     delete r[i] ;
 }
 
-#if 0
-QDBusArgument & operator<<(QDBusArgument &out, const Maemo::Timed::EventAction &a)
-{
-}
-QDBusArgument & operator<<(QDBusArgument &out, const Maemo::Timed::EventButton &b)
-{
-}
-QDBusArgument & operator<<(QDBusArgument &out, const Maemo::Timed::EventRecurrence &r)
-{
-}
-#endif
-
-#if 0
-template<typename T>
-static inline QDBusArgument & operator<<(QDBusArgument &out, const std::vector<T*> &v)
-{
-  out.beginArray(qMetaTypeId<T>()) ;
-  for(typename std::vector<T*>::const_iterator it=v.begin(); it!=v.end(); ++it)
-    out << **it ;
-  out.endArray() ;
-  return out ;
-}
-#endif
-
 QDBusArgument & operator<<(QDBusArgument &out, const Maemo::Timed::Event &x)
 {
   return out << event_io_t(x) ;
 }
-
-#if 0
-QDBusArgument & operator>>(const QDBusArgument &in, Maemo::Timed::Event &)
-{
-  // should be never called
-  return in ;
-}
-#endif
 
 Maemo::Timed::Event::event_initializer_t event_initializer ;
 Maemo::Timed::Event::event_initializer_t::event_initializer_t()

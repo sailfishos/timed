@@ -30,10 +30,6 @@
 
 #include "singleshot.h"
 
-#if 0
-namespace Alarm
-{
-#endif
   class pinguin : public QObject
   {
     Q_OBJECT ;
@@ -44,7 +40,6 @@ namespace Alarm
   private Q_SLOTS:
     void timeout()
     {
-      // log_debug("counter=%d, timer: %s", counter, timer->status().toStdString().c_str()) ;
       if(!needed) // could rarely happen
         return ;
       counter ++ ;
@@ -52,18 +47,15 @@ namespace Alarm
       ping() ;
       if(counter<max_num)
         timer->start() ;
-      // log_debug("timer: %s", timer->status().toStdString().c_str()) ;
     }
     void voland_needed()
     {
-      // log_debug("timer: %s", timer->status().toStdString().c_str()) ;
       needed = true ;
       if(!timer->isActive())
         timeout() ;
     }
     void voland_registered()
     {
-      // log_debug("timer: %s", timer->status().toStdString().c_str()) ;
       timer->stop() ;
       needed = false ;
       counter = 0 ;
@@ -76,23 +68,6 @@ namespace Alarm
       needed = false ;
       QObject::connect(timer, SIGNAL(timeout()), this, SLOT(timeout())) ;
     }
-#if 0
-    void ping()
-    {
-      // log_debug("timer: %s", timer->status().toStdString().c_str()) ;
-      log_debug() ;
-      Maemo::Timed::Voland::ActivationInterface ifc ;
-      log_debug() ;
-      if(!ifc.isValid())
-        log_critical("Activation interface is not valid: %s", ifc.lastError().message().toStdString().c_str()) ;
-      else
-      {
-        log_debug("Calling pid() asyncronosly") ;
-        ifc.pid_async() ;
-        log_debug() ;
-      }
-    }
-#else
     void ping()
     {
       log_debug() ;
@@ -107,10 +82,6 @@ namespace Alarm
       else
         log_error("Can't send the 'pid' request: %s", conn.lastError().message().toStdString().c_str()) ;
     }
-#endif
   } ;
-#if 0
-}
-#endif
 
 #endif
