@@ -1,4 +1,0 @@
-TEMPLATE=app
-TARGET=v1
-SOURCES=v1.cpp
-
