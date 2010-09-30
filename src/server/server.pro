@@ -17,6 +17,9 @@ SOURCES += main.cpp timed.cpp states.cpp automata.cpp timeutil.cpp event.cpp mis
 SOURCES += olson.cpp tz.cpp
 HEADERS += tz.h
 
+SOURCES += backup.cpp
+HEADERS += backup.h
+
 CONFIG += link_pkgconfig iodata
 PKGCONFIG += contextprovider-1.0 libpcrecpp
 
