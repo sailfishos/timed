@@ -46,8 +46,8 @@ struct nanotime_t
   void fix_underflow() { while(!is_normalized()) ns+=NANO, --s ; }
   const nanotime_t &operator+=(const nanotime_t &x) { s+=x.s, ns+=x.ns ; fix_overflow() ; return *this ; }
   const nanotime_t &operator-=(const nanotime_t &x) { s-=x.s, ns-=x.ns ; fix_underflow() ; return *this ; }
-  const nanotime_t &operator+(const nanotime_t &x) const { nanotime_t y=*this ; return y+=x ; }
-  const nanotime_t &operator-(const nanotime_t &x) const { nanotime_t y=*this ; return y-=x ; }
+  nanotime_t operator+(const nanotime_t &x) const { nanotime_t y=*this ; return y+=x ; }
+  nanotime_t operator-(const nanotime_t &x) const { nanotime_t y=*this ; return y-=x ; }
   nanotime_t operator-() const { return ns ? nanotime_t(-s-1,NANO-ns) : nanotime_t(-s,0) ; }
   bool operator<(int32_t x) const { return sec() < x ; }
 
