@@ -32,6 +32,6 @@
 #include <QDBusMessage>
 #include <QDBusConnection>
 
-uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString &name);
+uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString &name) ;
 
 #endif // CREDENTIALS_H
