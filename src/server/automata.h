@@ -34,7 +34,7 @@ using namespace std ;
 #include "timed/nanotime.h"
 
 #include "wrappers.h"
-#include "creds.h"
+#include "credentials.h"
 #include "timeutil.h"
 
 #if 0

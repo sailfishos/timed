@@ -41,7 +41,7 @@ using namespace std ;
 #include "wrappers.h"
 #include "timeutil.h"
 #include "flags.h"
-#include "creds.h"
+#include "credentials.h"
 
 struct recurrence_pattern_t
 {
