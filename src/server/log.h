@@ -22,6 +22,7 @@
 #define NEW_EXTERNAL_LOG 1
 
 #if NEW_EXTERNAL_LOG
+# warning PLEASE INCLUDE <qm/log> instead of "log.h"
 # include <qm/log>
 #else
 
