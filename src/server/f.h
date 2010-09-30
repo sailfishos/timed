@@ -17,6 +17,7 @@
 
 #if F_CREDS_AEGIS_LIBCREDS || F_CREDS_UID
 #  define F_UID_AS_CREDENTIALS 1
+#  define F_DBUS_INFO_AS_CREDENTIALS 1
 #endif
 
 #if __MEEGO__ && __HARMATTAN__

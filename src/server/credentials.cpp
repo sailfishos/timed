@@ -35,7 +35,7 @@
 
 #define SEPARATOR " "
 
-#if F_CREDS_AEGIS_LIBCREDS || F_CREDS_UID
+#if F_DBUS_INFO_AS_CREDENTIALS
 
 #if 0
 /* ------------------------------------------------------------------------- *
@@ -141,7 +141,7 @@ uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString
 }
 #endif // if 0 else
 
-#endif // creds are aegis or uid
+#endif // F_DBUS_INFO_AS_CREDENTIALS
 
 #if DEAD_CODE
 
