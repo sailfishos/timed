@@ -13,6 +13,8 @@ using namespace std ;
 
 #include <iodata/iodata>
 
+#include "credentials.h"
+
 #if F_CREDS_AEGIS_LIBCREDS
 credentials_t aegis_credentials_from_dbus_connection(const QDBusMessage &message) ;
 credentials_t aegis_credentials_from_creds_t(creds_t aegis_creds) ;
