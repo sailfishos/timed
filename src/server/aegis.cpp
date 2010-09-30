@@ -12,10 +12,10 @@
 #include "timed/interface"
 #include "credentials.h"
 
-#include "creds.h"
+#include "aegis.h"
 
 #if F_CREDS_AEGIS_LIBCREDS
-credentials_t aegis_credentials_from_creds_t(creds_t aegis_creds)
+credentials_t Aegis::credentials_from_creds_t(creds_t aegis_creds)
 {
   credentials_t creds ; // uid/gid is set to nobody/nogroup by default
 
@@ -88,7 +88,7 @@ credentials_t aegis_credentials_from_creds_t(creds_t aegis_creds)
   return creds ;
 }
 
-bool aegis_add_string_to_creds_t(creds_t &aegis_creds, const string &token, bool silent)
+bool Aegis::add_string_to_creds_t(creds_t &aegis_creds, const string &token, bool silent)
 {
   creds_value_t aegis_val ;
   creds_type_t aegis_type = creds_str2creds(token.c_str(), &aegis_val) ;
@@ -109,15 +109,15 @@ bool aegis_add_string_to_creds_t(creds_t &aegis_creds, const string &token, bool
   return true ;
 }
 
-creds_t aegis_credentials_to_creds_t(const credentials_t &creds)
+creds_t Aegis::credentials_to_creds_t(const credentials_t &creds)
 {
   creds_t aegis_creds = creds_init() ;
 
   bool ok = true ;
   for(set<string>::const_iterator it=creds.tokens.begin(); it!=creds.tokens.end() && ok; ++it)
-    ok = aegis_add_string_to_creds_t(aegis_creds, *it, false) ;
-  ok = ok && aegis_add_string_to_creds_t(aegis_creds, (string)"UID::" + creds.uid, false) ;
-  ok = ok && aegis_add_string_to_creds_t(aegis_creds, (string)"GID::" + creds.gid, false) ;
+    ok = Aegis::add_string_to_creds_t(aegis_creds, *it, false) ;
+  ok = ok && Aegis::add_string_to_creds_t(aegis_creds, (string)"UID::" + creds.uid, false) ;
+  ok = ok && Aegis::add_string_to_creds_t(aegis_creds, (string)"GID::" + creds.gid, false) ;
 
   if (!ok)
     creds_free(aegis_creds), aegis_creds = creds_init() ;
@@ -127,7 +127,7 @@ creds_t aegis_credentials_to_creds_t(const credentials_t &creds)
 #endif // F_CREDS_AEGIS_LIBCREDS
 
 #if F_CREDS_AEGIS_LIBCREDS
-credentials_t aegis_credentials_from_dbus_connection(const QDBusMessage &message)
+credentials_t Aegis::credentials_from_dbus_connection(const QDBusMessage &message)
 {
   // We are doing this in a kinda insecure way. Two steps:
   // 1. Ask dbus daemon, what is the pid of the client.
@@ -158,7 +158,7 @@ credentials_t aegis_credentials_from_dbus_connection(const QDBusMessage &message
 
   // Don't check result, as NULL is a valid set of aegis credentials
 
-  credentials_t creds = aegis_credentials_from_creds_t(aegis_creds) ;
+  credentials_t creds = Aegis::credentials_from_creds_t(aegis_creds) ;
 
   creds_free(aegis_creds) ;
 
@@ -166,5 +166,3 @@ credentials_t aegis_credentials_from_dbus_connection(const QDBusMessage &message
 }
 
 #endif // F_CREDS_AEGIS_LIBCREDS
-
-

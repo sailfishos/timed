@@ -29,7 +29,8 @@
 #include <qm/log>
 
 #include "credentials.h"
-#include "creds.h"
+
+#include "aegis.h"
 
 #define CSTR(s) (s).toLocal8Bit().constData()
 #define UTF8(s) (s).toUtf8().constData()
@@ -147,7 +148,7 @@ uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString
 bool credentials_t::apply() const
 {
 #if F_CREDS_AEGIS_LIBCREDS
-  creds_t aegis_creds_want = aegis_credentials_to_creds_t(*this) ;
+  creds_t aegis_creds_want = Aegis::credentials_to_creds_t(*this) ;
 
   bool res = creds_set(aegis_creds_want) == 0 ;
 
@@ -222,7 +223,7 @@ credentials_t credentials_t::from_current_process()
 {
 #if F_CREDS_AEGIS_LIBCREDS
   creds_t aegis_creds = creds_gettask(0) ;
-  credentials_t creds = aegis_credentials_from_creds_t(aegis_creds) ;
+  credentials_t creds = Aegis::credentials_from_creds_t(aegis_creds) ;
 
   creds_free(aegis_creds) ;
 
@@ -244,7 +245,7 @@ credentials_t credentials_t::from_current_process()
 credentials_t credentials_t::from_dbus_connection(const QDBusMessage &message)
 {
 #if F_CREDS_AEGIS_LIBCREDS
-  return aegis_credentials_from_dbus_connection(message) ;
+  return Aegis::credentials_from_dbus_connection(message) ;
 #else
 #error credentials_t;:from_dbus_connection is only implemented for aegis
 #endif

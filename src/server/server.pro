@@ -14,7 +14,7 @@ LIBS += -ltimed -ltimed-voland
 HEADERS += adaptor.h timed.h states.h automata.h singleshot.h pinguin.h unix-signal.h onitz.h
 SOURCES += main.cpp timed.cpp states.cpp automata.cpp timeutil.cpp event.cpp misc.cpp settings.cpp unix-signal.cpp onitz.cpp
 
-SOURCES += credentials.cpp creds.cpp
+SOURCES += credentials.cpp aegis.cpp
 HEADERS += credentials.h
 
 SOURCES += olson.cpp tz.cpp
