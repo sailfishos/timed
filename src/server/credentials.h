@@ -20,8 +20,8 @@
 **                                                                        **
 ***************************************************************************/
 
-#ifndef CREDENTIALS_H_
-# define CREDENTIALS_H_
+#ifndef CREDENTIALS_H
+#define CREDENTIALS_H
 
 # ifndef __cplusplus
 #  error This is a C++ only header
@@ -34,10 +34,4 @@
 
 uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString &name);
 
-#if 0
-QString credentials_get_from_dbus(QDBusConnection &bus, const QDBusMessage &msg);
-bool    credentials_set          (QString credentials);
-char *credentials_to_string(creds_t creds) ;
-#endif
-
-#endif /* CREDENTIALS_H_ */
+#endif // CREDENTIALS_H
