@@ -33,6 +33,8 @@ using namespace std ;
 #include <QObject>
 #include <QDateTime>
 
+#include <qm/log>
+
 #if USE_CELLULAR_QT
 #  include <NetworkTime>
 #  include <NetworkOperator>
@@ -43,7 +45,6 @@ using Cellular::NetworkTimeInfo ;
 #include "timed/nanotime.h"
 
 #include "misc.h"
-#include "log.h"
 
 struct cellular_info_t
 {

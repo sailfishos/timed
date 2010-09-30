@@ -24,14 +24,11 @@
 #include <stdlib.h>
 using namespace std ;
 
-#if 0
-#include <timed/alarm.h>
-#endif
+#include <qm/log>
 
 #include "event.h"
 #include "timeutil.h"
 #include "wrappers.h"
-#include "log.h"
 
 ticker_t now()
 {

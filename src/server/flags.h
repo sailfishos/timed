@@ -127,6 +127,7 @@ namespace WallOpcode
         Run_Command             = 1<<3,
         DBus_Method             = 1<<4,
         DBus_Signal             = 1<<5,
+        DBus_Action             = DBus_Method|DBus_Signal,
         Use_System_Bus          = 1<<6,
 
         State_Triggered         = 1<<10,

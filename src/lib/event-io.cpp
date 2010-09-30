@@ -35,16 +35,28 @@ const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::attribute
   return in >> x.txt ;
 }
 
+QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::cred_modifier_io_t &x)
+{
+  qdbusargument_structrure_wrapper o(out) ;
+  return out << x.token << x.accrue ;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::cred_modifier_io_t &x)
+{
+  qdbusargument_structrure_wrapper_const i(in) ;
+  return in >> x.token >> x.accrue ;
+}
+
 QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::action_io_t &x)
 {
   qdbusargument_structrure_wrapper o(out) ;
-  return out << x.flags << x.attr ;
+  return out << x.flags << x.attr << x.cred_modifiers ;
 }
 
 const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::action_io_t &x)
 {
   qdbusargument_structrure_wrapper_const i(in) ;
-  return in >> x.flags >> x.attr ;
+  return in >> x.flags >> x.attr >> x.cred_modifiers ;
 }
 
 QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::button_io_t &x)
@@ -90,7 +102,7 @@ QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::event_io_t &x)
   // 5. Recurrence info
   out << x.recrs ;
   // 6. Additional parameters
-  out << x.tsz_max << x.tsz_length ;
+  out << x.tsz_max << x.tsz_length << x.cred_modifiers ;
   return out ;
 }
 
@@ -113,7 +125,7 @@ const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::event_io_
   // 5. Recurrence info
   in >> x.recrs ;
   // 6. Additional parameters
-  in >> x.tsz_max >> x.tsz_length ;
+  in >> x.tsz_max >> x.tsz_length >> x.cred_modifiers ;
   return in ;
 }
 
@@ -146,6 +158,7 @@ static struct event_initializer_t
 } event_initializer ;
 #else
 register_qtdbus_metatype(Maemo::Timed::attribute_io_t, 1) ;
+register_qtdbus_metatype(Maemo::Timed::cred_modifier_io_t, 7) ;
 register_qtdbus_metatype(Maemo::Timed::action_io_t, 2) ;
 register_qtdbus_metatype(Maemo::Timed::button_io_t, 3) ;
 register_qtdbus_metatype(Maemo::Timed::recurrence_io_t, 4) ;

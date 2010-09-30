@@ -31,14 +31,17 @@ using namespace std ;
 #include <QDBusPendingCallWatcher>
 
 #include <iodata/iodata.h>
+#include <qm/log>
 
 #include <timed/event>
 
+#include "timed/event-pimple.h"
 #include "timed/event-io.h"
 
 #include "wrappers.h"
 #include "timeutil.h"
 #include "flags.h"
+#include "credentials.h"
 
 struct recurrence_pattern_t
 {
@@ -77,12 +80,28 @@ struct attribute_t
   void load(const iodata::record *a) ;
 } ;
 
+struct cred_modifier_t
+{
+  map<string, bool> tokens ;
+
+  set<string> tokens_by_value(bool accrue) const ;
+
+  iodata::array *save() const ;
+  void load(const iodata::array *a) ;
+
+  void load_from_dbus_interface(const QVector<Maemo::Timed::cred_modifier_io_t> &cmio) ;
+} ;
+
 struct action_t
 {
   attribute_t attr ;
   uint32_t flags ;
+  cred_modifier_t cred_modifier ;
 
   action_t() { flags = 0 ; }
+
+  mutable string cred_key_value ;
+  string cred_key() const ;
 
   static iodata::bit_codec *codec ;
   iodata::record *save() const ;
@@ -103,6 +122,7 @@ struct event_t
   uint32_t flags ;
 
   uint32_t tsz_counter, tsz_max ;
+  cred_modifier_t cred_modifier ;
 
   vector<recurrence_pattern_t> recrs ;
   vector<action_t> actions ;
@@ -125,7 +145,12 @@ struct event_t
 
   state *get_state() { return st ; }
   void set_state(state *s) { st=s ; }
+  void sort_and_run_actions(uint32_t) ;
+  bool operator() (unsigned i, unsigned j) ; // actions security key comparison operator
   void run_actions(uint32_t) ;
+  void run_actions(const vector<unsigned> &a, unsigned begin, unsigned end) ;
+  bool drop_privileges(const action_t &a) ;
+  bool accrue_privileges(const action_t &a) ;
   void execute_dbus(const action_t &a) ;
   void execute_command(const action_t &a) ;
   void prepare_command(const action_t &a, string &cmd, string &user) ;
@@ -140,10 +165,29 @@ struct event_t
   string broken_str() ;
   bool compute_recurrence() ;
   void process_dialog_ack() ;
+  pid_t fork_and_set_credentials(const action_t &action, bool &error) ;
+  pid_t fork_and_set_credentials_v2(const action_t &action, bool &error) ;
+  pid_t fork_and_set_credentials_v3(const action_t &action) ;
+
+  credentials_t client_creds ;
 
   static iodata::bit_codec *codec ;
   static void codec_initializer() ;
   iodata::record *save() ;
+} ;
+
+struct action_comparison_t
+{
+  const event_t *event ;
+  action_comparison_t(const event_t *e) : event(e) { }
+  bool operator() (unsigned i, unsigned j)
+  {
+#if 0
+    log_info("comparison of %u and %u called (keys are '%s' and '%s')",
+       i, j, event->actions[i].cred_key().c_str(), event->actions[j].cred_key().c_str()) ;
+#endif
+    return event->actions[i].cred_key() < event->actions[j].cred_key() ;
+  }
 } ;
 
 #endif

@@ -71,4 +71,5 @@ binary-arch: install
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
-	aegis-deb-add -control debian/timed/DEBIAN/control .. debian/_aegis=_aegis
+	aegis-deb-add -control debian/timed/DEBIAN/control .. debian/timed.aegis.xml=_aegis
+	aegis-deb-add -control debian/timed-tools/DEBIAN/control .. debian/timed-tools.aegis.xml=_aegis

@@ -12,6 +12,7 @@ Build-Depends: debhelper (>= 7),
  libqmlog-dev,
  libpcre3-dev,
  libcellular-qt-dev,
+ libcreds2-dev,
  aegis-builder (>= 1.4),
  python (>= 2.5), asciidoc, xsltproc, docbook-xsl, dblatex, graphviz, ttf-bitstream-vera
 Standards-Version: 3.8.0

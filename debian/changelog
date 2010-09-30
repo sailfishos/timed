@@ -1,9 +1,22 @@
+timed (2.17) unstable; urgency=low
+
+  * dummy
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 29 Sep 2010 08:53:18 +0300
+
 timed (2.16) unstable; urgency=low
 
   * Dummy function Event::setBackupFlag() added to library
   * Skipped 2.15 version due to dashboard mess
 
  -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 23 Sep 2010 13:31:03 +0300
+
+timed (2.14+nmu2) unstable; urgency=low
+
+  * When timed is performing execute or dbus actions, the credentials
+    of the process that added the event are used.
+
+ -- Simo Piiroinen <simo.piiroinen@nokia.com>  Thu, 16 Sep 2010 11:14:03 +0300
 
 timed (2.14+nmu1) unstable; urgency=low
 

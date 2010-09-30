@@ -19,8 +19,9 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
+#include <qm/log>
+
 #include "misc.h"
-#include "log.h"
 
 using namespace std ;
 

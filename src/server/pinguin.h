@@ -22,10 +22,11 @@
 #ifndef PINGUIN_H
 #define PINGUIN_H
 
+#include <qm/log>
+
 #include <timed-voland/interface>
 
 #include "singleshot.h"
-#include "log.h"
 
 #if 0
 namespace Alarm

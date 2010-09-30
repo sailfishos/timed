@@ -215,6 +215,24 @@ void Maemo::Timed::Event::setAttribute(const QString &key, const QString &value)
   set_attribute(__PRETTY_FUNCTION__, p->eio.attr, key, value) ;
 }
 
+static void add_cred_modifier(QVector<Maemo::Timed::cred_modifier_io_t> &x, const QString &token, bool accrue)
+{
+  int i = x.size() ;
+  x.resize(i+1) ;
+  x[i].token = token ;
+  x[i].accrue = accrue ;
+}
+
+void Maemo::Timed::Event::credentialDrop(const QString &token)
+{
+  add_cred_modifier(p->eio.cred_modifiers, token, false) ;
+}
+
+void Maemo::Timed::Event::credentialAccrue(const QString &token)
+{
+  add_cred_modifier(p->eio.cred_modifiers, token, true) ;
+}
+
 Maemo::Timed::event_pimple_t::~event_pimple_t()
 {
   for(unsigned i=0; i<a.size(); ++i)
@@ -335,6 +353,16 @@ void Maemo::Timed::Event::Action::whenSysButton(int x)
   if(x<0 || x>Maemo::Timed::Number_of_Sys_Buttons)
     throw Exception(__PRETTY_FUNCTION__, "invalid argument") ;
   p->aio()->flags |= ActionFlags::State_Sys_Button_0 << x ;
+}
+
+void Maemo::Timed::Event::Action::credentialDrop(const QString &token)
+{
+  add_cred_modifier(p->aio()->cred_modifiers, token, false) ;
+}
+
+void Maemo::Timed::Event::Action::credentialAccrue(const QString &token)
+{
+  add_cred_modifier(p->aio()->cred_modifiers, token, true) ;
 }
 
 void Maemo::Timed::Event::Button::setSnooze(int value)
