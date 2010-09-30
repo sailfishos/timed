@@ -20,6 +20,9 @@ HEADERS += credentials.h
 SOURCES += olson.cpp tz.cpp
 HEADERS += tz.h
 
+SOURCES += backup.cpp
+HEADERS += backup.h
+
 CONFIG += link_pkgconfig iodata
 PKGCONFIG += contextprovider-1.0 libpcrecpp
 
