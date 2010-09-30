@@ -40,15 +40,15 @@ test $(echo -n abcdefgh | tail --bytes=+1) = 'abcdefgh' ||
   fail "'tail' doesn't work"
 
 # check for git-log
-git-log $PREFIX > /dev/null ||
+git log $PREFIX > /dev/null ||
   fail "'git-log' failed to read log of the prefix file"
 
 # check for git-show
-git-show --pretty=full HEAD:$PREFIX > /dev/null ||
+git show --pretty=full HEAD:$PREFIX > /dev/null ||
   fail "'git-show' failed to read the prefix file"
 
 # check that prefix file is commited
-test "$(git-show --pretty=full HEAD:$PREFIX)" = "$(cat $PREFIX)" ||
+test "$(git show --pretty=full HEAD:$PREFIX)" = "$(cat $PREFIX)" ||
   fail "latest $PREFIX version isn't equal to HEAD version"
 
 # add ./ to LISTING script
@@ -57,15 +57,15 @@ if ! echo $LISTING_PRG | pcregrep >/dev/null '^/' ; then
   echo "using $LISTING_PRG as the listing script"
 fi
 
-commits=$(git-log "$PREFIX" | pcregrep '^commit\s+[a-fA-F0-9]+$' | awk '{print $2}')
+commits=$(git log "$PREFIX" | pcregrep '^commit\s+[a-fA-F0-9]+$' | awk '{print $2}')
 files=$($LISTING_PRG)
 
 for file in $files ; do test "$file" != "$PREFIX" ; done
 
 # echo commits="'$commits'"
 for sha in $commits ; do
-  len=$(git-show --pretty=full $sha:$PREFIX | wc -c)
-  md5=$(git-show --pretty=full $sha:$PREFIX | md5sum | awk '{print $1}')
+  len=$(git show --pretty=full $sha:$PREFIX | wc -c)
+  md5=$(git show --pretty=full $sha:$PREFIX | md5sum | awk '{print $1}')
   versions="$versions $sha:$len:$md5"
 done
 
