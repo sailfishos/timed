@@ -1,9 +1,9 @@
+#include "f.h"
+
 #include <cstring>
 
-#define F_AEGIS_LIBCREDS 1 // XXX: make a f.h file and include it here
-
-#if F_AEGIS_LIBCREDS
-#include <sys/creds.h>
+#if F_CREDS_AEGIS_LIBCREDS
+#include <sys/creds.h> // move it to creds.h or credentials.h
 #endif
 
 #include <qm/log>
@@ -14,9 +14,8 @@
 
 #include "creds.h"
 
-
-#if F_AEGIS_LIBCREDS // XXX: this is a wrong feature name
-credentials_t credentials_t::from_aegis_creds(creds_t aegis_creds)
+#if F_CREDS_AEGIS_LIBCREDS
+credentials_t aegis_credentials_from_creds_t(creds_t aegis_creds)
 {
   credentials_t creds ; // uid/gid is set to nobody/nogroup by default
 
@@ -89,7 +88,7 @@ credentials_t credentials_t::from_aegis_creds(creds_t aegis_creds)
   return creds ;
 }
 
-bool credentials_t::aegis_add_string_to_creds(creds_t &aegis_creds, const string &token, bool silent)
+bool aegis_add_string_to_creds_t(creds_t &aegis_creds, const string &token, bool silent)
 {
   creds_value_t aegis_val ;
   creds_type_t aegis_type = creds_str2creds(token.c_str(), &aegis_val) ;
@@ -110,31 +109,42 @@ bool credentials_t::aegis_add_string_to_creds(creds_t &aegis_creds, const string
   return true ;
 }
 
-creds_t credentials_t::to_aegis_creds() const
+creds_t aegis_credentials_to_creds_t(const credentials_t &creds)
 {
   creds_t aegis_creds = creds_init() ;
 
   bool ok = true ;
-  for(set<string>::const_iterator it=tokens.begin(); it!=tokens.end() && ok; ++it)
-    ok = aegis_add_string_to_creds(aegis_creds, *it, false) ;
-  ok = ok && aegis_add_string_to_creds(aegis_creds, (string)"UID::" + uid, false) ;
-  ok = ok && aegis_add_string_to_creds(aegis_creds, (string)"GID::" + gid, false) ;
+  for(set<string>::const_iterator it=creds.tokens.begin(); it!=creds.tokens.end() && ok; ++it)
+    ok = aegis_add_string_to_creds_t(aegis_creds, *it, false) ;
+  ok = ok && aegis_add_string_to_creds_t(aegis_creds, (string)"UID::" + creds.uid, false) ;
+  ok = ok && aegis_add_string_to_creds_t(aegis_creds, (string)"GID::" + creds.gid, false) ;
 
   if (!ok)
     creds_free(aegis_creds), aegis_creds = creds_init() ;
 
   return aegis_creds ;
 }
+#endif // F_CREDS_AEGIS_LIBCREDS
 
-// TODO: F_CRED_UID
+// TODO: F_CREDS_UID
 //       implement the same function without aegis, asking UID of the caller and
 //       setting this UID and the caller's default GID as only available credentials
 
-// TODO: F_CRED_NOBODY
+// TODO: F_CREDS_NOBODY
 //       implement the same function setting nobody/nogroup as credentials
 
-// TODO: F_CRED_AEGIS --- make this function #ifdef'ed
+// TODO: F_CREDS_AEGIS_LIBCREDS --- make this function #ifdef'ed
 credentials_t credentials_t::from_dbus_connection(const QDBusMessage &message)
+{
+#if F_CREDS_AEGIS_LIBCREDS
+  return aegis_credentials_from_dbus_connection(message) ;
+#else
+#error credentials_t;:from_dbus_connection is only implemented for aegis
+#endif
+}
+
+#if F_CREDS_AEGIS_LIBCREDS
+credentials_t aegis_credentials_from_dbus_connection(const QDBusMessage &message)
 {
   // We are doing this in a kinda insecure way. Two steps:
   // 1. Ask dbus daemon, what is the pid of the client.
@@ -149,13 +159,15 @@ credentials_t credentials_t::from_dbus_connection(const QDBusMessage &message)
 
   // 1. Ask DBus daemon, what is the PID of the 'sender':
 
-  pid_t pid = credentials_get_name_owner(Maemo::Timed::bus(), sender) ;
+  uint32_t owner_id = get_name_owner_from_dbus(Maemo::Timed::bus(), sender) ;
 
-  if (pid < 0)
+  if (owner_id == ~0u)
   {
-    log_warning("can't get pid of the caller, already terminated?") ;
+    log_warning("can't get owner (pid) of the caller, already terminated?") ;
     return credentials_t() ;
   }
+
+  pid_t pid = owner_id ;
 
   // 2. Getting aegis credentials from the kernel, by pid
 
@@ -163,19 +175,19 @@ credentials_t credentials_t::from_dbus_connection(const QDBusMessage &message)
 
   // Don't check result, as NULL is a valid set of aegis credentials
 
-  credentials_t creds = credentials_t::from_aegis_creds(aegis_creds) ;
+  credentials_t creds = aegis_credentials_from_creds_t(aegis_creds) ;
 
   creds_free(aegis_creds) ;
 
   return creds ;
 }
 
-#endif // F_AEGIS_LIBCREDS
+#endif // F_CREDS_AEGIS_LIBCREDS
 
 bool credentials_t::apply() const
 {
-#if 1 // F_CREDS_AEGIS
-  creds_t aegis_creds_want = to_aegis_creds() ;
+#if F_CREDS_AEGIS_LIBCREDS
+  creds_t aegis_creds_want = aegis_credentials_to_creds_t(*this) ;
 
   bool res = creds_set(aegis_creds_want) == 0 ;
 
@@ -185,20 +197,20 @@ bool credentials_t::apply() const
   creds_free(aegis_creds_want) ;
 
   return res ;
-#else // F_CREDS_AEGIS
-#error credentials_t::apply() is only implemented for F_CREDS_AEGIS
+#else // F_CREDS_AEGIS_LIBCREDS
+#error credentials_t::apply() is only implemented for F_CREDS_AEGIS_LIBCREDS
 #endif
 }
 
 void credentials_t::from_current_process()
 {
-#if 1 // F_CREDS_AEGIS
+#if F_CREDS_AEGIS_LIBCREDS
   creds_t aegis_creds = creds_gettask(0) ;
-  *this = credentials_t::from_aegis_creds(aegis_creds) ;
+  *this = aegis_credentials_from_creds_t(aegis_creds) ;
 
   creds_free(aegis_creds) ;
-#else // F_CREDS_AEGIS
-#error credentials_t::apply() is only implemented for F_CREDS_AEGIS
+#else // not F_CREDS_AEGIS_LIBCREDS
+#error credentials_t::from_current_process() is only implemented for F_CREDS_AEGIS_LIBCREDS
 #endif
 }
 
@@ -213,6 +225,7 @@ bool credentials_t::apply_and_compare()
   ostringstream os ;
 
   bool equal = true ;
+
 #define COMMA (os << (equal ? "" : ", ") )
 
   if (current.uid != uid)
@@ -220,6 +233,8 @@ bool credentials_t::apply_and_compare()
 
   if (current.gid != gid)
     COMMA << "current gid='" << current.gid << "' (requested gid='" << gid <<"')", equal = false ;
+
+#if F_TOKENS_AS_CREDENTIALS
 
   int all_accrued = true ;
 #define COMMA_A (all_accrued ? COMMA << "tokens not present: {" : os << ", ")
@@ -243,14 +258,17 @@ bool credentials_t::apply_and_compare()
 
   equal = equal && all_dropped ;
 
+#undef COMMA_A
+#undef COMMA_D
+
+#endif // F_TOKENS_AS_CREDENTIALS
+
+#undef COMMA
+
   if(!equal)
     log_warning("applied and wanted credentials differ: %s", os.str().c_str()) ;
 
   return equal ;
-
-#undef COMMA
-#undef COMMA_A
-#undef COMMA_D
 }
 
 
@@ -259,10 +277,12 @@ iodata::record *credentials_t::save() const
   iodata::record *r = new iodata::record ;
   r->add("uid", uid) ;
   r->add("gid", gid) ;
+#if F_TOKENS_AS_CREDENTIALS
   iodata::array *tok = new iodata::array ;
   for(set<string>::const_iterator it=tokens.begin(); it!=tokens.end(); ++it)
     tok->add(new iodata::bytes(*it)) ;
   r->add("tokens", tok) ;
+#endif
 
   return r ;
 }
@@ -271,7 +291,9 @@ void credentials_t::load(const iodata::record *r)
 {
   uid = r->get("uid")->str() ;
   gid = r->get("gid")->str() ;
+#if F_TOKENS_AS_CREDENTIALS
   const iodata::array *tok = r->get("tokens")->arr() ;
   for(unsigned i=0; i<tok->size(); ++i)
     tokens.insert(tok->get(i)->str()) ;
+#endif
 }

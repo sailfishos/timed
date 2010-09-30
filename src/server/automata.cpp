@@ -19,6 +19,8 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
+#include "f.h"
+
 #include <pwd.h>
 #include <errno.h>
 #include <sys/ioctl.h>
@@ -1057,12 +1059,12 @@ namespace Alarm
         // message -> do a dummy synchronous query from dbus
         // daemon and hope that is enough to get the actual
         // message to be delivered ...
-        QString connection_name  = cc->baseService();
-        pid_t owner = credentials_get_name_owner(*cc, connection_name);
+        QString connection_name  = cc->baseService() ;
+        unsigned owner = get_name_owner_from_dbus(*cc, connection_name) ;
 
-        // it should be us ...
-        log_debug("my pid: %d, connection owner pid: %d", getpid(), owner);
-        QDBusConnection::disconnectFromBus(connection_name);
+        // it should be us (either pid or uid dependin on feature set) ...
+        log_debug("pid=%d, ruid=%d, euid=%d, connection owner is '%u'", getpid(), getuid(), geteuid(), owner) ;
+        QDBusConnection::disconnectFromBus(connection_name) ;
         delete cc ;
       }
 
@@ -1091,7 +1093,7 @@ namespace Alarm
     execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL) ;
     log_error("execl(/bin/sh -c '%s') failed: %m", cmd.c_str());
 
-    ::exit(1) ; // use dbus_fail_counter here as well?
+    ::exit(101) ; // use dbus_fail_counter here as well?
   }
 
   bool event_t::accrue_privileges(const action_t &a)
@@ -1099,7 +1101,7 @@ namespace Alarm
     credentials_t creds ;
     creds.from_current_process() ;
 
-#if 1 // F_CREDS_AEGIS
+#if F_TOKENS_AS_CREDENTIALS
     const cred_modifier_t &E = cred_modifier, &A = a.cred_modifier ;
 
     // tokens_to_accrue1 := EVENT.add - ACTION.drop
@@ -1113,7 +1115,7 @@ namespace Alarm
     // creds += (tokens_to_accrue 1+2)
     set_change<string> (creds.tokens, tokens_to_accrue1, true) ;
     set_change<string> (creds.tokens, tokens_to_accrue2, true) ;
-#endif // F_CREDS_AEGIS
+#endif // F_TOKENS_AS_CREDENTIALS
 
     string uid = find_action_attribute("USER", a, false) ;
     string gid = find_action_attribute("GROUP", a, false) ;
@@ -1123,14 +1125,14 @@ namespace Alarm
     if (!gid.empty())
       creds.gid = gid ;
 
-    return creds.apply() ;
+    return creds.apply_and_compare() ;
   }
 
   bool event_t::drop_privileges(const action_t &a)
   {
     credentials_t creds = client_creds ;
 
-#if 1 // F_CREDS_AEGIS
+#if F_TOKENS_AS_CREDENTIALS
     const cred_modifier_t &E = cred_modifier, &A = a.cred_modifier ;
 
     // tokens_to_remove1 := EVENT.drop - ACTION.add
@@ -1144,11 +1146,12 @@ namespace Alarm
     // creds := client_creds - (tokens_to_remove 1+2)
     set_change<string> (creds.tokens, tokens_to_remove1, false) ;
     set_change<string> (creds.tokens, tokens_to_remove2, false) ;
-#endif // F_CREDS_AEGIS
+#endif // F_TOKENS_AS_CREDENTIALS
 
-    return creds.apply() ;
+    return creds.apply_and_compare() ;
   }
 
+#if 0
   void event_t::run_actions(uint32_t mask)
   {
     // log_debug("event=%d, actions.size()=%d", cookie.value(), actions.size()) ;
@@ -1181,6 +1184,7 @@ namespace Alarm
       }
     }
   }
+#endif
 
   string event_t::find_action_attribute(const string &key, const action_t &a, bool exc)
   {
@@ -1234,7 +1238,6 @@ namespace Alarm
     else
       log_error("[%d]: Failed to send a message on D-Bus: %s", cookie.value(), c.lastError().message().toStdString().c_str()) ;
   }
-#else
   void event_t::execute_dbus(const action_t &a)
   {
     bool error = true;
@@ -1471,6 +1474,7 @@ namespace Alarm
     }
   }
 
+#if DEAD_CODE
   int event_t::fork_and_set_credentials(const action_t &action, bool &error)
   {
     // assume failure
@@ -1674,6 +1678,7 @@ namespace Alarm
 cleanup:
     return error = err, pid;
   }
+#endif
 
 #if 0
   void event_t::execute_command(const action_t &a)
@@ -1716,7 +1721,6 @@ cleanup:
       exit(1) ;
     }
   }
-#else
   void event_t::execute_command(const action_t &a)
   {
     string cmd, user ;

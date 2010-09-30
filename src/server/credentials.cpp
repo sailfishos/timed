@@ -19,24 +19,28 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-
-#include "credentials.h"
-#include "log.h"
-
-#include <sys/creds.h>
+#include "f.h"
 
 #include <stdlib.h>
+#include <sys/creds.h>
+
+#include <QDBusReply>
+
+#include <qm/log>
+
+#include "credentials.h"
 
 #define CSTR(s) (s).toLocal8Bit().constData()
 #define UTF8(s) (s).toUtf8().constData()
 
 #define SEPARATOR " "
 
+#if F_CREDS_AEGIS_LIBCREDS || F_CREDS_UID
+
+#if 0
 /* ------------------------------------------------------------------------- *
  * credentials_get_name_owner
  * ------------------------------------------------------------------------- */
-
-// F_SECURE && F_AEGIS
 
 pid_t
 credentials_get_name_owner(const QDBusConnection &bus, const QString &name)
@@ -92,6 +96,42 @@ credentials_get_name_owner(const QDBusConnection &bus, const QString &name)
 
   return result;
 }
+#else
+
+// returning:
+//   ~0, if error
+//   pid of the caller, if aegis
+//   uid of the caller, if simple uid creds
+uint32_t get_name_owner_from_dbus(const QDBusConnection &bus, const QString &name)
+{
+  QString service   =  "org.freedesktop.DBus" ;
+  QString path      = "/org/freedesktop/DBus" ;
+  QString interface =  "org.freedesktop.DBus" ;
+#if F_CREDS_AEGIS_LIBCREDS
+  QString method    = "GetConnectionUnixProcessID" ;
+#elif F_CREDS_UID
+  QString method    = "GetConnectionUnixUser" ;
+  // It seems, we can't get GID just by asking dbus daemon.
+#endif
+
+  QDBusMessage req  = QDBusMessage::createMethodCall(service, path, interface, method);
+  req << name;
+
+  QDBusReply<uint> reply = bus.call(req);
+
+  if (reply.isValid())
+    return reply.value() ;
+  else
+  {
+    log_error("%s: did not get a valid reply", CSTR(method));
+    return ~0 ;
+  }
+}
+#endif // if 0 else
+
+#endif // creds are aegis or uid
+
+#if DEAD_CODE
 
 /* ------------------------------------------------------------------------- *
  * xrealloc
@@ -445,3 +485,5 @@ cleanup:
 
   return success;
 }
+
+#endif // DEAD_CODE

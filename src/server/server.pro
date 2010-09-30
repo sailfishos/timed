@@ -49,6 +49,8 @@ CONFIG(MEEGO) \
 } \
 else \
 {
-  CONFIG += cellular-qt
+  message("MEEGO flag is not set, assuming HARMATTAN")
+  CONFIG  += cellular-qt
   LIBS    += -lcreds
+  DEFINES += __HARMATTAN__
 }
