@@ -342,7 +342,7 @@ namespace Alarm
       if(new_state)
       {
         new_state->enter(e) ;
-        e->secure_run_actions(new_state->get_action_mask()) ;
+        e->sort_and_run_actions(new_state->get_action_mask()) ;
       }
       else
       {
@@ -846,6 +846,8 @@ namespace Alarm
     return default_snooze_value ;
   }
 
+  // TODO: do it accessible from outside of this file:
+  //       too many uncaught exceptions :)
   struct event_exception : public std::exception
   {
     string message ;
@@ -872,7 +874,7 @@ namespace Alarm
   }
 #endif
 
-  void event_t::secure_run_actions(uint32_t mask)
+  void event_t::sort_and_run_actions(uint32_t mask)
   {
     if (mask==0) // TODO: check, if this check is not yet done on state_* layer...
       return ;
@@ -1333,6 +1335,7 @@ namespace Alarm
   }
 #endif
 
+#if DEAD_CODE
   void event_t::prepare_command(const action_t &a, string &cmd, string &user)
   {
     user = find_action_attribute("USER", a, false) ;
@@ -1384,6 +1387,7 @@ namespace Alarm
     free(sys_cmd) ;
 #endif
   }
+#endif
 
   pid_t event_t::fork_and_set_credentials_v3(const action_t &action)
   {
@@ -1427,6 +1431,7 @@ namespace Alarm
     }
   }
 
+#if DEAD_CODE
   pid_t event_t::fork_and_set_credentials_v2(const action_t &action, bool &error)
   {
     pid_t pid = fork() ;
@@ -1471,6 +1476,7 @@ namespace Alarm
       return error = false, pid ;
     }
   }
+#endif
 
 #if DEAD_CODE
   int event_t::fork_and_set_credentials(const action_t &action, bool &error)

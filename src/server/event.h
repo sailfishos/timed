@@ -145,7 +145,7 @@ struct event_t
 
   state *get_state() { return st ; }
   void set_state(state *s) { st=s ; }
-  void secure_run_actions(uint32_t) ;
+  void sort_and_run_actions(uint32_t) ;
   bool operator() (unsigned i, unsigned j) ; // actions security key comparison operator
   void run_actions(uint32_t) ;
   void run_actions(const vector<unsigned> &a, unsigned begin, unsigned end) ;
