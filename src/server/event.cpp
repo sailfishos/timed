@@ -65,7 +65,7 @@ static void copy_recr(const recurrence_io_t &from, recurrence_pattern_t &to)
 bool event_t::check_attributes(string &error_message, const attribute_t &a, bool empty_only)
 {
   static pcrecpp::RE known_keyword =
-    "APPLICATION|TITLE|TEST|COMMAND|USER|"
+    "APPLICATION|TITLE|TEST|COMMAND|USER|CROUP|"
     "DBUS_SERVICE|DBUS_PATH|DBUS_INTERFACE|DBUS_METHOD|DBUS_SIGNAL|"
     "PLUGIN|BACKUP" ;
   static pcrecpp::RE upper_case = "[A-Z_]+" ;
