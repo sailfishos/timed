@@ -47,17 +47,16 @@ using namespace std ;
 #include <QDBusPendingReply>
 
 #include <iodata/validator.h>
+#include <qm/log>
 
 #include "timed/event-io.h"
-
-#include "log.h"
+#include "timed/nanotime.h"
 
 #include "automata.h"
 #include "states.h"
 #include "flags.h"
 #include "event.h"
 #include "misc.h"
-#include "timed/nanotime.h"
 #include "credentials.h"
 
 #if 0

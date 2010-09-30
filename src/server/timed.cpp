@@ -21,9 +21,9 @@
 ***************************************************************************/
 #define _BSD_SOURCE
 
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <errno.h>
 
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
@@ -31,8 +31,8 @@
 #include <ContextProvider>
 
 #include <timed/interface>
+#include <qm/log>
 
-#include "log.h"
 #include "adaptor.h"
 #include "timed.h"
 #include "settings.h"

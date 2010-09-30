@@ -23,7 +23,7 @@
 
 #include <pcrecpp.h>
 
-#include "log.h"
+#include <qm/log>
 
 #include "onitz.h"
 #include "misc.h"

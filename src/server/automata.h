@@ -28,10 +28,11 @@ using namespace std ;
 
 #include <QDBusPendingCallWatcher>
 
+#include <qm/log>
+
 #include "timed/event-io.h"
 #include "timed/nanotime.h"
 
-#include "log.h"
 #include "wrappers.h"
 #include "creds.h"
 #include "timeutil.h"

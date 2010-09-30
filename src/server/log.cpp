@@ -38,7 +38,7 @@
 #include <algorithm>
 using namespace std ;
 
-#include "log.h"
+#include <qm/log>
 
 bool log_t::use_syslog=false, log_t::use_stderr=false ;
 FILE *log_t::fp=NULL ;

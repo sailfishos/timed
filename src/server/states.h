@@ -26,11 +26,8 @@
 #include <QTimer>
 #include <ContextProvider>
 
-#if 0
-#include <timed/alarm.h>
-#endif
+#include <qm/log>
 
-#include "log.h"
 #include "automata.h"
 #include "timeutil.h"
 #include "flags.h"

@@ -23,7 +23,7 @@
 #include <fcntl.h>
 #include <signal.h>
 
-#include "log.h"
+#include <qm/log>
 
 #include "unix-signal.h"
 

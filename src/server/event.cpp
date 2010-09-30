@@ -23,12 +23,13 @@
 
 #include <pcrecpp.h>
 
+#include <qm/log>
+
 #include <timed/event>
 
 #include "timed/event-pimple.h"
 #include "timed/event-io.h"
 
-#include "log.h"
 #include "misc.h"
 
 #include "event.h"
