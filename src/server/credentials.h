@@ -32,7 +32,7 @@
 #include <QDBusMessage>
 #include <QDBusConnection>
 
-uint32_t get_name_owner_from_dbus(const QDBusConnection &bus, const QString &name);
+uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString &name);
 
 #if 0
 QString credentials_get_from_dbus(QDBusConnection &bus, const QDBusMessage &msg);

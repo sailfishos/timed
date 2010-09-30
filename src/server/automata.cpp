@@ -1059,7 +1059,7 @@ namespace Alarm
         // daemon and hope that is enough to get the actual
         // message to be delivered ...
         QString connection_name  = cc->baseService() ;
-        unsigned owner = get_name_owner_from_dbus(*cc, connection_name) ;
+        unsigned owner = get_name_owner_from_dbus_sync(*cc, connection_name) ;
 
         // it should be us (either pid or uid dependin on feature set) ...
         log_debug("pid=%d, ruid=%d, euid=%d, connection owner is '%u'", getpid(), getuid(), geteuid(), owner) ;

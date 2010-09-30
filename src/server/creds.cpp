@@ -159,7 +159,7 @@ credentials_t aegis_credentials_from_dbus_connection(const QDBusMessage &message
 
   // 1. Ask DBus daemon, what is the PID of the 'sender':
 
-  uint32_t owner_id = get_name_owner_from_dbus(Maemo::Timed::bus(), sender) ;
+  uint32_t owner_id = get_name_owner_from_dbus_sync(Maemo::Timed::bus(), sender) ;
 
   if (owner_id == ~0u)
   {

@@ -102,7 +102,19 @@ credentials_get_name_owner(const QDBusConnection &bus, const QString &name)
 //   ~0, if error
 //   pid of the caller, if aegis
 //   uid of the caller, if simple uid creds
-uint32_t get_name_owner_from_dbus(const QDBusConnection &bus, const QString &name)
+//   not compiling otherwise
+
+  /* FIXME: this makes a synchronous roundtrip to dbus daemon
+   * and back during which time the timed process will be blocked.
+   *
+   * Note: We can't really handle this asynchronously without
+   * handling the whole add_event asynchronously and this would
+   * require modifications to the timed event state machine and
+   * delaying sending add_event replies from QDBusAbstractAdaptor.
+   * At the moment I do not know how to handle either of those ...
+   * ;-(
+   */
+uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString &name)
 {
   QString service   =  "org.freedesktop.DBus" ;
   QString path      = "/org/freedesktop/DBus" ;
