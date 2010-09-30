@@ -18,10 +18,8 @@ struct credentials_t
   string uid, gid ;
   set<string> tokens ;
 
+  // TODO: make nobody/nogroup run-time option: /etc/timed.rc
   credentials_t() : uid("nobody"), gid("nogroup") { }
-
-#if F_CREDS_AEGIS_LIBCREDS
-#endif // F_CREDS_AEGIS_LIBCREDS
 
   bool apply() const ; // set the credentials for the current process
   void from_current_process() ; // get the credentials of the current process
