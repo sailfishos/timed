@@ -1,8 +1,10 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2010 Nokia Corporation.                                **
+**   Copyright (C) 2009-2010 Nokia Corporation.                           **
 **                                                                        **
+**   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
+**   Author: Victor Portnov <ext-victor.portnov@nokia.com>                **
 **                                                                        **
 **     This file is part of Timed                                         **
 **                                                                        **
@@ -19,7 +21,6 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-
 #ifndef CREDENTIALS_H
 #define CREDENTIALS_H
 
