@@ -502,6 +502,9 @@ using namespace std ;
 
   void machine::add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVariant> &res, const QDBusMessage &message)
   {
+    // Here we're asking credentials immediately, not like in add_event
+    // TODO:
+    // But may be it's reasonable first to check, if we really have actions?
     credentials_t creds = credentials_t::from_dbus_connection(message) ;
     bool valid = false ;
     for(int i=0; i<lst.ee.size(); ++i)

@@ -130,7 +130,6 @@ public slots:
     return timed->add_event(cookie_t(), x, message).value() ;
   }
 
-  // Here we're asking credentials immediately, not like in add_event
   void add_events(const Maemo::Timed::event_list_io_t &lst, const QDBusMessage &message, QList<QVariant> &res)
   {
     log_debug() ;
