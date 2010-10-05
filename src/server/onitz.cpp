@@ -21,6 +21,8 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
+#include "f.h"
+
 #include <sys/time.h>
 
 #include <pcrecpp.h>
@@ -32,7 +34,7 @@
 
 cellular_handler::cellular_handler()
 {
-#if USE_CELLULAR_QT
+#if F_CELLULAR_QT
   cnt = new Cellular::NetworkTime ;
   cop = new Cellular::NetworkOperator ;
   const char *signal1 = SIGNAL(timeInfoChanged(const NetworkTimeInfo &)) ;
@@ -60,7 +62,7 @@ cellular_handler::cellular_handler()
 
 void cellular_handler::emulate_operator_signal()
 {
-#if USE_CELLULAR_QT
+#if F_CELLULAR_QT
   log_debug() ;
   new_operator(cop->mnc(), cop->mcc()) ;
   log_debug() ;
@@ -103,7 +105,7 @@ void cellular_handler::fake_nitz_signal(int mcc, int offset, int time, int dst)
 }
 
 
-#if USE_CELLULAR_QT
+#if F_CELLULAR_QT
 void cellular_handler::new_nitz_signal(const NetworkTimeInfo &cnti)
 {
   log_debug() ;

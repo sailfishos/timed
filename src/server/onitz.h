@@ -21,9 +21,7 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#if ! __MEEGO__
-#define USE_CELLULAR_QT 1
-#endif
+#include "f.h"
 
 #ifndef ONITZ_H
 #define ONITZ_H
@@ -37,7 +35,7 @@ using namespace std ;
 
 #include <qm/log>
 
-#if USE_CELLULAR_QT
+#if F_CELLULAR_QT
 #  include <NetworkTime>
 #  include <NetworkOperator>
 using Cellular::NetworkTimeInfo ;
@@ -97,7 +95,7 @@ struct cellular_info_t
 struct cellular_handler : public QObject
 {
   Q_OBJECT ;
-#if USE_CELLULAR_QT
+#if F_CELLULAR_QT
   Cellular::NetworkTime *cnt ;
   Cellular::NetworkOperator *cop ;
 #endif
@@ -109,7 +107,7 @@ public:
   static cellular_handler *object() ;
   void fake_nitz_signal(int mcc, int offset, int time, int dst) ;
 private slots:
-#if USE_CELLULAR_QT
+#if F_CELLULAR_QT
   void new_nitz_signal(const NetworkTimeInfo &) ; // { log_assert(false, "to be implemented") ; }
 #endif
   void new_operator(const QString &mnc, const QString &mcc) ;
