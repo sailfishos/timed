@@ -60,6 +60,7 @@ using namespace std ;
 #include "event.h"
 #include "misc.h"
 #include "credentials.h"
+#include "timed.h"
 
   state::state(const char *n, machine *m) : om(m)
   {
@@ -142,7 +143,8 @@ using namespace std ;
     is_open = true ;
     for(set<event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
       om->request_state(*it, nxt_state) ;
-    om->process_transition_queue() ;
+    if(! events.empty())
+      om->process_transition_queue() ;
     emit opened() ;
   }
 
@@ -164,7 +166,7 @@ using namespace std ;
       gate_state::enter(e) ;
   }
 
-  machine::machine(QObject *parent) : QObject(parent)
+  machine::machine(const Timed *daemon) : owner(daemon)
   {
     // T = transition state
     // IO = waiting for i/o state
@@ -279,9 +281,10 @@ using namespace std ;
     clusters[c_dialog->bit] = c_dialog ;
     signalled_bootup = -1 ; // no signal sent yet
 
+    alarm_gate(owner->settings->alarms_are_enabled) ;
+
     transition_start_time = ticker_t(0) ;
     next_cookie = 1 ;
-    default_snooze_value = 300 ;
     context_changed = false ;
   }
 
@@ -472,10 +475,15 @@ using namespace std ;
   {
     log_debug() ;
     static ContextProvider::Property alarm_triggers_p("Alarm.Trigger") ;
+    log_debug() ;
     static ContextProvider::Property alarm_present_t("Alarm.Present") ;
+    log_debug() ;
     cluster_queue *c_queue = dynamic_cast<cluster_queue*> (clusters[EventFlags::Cluster_Queue]) ;
+    log_debug() ;
     alarm_triggers_p.setValue(QVariant::fromValue(c_queue->alarm_triggers)) ;
+    log_debug() ;
     alarm_present_t.setValue(!c_queue->alarm_triggers.isEmpty()) ;
+    log_debug() ;
     context_changed = false ;
     log_debug() ;
   }
@@ -642,13 +650,11 @@ using namespace std ;
     s->abort(e) ;
   }
 
-  bool machine::alarm_gate(bool set, bool value)
+  void machine::alarm_gate(bool value)
   {
     filter_state *filter = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
     log_assert(filter) ;
-    if(set)
-      value ? filter->open() : filter->close() ;
-    return filter->is_open ;
+    value ? filter->open() : filter->close() ;
   }
 
   void event_t::process_dialog_ack() // should be move to state_dlg_requ?
@@ -683,9 +689,11 @@ using namespace std ;
 
     r->add("events", q) ;
     r->add("next_cookie", next_cookie) ;
+#if 0
     r->add("default_snooze", default_snooze_value) ;
     filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
     r->add("alarms", flt_alrm->is_open ? 1 : 0) ;
+#endif
 
     return r ;
   }
@@ -693,7 +701,9 @@ using namespace std ;
   void machine::load(const iodata::record *r)
   {
     next_cookie = r->get("next_cookie")->value() ;
+#if 0
     default_snooze_value = r->get("default_snooze")->value() ;
+#endif
     const iodata::array *a = r->get("events")->arr() ;
 #if 0
     for(unsigned i=0; i < a->size(); ++i)
@@ -738,7 +748,7 @@ using namespace std ;
     else
       flt_alrm->close() ;
 #else
-    alarm_gate(true, r->get("alarms")->value()) ;
+    // alarm_gate(true, r->get("alarms")->value()) ;
 #endif
   }
 
@@ -788,6 +798,7 @@ using namespace std ;
         cancel_event(it->second) ;
   }
 
+#if 0
   int machine::default_snooze(int new_value)
   {
     if(30 <= new_value) // TODO: make it configurierable?
@@ -797,6 +808,7 @@ using namespace std ;
     }
     return default_snooze_value ;
   }
+#endif
 
   // TODO: do it accessible from outside of this file:
   //       too many uncaught exceptions :)

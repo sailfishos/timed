@@ -1,8 +1,6 @@
 event_queue_t =
 [
  { name = "next_cookie",    type = $integer, value = 1 },
- { name = "default_snooze", type = $integer, value = 300 },
- { name = "alarms",         type = $integer, value = 1 },
  { name = "events",         type = $array|$record, record = "event_t"}
 ],
 

@@ -103,7 +103,7 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   QObject::connect(short_save_threshold_timer, SIGNAL(timeout()), this, SLOT(queue_threshold_timeout())) ;
   QObject::connect(long_save_threshold_timer, SIGNAL(timeout()), this, SLOT(queue_threshold_timeout())) ;
 
-  am = new machine ;
+  am = new machine(this) ;
   QObject::connect(am, SIGNAL(child_created(unsigned,int)), this, SLOT(register_child(unsigned,int))) ;
   q_pause = NULL ;
   clear_invokation_flag() ;

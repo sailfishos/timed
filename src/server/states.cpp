@@ -36,6 +36,7 @@
 
 #include "flags.h"
 #include "misc.h"
+#include "timed.h"
 
 void state_start::enter(event_t *e)
 {
@@ -476,7 +477,7 @@ void state_button::enter(event_t *e)
   // handle special value, +1 means default snooze
   // It's hardcoded for 5min for now...
   if(snooze_length==+1)
-    snooze_length = om->default_snooze() ;
+    snooze_length = om->owner->settings->default_snooze() ;
 
   if(snooze_length > 0)
   {

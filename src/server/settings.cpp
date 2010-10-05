@@ -318,6 +318,9 @@ source_settings::source_settings(Timed *owner)
   local_cellular = true ;
   auto_dst = true ;
   format_24 = true ;
+  // new options:
+  alarms_are_enabled = false ;
+  default_snooze_value = 300 ;
 #define _creat(xxx) src[#xxx] = xxx = new xxx##_t ;
   _creat(manual_utc) ;
   _creat(nitz_utc) ;
@@ -330,6 +333,21 @@ source_settings::source_settings(Timed *owner)
 #undef _creat // spell it without 'e' ;-)
 }
 
+int source_settings::default_snooze() const
+{
+  return default_snooze_value ;
+}
+
+int source_settings::default_snooze(int new_value)
+{
+  if(30 <= new_value) // TODO: make it configurierable?
+  {
+    default_snooze_value = new_value ;
+    o->save_settings() ;
+  }
+  return default_snooze_value ;
+}
+
 void source_settings::load(const iodata::record *r)
 {
   log_debug() ;
@@ -339,6 +357,7 @@ void source_settings::load(const iodata::record *r)
   local_cellular = r->get("local_cellular")->value() != 0 ;
   auto_dst = r->get("auto_dst")->value() != 0 ;
   format_24 = r->get("format_24")->value() != 0 ;
+  default_snooze_value = r->get("default_snooze")->value() ;
   for(map<string,source_t*>::iterator it=src.begin(); it!=src.end(); ++it)
   {
     log_debug("it: '%s'", it->first.c_str()) ;
@@ -358,6 +377,8 @@ iodata::record *source_settings::save() const
   r->add("local_cellular", local_cellular) ;
   r->add("auto_dst", auto_dst) ;
   r->add("format_24", format_24) ;
+  r->add("default_snooze", default_snooze_value) ;
+  r->add("alarms", alarms_are_enabled) ;
   for(map<string,source_t*>::const_iterator it=src.begin(); it!=src.end(); ++it)
     r->add(it->first, it->second->save()) ;
   return r ;

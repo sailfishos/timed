@@ -161,6 +161,11 @@ struct source_settings
 
   bool time_nitz, local_cellular, auto_dst ;
   bool format_24 ;
+  bool alarms_are_enabled ;
+  int default_snooze_value ;
+
+  int default_snooze() const ;
+  int default_snooze(int new_value) ;
 
   int offset() const ;
   string zone() const ;

@@ -14,7 +14,10 @@ settings_t =
   { name = "nitz_offset",    type=$record,       record="empty_t" },
 
   { name = "manual_zone",    type=$record,       record="generic_zone_t" },
-  { name = "cellular_zone",  type=$record,       record="generic_zone_t" }
+  { name = "cellular_zone",  type=$record,       record="generic_zone_t" },
+
+  { name = "default_snooze", type = $integer, value = 300 },
+  { name = "alarms",         type = $integer, value = 1 }
 ],
 
 empty_t =

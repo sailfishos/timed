@@ -150,13 +150,14 @@ public slots:
   void enable_alarms(bool enable)
   {
     log_debug() ;
-    timed->alarm_gate(true, enable) ;
+    timed->settings->alarms_are_enabled = enable ;
+    timed->alarm_gate(enable) ;
   }
 
   bool alarms_enabled()
   {
     log_debug() ;
-    return timed->alarm_gate(false) ;
+    return timed->settings->alarms_are_enabled ;
   }
 
   bool set_default_snooze(int value)

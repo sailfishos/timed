@@ -54,8 +54,8 @@ struct Timed : public QCoreApplication
   void add_events(const Maemo::Timed::event_list_io_t &events, QList<QVariant> &res, const QDBusMessage &message) ;
   bool dialog_response(cookie_t c, int value) ;
   bool cancel(cookie_t c) { return am->cancel_by_cookie(c) ; }
-  bool alarm_gate(bool set=false, bool value=true) { return am->alarm_gate(set, value) ; }
-  int default_snooze(int value) { return am->default_snooze(value) ; }
+  void alarm_gate(bool value) { return am->alarm_gate(value) ; }
+  int default_snooze(int value) { return settings->default_snooze(value) ; }
   QDBusConnectionInterface *ses_iface ;
 
   map<int,unsigned> children ;
@@ -91,7 +91,9 @@ private:
   int default_gmt_offset ;
   void load_rc() ;
   void load_settings() ;
+public:
   void save_settings() ;
+private:
   Q_INVOKABLE void save_event_queue() ;
 
   queue_pause *q_pause ;

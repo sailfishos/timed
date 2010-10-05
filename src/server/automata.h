@@ -47,6 +47,8 @@ using namespace std ;
   struct machine ;
   struct queue_pause ;
 
+struct Timed ;
+
 // some states:
 struct state_epoch ;
 
@@ -116,8 +118,9 @@ struct event_t ;
 
   struct machine : public QObject
   {
-    machine(QObject *p=NULL) ;
+    machine(const Timed *daemon) ;
 
+    const Timed *owner ;
     int next_cookie ;
     uint32_t flags ;
     map<string, state*> states ;
@@ -128,7 +131,9 @@ struct event_t ;
     bool context_changed ;
     map<QDBusPendingCallWatcher *, event_t *> watcher_to_event ;
     map<int, state*> button_states ;
+#if 0
     int default_snooze_value ;
+#endif
     int dialog_discard_threshold ;
     int32_t signalled_bootup ;
     state_epoch *epoch ;
@@ -143,7 +148,7 @@ struct event_t ;
     bool cancel_by_cookie(cookie_t c) ;
     void cancel_event(event_t *e) ;
     event_t *find_event(cookie_t c) ;
-    bool alarm_gate(bool set, bool value) ;
+    void alarm_gate(bool value) ;
     bool dialog_response(cookie_t c, int value) ;
     Q_INVOKABLE void process_transition_queue() ;
     void update_rtc_alarm() ;
@@ -167,7 +172,9 @@ struct event_t ;
     void child_created(unsigned, int) ;
   public:
     void emit_child_created(unsigned cookie, int pid) { emit child_created(cookie, pid) ; }
+#if 0
     int default_snooze(int new_value=0) ;
+#endif
     void emit_engine_pause(int dx) { emit engine_pause(dx) ; }
     void device_mode_detected(bool user_mode) ;
     bool is_epoch_open() ;
