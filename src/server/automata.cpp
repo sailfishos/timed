@@ -689,6 +689,7 @@ using namespace std ;
     next_cookie = r->get("next_cookie")->value() ;
     default_snooze_value = r->get("default_snooze")->value() ;
     const iodata::array *a = r->get("events")->arr() ;
+#if 0
     for(unsigned i=0; i < a->size(); ++i)
     {
       const iodata::record *ee = a->get(i)->rec() ;
@@ -720,12 +721,53 @@ using namespace std ;
 
       request_state(e, next_state) ;
     }
+#else
+    load_events(a, true, true) ;
+#endif
 
     filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
     if(r->get("alarms")->value())
       flt_alrm->open() ;
     else
       flt_alrm->close() ;
+  }
+
+  void machine::load_events(const iodata::array *events_data, bool trusted_source, bool use_cookies)
+  {
+    for(unsigned i=0; i < events_data->size(); ++i)
+    {
+      const iodata::record *ee = events_data->get(i)->rec() ;
+      unsigned cookie = use_cookies ? ee->get("cookie")->value() : next_cookie++ ;
+      event_t *e = new event_t ;
+      events[e->cookie = cookie_t(cookie)] = e ;
+
+      e->ticker = ticker_t(ee->get("ticker")->value()) ;
+      e->t.load(ee->get("t")->rec()) ;
+
+      e->tz = ee->get("tz")->str() ;
+
+      e->attr.load(ee->get("attr")->rec()) ;
+      e->flags = ee->get("flags")->decode(event_t::codec) ;
+      iodata::load(e->recrs, ee->get("recrs")->arr()) ;
+      iodata::load_int_array(e->snooze, ee->get("snooze")->arr()) ;
+      iodata::load(e->b_attr, ee->get("b_attr")->arr()) ;
+      e->last_triggered = ticker_t(ee->get("dialog_time")->value()) ;
+      e->tsz_max = ee->get("tsz_max")->value() ;
+      e->tsz_counter = ee->get("tsz_counter")->value() ;
+      if(trusted_source)
+      {
+        iodata::load(e->actions, ee->get("actions")->arr()) ;
+        e->client_creds.load(ee->get("client_creds")->rec()) ;
+        e->cred_modifier.load(ee->get("cred_modifier")->arr()) ;
+      }
+
+      const char *next_state = "START" ;
+
+      if(e->flags & EventFlags::Empty_Recurring)
+        e->invalidate_t() ;
+
+      request_state(e, next_state) ;
+    }
   }
 
   int machine::default_snooze(int new_value)

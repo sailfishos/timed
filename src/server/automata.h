@@ -173,6 +173,8 @@ struct event_t ;
     void open_epoch() ;
     iodata::record *save() ;
     void load(const iodata::record *) ;
+    void load_events(const iodata::array *events_data, bool trusted_source, bool use_cookies) ;
+    void remove_backup_events() ;
   } ;
 
   struct queue_pause
