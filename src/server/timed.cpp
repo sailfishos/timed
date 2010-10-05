@@ -36,6 +36,7 @@
 #include <qm/log>
 
 #include "adaptor.h"
+#include "backup.h"
 #include "timed.h"
 #include "settings.h"
 #include "tz.h"

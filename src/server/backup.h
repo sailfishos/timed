@@ -1,3 +1,11 @@
+#ifndef BACKUP_H
+#define BACKUP_H
+
+#include <QObject>
+#include <QDBusAbstractAdaptor>
+
+#include "timed.h"
+
 class com_nokia_backupclient : public QDBusAbstractAdaptor
 {
   Q_OBJECT ;
@@ -39,3 +47,4 @@ public slots:
   }
 };
 
+#endif
