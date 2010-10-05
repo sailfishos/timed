@@ -56,4 +56,5 @@ else \
   CONFIG  += cellular-qt
   LIBS    += -lcreds
   DEFINES += __HARMATTAN__
+  QMAKE_CXXFLAGS  += -Wall -Wno-psabi
 }
