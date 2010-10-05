@@ -208,7 +208,7 @@ cookie_t Timed::add_event(cookie_t remove, const Maemo::Timed::event_io_t &x, co
   if(test!=x.attr.txt.end())
     log_debug("TEST event: '%s', cookie=%d", test.value().toStdString().c_str(), c.value()) ;
   log_debug() ;
-  if(c.is_valid() && remove.is_valid() && !am->cancel(remove))
+  if(c.is_valid() && remove.is_valid() && !am->cancel_by_cookie(remove))
     log_critical("[%d]: failed to remove event", remove.value()) ;
   return c ;
 }

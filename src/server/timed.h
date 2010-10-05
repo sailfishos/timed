@@ -53,7 +53,7 @@ struct Timed : public QCoreApplication
   cookie_t add_event(cookie_t remove, const Maemo::Timed::event_io_t &event, const QDBusMessage &message) ;
   void add_events(const Maemo::Timed::event_list_io_t &events, QList<QVariant> &res, const QDBusMessage &message) ;
   bool dialog_response(cookie_t c, int value) ;
-  bool cancel(cookie_t c) { return am->cancel(c) ; }
+  bool cancel(cookie_t c) { return am->cancel_by_cookie(c) ; }
   bool alarm_gate(bool set=false, bool value=true) { return am->alarm_gate(set, value) ; }
   int default_snooze(int value) { return am->default_snooze(value) ; }
   QDBusConnectionInterface *ses_iface ;

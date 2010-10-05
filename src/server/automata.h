@@ -140,7 +140,8 @@ struct event_t ;
     void add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVariant> &res, const QDBusMessage &message) ;
     void query(const QMap<QString,QVariant> &words, QList<QVariant> &res ) ;
     void get_event_attributes(cookie_t c, QMap<QString,QVariant> &a) ;
-    bool cancel(cookie_t c) ;
+    bool cancel_by_cookie(cookie_t c) ;
+    void cancel_event(event_t *e) ;
     event_t *find_event(cookie_t c) ;
     bool alarm_gate(bool set, bool value) ;
     bool dialog_response(cookie_t c, int value) ;
@@ -174,7 +175,7 @@ struct event_t ;
     iodata::record *save() ;
     void load(const iodata::record *) ;
     void load_events(const iodata::array *events_data, bool trusted_source, bool use_cookies) ;
-    void remove_backup_events() ;
+    void cancel_backup_events() ;
   } ;
 
   struct queue_pause

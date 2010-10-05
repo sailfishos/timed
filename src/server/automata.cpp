@@ -618,15 +618,13 @@ using namespace std ;
     return it==events.end() ? NULL : it->second ;
   }
 
-  bool machine::cancel(cookie_t c) // XXX need some clean up here?
+  bool machine::cancel_by_cookie(cookie_t c) // XXX need some clean up here?
   {
     queue_pause x(this) ;
 
     if(event_t *e = find_event(c))
     {
-      io_state *s = dynamic_cast<io_state*> (e->st) ;
-      log_assert(s) ;
-      s->abort(e) ;
+      cancel_event(e) ;
       return true ;
     }
     else
@@ -634,6 +632,14 @@ using namespace std ;
       log_error("[%d]: cookie not found", c.value()) ;
       return false ;
     }
+  }
+
+  void machine::cancel_event(event_t *e)
+  {
+    // TODO: assert (queue is paused)
+    io_state *s = dynamic_cast<io_state*> (e->st) ;
+    log_assert(s) ;
+    s->abort(e) ;
   }
 
   bool machine::alarm_gate(bool set, bool value)
@@ -768,6 +774,14 @@ using namespace std ;
 
       request_state(e, next_state) ;
     }
+  }
+
+  void machine::cancel_backup_events()
+  {
+    // TODO: assert (queue is paused)
+    for(map<cookie_t, event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
+      if (it->second->flags & EventFlags::Backup)
+        cancel_event(it->second) ;
   }
 
   int machine::default_snooze(int new_value)
