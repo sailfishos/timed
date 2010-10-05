@@ -731,11 +731,15 @@ using namespace std ;
     load_events(a, true, true) ;
 #endif
 
+#if 0
     filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
     if(r->get("alarms")->value())
       flt_alrm->open() ;
     else
       flt_alrm->close() ;
+#else
+    alarm_gate(true, r->get("alarms")->value()) ;
+#endif
   }
 
   void machine::load_events(const iodata::array *events_data, bool trusted_source, bool use_cookies)
