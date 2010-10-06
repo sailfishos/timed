@@ -358,6 +358,8 @@ void source_settings::load(const iodata::record *r)
   auto_dst = r->get("auto_dst")->value() != 0 ;
   format_24 = r->get("format_24")->value() != 0 ;
   default_snooze_value = r->get("default_snooze")->value() ;
+  alarms_are_enabled = r->get("alarms")->value() ;
+  log_debug("alarms_are_enabled := alarms == %d", alarms_are_enabled) ;
   for(map<string,source_t*>::iterator it=src.begin(); it!=src.end(); ++it)
   {
     log_debug("it: '%s'", it->first.c_str()) ;

@@ -281,6 +281,7 @@ using namespace std ;
     clusters[c_dialog->bit] = c_dialog ;
     signalled_bootup = -1 ; // no signal sent yet
 
+    log_debug("owner->settings->alarms_are_enabled=%d", owner->settings->alarms_are_enabled) ;
     alarm_gate(owner->settings->alarms_are_enabled) ;
 
     transition_start_time = ticker_t(0) ;

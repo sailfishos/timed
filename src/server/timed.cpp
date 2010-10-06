@@ -79,6 +79,7 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   //check acting dead / user mode
   bool act_dead_mode = access("/tmp/ACT_DEAD", F_OK) == 0 ;
   bool user_mode = access("/tmp/USER", F_OK) == 0 ;
+  log_debug() ;
 
   if(act_dead_mode == user_mode)
   {
@@ -94,44 +95,69 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
     else
       ::exit(1) ;
   }
+  log_debug() ;
 
 
   load_rc() ;
+  log_debug() ;
 
   short_save_threshold_timer = new simple_timer(threshold_period_short) ;
+  log_debug() ;
   long_save_threshold_timer = new simple_timer(threshold_period_long) ;
+  log_debug() ;
   QObject::connect(short_save_threshold_timer, SIGNAL(timeout()), this, SLOT(queue_threshold_timeout())) ;
+  log_debug() ;
   QObject::connect(long_save_threshold_timer, SIGNAL(timeout()), this, SLOT(queue_threshold_timeout())) ;
+  log_debug() ;
+
+  load_settings() ;
+  log_debug() ;
 
   am = new machine(this) ;
+  log_debug() ;
   QObject::connect(am, SIGNAL(child_created(unsigned,int)), this, SLOT(register_child(unsigned,int))) ;
+  log_debug() ;
   q_pause = NULL ;
+  log_debug() ;
   clear_invokation_flag() ;
-  load_settings() ;
+  log_debug() ;
 
   ping = new pinguin(ping_period, ping_max_num) ;
+  log_debug() ;
 
   QObject::connect(am, SIGNAL(voland_needed()), ping, SLOT(voland_needed())) ;
+  log_debug() ;
   QObject::connect(this, SIGNAL(voland_registered()), ping, SLOT(voland_registered())) ;
+  log_debug() ;
 
   QObject::connect(am, SIGNAL(queue_to_be_saved()), this, SLOT(event_queue_changed())) ;
+  log_debug() ;
 
   // starting context stuff
 
   (new ContextProvider::Service(Maemo::Timed::bus()))->setAsDefault() ;
+  log_debug() ;
 
   ContextProvider::Property("Alarm.Trigger") ;
+  log_debug() ;
   ContextProvider::Property("Alarm.Present") ;
+  log_debug() ;
   ContextProvider::Property("/com/nokia/time/time_zone/oracle") ;
+  log_debug() ;
   time_operational_p = new ContextProvider::Property("/com/nokia/time/system_time/operational") ;
+  log_debug() ;
   time_operational_p->setValue(am->is_epoch_open()) ;
+  log_debug() ;
   QObject::connect(am, SIGNAL(next_bootup_event(int)), this, SLOT(send_next_bootup_event(int))) ;
+  log_debug() ;
 
   new com_nokia_time(this) ;
+  log_debug() ;
   /* XXX
    * The stupid and simple backup dbus adaptor
    */
   new com_nokia_backupclient(this) ;
+  log_debug() ;
   if(! Maemo::Timed::bus().registerService(Maemo::Timed::service()))
   {
     string msg = Maemo::Timed::bus().lastError().message().toStdString() ;
@@ -139,28 +165,39 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
     // may be to throw an exception ?
     ::exit(1) ;
   }
+  log_debug() ;
 
   log_info("service %s registered", Maemo::Timed::service()) ;
+  log_debug() ;
 
   // load the queue from file ....
   load_events() ;
+  log_debug() ;
 
   am->process_transition_queue() ;
+  log_debug() ;
 
   am->device_mode_detected(user_mode) ;
+  log_debug() ;
 
   bool res_obj = Maemo::Timed::bus().registerObject(Maemo::Timed::objpath(), this) ;
+  log_debug() ;
   if(!res_obj)
     log_critical("can't register D-Bus object: %s", Maemo::Timed::bus().lastError().message().toStdString().c_str()) ;
 
   // ses_iface = Maemo::Timed::Voland::bus().interface() ;
   voland_watcher = new QDBusServiceWatcher((QString)Maemo::Timed::Voland::service(), Maemo::Timed::Voland::bus()) ;
+  log_debug() ;
   // QObject::connect(ses_iface, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
   QObject::connect(voland_watcher, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
+  log_debug() ;
   QObject::connect(this, SIGNAL(voland_registered()), am, SIGNAL(voland_registered())) ;
+  log_debug() ;
   QObject::connect(this, SIGNAL(voland_unregistered()), am, SIGNAL(voland_unregistered())) ;
+  log_debug() ;
 
   check_voland_service() ;
+  log_debug() ;
 
   save_time_to_file_timer = new QTimer ;
   QObject::connect(save_time_to_file_timer, SIGNAL(timeout()), this, SLOT(save_time_to_file())) ;
