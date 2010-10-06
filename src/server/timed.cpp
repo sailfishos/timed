@@ -75,28 +75,17 @@ static void spam()
 Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
 {
   spam() ;
-  halted = "" ;
-  //check acting dead / user mode
-  bool act_dead_mode = access("/tmp/ACT_DEAD", F_OK) == 0 ;
-  bool user_mode = access("/tmp/USER", F_OK) == 0 ;
+  halted = "" ; // XXX: remove it, as we don't want to halt anymore
   log_debug() ;
 
-  if(act_dead_mode == user_mode)
-  {
-    // some people are running it in scrachbox :(
-    const char *path = getenv("PATH") ;
-    bool scratchbox = path && strstr(path, "scratchbox") ;
-
-    bool p = user_mode ;
-    log_critical("%s ACT_DEAD and USER %s present in /tmp, exitting...", p?"both":"none of", p?"are":"is") ;
-
-    if(scratchbox)
-      log_info("Do not exit: it seems we are in scratchbox") ;
-    else
-      ::exit(1) ;
-  }
+  init_unix_signal_handler() ;
   log_debug() ;
 
+  init_scratchbox_mode() ;
+  log_debug() ;
+
+  init_act_dead() ;
+  log_debug() ;
 
   load_rc() ;
   log_debug() ;
@@ -208,14 +197,48 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   log_debug("nitzrez=%d", nitzrez) ;
   // nitz_object->invoke_signal() ;
 
+  tz_oracle = new tz_oracle_t ;
+  QObject::connect(tz_oracle, SIGNAL(tz_detected(olson *, tz_suggestions_t)), this, SLOT(tz_by_oracle(olson *, tz_suggestions_t))) ;
+  QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
+}
+
+// * Start Unix signal handling
+void Timed::init_unix_signal_handler()
+{
   signal_object = UnixSignal::object() ;
   QObject::connect(signal_object, SIGNAL(signal(int)), this, SLOT(unix_signal(int))) ;
   signal_object->handle(SIGINT) ;
   signal_object->handle(SIGCHLD) ;
+}
 
-  tz_oracle = new tz_oracle_t ;
-  QObject::connect(tz_oracle, SIGNAL(tz_detected(olson *, tz_suggestions_t)), this, SLOT(tz_by_oracle(olson *, tz_suggestions_t))) ;
-  QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
+// * Condition "running inside of scratchbox" is detected
+void Timed::init_scratchbox_mode()
+{
+#if F_SCRATCHBOX
+  const char *path = getenv("PATH") ;
+  scratchbox_mode = path && strstr(path, "scratchbox") ; // XXX: more robust sb detection?
+  log_info("%s" "SCRATCHBOX detected", scratchbox_mode ? "" : "No ") ;
+#else
+  scratcbox_mode = false ;
+#endif
+}
+
+// * Condition "running in ACT DEAD mode" is detected.
+// * When running on Harmattan device (not scratchbox!):
+//      some sanity checks are performed.
+void Timed::init_act_dead()
+{
+#if F_ACTING_DEAD
+  act_dead_mode = access("/tmp/ACT_DEAD", F_OK) == 0 ;
+  if (not scratcbox_mode)
+  {
+    bool user_mode = access("/tmp/USER", F_OK) == 0 ;
+    log_assert(act_dead_mode != user_mode) ;
+  }
+  log_info("Running in %s mode", act_dead_mode ? "ACT_DEAD" : "USER") ;
+#else
+  act_dead_mode = false ;
+#endif
 }
 
 void Timed::check_voland_service()

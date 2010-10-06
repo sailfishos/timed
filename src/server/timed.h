@@ -43,6 +43,11 @@
 
 struct Timed : public QCoreApplication
 {
+private:
+  bool act_dead_mode ;
+  bool scratchbox_mode ;
+
+public:
   machine *am ;
   pinguin *ping ;
   source_settings *settings ;
