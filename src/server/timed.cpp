@@ -133,6 +133,13 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
 
   am->start() ;
 
+  log_debug("applying time zone settings") ;
+
+  settings->postload_fix_manual_zone() ;
+  settings->postload_fix_manual_offset() ;
+  if(settings->check_target(settings->etc_localtime()) != 0)
+    invoke_signal() ;
+
   log_info("daemon is up and running") ;
 }
 

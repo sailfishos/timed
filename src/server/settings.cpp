@@ -368,10 +368,12 @@ void source_settings::load(const iodata::record *r)
     it->second->load(r->get(it->first)->rec()) ;
     log_debug() ;
   }
+#if 0
   postload_fix_manual_zone() ;
   postload_fix_manual_offset() ;
   if(check_target(etc_localtime()) != 0)
     o->invoke_signal() ;
+#endif
 }
 
 iodata::record *source_settings::save() const
