@@ -47,7 +47,7 @@ private:
   inline const char *configuration_path() { return  "/etc/timed.config" ; }
   inline const char *configuration_type() { return  "/usr/share/timed/typeinfo/config.type" ; }
 
-  inline const char *customization_path() { return  "/usr/share/timed/customization.data" ; } // TODO: make it configurable 
+  inline const char *customization_path() { return  "/usr/share/timed/customization.data" ; } // TODO: make it configurable
   inline const char *customization_type() { return  "/usr/share/timed/typeinfo/customization.type" ; }
 
   inline const char *settings_file_type() { return  "/usr/share/timed/typeinfo/settings.type" ; }
@@ -65,6 +65,11 @@ private:
 
   bool nitz_supported ;
   string tz_by_default ;
+
+public:
+  bool is_nitz_supported() { return nitz_supported ; }
+
+private:
 
   // init_* methods, to be called by constructor only
   void init_unix_signal_handler() ;
@@ -85,10 +90,13 @@ private:
   void init_apply_tz_settings() ;
 
 public:
+
   machine *am ;
   pinguin *ping ;
   source_settings *settings ;
+#if 0
   customization_settings *cust_settings;
+#endif
 
   void load_events() ;
   void check_voland_service() ;

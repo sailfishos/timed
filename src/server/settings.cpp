@@ -721,13 +721,10 @@ bool source_settings::wall_clock_settings(const Maemo::Timed::WallClock::wall_se
   }
 
   // Check if the network time is disabled by customization
-  if (!o->cust_settings->net_time_enabled)
+  if (not o->is_nitz_supported() and (p.opcodes & Op_Set_Time_Nitz))
   {
-    if ((p.opcodes & Op_Set_Time_Mask) == Op_Set_Time_Nitz)
-    {
-      log_warning("network time is disabled by customization");
-      return false;
-    }
+    log_error("can't enable NITZ as time source: not supported by the device");
+    return false;
   }
 
   // Stage 2: really do changes
