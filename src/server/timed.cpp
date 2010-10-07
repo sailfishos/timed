@@ -333,7 +333,7 @@ void Timed::init_read_settings()
     log_critical("can't fix the primary settings file") ;
 #endif
 
-  settings = new source_settings(this) ;
+  settings = new source_settings(this) ; // TODO: use tz_by_default here
   settings->load(tree) ;
 
   delete tree ;
