@@ -129,6 +129,10 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   save_time_to_file() ;
 #endif
 
+  log_debug("starting event mahine") ;
+
+  am->start() ;
+
   log_info("daemon is up and running") ;
 }
 
@@ -271,6 +275,8 @@ void Timed::init_read_settings()
 void Timed::init_create_event_machine()
 {
   am = new machine(this) ;
+  log_debug("am=new machine done") ;
+  q_pause = NULL ;
 
   am->device_mode_detected(not act_dead_mode) ; // TODO: avoid "not" here
 
@@ -280,7 +286,6 @@ void Timed::init_create_event_machine()
   QObject::connect(long_save_threshold_timer, SIGNAL(timeout()), this, SLOT(queue_threshold_timeout())) ;
 
   QObject::connect(am, SIGNAL(child_created(unsigned,int)), this, SLOT(register_child(unsigned,int))) ;
-  q_pause = NULL ;
   clear_invokation_flag() ;
 
   ping = new pinguin(ping_period, ping_max_num) ;
@@ -307,6 +312,7 @@ void Timed::init_create_event_machine()
 void Timed::init_context_objects()
 {
   (new ContextProvider::Service(Maemo::Timed::bus()))->setAsDefault() ;
+  log_debug("(new ContextProvider::Service(Maemo::Timed::bus()))->setAsDefault()") ;
 
   ContextProvider::Property("Alarm.Trigger") ;
   ContextProvider::Property("Alarm.Present") ;

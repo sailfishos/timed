@@ -175,7 +175,9 @@ struct event_t ;
 #if 0
     int default_snooze(int new_value=0) ;
 #endif
+    queue_pause *initial_pause ;
     void emit_engine_pause(int dx) { emit engine_pause(dx) ; }
+    void start() ; //  { delete initial_pause ; initial_pause = NULL ; process_transition_queue() ; }
     void device_mode_detected(bool user_mode) ;
     bool is_epoch_open() ;
     void open_epoch() ;

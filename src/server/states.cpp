@@ -148,7 +148,7 @@ state_queued::state_queued(machine *am) : io_state("QUEUED",am)
 
 void state_queued::engine_pause(int dx)
 {
-  log_debug("%s (%d), pause_x=%d", __PRETTY_FUNCTION__, dx, pause_x) ;
+  log_debug("dx=%d, current pause value: '%d', new value will be %d", dx, pause_x, pause_x+dx) ;
   if(pause_x==0)
   {
     log_assert(dx>0) ;
@@ -158,6 +158,7 @@ void state_queued::engine_pause(int dx)
   if(pause_x==0)
   {
     log_assert(dx<0) ;
+    // log_assert(not "debugging assert -> abort()") ;
     timer_start() ;
   }
 }
@@ -273,13 +274,17 @@ void state_queued::filter_closed(filter_state *f_st)
   queue_pause x(om) ;
   typedef set<event_pair>::iterator iterator ;
   bool event_found = false ;
+  log_debug("event_found=%d", event_found) ;
   for(iterator it=queue.begin(); it!=queue.end(); ++it)
   {
     if(! f_st->filter(it->second))
       continue ;
     event_found = true ;
+    log_debug("event_found=%d", event_found) ;
+    log_debug("event [%u] found in state '%s', requesting staet '%s'", it->second->cookie.value(), name, f_st->name) ;
     om->request_state(it->second, f_st) ;
   }
+  log_debug("event_found=%d", event_found) ;
   if(event_found)
     om->process_transition_queue() ;
 }

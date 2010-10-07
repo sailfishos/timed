@@ -140,11 +140,15 @@ using namespace std ;
 
   void gate_state::open()
   {
+    log_debug() ;
     is_open = true ;
+    log_debug() ;
     for(set<event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
       om->request_state(*it, nxt_state) ;
-    if(! events.empty())
+    log_debug("events.empty()=%d", events.empty()) ;
+    if (not events.empty())
       om->process_transition_queue() ;
+    log_debug() ;
     emit opened() ;
   }
 
@@ -166,8 +170,16 @@ using namespace std ;
       gate_state::enter(e) ;
   }
 
+  void machine::start()
+  {
+    delete initial_pause ;
+    initial_pause = NULL ;
+    process_transition_queue() ;
+  }
+
   machine::machine(const Timed *daemon) : owner(daemon)
   {
+    log_debug() ;
     // T = transition state
     // IO = waiting for i/o state
     // G = gate state
@@ -213,9 +225,12 @@ using namespace std ;
       new state_finalized(this),      // T A
       NULL
     } ;
+    log_debug() ;
     for(int i=0; S[i]; ++i)
       states[S[i]->name] = S[i] ;
 
+
+    log_debug() ;
     for(int i=0; i<=Maemo::Timed::Number_of_Sys_Buttons; ++i)
     {
       state *s = new state_button(this, -i) ;
@@ -223,6 +238,7 @@ using namespace std ;
       button_states[-i] = s ;
     }
 
+    log_debug() ;
     for(int i=1; i<=Maemo::Timed::Max_Number_of_App_Buttons; ++i)
     {
       state *s = new state_button(this, i) ;
@@ -230,6 +246,7 @@ using namespace std ;
       button_states[i] = s ;
     }
 
+    log_debug() ;
     states["TRIGGERED"]->set_action_mask(ActionFlags::State_Triggered) ;
     states["QUEUED"]->set_action_mask(ActionFlags::State_Queued) ;
     states["MISSED"]->set_action_mask(ActionFlags::State_Missed) ;
@@ -241,9 +258,12 @@ using namespace std ;
     states["ABORTED"]->set_action_mask(ActionFlags::State_Aborted) ;
     if(0) states["FAILED"]->set_action_mask(ActionFlags::State_Failed) ;
 
+    log_debug() ;
     io_state *queued = dynamic_cast<io_state*> (states["QUEUED"]) ;
     log_assert(queued!=NULL) ;
 
+
+    log_debug() ;
     gate_state *dlg_wait = dynamic_cast<gate_state*> (states["DLG_WAIT"]) ;
     gate_state *dlg_requ = dynamic_cast<gate_state*> (states["DLG_REQU"]) ;
     gate_state *dlg_user = dynamic_cast<gate_state*> (states["DLG_USER"]) ;
@@ -261,6 +281,7 @@ using namespace std ;
     QObject::connect(this, SIGNAL(voland_registered()), dlg_user, SLOT(close())) ;
     QObject::connect(this, SIGNAL(voland_unregistered()), dlg_wait, SLOT(close())) ;
 
+    log_debug() ;
     filter_state *flt_conn = dynamic_cast<filter_state*> (states["FLT_CONN"]) ;
     filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
     filter_state *flt_user = dynamic_cast<filter_state*> (states["FLT_USER"]) ;
@@ -272,21 +293,35 @@ using namespace std ;
     QObject::connect(flt_alrm, SIGNAL(closed(filter_state*)), queued, SLOT(filter_closed(filter_state*))) ;
     QObject::connect(flt_user, SIGNAL(closed(filter_state*)), queued, SLOT(filter_closed(filter_state*))) ;
 
+    log_debug() ;
     QObject::connect(this, SIGNAL(engine_pause(int)), queued, SLOT(engine_pause(int))) ;
+    log_debug() ;
+    initial_pause = new queue_pause(this) ;
+    log_debug() ;
 
     cluster_queue *c_queue = new cluster_queue(this) ;
+    log_debug() ;
     clusters[c_queue->bit] = c_queue ;
+    log_debug() ;
 
     cluster_dialog *c_dialog = new cluster_dialog(this) ;
+    log_debug() ;
     clusters[c_dialog->bit] = c_dialog ;
+    log_debug() ;
     signalled_bootup = -1 ; // no signal sent yet
+    log_debug() ;
 
     log_debug("owner->settings->alarms_are_enabled=%d", owner->settings->alarms_are_enabled) ;
+    log_debug() ;
     alarm_gate(owner->settings->alarms_are_enabled) ;
+    log_debug() ;
 
     transition_start_time = ticker_t(0) ;
+    log_debug() ;
     next_cookie = 1 ;
+    log_debug() ;
     context_changed = false ;
+    log_debug("last line") ;
   }
 
   void machine::device_mode_detected(bool user_mode)
@@ -312,6 +347,7 @@ using namespace std ;
 
   void machine::process_transition_queue()
   {
+    // abort() ;
     if(transition_in_progress())
       return ; // never do it recursively
     transition_start_time = ticker_t(now()) ;
