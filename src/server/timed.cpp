@@ -114,65 +114,22 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   init_main_interface_dbus_name() ;
   log_debug() ;
 
-  log_debug() ;
-  /* XXX
-   * The stupid and simple backup dbus adaptor
-   */
-  new com_nokia_backupclient(this) ;
-  log_debug() ;
-  if(! Maemo::Timed::bus().registerService(Maemo::Timed::service()))
-  {
-    string msg = Maemo::Timed::bus().lastError().message().toStdString() ;
-    log_critical("aborting, because can't register service, message: '%s'", msg.c_str()) ;
-    // may be to throw an exception ?
-    ::exit(1) ;
-  }
+  init_load_events() ;
   log_debug() ;
 
-  log_info("service %s registered", Maemo::Timed::service()) ;
+  init_start_event_machine() ;
   log_debug() ;
 
-  // load the queue from file ....
-  load_events() ;
+  init_cellular_services() ;
   log_debug() ;
 
-  am->process_transition_queue() ;
-  log_debug() ;
-
-  am->device_mode_detected(user_mode) ;
-  log_debug() ;
-
-  bool res_obj = Maemo::Timed::bus().registerObject(Maemo::Timed::objpath(), this) ;
-  log_debug() ;
-  if(!res_obj)
-    log_critical("can't register D-Bus object: %s", Maemo::Timed::bus().lastError().message().toStdString().c_str()) ;
-
-  // ses_iface = Maemo::Timed::Voland::bus().interface() ;
-  voland_watcher = new QDBusServiceWatcher((QString)Maemo::Timed::Voland::service(), Maemo::Timed::Voland::bus()) ;
-  log_debug() ;
-  // QObject::connect(ses_iface, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
-  QObject::connect(voland_watcher, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
-  log_debug() ;
-  QObject::connect(this, SIGNAL(voland_registered()), am, SIGNAL(voland_registered())) ;
-  log_debug() ;
-  QObject::connect(this, SIGNAL(voland_unregistered()), am, SIGNAL(voland_unregistered())) ;
-  log_debug() ;
-
-  check_voland_service() ;
-  log_debug() ;
-
+#if 0
   save_time_to_file_timer = new QTimer ;
   QObject::connect(save_time_to_file_timer, SIGNAL(timeout()), this, SLOT(save_time_to_file())) ;
   save_time_to_file() ;
+#endif
 
-  cellular_handler *nitz_object = cellular_handler::object() ;
-  int nitzrez = QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), this, SLOT(nitz_notification(const cellular_info_t &))) ;
-  log_debug("nitzrez=%d", nitzrez) ;
-  // nitz_object->invoke_signal() ;
-
-  tz_oracle = new tz_oracle_t ;
-  QObject::connect(tz_oracle, SIGNAL(tz_detected(olson *, tz_suggestions_t)), this, SLOT(tz_by_oracle(olson *, tz_suggestions_t))) ;
-  QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
+  log_info("daemon is up and running") ;
 }
 
 // * Start Unix signal handling
@@ -302,8 +259,6 @@ void Timed::init_read_settings()
 #if 0
   // we can't do it here:
   //   first get dbus name (as a mutex), then fix the files
-  if(! settings_storage->fix_files(false))
-    log_critical("can't fix the primary settings file") ;
 #endif
 
   settings = new source_settings(this) ; // TODO: use tz_by_default here
@@ -315,6 +270,8 @@ void Timed::init_read_settings()
 void Timed::init_create_event_machine()
 {
   am = new machine(this) ;
+
+  am->device_mode_detected(user_mode) ;
 
   short_save_threshold_timer = new simple_timer(threshold_period_short) ;
   long_save_threshold_timer = new simple_timer(threshold_period_long) ;
@@ -339,6 +296,11 @@ void Timed::init_create_event_machine()
     log_info("Voland service %s detected", Maemo::Timed::Voland::service()) ;
     emit voland_registered() ;
   }
+
+  voland_watcher = new QDBusServiceWatcher((QString)Maemo::Timed::Voland::service(), Maemo::Timed::Voland::bus()) ;
+  QObject::connect(voland_watcher, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
+  QObject::connect(this, SIGNAL(voland_registered()), am, SIGNAL(voland_registered())) ;
+  QObject::connect(this, SIGNAL(voland_unregistered()), am, SIGNAL(voland_unregistered())) ;
 }
 
 void Timed::init_context_objects()
@@ -359,12 +321,14 @@ void Timed::init_backup_object()
   new com_nokia_timed_backup(...) ; // TODO: put a backup object here and below
   // XXX: what if we're using system bus: how should backup know this?
   // TODO: if using system bus, keep track of started/terminated sessions? (omg!)
-  const QDBusConnection conn = Maemo::Timed::bus() ;
+  const QDBusConnection &conn = Maemo::Timed::bus() ;
   const char * const path = "/com/nokia/timed/backup" ;
-  bool res = conn.registerObject(path, ...) ;
-  if(!res)
+  bool res =  ;
+  if (conn.registerObject(path, ...))
+    log_info("backup interface object registered on path '%s'", path) ;
+  else
   {
-    log_critical("failed to register backup object: %s", conn.lastError().message().toStdString().c_str()) ;
+    log_critical("failed to register backup object on path '%s': %s", path, conn.lastError().message().toStdString().c_str()) ;
     log_critical("backup/restore not available") ;
   }
 }
@@ -373,8 +337,11 @@ void Timed::init_backup_object()
 void Timed::init_main_interface_object()
 {
   new com_nokia_time(this) ;
-  bool res = Maemo::Timed::bus().registerObject(Maemo::Timed::objpath(), this) ;
-  if(!res)
+  const QDBusConnection &conn = Maemo::Timed::bus() ;
+  const char * const path = Maemo::Timed::objpath() ;
+  if (conn.registerObject(path, this))
+    log_info("main interface object registered on path '%s'", path) ;
+  else
     log_critical("remote methods not available; failed to register dbus object: %s", Maemo::Timed::bus().lastError().message().toStdString().c_str()) ;
   // XXX:
   // probably it's a good idea to terminate if failed
@@ -391,11 +358,13 @@ void Timed::init_backup_dbus_name()
   // XXX: But for now it's just the same connection as com.nokia.time
   const QDBusConnection conn = Maemo::Timed::bus() ;
   const char * const name = "com.nokia.timed.backup" ;
-  if (not conn.registerService(name))
+  const string conn_name = conn.name().toStdString() ;
+  if (conn.registerService(name))
+    log_info("service name '%s' registered on bus '%s'", name, conn_name.c_str()) ;
+  else
   {
     const string msg = conn.lastError().message().toStdString() ;
-    const string con = conn.name().toStdString() ;
-    log_critical("can't register service '%s' on bus '%s': '%s'", name, con.c_str(), msg.c_str()) ;
+    log_critical("can't register service '%s' on bus '%s': '%s'", name, conn_name.c_str(), msg.c_str()) ;
     log_critical("backup/restore not available") ;
   }
 }
@@ -406,15 +375,56 @@ void Timed::init_main_interface_dbus_name()
   // We're misusing the dbus name as a some kind of mutex:
   //   only one instance of timed is allowed to run.
   // This is the why we can't drop the name later.
-  if (not Maemo::Timed::bus().registerService(Maemo::Timed::service()))
+
+  const string conn_name = Maemo::Timed::bus().name().toStdString() ;
+  if (Maemo::Timed::bus().registerService(Maemo::Timed::service()))
+    log_info("service name '%s' registered on bus '%s'", name, conn_name.c_str()) ;
+  else
   {
     const string msg = Maemo::Timed::bus().lastError().message().toStdString() ;
-    const string con = Maemo::Timed::bus().name().toStdString() ;
-    log_critical("can't register service '%s' on bus '%s': '%s'", Maemo::Timed::service().toStdString().c_str(), con.c_str(), msg.c_str()) ;
+    log_critical("can't register service '%s' on bus '%s': '%s'", Maemo::Timed::service().toStdString().c_str(), conn_name.c_str(), msg.c_str()) ;
     log_critical("aborting") ;
     ::exit(1) ;
   }
 }
+
+void Timed::init_load_events()
+{
+  event_storage = new iodata::storage ;
+  event_storage->set_primary_path(events_path) ;
+  event_storage->set_secondary_path(events_path+".bak") ;
+  event_storage->set_validator(event_queue_type, "event_queue_t") ;
+
+  iodata::record *events = event_storage->load() ;
+
+  log_assert(events) ;
+
+  am->load(events) ;
+
+  delete events ;
+}
+
+void Timed::init_start_event_machine()
+{
+  if(not settings_storage->fix_files(false))
+    log_critical("can't fix the primary settings file") ;
+  if(not event_storage->fix_files(false))
+    log_critical("can't fix the primary event queue file") ;
+  am->process_transition_queue() ;
+}
+
+void Timed::init_cellular_services()
+{
+  cellular_handler *nitz_object = cellular_handler::object() ;
+  int nitzrez = QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), this, SLOT(nitz_notification(const cellular_info_t &))) ;
+  log_debug("nitzrez=%d", nitzrez) ;
+
+  tz_oracle = new tz_oracle_t ;
+  QObject::connect(tz_oracle, SIGNAL(tz_detected(olson *, tz_suggestions_t)), this, SLOT(tz_by_oracle(olson *, tz_suggestions_t))) ;
+  QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
+}
+
+// Move the stuff below to machine:: class
 
 cookie_t Timed::add_event(cookie_t remove, const Maemo::Timed::event_io_t &x, const QDBusMessage &message)
 {
@@ -564,23 +574,6 @@ void Timed::restore_finished()
   QCoreApplication::exit(1);
 }
 
-void Timed::load_events()
-{
-  event_storage = new iodata::storage ;
-  event_storage->set_primary_path(events_path) ;
-  event_storage->set_secondary_path(events_path+".bak") ;
-  event_storage->set_validator("/usr/share/timed/typeinfo/queue.type", "event_queue_t") ;
-
-  iodata::record *events = event_storage->load() ;
-  if(! event_storage->fix_files(false))
-    log_critical("can't fix the primary event queue file") ;
-
-  log_assert(events) ;
-
-  am->load(events) ;
-
-  delete events ;
-}
 
 void Timed::save_event_queue()
 {

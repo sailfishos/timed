@@ -47,10 +47,12 @@ private:
   static const char * const configuration_path = "/etc/timed.config" ;
   static const char * const configuration_type = "/usr/share/timed/typeinfo/config.type" ;
 
-  static const char * const customization_path = "/usr/share/timed/customization.data" ;
+  static const char * const customization_path = "/usr/share/timed/customization.data" ; // TODO: make it configurable
   static const char * const customization_type = "/usr/share/timed/typeinfo/customization.type" ;
 
   static const char * const settings_file_type = "/usr/share/timed/typeinfo/settings.type" ;
+
+  static const char * const event_queue_type   = "/usr/share/timed/typeinfo/queue.type" ;
 
 private:
   bool act_dead_mode ;
