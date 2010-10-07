@@ -99,22 +99,19 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   init_create_event_machine() ;
   log_debug() ;
 
-  // starting context stuff
-
-  (new ContextProvider::Service(Maemo::Timed::bus()))->setAsDefault() ;
+  init_context_objects() ;
   log_debug() ;
 
-  ContextProvider::Property("Alarm.Trigger") ;
+  init_backup_object() ;
   log_debug() ;
-  ContextProvider::Property("Alarm.Present") ;
+
+  init_main_interface_object() ;
   log_debug() ;
-  ContextProvider::Property("/com/nokia/time/time_zone/oracle") ;
+
+  init_backup_dbus_name() ;
   log_debug() ;
-  time_operational_p = new ContextProvider::Property("/com/nokia/time/system_time/operational") ;
-  log_debug() ;
-  time_operational_p->setValue(am->is_epoch_open()) ;
-  log_debug() ;
-  QObject::connect(am, SIGNAL(next_bootup_event(int)), this, SLOT(send_next_bootup_event(int))) ;
+
+  init_main_interface_dbus_name() ;
   log_debug() ;
 
   new com_nokia_time(this) ;
@@ -343,6 +340,38 @@ void Timed::init_create_event_machine()
     log_info("Voland service %s detected", Maemo::Timed::Voland::service()) ;
     emit voland_registered() ;
   }
+}
+
+void Timed::init_context_objects()
+{
+  (new ContextProvider::Service(Maemo::Timed::bus()))->setAsDefault() ;
+
+  ContextProvider::Property("Alarm.Trigger") ;
+  ContextProvider::Property("Alarm.Present") ;
+  ContextProvider::Property("/com/nokia/time/time_zone/oracle") ;
+  time_operational_p = new ContextProvider::Property("/com/nokia/time/system_time/operational") ;
+  time_operational_p->setValue(am->is_epoch_open()) ;
+  QObject::connect(am, SIGNAL(next_bootup_event(int)), this, SLOT(send_next_bootup_event(int))) ;
+}
+
+
+void Timed::init_backup_object()
+{
+}
+
+
+void Timed::init_main_interface_object()
+{
+}
+
+
+void Timed::init_backup_dbus_name()
+{
+}
+
+
+void Timed::init_main_interface_dbus_name()
+{
 }
 
 cookie_t Timed::add_event(cookie_t remove, const Maemo::Timed::event_io_t &x, const QDBusMessage &message)
