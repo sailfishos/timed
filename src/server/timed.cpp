@@ -319,13 +319,14 @@ void Timed::init_context_objects()
 
 void Timed::init_backup_object()
 {
-  new com_nokia_timed_backup(...) ; // TODO: put a backup object here and below
+  QObject *backup_object = new QObject ;
+  new com_nokia_timed_backup(this, backup_object) ;
   // XXX: what if we're using system bus: how should backup know this?
   // TODO: if using system bus, keep track of started/terminated sessions? (omg!)
   const QDBusConnection &conn = Maemo::Timed::bus() ;
   const char * const path = "/com/nokia/timed/backup" ;
   bool res =  ;
-  if (conn.registerObject(path, ...))
+  if (conn.registerObject(path, backup_object))
     log_info("backup interface object registered on path '%s'", path) ;
   else
   {

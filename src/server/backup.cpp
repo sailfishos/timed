@@ -50,6 +50,13 @@ void Timed::restore_finished()
    * import data from temporary files and delete them after it.)
    */
 
+  /* Not quite so easy:
+   *
+   * In reality device is rebooting, so no need to "update UI".
+   * Thus we will try to write event and settings files, and then
+   * wait for the reboot.
+   */
+
   system("cp -f /tmp/.timed-backup/*.data /var/cache/timed; cp -f /tmp/.timed-backup/*.rc /etc");
   backup_finished();
   QCoreApplication::exit(1);
