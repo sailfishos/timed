@@ -87,7 +87,13 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   init_act_dead() ;
   log_debug() ;
 
-  load_rc() ;
+  init_configuration() ;
+  log_debug() ;
+
+  init_customization() ;
+  log_debug() ;
+
+  init_read_settings() ;
   log_debug() ;
 
   short_save_threshold_timer = new simple_timer(threshold_period_short) ;
@@ -97,9 +103,6 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   QObject::connect(short_save_threshold_timer, SIGNAL(timeout()), this, SLOT(queue_threshold_timeout())) ;
   log_debug() ;
   QObject::connect(long_save_threshold_timer, SIGNAL(timeout()), this, SLOT(queue_threshold_timeout())) ;
-  log_debug() ;
-
-  load_settings() ;
   log_debug() ;
 
   am = new machine(this) ;
@@ -217,7 +220,7 @@ void Timed::init_scratchbox_mode()
 #if F_SCRATCHBOX
   const char *path = getenv("PATH") ;
   scratchbox_mode = path && strstr(path, "scratchbox") ; // XXX: more robust sb detection?
-  log_info("%s" "SCRATCHBOX detected", scratchbox_mode ? "" : "No ") ;
+  log_info("%s" "SCRATCHBOX detected", scratchbox_mode ? "" : "no ") ;
 #else
   scratcbox_mode = false ;
 #endif
@@ -235,10 +238,105 @@ void Timed::init_act_dead()
     bool user_mode = access("/tmp/USER", F_OK) == 0 ;
     log_assert(act_dead_mode != user_mode) ;
   }
-  log_info("Running in %s mode", act_dead_mode ? "ACT_DEAD" : "USER") ;
+  log_info("running in %s mode", act_dead_mode ? "ACT_DEAD" : "USER") ;
 #else
   act_dead_mode = false ;
 #endif
+}
+
+// * Reading configuration file
+// * Warning if no exists (which is okey)
+void init_configuration()
+{
+  iodata::storage *config_storage = new iodata::storage ;
+  config_storage->set_primary_path(configuration_path) ;
+  config_storage->set_validator(configuration_type, "config_t") ;
+
+  iodata::record *c = config_storage->load() ;
+  log_assert(c, "loading configuration settings failed") ;
+
+  if(config_storage->source()==0)
+    log_info("configuration loaded from '%s'", configuration_path) ;
+  else
+    log_warning("configuration file '%s' corrupted or non-existing, using default values", configuration_path) ;
+
+  events_path = c->get("queue_path")->str() ; // TODO: make C++ variables match data fields
+  settings_path = c->get("settings_path")->str() ;
+  threshold_period_long = c->get("queue_threshold_long")->value() ;
+  threshold_period_short = c->get("queue_threshold_short")->value() ;
+  ping_period = c->get("voland_ping_sleep")->value() ;
+  ping_max_num = c->get("voland_ping_retries")->value() ;
+  delete c ;
+#if 0 // XXX: remove it for ever
+  save_time_path = c->get("saved_utc_time_path")->str() ;
+#endif
+}
+
+static parse_boolean(const string &str)
+{
+  return str == "true" || str == "True" || str == "1" ;
+}
+
+void init_customization()
+{
+  iodata::storage *storage = new iodata::storage ;
+  storage->set_primary_path(customization_path) ;
+  storage->set_validator(customization_type, "customization_t") ;
+
+  iodata::record *c = storage->load() ;
+  log_assert(c, "loading customization settings failed") ;
+
+  if(storage->source()==0)
+    log_info("customization loaded from '%s'", customization_path) ;
+  else
+    log_warning("customization file '%s' corrupted or non-existing, using default values", customization_path) ;
+
+  format24_by_default = parse_boolean(c->get("format24")->str()) ;
+  nitz_supported = parse_boolean(c->get("useNitz")->str()) ;
+  auto_time_by_default = parse_boolean(c->get("autoTime")->str()) ;
+  guess_tz_by_default = parse_boolean(c->get("guessTz")->str()) ;
+  tz_by_default = c->get("tz")->str() ;
+
+  if (not nitz_supported and auto_time_by_default)
+  {
+    log_warning("automatic time update disabled because nitz is not supported in the device") ;
+    auto_time_by_default = false ;
+  }
+
+  delete c ;
+}
+
+void Timed::init_read_settings()
+{
+  cust_settings = new customization_settings();
+  cust_settings->load();
+
+  settings_storage = new iodata::storage ;
+  settings_storage->set_primary_path(settings_path) ;
+  settings_storage->set_secondary_path(settings_path+".bak") ;
+  settings_storage->set_validator(settings_file_type, "settings_t") ;
+
+  iodata::record *tree = settings_storage->load() ;
+
+  log_assert(tree, "loading settings failed") ;
+
+#define apply_cust(key, val)  do { if (tree->get(key)->value() < 0) tree->add(key, val) ; } while(false)
+  apply_cust("format_24", format24_by_default) ;
+  apply_cust("time_nitz", auto_time_by_default) ;
+  apply_cust("local_cellular", guess_tz_by_default) ;
+#undef apply_cust
+
+#if 0
+  // we can't do it here:
+  //   first get dbus name (as a mutex), then fix the files
+  if(! settings_storage->fix_files(false))
+    log_critical("can't fix the primary settings file") ;
+#endif
+
+  settings = new source_settings(this) ;
+  settings->load(tree) ;
+
+  delete tree ;
 }
 
 void Timed::check_voland_service()
@@ -338,31 +436,6 @@ void Timed::queue_threshold_timeout()
   int method_index = this->metaObject()->indexOfMethod("save_event_queue()") ;
   QMetaMethod method = this->metaObject()->method(method_index) ;
   method.invoke(this, Qt::QueuedConnection) ;
-}
-
-void Timed::load_rc()
-{
-  timed_rc_storage = new iodata::storage ;
-  timed_rc_storage->set_primary_path("/etc/timed.rc") ;
-  timed_rc_storage->set_validator("/usr/share/timed/typeinfo/timed-rc.type", "timed_rc_t") ;
-
-  iodata::record *rc = timed_rc_storage->load() ;
-  log_assert(rc, "loading rc-setings failed") ;
-
-  if(timed_rc_storage->source()==0)
-    log_info("loaded rc-setting from file") ;
-  else
-    log_warning("rc-file not present or corrupted, using default settings") ;
-
-  events_path = rc->get("queue_path")->str() ;
-  settings_path = rc->get("settings_path")->str() ;
-  threshold_period_long = rc->get("queue_threshold_long")->value() ;
-  threshold_period_short = rc->get("queue_threshold_short")->value() ;
-  ping_period = rc->get("voland_ping_sleep")->value() ;
-  ping_max_num = rc->get("voland_ping_retries")->value() ;
-  save_time_path = rc->get("saved_utc_time_path")->str() ;
-
-  delete rc ;
 }
 
 /*
@@ -474,40 +547,6 @@ void Timed::save_settings()
 }
 
 
-void Timed::load_settings()
-{
-  cust_settings = new customization_settings();
-  cust_settings->load();
-
-  settings_storage = new iodata::storage ;
-  settings_storage->set_primary_path(settings_path) ;
-  settings_storage->set_secondary_path(settings_path+".bak") ;
-  settings_storage->set_validator("/usr/share/timed/typeinfo/settings.type", "settings_t") ;
-
-  iodata::record *tree = settings_storage->load() ;
-  // If we dont have user settings stored, use customization ones.
-  if (settings_storage->source() == -1)
-  {
-    log_debug("CUST settings_storage->source() == -1");
-    tree->add("time_nitz", cust_settings->time_nitz);
-    tree->add("local_cellular", cust_settings->time_nitz);
-    tree->add("format_24", cust_settings->format_24);
-  }
-  if (!cust_settings->net_time_enabled)
-  {
-      tree->add("time_nitz", 0);
-      tree->add("local_cellular", 0);
-  }
-  if(! settings_storage->fix_files(false))
-    log_critical("can't fix the primary settings file") ;
-
-  log_assert(tree) ;
-
-  settings = new source_settings(this) ;
-  settings->load(tree) ;
-
-  delete tree ;
-}
 
 void Timed::invoke_signal(const nanotime_t &back)
 {

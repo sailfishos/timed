@@ -44,8 +44,25 @@
 struct Timed : public QCoreApplication
 {
 private:
+  static const char * const configuration_path = "/etc/timed.config" ;
+  static const char * const configuration_type = "/usr/share/timed/typeinfo/config.type" ;
+
+  static const char * const customization_path = "/usr/share/timed/customization.data" ;
+  static const char * const customization_type = "/usr/share/timed/typeinfo/customization.type" ;
+
+  static const char * const settings_file_type = "/usr/share/timed/typeinfo/settings.type" ;
+
+private:
   bool act_dead_mode ;
+
   bool scratchbox_mode ;
+
+  bool format24_by_default ;
+  bool auto_time_by_default ;
+  bool guess_tz_by_default ;
+
+  bool nitz_supported ;
+  bool tz_by_default ;
 
 public:
   machine *am ;
@@ -85,7 +102,7 @@ public:
 
 private:
   QDBusServiceWatcher *voland_watcher ;
-  iodata::storage *event_storage, *settings_storage, *timed_rc_storage ;
+  iodata::storage *event_storage, *settings_storage ;
 
   simple_timer *short_save_threshold_timer, *long_save_threshold_timer ;
   unsigned threshold_period_long, threshold_period_short ;

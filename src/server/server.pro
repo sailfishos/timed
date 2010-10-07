@@ -31,7 +31,7 @@ target.path = $$(DESTDIR)/usr/bin
 xml.files  = com.nokia.time.context
 xml.path = $$(DESTDIR)/usr/share/contextkit/providers
 
-typeinfo.files = queue.type timed-rc.type settings.type customization.type tzdata.type timed-cust-rc.type
+typeinfo.files = queue.type config.type settings.type customization.type tzdata.type timed-cust-rc.type
 typeinfo.path = $$(DESTDIR)/usr/share/timed/typeinfo
 
 backupconf.files = timedbackup.conf

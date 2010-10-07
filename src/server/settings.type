@@ -1,15 +1,19 @@
 settings_t =
 [
-  { name = "time_nitz",      type=$integer,      value = 1 },
-  { name = "local_cellular", type=$integer,      value = 1 },
+  // The value '-1' means: use default value given by customization
+  { name = "time_nitz",      type=$integer,      value = -1 },
+  { name = "local_cellular", type=$integer,      value = -1 },
+  { name = "format_24",      type=$integer,      value = -1 },
+
+  // TODO: get rid of 'auto_dst'
   { name = "auto_dst",       type=$integer,      value = 1 },
-  { name = "format_24",      type=$integer,      value = 1 },
 
   { name = "manual_utc",     type=$record,       record="empty_t" },
   { name = "nitz_utc",       type=$record,       record="empty_t" },
   { name = "gps_utc",        type=$record,       record="empty_t" },
   { name = "ntp_utc",        type=$record,       record="empty_t" },
 
+  // TODO: get rid of '*_offset'
   { name = "manual_offset",  type=$record,       record="manual_offset_t" },
   { name = "nitz_offset",    type=$record,       record="empty_t" },
 
