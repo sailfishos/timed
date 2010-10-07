@@ -831,7 +831,9 @@ void source_settings::set_system_time(const nanotime_t &t)
   log << "diff=" << back.str() ;
   o->invoke_signal(back) ;
   log_debug("Time change: %s", log.str().c_str()) ;
+#if 0
   o->save_time_to_file() ;
+#endif
 }
 
 void source_settings::cellular_information(const cellular_info_t &ci)

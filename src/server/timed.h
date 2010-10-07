@@ -44,15 +44,15 @@
 struct Timed : public QCoreApplication
 {
 private:
-  static const char * const configuration_path = "/etc/timed.config" ;
-  static const char * const configuration_type = "/usr/share/timed/typeinfo/config.type" ;
+  inline const char *configuration_path() { return  "/etc/timed.config" ; }
+  inline const char *configuration_type() { return  "/usr/share/timed/typeinfo/config.type" ; }
 
-  static const char * const customization_path = "/usr/share/timed/customization.data" ; // TODO: make it configurable
-  static const char * const customization_type = "/usr/share/timed/typeinfo/customization.type" ;
+  inline const char *customization_path() { return  "/usr/share/timed/customization.data" ; } // TODO: make it configurable 
+  inline const char *customization_type() { return  "/usr/share/timed/typeinfo/customization.type" ; }
 
-  static const char * const settings_file_type = "/usr/share/timed/typeinfo/settings.type" ;
+  inline const char *settings_file_type() { return  "/usr/share/timed/typeinfo/settings.type" ; }
 
-  static const char * const event_queue_type   = "/usr/share/timed/typeinfo/queue.type" ;
+  inline const char *event_queue_type() { return  "/usr/share/timed/typeinfo/queue.type" ; }
 
 private:
   bool act_dead_mode ;
@@ -64,7 +64,24 @@ private:
   bool guess_tz_by_default ;
 
   bool nitz_supported ;
-  bool tz_by_default ;
+  string tz_by_default ;
+
+  // init_* methods, to be called by constructor only
+  void init_unix_signal_handler() ;
+  void init_scratchbox_mode() ;
+  void init_act_dead() ;
+  void init_configuration() ;
+  void init_customization() ;
+  void init_read_settings() ;
+  void init_create_event_machine() ;
+  void init_context_objects() ;
+  void init_backup_object() ;
+  void init_main_interface_object() ;
+  void init_backup_dbus_name() ;
+  void init_main_interface_dbus_name() ;
+  void init_load_events() ;
+  void init_start_event_machine() ;
+  void init_cellular_services() ;
 
 public:
   machine *am ;
@@ -109,7 +126,9 @@ private:
   simple_timer *short_save_threshold_timer, *long_save_threshold_timer ;
   unsigned threshold_period_long, threshold_period_short ;
   unsigned ping_period, ping_max_num ;
+#if 0
   string save_time_path ;
+#endif
   string events_path, settings_path ;
   string default_timezone ;
   int default_gmt_offset ;
@@ -124,7 +143,9 @@ private:
   Q_INVOKABLE void send_time_settings() ;
   bool signal_invoked ;
   nanotime_t systime_back ;
+#if 0
   QTimer *save_time_to_file_timer ;
+#endif
   tz_oracle_t *tz_oracle ;
 
   ContextProvider::Property *time_operational_p ;
@@ -134,7 +155,9 @@ public:
   void clear_invokation_flag() { signal_invoked = false ; systime_back.invalidate() ; }
 public Q_SLOTS:
   void event_queue_changed() ;
+#if 0
   void save_time_to_file() ;
+#endif
 private Q_SLOTS:
   void queue_threshold_timeout() ;
   void unix_signal(int signo) ;

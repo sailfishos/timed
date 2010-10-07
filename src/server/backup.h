@@ -6,6 +6,8 @@
 
 #include "timed.h"
 
+// TODO: Inheritance QDBusAbstractAdaptor -> com_nokia_backupclient -> com_nokia_timed_backup
+
 class com_nokia_timed_backup : public QDBusAbstractAdaptor
 {
   Q_OBJECT ;
@@ -13,7 +15,7 @@ class com_nokia_timed_backup : public QDBusAbstractAdaptor
   Timed *timed ;
 
 public:
-  com_nokia_backupclient(Timed *daemon, QObject *owner) : QDBusAbstractAdaptor(owner), timed(daemon)
+  com_nokia_timed_backup(Timed *daemon, QObject *owner) : QDBusAbstractAdaptor(owner), timed(daemon)
   {
   }
 

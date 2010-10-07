@@ -161,7 +161,7 @@ void Timed::init_act_dead()
 {
 #if F_ACTING_DEAD
   act_dead_mode = access("/tmp/ACT_DEAD", F_OK) == 0 ;
-  if (not scratcbox_mode)
+  if (not scratchbox_mode)
   {
     bool user_mode = access("/tmp/USER", F_OK) == 0 ;
     log_assert(act_dead_mode != user_mode) ;
@@ -174,19 +174,19 @@ void Timed::init_act_dead()
 
 // * Reading configuration file
 // * Warning if no exists (which is okey)
-void init_configuration()
+void Timed::init_configuration()
 {
   iodata::storage *config_storage = new iodata::storage ;
-  config_storage->set_primary_path(configuration_path) ;
-  config_storage->set_validator(configuration_type, "config_t") ;
+  config_storage->set_primary_path(configuration_path()) ;
+  config_storage->set_validator(configuration_type(), "config_t") ;
 
   iodata::record *c = config_storage->load() ;
   log_assert(c, "loading configuration settings failed") ;
 
   if(config_storage->source()==0)
-    log_info("configuration loaded from '%s'", configuration_path) ;
+    log_info("configuration loaded from '%s'", configuration_path()) ;
   else
-    log_warning("configuration file '%s' corrupted or non-existing, using default values", configuration_path) ;
+    log_warning("configuration file '%s' corrupted or non-existing, using default values", configuration_path()) ;
 
   events_path = c->get("queue_path")->str() ; // TODO: make C++ variables match data fields
   settings_path = c->get("settings_path")->str() ;
@@ -200,25 +200,25 @@ void init_configuration()
 #endif
 }
 
-static parse_boolean(const string &str)
+static bool parse_boolean(const string &str)
 {
   return str == "true" || str == "True" || str == "1" ;
 }
 
 // * read customization data provided by customization package
-void init_customization()
+void Timed::init_customization()
 {
   iodata::storage *storage = new iodata::storage ;
-  storage->set_primary_path(customization_path) ;
-  storage->set_validator(customization_type, "customization_t") ;
+  storage->set_primary_path(customization_path()) ;
+  storage->set_validator(customization_type(), "customization_t") ;
 
   iodata::record *c = storage->load() ;
   log_assert(c, "loading customization settings failed") ;
 
   if(storage->source()==0)
-    log_info("customization loaded from '%s'", customization_path) ;
+    log_info("customization loaded from '%s'", customization_path()) ;
   else
-    log_warning("customization file '%s' corrupted or non-existing, using default values", customization_path) ;
+    log_warning("customization file '%s' corrupted or non-existing, using default values", customization_path()) ;
 
   format24_by_default = parse_boolean(c->get("format24")->str()) ;
   nitz_supported = parse_boolean(c->get("useNitz")->str()) ;
@@ -245,7 +245,7 @@ void Timed::init_read_settings()
   settings_storage = new iodata::storage ;
   settings_storage->set_primary_path(settings_path) ;
   settings_storage->set_secondary_path(settings_path+".bak") ;
-  settings_storage->set_validator(settings_file_type, "settings_t") ;
+  settings_storage->set_validator(settings_file_type(), "settings_t") ;
 
   iodata::record *tree = settings_storage->load() ;
 
@@ -272,7 +272,7 @@ void Timed::init_create_event_machine()
 {
   am = new machine(this) ;
 
-  am->device_mode_detected(user_mode) ;
+  am->device_mode_detected(not act_dead_mode) ; // TODO: avoid "not" here
 
   short_save_threshold_timer = new simple_timer(threshold_period_short) ;
   long_save_threshold_timer = new simple_timer(threshold_period_long) ;
@@ -323,9 +323,8 @@ void Timed::init_backup_object()
   new com_nokia_timed_backup(this, backup_object) ;
   // XXX: what if we're using system bus: how should backup know this?
   // TODO: if using system bus, keep track of started/terminated sessions? (omg!)
-  const QDBusConnection &conn = Maemo::Timed::bus() ;
+  QDBusConnection conn = Maemo::Timed::bus() ;
   const char * const path = "/com/nokia/timed/backup" ;
-  bool res =  ;
   if (conn.registerObject(path, backup_object))
     log_info("backup interface object registered on path '%s'", path) ;
   else
@@ -338,7 +337,7 @@ void Timed::init_backup_object()
 void Timed::init_main_interface_object()
 {
   new com_nokia_time(this) ;
-  const QDBusConnection &conn = Maemo::Timed::bus() ;
+  QDBusConnection conn = Maemo::Timed::bus() ;
   const char * const path = Maemo::Timed::objpath() ;
   if (conn.registerObject(path, this))
     log_info("main interface object registered on path '%s'", path) ;
@@ -356,7 +355,7 @@ void Timed::init_backup_dbus_name()
   // We're using an another name for backup interface
   //   to avoid mess while switching to system bus and back again (later)
   // XXX: But for now it's just the same connection as com.nokia.time
-  const QDBusConnection conn = Maemo::Timed::bus() ;
+  QDBusConnection conn = Maemo::Timed::bus() ;
   const char * const name = "com.nokia.timed.backup" ;
   const string conn_name = conn.name().toStdString() ;
   if (conn.registerService(name))
@@ -377,11 +376,11 @@ void Timed::init_main_interface_dbus_name()
 
   const string conn_name = Maemo::Timed::bus().name().toStdString() ;
   if (Maemo::Timed::bus().registerService(Maemo::Timed::service()))
-    log_info("service name '%s' registered on bus '%s'", name, conn_name.c_str()) ;
+    log_info("service name '%s' registered on bus '%s'", Maemo::Timed::service(), conn_name.c_str()) ;
   else
   {
     const string msg = Maemo::Timed::bus().lastError().message().toStdString() ;
-    log_critical("can't register service '%s' on bus '%s': '%s'", Maemo::Timed::service().toStdString().c_str(), conn_name.c_str(), msg.c_str()) ;
+    log_critical("can't register service '%s' on bus '%s': '%s'", Maemo::Timed::service(), conn_name.c_str(), msg.c_str()) ;
     log_critical("aborting") ;
     ::exit(1) ;
   }
@@ -392,7 +391,7 @@ void Timed::init_load_events()
   event_storage = new iodata::storage ;
   event_storage->set_primary_path(events_path) ;
   event_storage->set_secondary_path(events_path+".bak") ;
-  event_storage->set_validator(event_queue_type, "event_queue_t") ;
+  event_storage->set_validator(event_queue_type(), "event_queue_t") ;
 
   iodata::record *events = event_storage->load() ;
 
