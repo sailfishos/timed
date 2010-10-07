@@ -357,6 +357,12 @@ void Timed::init_context_objects()
 
 void Timed::init_backup_object()
 {
+  new com_nokia_timed_backup(...) ; // TODO: put a backup object here and below
+  // XXX: what if we're using system bus, how should backup know this?
+  // TODO: if using system bus, keep track of started/terminated sessions...
+  bool res = Maemo::Timed::bus().registerObject("/com/nokia/timed/backup", ...) ;
+  if(!res)
+    log_critical("failed to register backup object: backup/restore not available: %s", Maemo::Timed::bus().lastError().message().toStdString().c_str()) ;
 }
 
 
