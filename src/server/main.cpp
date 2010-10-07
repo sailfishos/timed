@@ -40,7 +40,9 @@ int main(int ac, char **av)
   // system("hwclock -s") ; // temporary hack
   try
   {
+#if 0
     customization_settings::check_customization(ac, av);
+#endif
     event_t::codec_initializer() ;
     Timed *server = new Timed(ac,av) ;
     int result = server->exec() ;

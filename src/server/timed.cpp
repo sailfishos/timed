@@ -243,8 +243,10 @@ void Timed::init_customization()
 // * apply customization defaults, if needed
 void Timed::init_read_settings()
 {
+#if 0
   cust_settings = new customization_settings();
   cust_settings->load();
+#endif
 
   settings_storage = new iodata::storage ;
   settings_storage->set_primary_path(settings_path) ;

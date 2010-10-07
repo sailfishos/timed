@@ -89,6 +89,7 @@ iodata::record *zone_source_t::save() const
   return r ;
 }
 
+#if 0
 #define CUST_FILE "/etc/clockd/clockd-settings.default"
 QByteArray customization_settings::get_hash()
 {
@@ -309,6 +310,7 @@ iodata::record* customization_settings::save()
   r->add("default_tz", default_tz.toAscii().data());
   return r;
 }
+#endif
 
 source_settings::source_settings(Timed *owner)
 {

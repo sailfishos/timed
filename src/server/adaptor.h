@@ -177,11 +177,14 @@ public slots:
     timed->halt(string_q_to_std(what)) ;
   }
 
+
+#if 0
   QMap<QString, QVariant> customization_values()
   {
     log_debug() ;
     return timed->cust_settings->get_values();
   }
+#endif
 
   bool fake_nitz_signal(int mcc, int offset, int time, int dst)
   {
