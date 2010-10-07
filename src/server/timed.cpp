@@ -96,33 +96,7 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   init_read_settings() ;
   log_debug() ;
 
-  short_save_threshold_timer = new simple_timer(threshold_period_short) ;
-  log_debug() ;
-  long_save_threshold_timer = new simple_timer(threshold_period_long) ;
-  log_debug() ;
-  QObject::connect(short_save_threshold_timer, SIGNAL(timeout()), this, SLOT(queue_threshold_timeout())) ;
-  log_debug() ;
-  QObject::connect(long_save_threshold_timer, SIGNAL(timeout()), this, SLOT(queue_threshold_timeout())) ;
-  log_debug() ;
-
-  am = new machine(this) ;
-  log_debug() ;
-  QObject::connect(am, SIGNAL(child_created(unsigned,int)), this, SLOT(register_child(unsigned,int))) ;
-  log_debug() ;
-  q_pause = NULL ;
-  log_debug() ;
-  clear_invokation_flag() ;
-  log_debug() ;
-
-  ping = new pinguin(ping_period, ping_max_num) ;
-  log_debug() ;
-
-  QObject::connect(am, SIGNAL(voland_needed()), ping, SLOT(voland_needed())) ;
-  log_debug() ;
-  QObject::connect(this, SIGNAL(voland_registered()), ping, SLOT(voland_registered())) ;
-  log_debug() ;
-
-  QObject::connect(am, SIGNAL(queue_to_be_saved()), this, SLOT(event_queue_changed())) ;
+  init_create_event_machine() ;
   log_debug() ;
 
   // starting context stuff
@@ -277,6 +251,7 @@ static parse_boolean(const string &str)
   return str == "true" || str == "True" || str == "1" ;
 }
 
+// * read customization data provided by customization package
 void init_customization()
 {
   iodata::storage *storage = new iodata::storage ;
@@ -306,6 +281,8 @@ void init_customization()
   delete c ;
 }
 
+// * read settings
+// * apply customization defaults, if needed
 void Timed::init_read_settings()
 {
   cust_settings = new customization_settings();
@@ -339,12 +316,29 @@ void Timed::init_read_settings()
   delete tree ;
 }
 
-void Timed::check_voland_service()
+void Timed::init_create_event_machine()
 {
-  QDBusConnectionInterface *bus_ifc = Maemo::Timed::Voland::bus().interface() ;
-  bool present = bus_ifc->isServiceRegistered(Maemo::Timed::Voland::service()) ;
+  am = new machine(this) ;
 
-  if(present)
+  short_save_threshold_timer = new simple_timer(threshold_period_short) ;
+  long_save_threshold_timer = new simple_timer(threshold_period_long) ;
+  QObject::connect(short_save_threshold_timer, SIGNAL(timeout()), this, SLOT(queue_threshold_timeout())) ;
+  QObject::connect(long_save_threshold_timer, SIGNAL(timeout()), this, SLOT(queue_threshold_timeout())) ;
+
+  QObject::connect(am, SIGNAL(child_created(unsigned,int)), this, SLOT(register_child(unsigned,int))) ;
+  q_pause = NULL ;
+  clear_invokation_flag() ;
+
+  ping = new pinguin(ping_period, ping_max_num) ;
+  QObject::connect(am, SIGNAL(voland_needed()), ping, SLOT(voland_needed())) ;
+  QObject::connect(this, SIGNAL(voland_registered()), ping, SLOT(voland_registered())) ;
+
+  QObject::connect(am, SIGNAL(queue_to_be_saved()), this, SLOT(event_queue_changed())) ;
+
+  QDBusConnectionInterface *bus_ifc = Maemo::Timed::Voland::bus().interface() ;
+  bool voland_present = bus_ifc->isServiceRegistered(Maemo::Timed::Voland::service()) ;
+
+  if(voland_present)
   {
     log_info("Voland service %s detected", Maemo::Timed::Voland::service()) ;
     emit voland_registered() ;
