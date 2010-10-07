@@ -114,7 +114,6 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   init_main_interface_dbus_name() ;
   log_debug() ;
 
-  new com_nokia_time(this) ;
   log_debug() ;
   /* XXX
    * The stupid and simple backup dbus adaptor
@@ -358,26 +357,63 @@ void Timed::init_context_objects()
 void Timed::init_backup_object()
 {
   new com_nokia_timed_backup(...) ; // TODO: put a backup object here and below
-  // XXX: what if we're using system bus, how should backup know this?
-  // TODO: if using system bus, keep track of started/terminated sessions...
-  bool res = Maemo::Timed::bus().registerObject("/com/nokia/timed/backup", ...) ;
+  // XXX: what if we're using system bus: how should backup know this?
+  // TODO: if using system bus, keep track of started/terminated sessions? (omg!)
+  const QDBusConnection conn = Maemo::Timed::bus() ;
+  const char * const path = "/com/nokia/timed/backup" ;
+  bool res = conn.registerObject(path, ...) ;
   if(!res)
-    log_critical("failed to register backup object: backup/restore not available: %s", Maemo::Timed::bus().lastError().message().toStdString().c_str()) ;
+  {
+    log_critical("failed to register backup object: %s", conn.lastError().message().toStdString().c_str()) ;
+    log_critical("backup/restore not available") ;
+  }
 }
 
 
 void Timed::init_main_interface_object()
 {
+  new com_nokia_time(this) ;
+  bool res = Maemo::Timed::bus().registerObject(Maemo::Timed::objpath(), this) ;
+  if(!res)
+    log_critical("remote methods not available; failed to register dbus object: %s", Maemo::Timed::bus().lastError().message().toStdString().c_str()) ;
+  // XXX:
+  // probably it's a good idea to terminate if failed
+  // (usually it means, the dbus connection is not available)
+  // but on the other hand we can still provide some services (like setting time and zone)
+  // Anyway, we will terminate if the mutex like name is not available
 }
 
 
 void Timed::init_backup_dbus_name()
 {
+  // We're using an another name for backup interface
+  //   to avoid mess while switching to system bus and back again (later)
+  // XXX: But for now it's just the same connection as com.nokia.time
+  const QDBusConnection conn = Maemo::Timed::bus() ;
+  const char * const name = "com.nokia.timed.backup" ;
+  if (not conn.registerService(name))
+  {
+    const string msg = conn.lastError().message().toStdString() ;
+    const string con = conn.name().toStdString() ;
+    log_critical("can't register service '%s' on bus '%s': '%s'", name, con.c_str(), msg.c_str()) ;
+    log_critical("backup/restore not available") ;
+  }
 }
 
 
 void Timed::init_main_interface_dbus_name()
 {
+  // We're misusing the dbus name as a some kind of mutex:
+  //   only one instance of timed is allowed to run.
+  // This is the why we can't drop the name later.
+  if (not Maemo::Timed::bus().registerService(Maemo::Timed::service()))
+  {
+    const string msg = Maemo::Timed::bus().lastError().message().toStdString() ;
+    const string con = Maemo::Timed::bus().name().toStdString() ;
+    log_critical("can't register service '%s' on bus '%s': '%s'", Maemo::Timed::service().toStdString().c_str(), con.c_str(), msg.c_str()) ;
+    log_critical("aborting") ;
+    ::exit(1) ;
+  }
 }
 
 cookie_t Timed::add_event(cookie_t remove, const Maemo::Timed::event_io_t &x, const QDBusMessage &message)
