@@ -138,6 +138,7 @@ void Timed::init_unix_signal_handler()
   signal_object = UnixSignal::object() ;
   QObject::connect(signal_object, SIGNAL(signal(int)), this, SLOT(unix_signal(int))) ;
   signal_object->handle(SIGINT) ;
+  signal_object->handle(SIGTERM) ;
   signal_object->handle(SIGCHLD) ;
 }
 
@@ -649,6 +650,10 @@ void Timed::unix_signal(int signo)
       break ;
     case SIGINT:
       log_info("Keyboard interrupt, oh weh... bye") ;
+      quit() ;
+      break ;
+    case SIGTERM:
+      log_info("Termination signal... bye") ;
       quit() ;
       break ;
   }
