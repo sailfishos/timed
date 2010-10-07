@@ -350,7 +350,7 @@ int source_settings::default_snooze(int new_value)
   return default_snooze_value ;
 }
 
-void source_settings::load(const iodata::record *r)
+void source_settings::load(const iodata::record *r, const string &default_tz)
 {
   log_debug() ;
   log_debug("CUST time_nitz: %d", r->get("time_nitz")->value());
@@ -366,6 +366,11 @@ void source_settings::load(const iodata::record *r)
   {
     log_debug("it: '%s'", it->first.c_str()) ;
     it->second->load(r->get(it->first)->rec()) ;
+    if (zone_source_t *z = dynamic_cast<zone_source_t*> (it->second))
+    {
+      if (z->value == "[unknown]")
+        z->value = default_tz ;
+    }
     log_debug() ;
   }
 #if 0

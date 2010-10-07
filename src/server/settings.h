@@ -177,7 +177,7 @@ struct source_settings
 
   map<string,source_t*> src ;
 
-  void load(const iodata::record *) ;
+  void load(const iodata::record *, const string &defult_tz) ;
   iodata::record *save() const ;
 
   Maemo::Timed::WallClock::wall_info_pimple_t *get_wall_clock_info(const nanotime_t &) const ;

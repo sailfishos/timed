@@ -270,7 +270,7 @@ void Timed::init_read_settings()
 #endif
 
   settings = new source_settings(this) ; // TODO: use tz_by_default here
-  settings->load(tree) ;
+  settings->load(tree, tz_by_default) ;
 
   delete tree ;
 }

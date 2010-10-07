@@ -37,7 +37,7 @@ manual_offset_t=
 // manual_zone_t and cellular_zone_t some day.
 generic_zone_t=
 [
-  { name = "value",          type=$bytes,       value="" }
+  { name = "value",          type=$bytes,       value="[unknown]" }
 ]
 
 .
