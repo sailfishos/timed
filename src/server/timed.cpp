@@ -117,9 +117,6 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   init_load_events() ;
   log_debug() ;
 
-  init_start_event_machine() ;
-  log_debug() ;
-
   init_cellular_services() ;
   log_debug() ;
 
@@ -131,14 +128,11 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
 
   log_debug("starting event mahine") ;
 
-  am->start() ;
+  init_start_event_machine() ;
+  log_debug() ;
 
   log_debug("applying time zone settings") ;
-
-  settings->postload_fix_manual_zone() ;
-  settings->postload_fix_manual_offset() ;
-  if(settings->check_target(settings->etc_localtime()) != 0)
-    invoke_signal() ;
+  init_apply_tz_settings() ;
 
   log_info("daemon is up and running") ;
 }
@@ -424,6 +418,7 @@ void Timed::init_start_event_machine()
   if(not event_storage->fix_files(false))
     log_critical("can't fix the primary event queue file") ;
   am->process_transition_queue() ;
+  am->start() ;
 }
 
 void Timed::init_cellular_services()
@@ -436,6 +431,15 @@ void Timed::init_cellular_services()
   QObject::connect(tz_oracle, SIGNAL(tz_detected(olson *, tz_suggestions_t)), this, SLOT(tz_by_oracle(olson *, tz_suggestions_t))) ;
   QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
 }
+
+void Timed::init_apply_tz_settings()
+{
+  settings->postload_fix_manual_zone() ;
+  settings->postload_fix_manual_offset() ;
+  if(settings->check_target(settings->etc_localtime()) != 0)
+    invoke_signal() ;
+}
+
 
 // Move the stuff below to machine:: class
 

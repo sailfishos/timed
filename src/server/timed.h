@@ -82,6 +82,7 @@ private:
   void init_load_events() ;
   void init_start_event_machine() ;
   void init_cellular_services() ;
+  void init_apply_tz_settings() ;
 
 public:
   machine *am ;
