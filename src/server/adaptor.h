@@ -127,7 +127,7 @@ public slots:
   QString ping()
   {
     log_debug() ;
-    iodata::record *r = timed->am->save() ;
+    iodata::record *r = timed->am->save(false) ; // false = not for backup
     std::ostringstream s ;
     s << *r ;
     delete r ;

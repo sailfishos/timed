@@ -181,7 +181,7 @@ struct event_t ;
     void device_mode_detected(bool user_mode) ;
     bool is_epoch_open() ;
     void open_epoch() ;
-    iodata::record *save() ;
+    iodata::record *save(bool for_backup) ;
     void load(const iodata::record *) ;
     void load_events(const iodata::array *events_data, bool trusted_source, bool use_cookies) ;
     void cancel_backup_events() ;

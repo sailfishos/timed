@@ -43,7 +43,7 @@
 
 struct Timed : public QCoreApplication
 {
-private:
+public:
   inline const char *configuration_path() { return  "/etc/timed.config" ; }
   inline const char *configuration_type() { return  "/usr/share/timed/typeinfo/config.type" ; }
 
@@ -68,6 +68,7 @@ private:
 
 public:
   bool is_nitz_supported() { return nitz_supported ; }
+  const string &get_settings_path() { return settings_path ; }
 
 private:
 
@@ -110,10 +111,6 @@ public:
 
   map<int,unsigned> children ;
 
-  void backup();
-  void backup_finished();
-  void restore();
-  void restore_finished();
 public Q_SLOTS:
   void system_owner_changed(const QString &name, const QString &oldowner, const QString &newowner) ;
   void send_next_bootup_event(int value) ;

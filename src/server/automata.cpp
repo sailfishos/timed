@@ -717,18 +717,22 @@ using namespace std ;
     return flags & mask ;
   }
 
-  iodata::record *machine::save()
+  iodata::record *machine::save(bool for_backup)
   {
     iodata::record *r = new iodata::record ;
     iodata::array *q = new iodata::array ;
 
     for(map<cookie_t, event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
     {
-      q->add(it->second->save()) ;
+      event_t *e = it->second ;
+      if(for_backup and not (e->flags & EventFlags::Backup))
+        continue ;
+      q->add(e->save(for_backup)) ;
     }
 
     r->add("events", q) ;
-    r->add("next_cookie", next_cookie) ;
+    if(not for_backup)
+      r->add("next_cookie", next_cookie) ;
 #if 0
     r->add("default_snooze", default_snooze_value) ;
     filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
@@ -1196,7 +1200,7 @@ using namespace std ;
     }
   }
 
-  iodata::record *event_t::save()
+  iodata::record *event_t::save(bool for_backup)
   {
     iodata::record *r = new iodata::record ;
     r->add("cookie", cookie.value()) ;
@@ -1206,15 +1210,19 @@ using namespace std ;
     r->add("attr", attr.save() ) ;
     r->add("flags", new iodata::bitmask(flags &~ EventFlags::Cluster_Mask, codec)) ;
     r->add("recrs", iodata::save(recrs)) ;
-    r->add("actions", iodata::save(actions)) ;
     r->add("snooze", iodata::save_int_array(snooze)) ;
     r->add("b_attr", iodata::save(b_attr)) ;
 
     r->add("dialog_time", (flags & EventFlags::In_Dialog) ? last_triggered.value() : 0) ;
     r->add("tsz_max", tsz_max) ;
     r->add("tsz_counter", tsz_counter) ;
-    r->add("client_creds", client_creds.save()) ;
-    r->add("cred_modifier", cred_modifier.save()) ;
+
+    if(not for_backup)
+      r->add("actions", iodata::save(actions)) ;
+    if(not for_backup)
+      r->add("client_creds", client_creds.save()) ;
+    if(not for_backup)
+      r->add("cred_modifier", cred_modifier.save()) ;
     return r ;
   }
 

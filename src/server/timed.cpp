@@ -329,7 +329,7 @@ void Timed::init_context_objects()
 void Timed::init_backup_object()
 {
   QObject *backup_object = new QObject ;
-  new com_nokia_timed_backup(this, backup_object) ;
+  new backup_t(this, backup_object) ;
   // XXX: what if we're using system bus: how should backup know this?
   // TODO: if using system bus, keep track of started/terminated sessions? (omg!)
   QDBusConnection conn = Maemo::Timed::bus() ;
@@ -539,7 +539,7 @@ void Timed::queue_threshold_timeout()
 
 void Timed::save_event_queue()
 {
-  iodata::record *queue = am->save() ;
+  iodata::record *queue = am->save(false) ; // false = full queue, not backup
   int res = event_storage->save(queue) ;
 
   if(res==0) // primary file
