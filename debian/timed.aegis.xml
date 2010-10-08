@@ -31,9 +31,3 @@
     </dbus>
   </provide>
 </aegis>
-<!--
-  aegis-exec -a timed::TimeBackup dbus-send --session --dest=com.nokia.timed.backup --type=method_call --print-reply /com/nokia/timed/backup com.nokia.backupclient.backupStarts
-
-  aegis-exec -a timed::TimeBackup dbus-send --session --dest=com.nokia.timed.backup --type=method_call --print-reply /com/nokia/timed/backup com.nokia.backupclient.restoreFinished
-
--->
