@@ -837,9 +837,15 @@ using namespace std ;
   void machine::cancel_backup_events()
   {
     // TODO: assert (queue is paused)
+    vector<event_t*> backup ;
     for(map<cookie_t, event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
       if (it->second->flags & EventFlags::Backup)
-        cancel_event(it->second) ;
+        backup.push_back(it->second) ;
+
+    for(vector<event_t*>::const_iterator it=backup.begin(); it!=backup.end(); ++it)
+      cancel_event(*it) ;
+
+    log_debug("cancelled all the bacjup events") ;
   }
 
 #if 0
