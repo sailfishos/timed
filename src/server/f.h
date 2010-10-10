@@ -32,6 +32,8 @@
 #if __HARMATTAN__
 #  define F_CREDS_AEGIS_LIBCREDS 1
 #  define F_CELLULAR_QT 1
+#  define F_SCRATCHBOX 1
+#  define F_ACTING_DEAD 1
 #endif
 
 #if F_CREDS_AEGIS_LIBCREDS

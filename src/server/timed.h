@@ -43,27 +43,74 @@
 
 struct Timed : public QCoreApplication
 {
+public:
+  inline const char *configuration_path() { return  "/etc/timed.config" ; }
+  inline const char *configuration_type() { return  "/usr/share/timed/typeinfo/config.type" ; }
+
+  inline const char *customization_path() { return  "/usr/share/timed/customization.data" ; } // TODO: make it configurable
+  inline const char *customization_type() { return  "/usr/share/timed/typeinfo/customization.type" ; }
+
+  inline const char *settings_file_type() { return  "/usr/share/timed/typeinfo/settings.type" ; }
+
+  inline const char *event_queue_type() { return  "/usr/share/timed/typeinfo/queue.type" ; }
+
+private:
+  bool act_dead_mode ;
+
+  bool scratchbox_mode ;
+
+  bool format24_by_default ;
+  bool auto_time_by_default ;
+  bool guess_tz_by_default ;
+
+  bool nitz_supported ;
+  string tz_by_default ;
+
+public:
+  bool is_nitz_supported() { return nitz_supported ; }
+  const string &get_settings_path() { return settings_path ; }
+
+private:
+
+  // init_* methods, to be called by constructor only
+  void init_unix_signal_handler() ;
+  void init_scratchbox_mode() ;
+  void init_act_dead() ;
+  void init_configuration() ;
+  void init_customization() ;
+  void init_read_settings() ;
+  void init_create_event_machine() ;
+  void init_context_objects() ;
+  void init_backup_object() ;
+  void init_main_interface_object() ;
+  void init_backup_dbus_name() ;
+  void init_main_interface_dbus_name() ;
+  void init_load_events() ;
+  void init_start_event_machine() ;
+  void init_cellular_services() ;
+  void init_apply_tz_settings() ;
+
+public:
+
   machine *am ;
   pinguin *ping ;
   source_settings *settings ;
+#if 0
   customization_settings *cust_settings;
+#endif
 
   void load_events() ;
   void check_voland_service() ;
   cookie_t add_event(cookie_t remove, const Maemo::Timed::event_io_t &event, const QDBusMessage &message) ;
   void add_events(const Maemo::Timed::event_list_io_t &events, QList<QVariant> &res, const QDBusMessage &message) ;
   bool dialog_response(cookie_t c, int value) ;
-  bool cancel(cookie_t c) { return am->cancel(c) ; }
-  bool alarm_gate(bool set=false, bool value=true) { return am->alarm_gate(set, value) ; }
-  int default_snooze(int value) { return am->default_snooze(value) ; }
+  bool cancel(cookie_t c) { return am->cancel_by_cookie(c) ; }
+  void alarm_gate(bool value) { return am->alarm_gate(value) ; }
+  int default_snooze(int value) { return settings->default_snooze(value) ; }
   QDBusConnectionInterface *ses_iface ;
 
   map<int,unsigned> children ;
 
-  void backup();
-  void backup_finished();
-  void restore();
-  void restore_finished();
 public Q_SLOTS:
   void system_owner_changed(const QString &name, const QString &oldowner, const QString &newowner) ;
   void send_next_bootup_event(int value) ;
@@ -80,25 +127,31 @@ public:
 
 private:
   QDBusServiceWatcher *voland_watcher ;
-  iodata::storage *event_storage, *settings_storage, *timed_rc_storage ;
+  iodata::storage *event_storage, *settings_storage ;
 
   simple_timer *short_save_threshold_timer, *long_save_threshold_timer ;
   unsigned threshold_period_long, threshold_period_short ;
   unsigned ping_period, ping_max_num ;
+#if 0
   string save_time_path ;
+#endif
   string events_path, settings_path ;
   string default_timezone ;
   int default_gmt_offset ;
   void load_rc() ;
   void load_settings() ;
+public:
   void save_settings() ;
+private:
   Q_INVOKABLE void save_event_queue() ;
 
   queue_pause *q_pause ;
   Q_INVOKABLE void send_time_settings() ;
   bool signal_invoked ;
   nanotime_t systime_back ;
+#if 0
   QTimer *save_time_to_file_timer ;
+#endif
   tz_oracle_t *tz_oracle ;
 
   ContextProvider::Property *time_operational_p ;
@@ -108,7 +161,9 @@ public:
   void clear_invokation_flag() { signal_invoked = false ; systime_back.invalidate() ; }
 public Q_SLOTS:
   void event_queue_changed() ;
+#if 0
   void save_time_to_file() ;
+#endif
 private Q_SLOTS:
   void queue_threshold_timeout() ;
   void unix_signal(int signo) ;

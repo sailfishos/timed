@@ -175,7 +175,7 @@ struct event_t
 
   static iodata::bit_codec *codec ;
   static void codec_initializer() ;
-  iodata::record *save() ;
+  iodata::record *save(bool for_backup) ;
 } ;
 
 struct action_comparison_t

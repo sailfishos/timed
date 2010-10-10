@@ -44,51 +44,6 @@
 
 #include <timed/interface> // TODO: is Maemo::Timed::bus() the correct way?
 
-/*
- * xxx
- * The stupid and simple backup dbus interface
- */
-class com_nokia_backupclient : public QDBusAbstractAdaptor
-{
-  Q_OBJECT ;
-  Q_CLASSINFO("D-Bus Interface", "com.nokia.backupclient") ;
-  Timed *timed ;
-
-public:
-  com_nokia_backupclient(Timed *parent) : QDBusAbstractAdaptor(parent), timed(parent)
-  {
-  }
-
-public slots:
-  unsigned char backupStarts()
-  {
-    log_debug("backupStarts");
-    timed->backup();
-    return 0;
-  }
-
-  unsigned char backupFinished()
-  {
-    log_debug("backupFinished");
-    timed->backup_finished();
-    return 0;
-  }
-
-  unsigned char restoreStarts()
-  {
-    log_debug("restoreStarts");
-    timed->restore();
-    return 0;
-  }
-
-  unsigned char restoreFinished()
-  {
-    log_debug("restoreFinished");
-    timed->restore_finished();
-    return 0;
-  }
-};
-
 class com_nokia_time : public QDBusAbstractAdaptor
 {
   Q_OBJECT ;
@@ -172,7 +127,7 @@ public slots:
   QString ping()
   {
     log_debug() ;
-    iodata::record *r = timed->am->save() ;
+    iodata::record *r = timed->am->save(false) ; // false = not for backup
     std::ostringstream s ;
     s << *r ;
     delete r ;
@@ -194,13 +149,14 @@ public slots:
   void enable_alarms(bool enable)
   {
     log_debug() ;
-    timed->alarm_gate(true, enable) ;
+    timed->settings->alarms_are_enabled = enable ;
+    timed->alarm_gate(enable) ;
   }
 
   bool alarms_enabled()
   {
     log_debug() ;
-    return timed->alarm_gate(false) ;
+    return timed->settings->alarms_are_enabled ;
   }
 
   bool set_default_snooze(int value)
@@ -221,11 +177,14 @@ public slots:
     timed->halt(string_q_to_std(what)) ;
   }
 
+
+#if 0
   QMap<QString, QVariant> customization_values()
   {
     log_debug() ;
     return timed->cust_settings->get_values();
   }
+#endif
 
   bool fake_nitz_signal(int mcc, int offset, int time, int dst)
   {

@@ -36,6 +36,7 @@
 #include <qm/log>
 
 #include "adaptor.h"
+#include "backup.h"
 #include "timed.h"
 #include "settings.h"
 #include "tz.h"
@@ -74,50 +75,248 @@ static void spam()
 Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
 {
   spam() ;
-  halted = "" ;
-  //check acting dead / user mode
-  bool act_dead_mode = access("/tmp/ACT_DEAD", F_OK) == 0 ;
-  bool user_mode = access("/tmp/USER", F_OK) == 0 ;
+  halted = "" ; // XXX: remove it, as we don't want to halt anymore
+  log_debug() ;
 
-  if(act_dead_mode == user_mode)
+  init_unix_signal_handler() ;
+  log_debug() ;
+
+  init_scratchbox_mode() ;
+  log_debug() ;
+
+  init_act_dead() ;
+  log_debug() ;
+
+  init_configuration() ;
+  log_debug() ;
+
+  init_customization() ;
+  log_debug() ;
+
+  init_read_settings() ;
+  log_debug() ;
+
+  init_create_event_machine() ;
+  log_debug() ;
+
+  init_context_objects() ;
+  log_debug() ;
+
+  init_backup_object() ;
+  log_debug() ;
+
+  init_main_interface_object() ;
+  log_debug() ;
+
+  init_backup_dbus_name() ;
+  log_debug() ;
+
+  init_main_interface_dbus_name() ;
+  log_debug() ;
+
+  init_load_events() ;
+  log_debug() ;
+
+  init_cellular_services() ;
+  log_debug() ;
+
+#if 0
+  save_time_to_file_timer = new QTimer ;
+  QObject::connect(save_time_to_file_timer, SIGNAL(timeout()), this, SLOT(save_time_to_file())) ;
+  save_time_to_file() ;
+#endif
+
+  log_debug("starting event mahine") ;
+
+  init_start_event_machine() ;
+  log_debug() ;
+
+  log_debug("applying time zone settings") ;
+  init_apply_tz_settings() ;
+
+  log_info("daemon is up and running") ;
+}
+
+// * Start Unix signal handling
+void Timed::init_unix_signal_handler()
+{
+  signal_object = UnixSignal::object() ;
+  QObject::connect(signal_object, SIGNAL(signal(int)), this, SLOT(unix_signal(int))) ;
+  signal_object->handle(SIGINT) ;
+  signal_object->handle(SIGTERM) ;
+  signal_object->handle(SIGCHLD) ;
+}
+
+// * Condition "running inside of scratchbox" is detected
+void Timed::init_scratchbox_mode()
+{
+#if F_SCRATCHBOX
+  const char *path = getenv("PATH") ;
+  scratchbox_mode = path && strstr(path, "scratchbox") ; // XXX: more robust sb detection?
+  log_info("%s" "SCRATCHBOX detected", scratchbox_mode ? "" : "no ") ;
+#else
+  scratcbox_mode = false ;
+#endif
+}
+
+// * Condition "running in ACT DEAD mode" is detected.
+// * When running on Harmattan device (not scratchbox!):
+//      some sanity checks are performed.
+void Timed::init_act_dead()
+{
+#if F_ACTING_DEAD
+  act_dead_mode = access("/tmp/ACT_DEAD", F_OK) == 0 ;
+  if (not scratchbox_mode)
   {
-    // some people are running it in scrachbox :(
-    const char *path = getenv("PATH") ;
-    bool scratchbox = path && strstr(path, "scratchbox") ;
+    bool user_mode = access("/tmp/USER", F_OK) == 0 ;
+    log_assert(act_dead_mode != user_mode) ;
+  }
+  log_info("running in %s mode", act_dead_mode ? "ACT_DEAD" : "USER") ;
+#else
+  act_dead_mode = false ;
+#endif
+}
 
-    bool p = user_mode ;
-    log_critical("%s ACT_DEAD and USER %s present in /tmp, exitting...", p?"both":"none of", p?"are":"is") ;
+// * Reading configuration file
+// * Warning if no exists (which is okey)
+void Timed::init_configuration()
+{
+  iodata::storage *config_storage = new iodata::storage ;
+  config_storage->set_primary_path(configuration_path()) ;
+  config_storage->set_validator(configuration_type(), "config_t") ;
 
-    if(scratchbox)
-      log_info("Do not exit: it seems we are in scratchbox") ;
-    else
-      ::exit(1) ;
+  iodata::record *c = config_storage->load() ;
+  log_assert(c, "loading configuration settings failed") ;
+
+  if(config_storage->source()==0)
+    log_info("configuration loaded from '%s'", configuration_path()) ;
+  else
+    log_warning("configuration file '%s' corrupted or non-existing, using default values", configuration_path()) ;
+
+  events_path = c->get("queue_path")->str() ; // TODO: make C++ variables match data fields
+  settings_path = c->get("settings_path")->str() ;
+  threshold_period_long = c->get("queue_threshold_long")->value() ;
+  threshold_period_short = c->get("queue_threshold_short")->value() ;
+  ping_period = c->get("voland_ping_sleep")->value() ;
+  ping_max_num = c->get("voland_ping_retries")->value() ;
+  delete c ;
+#if 0 // XXX: remove it for ever
+  save_time_path = c->get("saved_utc_time_path")->str() ;
+#endif
+}
+
+static bool parse_boolean(const string &str)
+{
+  return str == "true" || str == "True" || str == "1" ;
+}
+
+// * read customization data provided by customization package
+void Timed::init_customization()
+{
+  iodata::storage *storage = new iodata::storage ;
+  storage->set_primary_path(customization_path()) ;
+  storage->set_validator(customization_type(), "customization_t") ;
+
+  iodata::record *c = storage->load() ;
+  log_assert(c, "loading customization settings failed") ;
+
+  if(storage->source()==0)
+    log_info("customization loaded from '%s'", customization_path()) ;
+  else
+    log_warning("customization file '%s' corrupted or non-existing, using default values", customization_path()) ;
+
+  format24_by_default = parse_boolean(c->get("format24")->str()) ;
+  nitz_supported = parse_boolean(c->get("useNitz")->str()) ;
+  auto_time_by_default = parse_boolean(c->get("autoTime")->str()) ;
+  guess_tz_by_default = parse_boolean(c->get("guessTz")->str()) ;
+  tz_by_default = c->get("tz")->str() ;
+
+  if (not nitz_supported and auto_time_by_default)
+  {
+    log_warning("automatic time update disabled because nitz is not supported in the device") ;
+    auto_time_by_default = false ;
   }
 
+  delete c ;
+}
 
-  load_rc() ;
+// * read settings
+// * apply customization defaults, if needed
+void Timed::init_read_settings()
+{
+#if 0
+  cust_settings = new customization_settings();
+  cust_settings->load();
+#endif
+
+  settings_storage = new iodata::storage ;
+  settings_storage->set_primary_path(settings_path) ;
+  settings_storage->set_secondary_path(settings_path+".bak") ;
+  settings_storage->set_validator(settings_file_type(), "settings_t") ;
+
+  iodata::record *tree = settings_storage->load() ;
+
+  log_assert(tree, "loading settings failed") ;
+
+#define apply_cust(key, val)  do { if (tree->get(key)->value() < 0) tree->add(key, val) ; } while(false)
+  apply_cust("format_24", format24_by_default) ;
+  apply_cust("time_nitz", auto_time_by_default) ;
+  apply_cust("local_cellular", guess_tz_by_default) ;
+#undef apply_cust
+
+#if 0
+  // we can't do it here:
+  //   first get dbus name (as a mutex), then fix the files
+#endif
+
+  settings = new source_settings(this) ; // TODO: use tz_by_default here
+  settings->load(tree, tz_by_default) ;
+
+  delete tree ;
+}
+
+void Timed::init_create_event_machine()
+{
+  am = new machine(this) ;
+  log_debug("am=new machine done") ;
+  q_pause = NULL ;
+
+  am->device_mode_detected(not act_dead_mode) ; // TODO: avoid "not" here
 
   short_save_threshold_timer = new simple_timer(threshold_period_short) ;
   long_save_threshold_timer = new simple_timer(threshold_period_long) ;
   QObject::connect(short_save_threshold_timer, SIGNAL(timeout()), this, SLOT(queue_threshold_timeout())) ;
   QObject::connect(long_save_threshold_timer, SIGNAL(timeout()), this, SLOT(queue_threshold_timeout())) ;
 
-  am = new machine ;
   QObject::connect(am, SIGNAL(child_created(unsigned,int)), this, SLOT(register_child(unsigned,int))) ;
-  q_pause = NULL ;
   clear_invokation_flag() ;
-  load_settings() ;
 
   ping = new pinguin(ping_period, ping_max_num) ;
-
   QObject::connect(am, SIGNAL(voland_needed()), ping, SLOT(voland_needed())) ;
   QObject::connect(this, SIGNAL(voland_registered()), ping, SLOT(voland_registered())) ;
 
   QObject::connect(am, SIGNAL(queue_to_be_saved()), this, SLOT(event_queue_changed())) ;
 
-  // starting context stuff
+  QDBusConnectionInterface *bus_ifc = Maemo::Timed::Voland::bus().interface() ;
 
+  voland_watcher = new QDBusServiceWatcher((QString)Maemo::Timed::Voland::service(), Maemo::Timed::Voland::bus()) ;
+  QObject::connect(voland_watcher, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
+  QObject::connect(this, SIGNAL(voland_registered()), am, SIGNAL(voland_registered())) ;
+  QObject::connect(this, SIGNAL(voland_unregistered()), am, SIGNAL(voland_unregistered())) ;
+
+  bool voland_present = bus_ifc->isServiceRegistered(Maemo::Timed::Voland::service()) ;
+
+  if(voland_present)
+  {
+    log_info("Voland service %s detected", Maemo::Timed::Voland::service()) ;
+    emit voland_registered() ;
+  }
+}
+
+void Timed::init_context_objects()
+{
   (new ContextProvider::Service(Maemo::Timed::bus()))->setAsDefault() ;
+  log_debug("(new ContextProvider::Service(Maemo::Timed::bus()))->setAsDefault()") ;
 
   ContextProvider::Property("Alarm.Trigger") ;
   ContextProvider::Property("Alarm.Present") ;
@@ -125,72 +324,125 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   time_operational_p = new ContextProvider::Property("/com/nokia/time/system_time/operational") ;
   time_operational_p->setValue(am->is_epoch_open()) ;
   QObject::connect(am, SIGNAL(next_bootup_event(int)), this, SLOT(send_next_bootup_event(int))) ;
+}
 
-  new com_nokia_time(this) ;
-  /* XXX
-   * The stupid and simple backup dbus adaptor
-   */
-  new com_nokia_backupclient(this) ;
-  if(! Maemo::Timed::bus().registerService(Maemo::Timed::service()))
+
+void Timed::init_backup_object()
+{
+  QObject *backup_object = new QObject ;
+  new backup_t(this, backup_object) ;
+  // XXX: what if we're using system bus: how should backup know this?
+  // TODO: if using system bus, keep track of started/terminated sessions? (omg!)
+  QDBusConnection conn = Maemo::Timed::bus() ;
+  const char * const path = "/com/nokia/timed/backup" ;
+  if (conn.registerObject(path, backup_object))
+    log_info("backup interface object registered on path '%s'", path) ;
+  else
   {
-    string msg = Maemo::Timed::bus().lastError().message().toStdString() ;
-    log_critical("aborting, because can't register service, message: '%s'", msg.c_str()) ;
-    // may be to throw an exception ?
+    log_critical("failed to register backup object on path '%s': %s", path, conn.lastError().message().toStdString().c_str()) ;
+    log_critical("backup/restore not available") ;
+  }
+}
+
+void Timed::init_main_interface_object()
+{
+  new com_nokia_time(this) ;
+  QDBusConnection conn = Maemo::Timed::bus() ;
+  const char * const path = Maemo::Timed::objpath() ;
+  if (conn.registerObject(path, this))
+    log_info("main interface object registered on path '%s'", path) ;
+  else
+    log_critical("remote methods not available; failed to register dbus object: %s", Maemo::Timed::bus().lastError().message().toStdString().c_str()) ;
+  // XXX:
+  // probably it's a good idea to terminate if failed
+  // (usually it means, the dbus connection is not available)
+  // but on the other hand we can still provide some services (like setting time and zone)
+  // Anyway, we will terminate if the mutex like name is not available
+}
+
+void Timed::init_backup_dbus_name()
+{
+  // We're using an another name for backup interface
+  //   to avoid mess while switching to system bus and back again (later)
+  // XXX: But for now it's just the same connection as com.nokia.time
+  QDBusConnection conn = Maemo::Timed::bus() ;
+  const char * const name = "com.nokia.timed.backup" ;
+  const string conn_name = conn.name().toStdString() ;
+  if (conn.registerService(name))
+    log_info("service name '%s' registered on bus '%s'", name, conn_name.c_str()) ;
+  else
+  {
+    const string msg = conn.lastError().message().toStdString() ;
+    log_critical("can't register service '%s' on bus '%s': '%s'", name, conn_name.c_str(), msg.c_str()) ;
+    log_critical("backup/restore not available") ;
+  }
+}
+
+void Timed::init_main_interface_dbus_name()
+{
+  // We're misusing the dbus name as a some kind of mutex:
+  //   only one instance of timed is allowed to run.
+  // This is the why we can't drop the name later.
+
+  const string conn_name = Maemo::Timed::bus().name().toStdString() ;
+  if (Maemo::Timed::bus().registerService(Maemo::Timed::service()))
+    log_info("service name '%s' registered on bus '%s'", Maemo::Timed::service(), conn_name.c_str()) ;
+  else
+  {
+    const string msg = Maemo::Timed::bus().lastError().message().toStdString() ;
+    log_critical("can't register service '%s' on bus '%s': '%s'", Maemo::Timed::service(), conn_name.c_str(), msg.c_str()) ;
+    log_critical("aborting") ;
     ::exit(1) ;
   }
+}
 
-  log_info("service %s registered", Maemo::Timed::service()) ;
+void Timed::init_load_events()
+{
+  event_storage = new iodata::storage ;
+  event_storage->set_primary_path(events_path) ;
+  event_storage->set_secondary_path(events_path+".bak") ;
+  event_storage->set_validator(event_queue_type(), "event_queue_t") ;
 
-  // load the queue from file ....
-  load_events() ;
+  iodata::record *events = event_storage->load() ;
 
+  log_assert(events) ;
+
+  am->load(events) ;
+
+  delete events ;
+}
+
+void Timed::init_start_event_machine()
+{
+  if(not settings_storage->fix_files(false))
+    log_critical("can't fix the primary settings file") ;
+  if(not event_storage->fix_files(false))
+    log_critical("can't fix the primary event queue file") ;
   am->process_transition_queue() ;
+  am->start() ;
+}
 
-  am->device_mode_detected(user_mode) ;
-
-  bool res_obj = Maemo::Timed::bus().registerObject(Maemo::Timed::objpath(), this) ;
-  if(!res_obj)
-    log_critical("can't register D-Bus object: %s", Maemo::Timed::bus().lastError().message().toStdString().c_str()) ;
-
-  // ses_iface = Maemo::Timed::Voland::bus().interface() ;
-  voland_watcher = new QDBusServiceWatcher((QString)Maemo::Timed::Voland::service(), Maemo::Timed::Voland::bus()) ;
-  // QObject::connect(ses_iface, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
-  QObject::connect(voland_watcher, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
-  QObject::connect(this, SIGNAL(voland_registered()), am, SIGNAL(voland_registered())) ;
-  QObject::connect(this, SIGNAL(voland_unregistered()), am, SIGNAL(voland_unregistered())) ;
-
-  check_voland_service() ;
-
-  save_time_to_file_timer = new QTimer ;
-  QObject::connect(save_time_to_file_timer, SIGNAL(timeout()), this, SLOT(save_time_to_file())) ;
-  save_time_to_file() ;
-
+void Timed::init_cellular_services()
+{
   cellular_handler *nitz_object = cellular_handler::object() ;
   int nitzrez = QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), this, SLOT(nitz_notification(const cellular_info_t &))) ;
   log_debug("nitzrez=%d", nitzrez) ;
-  // nitz_object->invoke_signal() ;
-
-  signal_object = UnixSignal::object() ;
-  QObject::connect(signal_object, SIGNAL(signal(int)), this, SLOT(unix_signal(int))) ;
-  signal_object->handle(SIGINT) ;
-  signal_object->handle(SIGCHLD) ;
 
   tz_oracle = new tz_oracle_t ;
   QObject::connect(tz_oracle, SIGNAL(tz_detected(olson *, tz_suggestions_t)), this, SLOT(tz_by_oracle(olson *, tz_suggestions_t))) ;
   QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
 }
 
-void Timed::check_voland_service()
+void Timed::init_apply_tz_settings()
 {
-  QDBusConnectionInterface *bus_ifc = Maemo::Timed::Voland::bus().interface() ;
-  bool present = bus_ifc->isServiceRegistered(Maemo::Timed::Voland::service()) ;
-
-  if(present)
-  {
-    log_info("Voland service %s detected", Maemo::Timed::Voland::service()) ;
-    emit voland_registered() ;
-  }
+  settings->postload_fix_manual_zone() ;
+  settings->postload_fix_manual_offset() ;
+  if(settings->check_target(settings->etc_localtime()) != 0)
+    invoke_signal() ;
 }
+
+
+// Move the stuff below to machine:: class
 
 cookie_t Timed::add_event(cookie_t remove, const Maemo::Timed::event_io_t &x, const QDBusMessage &message)
 {
@@ -207,7 +459,7 @@ cookie_t Timed::add_event(cookie_t remove, const Maemo::Timed::event_io_t &x, co
   if(test!=x.attr.txt.end())
     log_debug("TEST event: '%s', cookie=%d", test.value().toStdString().c_str(), c.value()) ;
   log_debug() ;
-  if(c.is_valid() && remove.is_valid() && !am->cancel(remove))
+  if(c.is_valid() && remove.is_valid() && !am->cancel_by_cookie(remove))
     log_critical("[%d]: failed to remove event", remove.value()) ;
   return c ;
 }
@@ -279,113 +531,16 @@ void Timed::queue_threshold_timeout()
   method.invoke(this, Qt::QueuedConnection) ;
 }
 
-void Timed::load_rc()
-{
-  timed_rc_storage = new iodata::storage ;
-  timed_rc_storage->set_primary_path("/etc/timed.rc") ;
-  timed_rc_storage->set_validator("/usr/share/timed/typeinfo/timed-rc.type", "timed_rc_t") ;
-
-  iodata::record *rc = timed_rc_storage->load() ;
-  log_assert(rc, "loading rc-setings failed") ;
-
-  if(timed_rc_storage->source()==0)
-    log_info("loaded rc-setting from file") ;
-  else
-    log_warning("rc-file not present or corrupted, using default settings") ;
-
-  events_path = rc->get("queue_path")->str() ;
-  settings_path = rc->get("settings_path")->str() ;
-  threshold_period_long = rc->get("queue_threshold_long")->value() ;
-  threshold_period_short = rc->get("queue_threshold_short")->value() ;
-  ping_period = rc->get("voland_ping_sleep")->value() ;
-  ping_max_num = rc->get("voland_ping_retries")->value() ;
-  save_time_path = rc->get("saved_utc_time_path")->str() ;
-
-  delete rc ;
-}
-
 /*
  * xxx
  * These are the "stupid and simple" backup methods.
  * Just like the doctor ordered. :)
  * The chmod is a workaround for backup-framework crash bug.
  */
-void Timed::backup()
-{
- /* Excerpts from Backup User Guide V0.2 ...
-  *
-  * 2.1 Backup Start
-  *
-  * This method will be called just before the actual backup
-  * starts. The application can dump all the data in RAM to their
-  * persistent storage. If the application wish to exit on getting
-  * this call, it can do that after responding DBus calls. (The
-  * application which uses temporary backup files can generate the
-  * the file on getting this call.)
-  */
-
-  system("mkdir /tmp/.timed-backup; cp /var/cache/timed/*.data /etc/timed.rc /etc/timed-cust.rc /tmp/.timed-backup; chmod -R 0777 /tmp/.timed-backup");
-}
-
-void Timed::backup_finished()
-{
-  /* 2.2 Backup Finished
-   *
-   * The applications are notified that backup is finished. (The
-   * applications which uses the temporary backup files can delete
-   * the file on getting this call.)
-   */
-
-  system("rm -rf /tmp/.timed-backup");
-}
-
-void Timed::restore()
-{
-  /* 2.3 Restore Start
-   *
-   * The applications are notified that restore operation is going
-   * to start. If the application wish to exit on getting this call,
-   * it can do that.
-   */
-}
-
-void Timed::restore_finished()
-{
-  /* 2.4 Restore Finished
-   *
-   * The applications are notified that one restore operation is
-   * finished. On getting this method call the application should
-   * reload all data from their persistent storage and update the
-   * UI. (The applications which uses the temporary backup files can
-   * import data from temporary files and delete them after it.)
-   */
-
-  system("cp -f /tmp/.timed-backup/*.data /var/cache/timed; cp -f /tmp/.timed-backup/*.rc /etc");
-  backup_finished();
-  QCoreApplication::exit(1);
-}
-
-void Timed::load_events()
-{
-  event_storage = new iodata::storage ;
-  event_storage->set_primary_path(events_path) ;
-  event_storage->set_secondary_path(events_path+".bak") ;
-  event_storage->set_validator("/usr/share/timed/typeinfo/queue.type", "event_queue_t") ;
-
-  iodata::record *events = event_storage->load() ;
-  if(! event_storage->fix_files(false))
-    log_critical("can't fix the primary event queue file") ;
-
-  log_assert(events) ;
-
-  am->load(events) ;
-
-  delete events ;
-}
 
 void Timed::save_event_queue()
 {
-  iodata::record *queue = am->save() ;
+  iodata::record *queue = am->save(false) ; // false = full queue, not backup
   int res = event_storage->save(queue) ;
 
   if(res==0) // primary file
@@ -397,6 +552,7 @@ void Timed::save_event_queue()
 
   delete queue ;
 }
+
 void Timed::save_settings()
 {
   iodata::record *tree = settings->save() ;
@@ -408,42 +564,6 @@ void Timed::save_settings()
     log_warning("wall clock settings written to secondary file") ;
   else
     log_critical("wall clock settings can't be saved") ;
-
-  delete tree ;
-}
-
-
-void Timed::load_settings()
-{
-  cust_settings = new customization_settings();
-  cust_settings->load();
-
-  settings_storage = new iodata::storage ;
-  settings_storage->set_primary_path(settings_path) ;
-  settings_storage->set_secondary_path(settings_path+".bak") ;
-  settings_storage->set_validator("/usr/share/timed/typeinfo/settings.type", "settings_t") ;
-
-  iodata::record *tree = settings_storage->load() ;
-  // If we dont have user settings stored, use customization ones.
-  if (settings_storage->source() == -1)
-  {
-    log_debug("CUST settings_storage->source() == -1");
-    tree->add("time_nitz", cust_settings->time_nitz);
-    tree->add("local_cellular", cust_settings->time_nitz);
-    tree->add("format_24", cust_settings->format_24);
-  }
-  if (!cust_settings->net_time_enabled)
-  {
-      tree->add("time_nitz", 0);
-      tree->add("local_cellular", 0);
-  }
-  if(! settings_storage->fix_files(false))
-    log_critical("can't fix the primary settings file") ;
-
-  log_assert(tree) ;
-
-  settings = new source_settings(this) ;
-  settings->load(tree) ;
 
   delete tree ;
 }
@@ -480,6 +600,7 @@ void Timed::send_time_settings()
   }
 }
 
+#if 0
 void Timed::save_time_to_file()
 {
   save_time_to_file_timer->stop() ;
@@ -505,6 +626,7 @@ void Timed::save_time_to_file()
 
   save_time_to_file_timer->start(1000*3600) ; // 1 hour
 }
+#endif
 
 void Timed::unix_signal(int signo)
 {
@@ -548,6 +670,10 @@ void Timed::unix_signal(int signo)
       break ;
     case SIGINT:
       log_info("Keyboard interrupt, oh weh... bye") ;
+      quit() ;
+      break ;
+    case SIGTERM:
+      log_info("Termination signal... bye") ;
       quit() ;
       break ;
   }

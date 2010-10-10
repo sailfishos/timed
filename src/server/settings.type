@@ -1,20 +1,27 @@
 settings_t =
 [
-  { name = "time_nitz",      type=$integer,      value = 1 },
-  { name = "local_cellular", type=$integer,      value = 1 },
+  // The value '-1' means: use default value given by customization
+  { name = "time_nitz",      type=$integer,      value = -1 },
+  { name = "local_cellular", type=$integer,      value = -1 },
+  { name = "format_24",      type=$integer,      value = -1 },
+
+  // TODO: get rid of 'auto_dst'
   { name = "auto_dst",       type=$integer,      value = 1 },
-  { name = "format_24",      type=$integer,      value = 1 },
 
   { name = "manual_utc",     type=$record,       record="empty_t" },
   { name = "nitz_utc",       type=$record,       record="empty_t" },
   { name = "gps_utc",        type=$record,       record="empty_t" },
   { name = "ntp_utc",        type=$record,       record="empty_t" },
 
+  // TODO: get rid of '*_offset'
   { name = "manual_offset",  type=$record,       record="manual_offset_t" },
   { name = "nitz_offset",    type=$record,       record="empty_t" },
 
   { name = "manual_zone",    type=$record,       record="generic_zone_t" },
-  { name = "cellular_zone",  type=$record,       record="generic_zone_t" }
+  { name = "cellular_zone",  type=$record,       record="generic_zone_t" },
+
+  { name = "default_snooze", type = $integer, value = 300 },
+  { name = "alarms",         type = $integer, value = 1 }
 ],
 
 empty_t =
@@ -30,7 +37,7 @@ manual_offset_t=
 // manual_zone_t and cellular_zone_t some day.
 generic_zone_t=
 [
-  { name = "value",          type=$bytes,       value="" }
+  { name = "value",          type=$bytes,       value="[unknown]" }
 ]
 
 .
