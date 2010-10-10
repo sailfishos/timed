@@ -298,6 +298,12 @@ void Timed::init_create_event_machine()
   QObject::connect(am, SIGNAL(queue_to_be_saved()), this, SLOT(event_queue_changed())) ;
 
   QDBusConnectionInterface *bus_ifc = Maemo::Timed::Voland::bus().interface() ;
+
+  voland_watcher = new QDBusServiceWatcher((QString)Maemo::Timed::Voland::service(), Maemo::Timed::Voland::bus()) ;
+  QObject::connect(voland_watcher, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
+  QObject::connect(this, SIGNAL(voland_registered()), am, SIGNAL(voland_registered())) ;
+  QObject::connect(this, SIGNAL(voland_unregistered()), am, SIGNAL(voland_unregistered())) ;
+
   bool voland_present = bus_ifc->isServiceRegistered(Maemo::Timed::Voland::service()) ;
 
   if(voland_present)
@@ -305,11 +311,6 @@ void Timed::init_create_event_machine()
     log_info("Voland service %s detected", Maemo::Timed::Voland::service()) ;
     emit voland_registered() ;
   }
-
-  voland_watcher = new QDBusServiceWatcher((QString)Maemo::Timed::Voland::service(), Maemo::Timed::Voland::bus()) ;
-  QObject::connect(voland_watcher, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
-  QObject::connect(this, SIGNAL(voland_registered()), am, SIGNAL(voland_registered())) ;
-  QObject::connect(this, SIGNAL(voland_unregistered()), am, SIGNAL(voland_unregistered())) ;
 }
 
 void Timed::init_context_objects()
