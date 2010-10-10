@@ -1,6 +1,7 @@
 timed (2.18) unstable; urgency=low
 
-  * dummy
+  * Backup/restore
+  * Customization
 
  -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Fri, 01 Oct 2010 10:03:49 +0300
 
