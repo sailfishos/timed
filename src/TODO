@@ -1,26 +1,31 @@
-* doc about context
-* QmTime
-* Time example in qmsystem
+(*) triggering gate
+(*) collecting gate
 
+(*) change time without hwclock
+(*) log only to file,  /home/user/timed.log ?
+(*) get rid of TZ and TZDIR at start up [make TZDIR an option?]
+
+(*) QmTime
+(*) Time example in qmsystem
+
+(*) reading /var/spool/timed/ directory
+(*) get rid of this? save time for the sake of rebooting
+
+done * doc about context
 done * context framework
 done * save enable/disable alarms status
 done * combined remove_old+add_new_event method for atomic replacing
 done * make readable recurrence patterns
 
-* connect to cellular api
-* save time for the sake of rebooting
-* reading /var/spool/timed/ directory
+done * connect to cellular api
 
-* reprogramm RTC boot time
+done * reprogramm RTC boot time
 
-* dsme stuff:
-- signal the next alarm, talk to Semi
-- boot up? talk to Karl-Heinz and Semi
+done * dsme stuff:
+done - signal the next alarm, talk to Semi
+done - boot up? talk to Karl-Heinz and Semi
 
-(*) change time without hwclock
-(*) ask dsme how to expose rtc
-(*) log only to file,  /home/user/timed.log ?
-(*) get rid of TZ and TZDIR at start up [make TZDIR an option?]
+done (*) ask dsme how to expose rtc
 
 done 1) Time/Timezone change/notification
 done *) offset calculation
@@ -53,9 +58,9 @@ done *) use session bus
 done *) tests
 done *) recurrence
 
-0) Next-trigger-time for alarm, which is currently being playing is
-empty (already confirmed, just to keep the whole list it in one place)
+done 0) Next-trigger-time for alarm, which is currently being playing is
+done empty (already confirmed, just to keep the whole list it in one place)
 done 1) dbus method for getting all the text attributes
 done 2) "fake" event, which will never trigger
-3) combined remove_old+add_new_event method for atomic replacing
-3) Mapping cookie=>trigger-time via Context Framework
+done 3) combined remove_old+add_new_event method for atomic replacing
+done 3) Mapping cookie=>trigger-time via Context Framework
