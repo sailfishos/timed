@@ -312,21 +312,23 @@ void state_missed::enter(event_t *e)
   e->flags |= EventFlags::Missed ;
 
   if(e->flags & EventFlags::Trigger_If_Missed)
-    next_state = "TRIGGERED" ;
+    next_state = "ARMED" ;
   om->request_state(e, next_state) ;
 }
 
 void state_due::enter(event_t *e)
 {
   state::enter(e) ;
+#if 0 // TRIGGERED state seems to be better for this
   // Frist get rif of one time trigger info:
   e->ticker = ticker_t() ;
   e->invalidate_t() ;
+#endif
 
   // assume it's not missed, this flag will be set in MISSED state
   e->flags &= ~ EventFlags::Missed ;
 
-  const char *next_state = "TRIGGERED" ;
+  const char *next_state = "ARMED" ;
   if(e->flags & EventFlags::Empty_Recurring)
     next_state = "RECURRED" ;
   else if(om->transition_started() - e->trigger > RenameMeNameSpace::Missing_Threshold)
@@ -432,6 +434,11 @@ void state_recurred::enter(event_t *e)
 void state_triggered::enter(event_t *e)
 {
   state::enter(e) ;
+
+  // Frist get rid of one time trigger info:
+  e->ticker = ticker_t() ;
+  e->invalidate_t() ;
+
   if(e->flags & EventFlags::Single_Shot)
     e->recrs.resize(0) ; // no recurrence anymore
   om->request_state(e, e->flags & EventFlags::Reminder ? "DLG_WAIT" : "SERVED") ;

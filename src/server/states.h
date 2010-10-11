@@ -147,6 +147,13 @@
     ticker_t apply_pattern(broken_down_t &t, int wday, const recurrence_pattern_t *p) ;
   } ;
 
+  struct state_armed : public gate_state
+  {
+    state_armed(machine *am) : gate_state("ARMED", "TRIGGERED", am) { }
+  private:
+    Q_OBJECT ;
+  } ;
+
   struct state_triggered : public state
   {
     state_triggered(machine *am) : state("TRIGGERED",am) {}

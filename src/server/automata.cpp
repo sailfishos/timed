@@ -206,6 +206,7 @@ using namespace std ;
 //      new state_postponed(this),      // T
       new state_skipped(this),        // T
 
+      new state_armed(this),          // IO G
       new state_triggered(this),      // T A
 
       new state_dlg_wait(this),       // IO G   -->DUE
@@ -262,6 +263,9 @@ using namespace std ;
     io_state *queued = dynamic_cast<io_state*> (states["QUEUED"]) ;
     log_assert(queued!=NULL) ;
 
+    gate_state *armed = dynamic_cast<gate_state*> (states["ARMED"]) ;
+    log_assert(armed!=NULL) ;
+    armed->open() ; // will be closed in some very special situations
 
     log_debug() ;
     gate_state *dlg_wait = dynamic_cast<gate_state*> (states["DLG_WAIT"]) ;
