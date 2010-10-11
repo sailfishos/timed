@@ -28,12 +28,6 @@
 #include <QMetaType>
 int main(int ac, char **av)
 {
-  const size_t pwd_len = 1024 ;
-  char pwd[pwd_len], *p = getcwd(pwd, pwd_len) ;
-  bool is_root = p!=NULL && strcmp(pwd, "/")==0 ;
-  const char *log_file = is_root ? "/var/log/timed.log" : "timed.log" ;
-
-  log_init("timed", log_file, true, true) ;
   log_info("timed started.") ;
 
 
