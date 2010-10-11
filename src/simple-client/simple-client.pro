@@ -4,7 +4,7 @@ QT += dbus
 TEMPLATE = app
 TARGET = simple-client
 
-VERSION = 2.18
+VERSION = 2.19
 
 INCLUDEPATH += ../h
 
