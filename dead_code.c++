@@ -2156,3 +2156,40 @@ static struct reminder_initializer_t
   }
 } reminder_initializer ;
 #endif
+
+#if 0
+namespace Alarm
+{
+  class Event
+  {
+    class Button ;
+    class Action ;
+    class Recurrence ;
+
+    enum Action_State
+    {
+      State_NEW = 0,
+      State_TRIGGERED,
+      State_BUTTON_FIRST,
+      State_BUTTON_LAST = State_BUTTON_1 + N_BUTTONS - 1 
+    } ;
+    class Action
+    {
+      Event *owner ;
+      unsigned state_mask ;
+      Action(Event *event) ;
+    public:
+      bool link(Button *button) ;
+      bool link(enum Action_State state) ;
+    } ;
+  public:
+    Event() ;
+   ~Event() ;
+    Button *add_button(QString label) ;
+    int find_button(Button *) ;
+    Action *add_action_exec(QString cmd) ;
+    Action *add_action_dbus(QString service, QString path, QString interface, QString method) ;
+  private:
+    QVector <Button*> buttons ;
+}
+#endif
