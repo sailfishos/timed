@@ -33,6 +33,7 @@ using namespace std ;
 #include <QDBusInterface>
 #include <QDBusReply>
 #include <QDBusAbstractAdaptor>
+#include <QDBusArgument>
 #include <QTimer>
 
 #include <qm/log>
@@ -86,6 +87,55 @@ struct fake_dialog_ui : public QCoreApplication
   }
 
   bool open(const Maemo::Timed::Voland::Reminder &d)
+  {
+    log_info("request to 'open' dialog '%d' ignored: obsolete interface", d.cookie()) ;
+    return false ; // will be ignored by timed for now
+  }
+
+  bool create(const QList<QVariant> &A)
+  {
+    if (A.size()==0)
+    {
+      log_warning("Empty reminder list? Okey...") ;
+      return true ;
+    }
+
+    bool can_convert = true ;
+    for(int i=0; i<A.size() && can_convert; ++i)
+    {
+      log_info("i=%d, type=%s", i, A[i].typeName()) ;
+      if (not A[i].canConvert<QDBusArgument>())
+        can_convert = false ;
+    }
+    if (not can_convert)
+    {
+      log_error("Invalid QVariant entry in the list found, rejecting the whole list") ;
+      return false ;
+    }
+
+    QList<Maemo::Timed::Voland::Reminder> R ;
+    for(int i=0; i<A.size(); ++i)
+    {
+      QDBusArgument a = A[i].value<QDBusArgument>() ;
+      Maemo::Timed::Voland::Reminder rr ;
+      a >> rr ;
+      R.push_back(rr) ;
+    }
+
+    ostringstream os ;
+    for(int i=0; i<R.size(); ++i)
+      os << (i?", ":"[") << R[i].cookie() ;
+    os << "]" ;
+
+    log_info("Request to open %d reminders: %s", R.size(), os.str().c_str()) ;
+
+    for(int i=0; i<R.size(); ++i)
+      open_a_reminder(R[i]) ;
+
+    return true ;
+  }
+
+  bool open_a_reminder(const Maemo::Timed::Voland::Reminder &d)
   {
     log_info("opening dialog %d '%s'", d.cookie(), d.attr("TITLE").QC) ;
     bool found = false ;
@@ -159,6 +209,8 @@ struct fake_dialog_ui : public QCoreApplication
 private slots:
   void timeout()
   {
+    if(isatty(0))
+      return ;
     log_info("%d seconds without activities, exitting", idle_threshold) ;
     exit(0) ;
   }
@@ -176,6 +228,10 @@ public slots:
   bool open(const Maemo::Timed::Voland::Reminder &d)
   {
     return owner->open(d) ;
+  }
+  bool create(const QList<QVariant> &reminders)
+  {
+    return owner->create(reminders) ;
   }
   bool close(uint cookie)
   {
