@@ -92,7 +92,7 @@ struct fake_dialog_ui : public QCoreApplication
     return false ; // will be ignored by timed for now
   }
 
-  bool create(const QList<QVariant> &A)
+  bool open(const QList<QVariant> &A)
   {
     if (A.size()==0)
     {
@@ -229,9 +229,9 @@ public slots:
   {
     return owner->open(d) ;
   }
-  bool create(const QList<QVariant> &reminders)
+  bool open(const QList<QVariant> &reminders)
   {
-    return owner->create(reminders) ;
+    return owner->open(reminders) ;
   }
   bool close(uint cookie)
   {

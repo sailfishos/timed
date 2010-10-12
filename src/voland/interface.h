@@ -62,7 +62,7 @@ namespace Maemo
       public:
         Interface(QObject *parent=NULL) ;
         qtdbus_method(open, (const Maemo::Timed::Voland::Reminder &data), QVariant::fromValue(data)) ;
-        qtdbus_method(create, (const QList<QVariant> &data), data) ;
+        qtdbus_method(open, (const QList<QVariant> &data), data) ;
         qtdbus_method(close, (uint32_t cookie), cookie) ;
       } ;
       class AbstractAdaptor : public QDBusAbstractAdaptor
@@ -73,7 +73,7 @@ namespace Maemo
         AbstractAdaptor(QObject *owner) : QDBusAbstractAdaptor(owner) { }
       public Q_SLOTS:
         virtual bool open(const Maemo::Timed::Voland::Reminder &data) = 0 ;
-        virtual bool create(const QList<QVariant> &data) = 0 ; //{ (void)data ; return false ; } ;
+        virtual bool open(const QList<QVariant> &data) = 0 ; //{ (void)data ; return false ; } ;
         virtual bool close(uint cookie) = 0 ;
       } ;
 

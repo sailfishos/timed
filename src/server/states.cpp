@@ -598,7 +598,7 @@ void state_dlg_cntr::request_voland()
     log_debug() ;
   }
   log_debug() ;
-  QDBusPendingCall async = ifc.create_async(reminders) ;
+  QDBusPendingCall async = ifc.open_async(reminders) ;
   w->watch(async) ;
 }
 
