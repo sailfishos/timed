@@ -20,3 +20,5 @@ SOURCES = client.cpp
 
 INSTALLS += target
 target.path = $$(DESTDIR)/usr/bin
+
+QMAKE_CXXFLAGS  += -Wall -Wno-psabi
