@@ -37,6 +37,8 @@ using namespace std ;
 
 #include <pcrecpp.h>
 
+#include <qm/log>
+
 #include <timed/interface>
 #include <timed/event>
 #include <timed-voland/interface>
@@ -55,6 +57,8 @@ int alarms(int ac, char **av) ;
 int replace(int ac, char **av) ;
 int ping_pong() ;
 int pid() ;
+int register_voland(string str) ;
+
 int parse_data(const char *text) ;
 int main_try(int ac, char **av) ;
 const char *config_example() ;
@@ -150,6 +154,10 @@ int main_try(int ac, char **av)
   else if(ac==2 && (string)av[1]=="pid") // pid: print the process ID of the server
   {
     return pid() ;
+  }
+  else if(ac==3 && (string)av[1]=="voland") // voland: register given voland service on session bus
+  {
+    return register_voland(av[2]) ;
   }
   else
   {
@@ -641,5 +649,29 @@ int replace(int ac, char **av)
   }
 
   qDebug() << "new event cookie:" << res.value() ;
+  return 0 ;
+}
+
+int register_voland(string str)
+{
+  if (not strchr(str.c_str(), '/'))
+    str = (string) "/usr/bin/" + str ;
+  const char *path = "/usr/share/dbus-1/services/com.nokia.voland.service" ;
+  if (FILE *fp = fopen(path, "w"))
+  {
+    fprintf(fp, "[D-BUS Service]\n") ;
+    fprintf(fp, "Name=com.nokia.voland\n") ;
+    fprintf(fp, "Exec=%s\n", str.c_str()) ;
+    if (fclose(fp)<0)
+    {
+      log_error("can't write to %s: %m", path) ;
+      return 1 ;
+    }
+  }
+  else
+  {
+    log_error("can't open file '%s' to write: %m", path) ;
+    return 1 ;
+  }
   return 0 ;
 }
