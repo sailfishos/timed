@@ -44,6 +44,7 @@ using namespace std ;
 #include "timeutil.h"
 #include "flags.h"
 #include "credentials.h"
+#include "automata.h"
 
 struct recurrence_pattern_t
 {
@@ -143,7 +144,10 @@ struct event_t
   ticker_t trigger, last_triggered ;
   int to_be_snoozed ;
   state *st ;
+#if 0
   QDBusPendingCallWatcher *dialog_req_watcher ;
+#endif
+  request_watcher_t *request_watcher ;
 
   state *get_state() { return st ; }
   void set_state(state *s) { st=s ; }

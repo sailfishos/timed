@@ -204,6 +204,7 @@ void state_queued::timer_start()
   {
     log_info("go to sleep, no alarm queued") ;
     om->send_queue_context() ;
+    emit sleep() ;
     return ;
   }
 
@@ -230,6 +231,7 @@ void state_queued::timer_start()
     log_debug("starting alarm_timer for %d milisec", milisec) ;
     alarm_timer->start(milisec) ;
     om->send_queue_context() ;
+    emit sleep() ;
   }
 }
 
@@ -540,9 +542,70 @@ void state_dlg_wait::enter(event_t *e)
   gate_state::enter(e) ;
 }
 
+void state_dlg_cntr::open()
+{
+  log_debug() ;
+  if (not events.empty())
+    request_voland() ;
+  concentrating_state::open() ;
+  log_debug() ;
+}
+
+void state_dlg_cntr::send_back()
+{
+  log_debug() ;
+  for(set<event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
+    om->request_state(*it, back) ;
+  if (not events.empty())
+    om->process_transition_queue() ;
+  log_debug() ;
+}
+
+void state_dlg_cntr::request_voland()
+{
+  if (events.empty())
+    return ; // avoid a memory leak for 'w' below.
+
+  QList<QVariant> reminders ;
+  request_watcher_t *w = new request_watcher_t(om) ;
+  Maemo::Timed::Voland::Interface ifc ;
+  for(set<event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
+  {
+    event_t *e = *it ;
+    w->attach(e) ;
+    Maemo::Timed::Voland::reminder_pimple_t *p = new Maemo::Timed::Voland::reminder_pimple_t ;
+    log_debug("was soll ich schon vergessen haben?") ;
+    p->flags = e->flags & EventFlags::Voland_Mask ;
+    log_debug() ;
+    p->cookie = e->cookie.value() ;
+    log_debug() ;
+    map_std_to_q(e->attr.txt, p->attr) ;
+    log_debug() ;
+    p->buttons.resize(e->b_attr.size()) ;
+    log_debug() ;
+    for(int i=0; i<p->buttons.size(); ++i)
+      map_std_to_q(e->b_attr[i].txt, p->buttons[i].attr) ;
+    log_debug() ;
+    log_debug() ;
+    Maemo::Timed::Voland::Reminder R(p) ;
+    reminders.push_back(QVariant::fromValue(R)) ;
+#if 1 // GET RID OF THIS PIECE SOON !
+    log_debug() ;
+    Maemo::Timed::Voland::Reminder RR = R ;
+    ifc.open_async(RR); // fire and forget
+    log_debug() ;
+#endif
+    log_debug() ;
+  }
+  log_debug() ;
+  QDBusPendingCall async = ifc.create_async(reminders) ;
+  w->watch(async) ;
+}
+
 void state_dlg_requ::enter(event_t *e)
 {
   gate_state::enter(e) ;
+#if 0
   Maemo::Timed::Voland::Interface ifc ;
   if(!ifc.isValid())
   {
@@ -567,16 +630,20 @@ void state_dlg_requ::enter(event_t *e)
   e->dialog_req_watcher = new QDBusPendingCallWatcher(async);
   om->watcher_to_event[e->dialog_req_watcher] = e ;
   QObject::connect(e->dialog_req_watcher, SIGNAL(finished(QDBusPendingCallWatcher*)), om, SLOT(call_returned(QDBusPendingCallWatcher*))) ;
+#endif
 }
 
 void state_dlg_requ::abort(event_t *e)
 {
-  if (e->dialog_req_watcher)
+  if (e->request_watcher)
+    e->request_watcher->detach(e) ;
+#if 0
   {
     om->watcher_to_event.erase(e->dialog_req_watcher) ;
     delete e->dialog_req_watcher ;
     e->dialog_req_watcher = NULL ;
   }
+#endif
 
   Maemo::Timed::Voland::Interface ifc ;
   ifc.close_async(e->cookie.value()) ;

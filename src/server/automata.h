@@ -93,6 +93,14 @@ struct event_t ;
     void opened() ;
   } ;
 
+  struct concentrating_state : public gate_state
+  {
+    concentrating_state(const char *name, const char *nxt, machine *m, QObject *p=NULL) : gate_state(name, nxt, m, p) { }
+    Q_OBJECT ;
+  public Q_SLOTS:
+    void open() ;
+  } ;
+
   struct filter_state : public gate_state
   {
     filter_state(const char *name, const char *retry, const char *nxt, machine *, QObject *p=NULL) ;
@@ -161,7 +169,9 @@ struct event_t ;
     void send_queue_context() ;
     Q_OBJECT ;
   public Q_SLOTS:
+#if 0
     void call_returned(QDBusPendingCallWatcher *) ; // rename ?
+#endif
   Q_SIGNALS:
     void engine_pause(int dx) ;
     void voland_registered() ;
@@ -193,5 +203,22 @@ struct event_t ;
     queue_pause(machine *m) : om(m) { om->emit_engine_pause(+1) ; }
    ~queue_pause() { om->emit_engine_pause(-1) ; }
   } ;
+
+struct request_watcher_t : public QObject
+{
+  request_watcher_t(machine *) ;
+ ~request_watcher_t() ;
+  void watch(const QDBusPendingCall &async_call) ;
+  void attach(event_t *e) ;
+  void detach(event_t *e) ;
+private:
+  void detach_not_destroy(event_t *e) ;
+  Q_OBJECT ;
+  set<event_t*> events ;
+  machine *om ;
+  QDBusPendingCallWatcher *w ;
+private Q_SLOTS:
+  void call_returned(QDBusPendingCallWatcher *w) ;
+} ;
 
 #endif

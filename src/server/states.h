@@ -89,6 +89,8 @@
     void engine_pause(int dx) ;
     void alarm_timeout() ;
     void filter_closed(filter_state *f_st) ;
+  Q_SIGNALS:
+    void sleep() ;
   } ;
 
 
@@ -200,11 +202,24 @@
   struct state_dlg_wait : public gate_state
   {
   public:
-    state_dlg_wait(machine *am) : gate_state("DLG_WAIT", "DLG_REQU", am) { }
+    state_dlg_wait(machine *am) : gate_state("DLG_WAIT", "DLG_CNTR", am) { }
     void enter(event_t *e) ;
     uint32_t cluster_bits() { return EventFlags::Cluster_Dialog ; }
   Q_SIGNALS:
     void voland_needed() ;
+  private:
+    Q_OBJECT ;
+  } ;
+
+  struct state_dlg_cntr : public concentrating_state
+  {
+    const char *back ;
+    state_dlg_cntr(machine *am) : concentrating_state("DLG_CNTR", "DLG_REQU", am), back("DLG_WAIT") { }
+    uint32_t cluster_bits() { return EventFlags::Cluster_Dialog ; }
+    void request_voland() ;
+  public Q_SLOTS:
+    void open() ;
+    void send_back() ;
   private:
     Q_OBJECT ;
   } ;

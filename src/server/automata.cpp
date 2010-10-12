@@ -152,6 +152,18 @@ using namespace std ;
     emit opened() ;
   }
 
+  void concentrating_state::open()
+  {
+    // Not setting "is_open" to true: it's always closed
+    // Not emit any opened() / closed() signals
+    log_debug() ;
+    for(set<event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
+      om->request_state(*it, nxt_state) ;
+    if (not events.empty())
+      om->process_transition_queue() ;
+    log_debug() ;
+  }
+
   filter_state::filter_state(const char *name, const char *retry, const char *nxt, machine *m, QObject *p) :
     gate_state(name, retry, m, p),
     next(strdup(nxt))
@@ -183,6 +195,7 @@ using namespace std ;
     // T = transition state
     // IO = waiting for i/o state
     // G = gate state
+    // C = concentrating gate state
     // F = filtering state
     // A = actions allowed
     // -->NEW loaded as new
@@ -210,6 +223,7 @@ using namespace std ;
       new state_triggered(this),      // T A
 
       new state_dlg_wait(this),       // IO G   -->DUE
+      new state_dlg_cntr(this),       // IO C   -->DUE
       new state_dlg_requ(this),       // IO G   -->DUE
       new state_dlg_user(this),       // IO G   -->DUE
       new state_dlg_resp(this),       // T
@@ -271,9 +285,11 @@ using namespace std ;
     gate_state *dlg_wait = dynamic_cast<gate_state*> (states["DLG_WAIT"]) ;
     gate_state *dlg_requ = dynamic_cast<gate_state*> (states["DLG_REQU"]) ;
     gate_state *dlg_user = dynamic_cast<gate_state*> (states["DLG_USER"]) ;
+    gate_state *dlg_cntr = dynamic_cast<gate_state*> (states["DLG_CNTR"]) ;
     log_assert(dlg_wait!=NULL) ;
     log_assert(dlg_requ!=NULL) ;
     log_assert(dlg_user!=NULL) ;
+    log_assert(dlg_cntr!=NULL) ;
 
     QObject::connect(dlg_wait, SIGNAL(voland_needed()), this, SIGNAL(voland_needed())) ;
 
@@ -284,6 +300,10 @@ using namespace std ;
     QObject::connect(this, SIGNAL(voland_registered()), dlg_requ, SLOT(close())) ;
     QObject::connect(this, SIGNAL(voland_registered()), dlg_user, SLOT(close())) ;
     QObject::connect(this, SIGNAL(voland_unregistered()), dlg_wait, SLOT(close())) ;
+    QObject::connect(this, SIGNAL(voland_unregistered()), dlg_cntr, SLOT(send_back())) ;
+
+    QObject::connect(queued, SIGNAL(sleep()), dlg_cntr, SLOT(open()), Qt::QueuedConnection) ;
+    QObject::connect(dlg_wait, SIGNAL(opened()), dlg_cntr, SLOT(open()), Qt::QueuedConnection) ;
 
     log_debug() ;
     filter_state *flt_conn = dynamic_cast<filter_state*> (states["FLT_CONN"]) ;
@@ -296,6 +316,7 @@ using namespace std ;
     QObject::connect(flt_conn, SIGNAL(closed(filter_state*)), queued, SLOT(filter_closed(filter_state*))) ;
     QObject::connect(flt_alrm, SIGNAL(closed(filter_state*)), queued, SLOT(filter_closed(filter_state*))) ;
     QObject::connect(flt_user, SIGNAL(closed(filter_state*)), queued, SLOT(filter_closed(filter_state*))) ;
+
 
     log_debug() ;
     QObject::connect(this, SIGNAL(engine_pause(int)), queued, SLOT(engine_pause(int))) ;
@@ -572,6 +593,7 @@ using namespace std ;
       invoke_process_transition_queue() ;
   }
 
+#if 0
   void machine::call_returned(QDBusPendingCallWatcher *w)
   {
     if(watcher_to_event.count(w)==0)
@@ -588,6 +610,7 @@ using namespace std ;
     log_assert(e->dialog_req_watcher==w) ;
     e->process_dialog_ack() ;
   }
+#endif
 
   void machine::query(const QMap<QString,QVariant> &words, QList<QVariant> &res)
   {
@@ -701,6 +724,7 @@ using namespace std ;
     value ? filter->open() : filter->close() ;
   }
 
+#if 0
   void event_t::process_dialog_ack() // should be move to state_dlg_requ?
   {
     QDBusPendingReply<bool> reply = *dialog_req_watcher ;
@@ -715,6 +739,7 @@ using namespace std ;
     delete dialog_req_watcher ;
     dialog_req_watcher = NULL ;
   }
+#endif
 
   uint32_t machine::attr(uint32_t mask)
   {
@@ -1241,3 +1266,82 @@ using namespace std ;
     log_assert(false, "obsolete function") ;
     return false ;
   }
+
+request_watcher_t::request_watcher_t(machine *om)
+{
+  this->om = om ;
+  w = NULL ;
+}
+
+request_watcher_t::~request_watcher_t()
+{
+  delete w ;
+  for(set<event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
+    detach_not_destroy(*it) ;
+}
+
+void request_watcher_t::watch(const QDBusPendingCall &async_call)
+{
+  log_assert(w==NULL, "watch() called more then once") ;
+  w = new QDBusPendingCallWatcher(async_call) ;
+  QObject::connect(w, SIGNAL(finished(QDBusPendingCallWatcher*)), this, SLOT(call_returned(QDBusPendingCallWatcher*))) ;
+}
+
+void request_watcher_t::attach(event_t *e)
+{
+  // First, we have to detach a link to an orphaned watcher
+  if (e->request_watcher)
+  {
+    log_assert(e->request_watcher != this, "attaching the same event twice") ;
+    e->request_watcher->detach(e) ;
+  }
+
+  // Now attach the event to this watcher object
+  e->request_watcher = this ;
+  this->events.insert(e) ;
+}
+
+void request_watcher_t::detach_not_destroy(event_t *e)
+{
+  // First make sure, it's really attached
+  log_assert(e->request_watcher) ;
+  log_assert(e->request_watcher==this) ;
+  log_assert(this->events.count(e) > 0) ;
+
+  // Now detach:
+  e->request_watcher = NULL ;
+  this->events.erase(e) ;
+}
+
+void request_watcher_t::detach(event_t *e)
+{
+  detach_not_destroy(e) ;
+
+  // The object should be destroyed if empty
+  if (this->events.empty())
+    delete this ; // ouch! is it kosher C++ ? I hope so, at least...
+}
+
+void request_watcher_t::call_returned(QDBusPendingCallWatcher *w)
+{
+  log_debug() ;
+  log_assert(w==this->w, "oops, somethig is really wrong with qdbus...") ;
+
+  QDBusPendingReply<bool> reply = *w ;
+
+  if (reply.isValid() && reply.value())
+  {
+    for(set<event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
+      om->request_state(*it, "DLG_USER") ;
+
+    if (events.size()>0)
+      om->process_transition_queue() ;
+  }
+  else
+    log_error("DBus call voland::create failed events not listed here...") ;
+
+
+  // Don't need the watcher any more
+
+  delete this ;
+}
