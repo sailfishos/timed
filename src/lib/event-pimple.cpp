@@ -177,6 +177,7 @@ void Maemo::Timed::Event::setSingleShotFlag()
 void Maemo::Timed::Event::setBackupFlag()
 {
   log_debug("backup flag set for event, to be implemented yet: nothing wrong") ;
+  p->eio.flags |= EventFlags::Backup ;
 }
 
 void Maemo::Timed::Event::setFakeFlag()

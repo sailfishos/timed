@@ -50,12 +50,14 @@
     }
     void voland_needed()
     {
+      log_debug() ;
       needed = true ;
       if(!timer->isActive())
         timeout() ;
     }
     void voland_registered()
     {
+      log_debug() ;
       timer->stop() ;
       needed = false ;
       counter = 0 ;

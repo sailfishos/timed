@@ -89,6 +89,7 @@ iodata::record *zone_source_t::save() const
   return r ;
 }
 
+#if 0
 #define CUST_FILE "/etc/clockd/clockd-settings.default"
 QByteArray customization_settings::get_hash()
 {
@@ -309,6 +310,7 @@ iodata::record* customization_settings::save()
   r->add("default_tz", default_tz.toAscii().data());
   return r;
 }
+#endif
 
 source_settings::source_settings(Timed *owner)
 {
@@ -318,6 +320,9 @@ source_settings::source_settings(Timed *owner)
   local_cellular = true ;
   auto_dst = true ;
   format_24 = true ;
+  // new options:
+  alarms_are_enabled = false ;
+  default_snooze_value = 300 ;
 #define _creat(xxx) src[#xxx] = xxx = new xxx##_t ;
   _creat(manual_utc) ;
   _creat(nitz_utc) ;
@@ -330,7 +335,22 @@ source_settings::source_settings(Timed *owner)
 #undef _creat // spell it without 'e' ;-)
 }
 
-void source_settings::load(const iodata::record *r)
+int source_settings::default_snooze() const
+{
+  return default_snooze_value ;
+}
+
+int source_settings::default_snooze(int new_value)
+{
+  if(30 <= new_value) // TODO: make it configurierable?
+  {
+    default_snooze_value = new_value ;
+    o->save_settings() ;
+  }
+  return default_snooze_value ;
+}
+
+void source_settings::load(const iodata::record *r, const string &default_tz)
 {
   log_debug() ;
   log_debug("CUST time_nitz: %d", r->get("time_nitz")->value());
@@ -339,16 +359,26 @@ void source_settings::load(const iodata::record *r)
   local_cellular = r->get("local_cellular")->value() != 0 ;
   auto_dst = r->get("auto_dst")->value() != 0 ;
   format_24 = r->get("format_24")->value() != 0 ;
+  default_snooze_value = r->get("default_snooze")->value() ;
+  alarms_are_enabled = r->get("alarms")->value() ;
+  log_debug("alarms_are_enabled := alarms == %d", alarms_are_enabled) ;
   for(map<string,source_t*>::iterator it=src.begin(); it!=src.end(); ++it)
   {
     log_debug("it: '%s'", it->first.c_str()) ;
     it->second->load(r->get(it->first)->rec()) ;
+    if (zone_source_t *z = dynamic_cast<zone_source_t*> (it->second))
+    {
+      if (z->value == "[unknown]")
+        z->value = default_tz ;
+    }
     log_debug() ;
   }
+#if 0
   postload_fix_manual_zone() ;
   postload_fix_manual_offset() ;
   if(check_target(etc_localtime()) != 0)
     o->invoke_signal() ;
+#endif
 }
 
 iodata::record *source_settings::save() const
@@ -358,6 +388,8 @@ iodata::record *source_settings::save() const
   r->add("local_cellular", local_cellular) ;
   r->add("auto_dst", auto_dst) ;
   r->add("format_24", format_24) ;
+  r->add("default_snooze", default_snooze_value) ;
+  r->add("alarms", alarms_are_enabled) ;
   for(map<string,source_t*>::const_iterator it=src.begin(); it!=src.end(); ++it)
     r->add(it->first, it->second->save()) ;
   return r ;
@@ -694,13 +726,10 @@ bool source_settings::wall_clock_settings(const Maemo::Timed::WallClock::wall_se
   }
 
   // Check if the network time is disabled by customization
-  if (!o->cust_settings->net_time_enabled)
+  if (not o->is_nitz_supported() and (p.opcodes & Op_Set_Time_Nitz))
   {
-    if ((p.opcodes & Op_Set_Time_Mask) == Op_Set_Time_Nitz)
-    {
-      log_warning("network time is disabled by customization");
-      return false;
-    }
+    log_error("can't enable NITZ as time source: not supported by the device");
+    return false;
   }
 
   // Stage 2: really do changes
@@ -808,7 +837,9 @@ void source_settings::set_system_time(const nanotime_t &t)
   log << "diff=" << back.str() ;
   o->invoke_signal(back) ;
   log_debug("Time change: %s", log.str().c_str()) ;
+#if 0
   o->save_time_to_file() ;
+#endif
 }
 
 void source_settings::cellular_information(const cellular_info_t &ci)

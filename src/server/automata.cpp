@@ -60,6 +60,7 @@ using namespace std ;
 #include "event.h"
 #include "misc.h"
 #include "credentials.h"
+#include "timed.h"
 
   state::state(const char *n, machine *m) : om(m)
   {
@@ -139,10 +140,15 @@ using namespace std ;
 
   void gate_state::open()
   {
+    log_debug() ;
     is_open = true ;
+    log_debug() ;
     for(set<event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
       om->request_state(*it, nxt_state) ;
-    om->process_transition_queue() ;
+    log_debug("events.empty()=%d", events.empty()) ;
+    if (not events.empty())
+      om->process_transition_queue() ;
+    log_debug() ;
     emit opened() ;
   }
 
@@ -164,8 +170,16 @@ using namespace std ;
       gate_state::enter(e) ;
   }
 
-  machine::machine(QObject *parent) : QObject(parent)
+  void machine::start()
   {
+    delete initial_pause ;
+    initial_pause = NULL ;
+    process_transition_queue() ;
+  }
+
+  machine::machine(const Timed *daemon) : owner(daemon)
+  {
+    log_debug() ;
     // T = transition state
     // IO = waiting for i/o state
     // G = gate state
@@ -211,9 +225,12 @@ using namespace std ;
       new state_finalized(this),      // T A
       NULL
     } ;
+    log_debug() ;
     for(int i=0; S[i]; ++i)
       states[S[i]->name] = S[i] ;
 
+
+    log_debug() ;
     for(int i=0; i<=Maemo::Timed::Number_of_Sys_Buttons; ++i)
     {
       state *s = new state_button(this, -i) ;
@@ -221,6 +238,7 @@ using namespace std ;
       button_states[-i] = s ;
     }
 
+    log_debug() ;
     for(int i=1; i<=Maemo::Timed::Max_Number_of_App_Buttons; ++i)
     {
       state *s = new state_button(this, i) ;
@@ -228,6 +246,7 @@ using namespace std ;
       button_states[i] = s ;
     }
 
+    log_debug() ;
     states["TRIGGERED"]->set_action_mask(ActionFlags::State_Triggered) ;
     states["QUEUED"]->set_action_mask(ActionFlags::State_Queued) ;
     states["MISSED"]->set_action_mask(ActionFlags::State_Missed) ;
@@ -239,9 +258,12 @@ using namespace std ;
     states["ABORTED"]->set_action_mask(ActionFlags::State_Aborted) ;
     if(0) states["FAILED"]->set_action_mask(ActionFlags::State_Failed) ;
 
+    log_debug() ;
     io_state *queued = dynamic_cast<io_state*> (states["QUEUED"]) ;
     log_assert(queued!=NULL) ;
 
+
+    log_debug() ;
     gate_state *dlg_wait = dynamic_cast<gate_state*> (states["DLG_WAIT"]) ;
     gate_state *dlg_requ = dynamic_cast<gate_state*> (states["DLG_REQU"]) ;
     gate_state *dlg_user = dynamic_cast<gate_state*> (states["DLG_USER"]) ;
@@ -259,6 +281,7 @@ using namespace std ;
     QObject::connect(this, SIGNAL(voland_registered()), dlg_user, SLOT(close())) ;
     QObject::connect(this, SIGNAL(voland_unregistered()), dlg_wait, SLOT(close())) ;
 
+    log_debug() ;
     filter_state *flt_conn = dynamic_cast<filter_state*> (states["FLT_CONN"]) ;
     filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
     filter_state *flt_user = dynamic_cast<filter_state*> (states["FLT_USER"]) ;
@@ -270,19 +293,35 @@ using namespace std ;
     QObject::connect(flt_alrm, SIGNAL(closed(filter_state*)), queued, SLOT(filter_closed(filter_state*))) ;
     QObject::connect(flt_user, SIGNAL(closed(filter_state*)), queued, SLOT(filter_closed(filter_state*))) ;
 
+    log_debug() ;
     QObject::connect(this, SIGNAL(engine_pause(int)), queued, SLOT(engine_pause(int))) ;
+    log_debug() ;
+    initial_pause = new queue_pause(this) ;
+    log_debug() ;
 
     cluster_queue *c_queue = new cluster_queue(this) ;
+    log_debug() ;
     clusters[c_queue->bit] = c_queue ;
+    log_debug() ;
 
     cluster_dialog *c_dialog = new cluster_dialog(this) ;
+    log_debug() ;
     clusters[c_dialog->bit] = c_dialog ;
+    log_debug() ;
     signalled_bootup = -1 ; // no signal sent yet
+    log_debug() ;
+
+    log_debug("owner->settings->alarms_are_enabled=%d", owner->settings->alarms_are_enabled) ;
+    log_debug() ;
+    alarm_gate(owner->settings->alarms_are_enabled) ;
+    log_debug() ;
 
     transition_start_time = ticker_t(0) ;
+    log_debug() ;
     next_cookie = 1 ;
-    default_snooze_value = 300 ;
+    log_debug() ;
     context_changed = false ;
+    log_debug("last line") ;
   }
 
   void machine::device_mode_detected(bool user_mode)
@@ -308,6 +347,7 @@ using namespace std ;
 
   void machine::process_transition_queue()
   {
+    // abort() ;
     if(transition_in_progress())
       return ; // never do it recursively
     transition_start_time = ticker_t(now()) ;
@@ -472,10 +512,15 @@ using namespace std ;
   {
     log_debug() ;
     static ContextProvider::Property alarm_triggers_p("Alarm.Trigger") ;
+    log_debug() ;
     static ContextProvider::Property alarm_present_t("Alarm.Present") ;
+    log_debug() ;
     cluster_queue *c_queue = dynamic_cast<cluster_queue*> (clusters[EventFlags::Cluster_Queue]) ;
+    log_debug() ;
     alarm_triggers_p.setValue(QVariant::fromValue(c_queue->alarm_triggers)) ;
+    log_debug() ;
     alarm_present_t.setValue(!c_queue->alarm_triggers.isEmpty()) ;
+    log_debug() ;
     context_changed = false ;
     log_debug() ;
   }
@@ -502,6 +547,9 @@ using namespace std ;
 
   void machine::add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVariant> &res, const QDBusMessage &message)
   {
+    // Here we're asking credentials immediately, not like in add_event
+    // TODO:
+    // But may be it's reasonable first to check, if we really have actions?
     credentials_t creds = credentials_t::from_dbus_connection(message) ;
     bool valid = false ;
     for(int i=0; i<lst.ee.size(); ++i)
@@ -618,15 +666,13 @@ using namespace std ;
     return it==events.end() ? NULL : it->second ;
   }
 
-  bool machine::cancel(cookie_t c) // XXX need some clean up here?
+  bool machine::cancel_by_cookie(cookie_t c) // XXX need some clean up here?
   {
     queue_pause x(this) ;
 
     if(event_t *e = find_event(c))
     {
-      io_state *s = dynamic_cast<io_state*> (e->st) ;
-      log_assert(s) ;
-      s->abort(e) ;
+      cancel_event(e) ;
       return true ;
     }
     else
@@ -636,13 +682,19 @@ using namespace std ;
     }
   }
 
-  bool machine::alarm_gate(bool set, bool value)
+  void machine::cancel_event(event_t *e)
+  {
+    // TODO: assert (queue is paused)
+    io_state *s = dynamic_cast<io_state*> (e->st) ;
+    log_assert(s) ;
+    s->abort(e) ;
+  }
+
+  void machine::alarm_gate(bool value)
   {
     filter_state *filter = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
     log_assert(filter) ;
-    if(set)
-      value ? filter->open() : filter->close() ;
-    return filter->is_open ;
+    value ? filter->open() : filter->close() ;
   }
 
   void event_t::process_dialog_ack() // should be move to state_dlg_requ?
@@ -665,21 +717,27 @@ using namespace std ;
     return flags & mask ;
   }
 
-  iodata::record *machine::save()
+  iodata::record *machine::save(bool for_backup)
   {
     iodata::record *r = new iodata::record ;
     iodata::array *q = new iodata::array ;
 
     for(map<cookie_t, event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
     {
-      q->add(it->second->save()) ;
+      event_t *e = it->second ;
+      if(for_backup and not (e->flags & EventFlags::Backup))
+        continue ;
+      q->add(e->save(for_backup)) ;
     }
 
     r->add("events", q) ;
-    r->add("next_cookie", next_cookie) ;
+    if(not for_backup)
+      r->add("next_cookie", next_cookie) ;
+#if 0
     r->add("default_snooze", default_snooze_value) ;
     filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
     r->add("alarms", flt_alrm->is_open ? 1 : 0) ;
+#endif
 
     return r ;
   }
@@ -687,8 +745,11 @@ using namespace std ;
   void machine::load(const iodata::record *r)
   {
     next_cookie = r->get("next_cookie")->value() ;
+#if 0
     default_snooze_value = r->get("default_snooze")->value() ;
+#endif
     const iodata::array *a = r->get("events")->arr() ;
+#if 0
     for(unsigned i=0; i < a->size(); ++i)
     {
       const iodata::record *ee = a->get(i)->rec() ;
@@ -720,14 +781,74 @@ using namespace std ;
 
       request_state(e, next_state) ;
     }
+#else
+    load_events(a, true, true) ;
+#endif
 
+#if 0
     filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
     if(r->get("alarms")->value())
       flt_alrm->open() ;
     else
       flt_alrm->close() ;
+#else
+    // alarm_gate(true, r->get("alarms")->value()) ;
+#endif
   }
 
+  void machine::load_events(const iodata::array *events_data, bool trusted_source, bool use_cookies)
+  {
+    for(unsigned i=0; i < events_data->size(); ++i)
+    {
+      const iodata::record *ee = events_data->get(i)->rec() ;
+      unsigned cookie = use_cookies ? ee->get("cookie")->value() : next_cookie++ ;
+      event_t *e = new event_t ;
+      events[e->cookie = cookie_t(cookie)] = e ;
+
+      e->ticker = ticker_t(ee->get("ticker")->value()) ;
+      e->t.load(ee->get("t")->rec()) ;
+
+      e->tz = ee->get("tz")->str() ;
+
+      e->attr.load(ee->get("attr")->rec()) ;
+      e->flags = ee->get("flags")->decode(event_t::codec) ;
+      iodata::load(e->recrs, ee->get("recrs")->arr()) ;
+      iodata::load_int_array(e->snooze, ee->get("snooze")->arr()) ;
+      iodata::load(e->b_attr, ee->get("b_attr")->arr()) ;
+      e->last_triggered = ticker_t(ee->get("dialog_time")->value()) ;
+      e->tsz_max = ee->get("tsz_max")->value() ;
+      e->tsz_counter = ee->get("tsz_counter")->value() ;
+      if(trusted_source)
+      {
+        iodata::load(e->actions, ee->get("actions")->arr()) ;
+        e->client_creds.load(ee->get("client_creds")->rec()) ;
+        e->cred_modifier.load(ee->get("cred_modifier")->arr()) ;
+      }
+
+      const char *next_state = "START" ;
+
+      if(e->flags & EventFlags::Empty_Recurring)
+        e->invalidate_t() ;
+
+      request_state(e, next_state) ;
+    }
+  }
+
+  void machine::cancel_backup_events()
+  {
+    // TODO: assert (queue is paused)
+    vector<event_t*> backup ;
+    for(map<cookie_t, event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
+      if (it->second->flags & EventFlags::Backup)
+        backup.push_back(it->second) ;
+
+    for(vector<event_t*>::const_iterator it=backup.begin(); it!=backup.end(); ++it)
+      cancel_event(*it) ;
+
+    log_debug("cancelled all the bacjup events") ;
+  }
+
+#if 0
   int machine::default_snooze(int new_value)
   {
     if(30 <= new_value) // TODO: make it configurierable?
@@ -737,6 +858,7 @@ using namespace std ;
     }
     return default_snooze_value ;
   }
+#endif
 
   // TODO: do it accessible from outside of this file:
   //       too many uncaught exceptions :)
@@ -1084,7 +1206,7 @@ using namespace std ;
     }
   }
 
-  iodata::record *event_t::save()
+  iodata::record *event_t::save(bool for_backup)
   {
     iodata::record *r = new iodata::record ;
     r->add("cookie", cookie.value()) ;
@@ -1094,15 +1216,19 @@ using namespace std ;
     r->add("attr", attr.save() ) ;
     r->add("flags", new iodata::bitmask(flags &~ EventFlags::Cluster_Mask, codec)) ;
     r->add("recrs", iodata::save(recrs)) ;
-    r->add("actions", iodata::save(actions)) ;
     r->add("snooze", iodata::save_int_array(snooze)) ;
     r->add("b_attr", iodata::save(b_attr)) ;
 
     r->add("dialog_time", (flags & EventFlags::In_Dialog) ? last_triggered.value() : 0) ;
     r->add("tsz_max", tsz_max) ;
     r->add("tsz_counter", tsz_counter) ;
-    r->add("client_creds", client_creds.save()) ;
-    r->add("cred_modifier", cred_modifier.save()) ;
+
+    if(not for_backup)
+      r->add("actions", iodata::save(actions)) ;
+    if(not for_backup)
+      r->add("client_creds", client_creds.save()) ;
+    if(not for_backup)
+      r->add("cred_modifier", cred_modifier.save()) ;
     return r ;
   }
 

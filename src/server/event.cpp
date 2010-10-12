@@ -250,6 +250,7 @@ void event_t::codec_initializer()
   REG(event_t::codec, EventFlags, Hide2) ;
   REG(event_t::codec, EventFlags, Keep_Alive) ;
   REG(event_t::codec, EventFlags, Single_Shot) ;
+  REG(event_t::codec, EventFlags, Backup) ;
   REG(event_t::codec, EventFlags, Snoozing) ;
   REG(event_t::codec, EventFlags, Recurring) ;
   REG(event_t::codec, EventFlags, Empty_Recurring) ;

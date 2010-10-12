@@ -4,7 +4,7 @@ QT += dbus
 TEMPLATE = app
 TARGET = timed
 
-VERSION = 2.15
+VERSION = 2.18
 
 INCLUDEPATH += ../h
 
@@ -20,6 +20,9 @@ HEADERS += credentials.h
 SOURCES += olson.cpp tz.cpp
 HEADERS += tz.h
 
+SOURCES += backup.cpp
+HEADERS += backup.h
+
 CONFIG += link_pkgconfig iodata
 PKGCONFIG += contextprovider-1.0 libpcrecpp
 
@@ -28,7 +31,7 @@ target.path = $$(DESTDIR)/usr/bin
 xml.files  = com.nokia.time.context
 xml.path = $$(DESTDIR)/usr/share/contextkit/providers
 
-typeinfo.files = queue.type timed-rc.type settings.type customization.type tzdata.type timed-cust-rc.type
+typeinfo.files = queue.type config.type settings.type customization.type tzdata.type timed-cust-rc.type
 typeinfo.path = $$(DESTDIR)/usr/share/timed/typeinfo
 
 backupconf.files = timedbackup.conf
@@ -53,4 +56,5 @@ else \
   CONFIG  += cellular-qt
   LIBS    += -lcreds
   DEFINES += __HARMATTAN__
+  QMAKE_CXXFLAGS  += -Wall -Wno-psabi
 }
