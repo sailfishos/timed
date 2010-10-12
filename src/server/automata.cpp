@@ -1329,7 +1329,12 @@ void request_watcher_t::call_returned(QDBusPendingCallWatcher *w)
 
   QDBusPendingReply<bool> reply = *w ;
 
+#if 0
   if (reply.isValid() && reply.value())
+#else
+  log_info("reminder servide replied: %d,%d", reply.isValid(), reply.isValid()&&reply.value()) ;
+  if (true) // XXX: remove this after reminders returns TRUE here.
+#endif
   {
     for(set<event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
       om->request_state(*it, "DLG_USER") ;
