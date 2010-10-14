@@ -707,6 +707,10 @@ bool source_settings::wall_clock_settings(const Maemo::Timed::WallClock::wall_se
       return false ;
     }
     p_zone = string_q_to_std(p.zone) ;
+    // TODO:
+    // Op_Set_Timezone_Manual with empty tz is using current manual
+    // zone. If check target fails, then try default from customiation
+    // If this fails, reject.
     if(op_zone & (Op_Set_Timezone_Manual | Op_Set_Timezone_Cellular_Fbk))
     {
       if(check_target(symlink_target(p_zone)) < 0)
