@@ -24,12 +24,41 @@
 #include "adaptor.h"
 #include "timed.h"
 #include "event.h"
+#include "f.h"
+
+#include <qm/log>
 
 #include <QMetaType>
 int main(int ac, char **av)
 {
-  log_info("timed started.") ;
+  int syslog_level = LOG_LEVEL_DEBUG ;
+  int varlog_level = LOG_LEVEL_DEBUG ;
+#if F_IMAGE_TYPE
+#warning F_IMAGE_TYPE !
+  string image_type = getenv("IMAGE_TYPE") ?: "" ;
+  bool debug_flag = access(F_FORCE_DEBUG_PATH, F_OK) == 0 ;
+  if (not debug_flag)
+  {
+    if (image_type=="PR")
+      syslog_level = LOG_LEVEL_INTERNAL, varlog_level = LOG_LEVEL_INTERNAL ;
+    else if(image_type=="RD")
+      syslog_level = LOG_LEVEL_NOTICE ;
+    else if(image_type=="TR")
+      syslog_level = LOG_LEVEL_INFO ;
+  }
+#endif
 
+  INIT_LOGGER() ;
+  ADD_PERMANENT_SYSLOG (syslog_level, LOG_MAX_LOCATION, SysLogDev::DefaultFormat) ;
+  ADD_PERMANENT_FILE_LOG ("/var/log/timed.log", varlog_level, LOG_MAX_LOCATION, FileLoggerDev::DefaultFormat) ;
+  if(isatty(2)) // stderr is a terminal
+    ADD_PERMANENT_STDERR_LOG (LOG_LEVEL_DEBUG, LOG_MAX_LOCATION, StdErrLoggerDev::DefaultFormat) ;
+
+#if F_IMAGE_TYPE
+  log_notice("time daemon started, image_type='%s', debug_flag=%d", image_type.c_str(), debug_flag) ;
+#else
+  log_notice("time daemon started") ;
+#endif
 
   // system("hwclock -s") ; // temporary hack
   try
