@@ -1,8 +1,8 @@
 timed (2.19) unstable; urgency=low
 
-  * new version
+  * new timed-voland interface triggereing many events at once
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 11 Oct 2010 07:08:04 +0300
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Tue, 19 Oct 2010 14:21:11 +0300
 
 timed (2.18) unstable; urgency=low
 
