@@ -26,13 +26,13 @@
 #include "event.h"
 #include "f.h"
 
-#include <qm/log>
+#include <qmlog.h>
 
 #include <QMetaType>
 int main(int ac, char **av)
 {
-  int syslog_level = LOG_LEVEL_DEBUG ;
-  int varlog_level = LOG_LEVEL_DEBUG ;
+  int syslog_level = qmlog::Debug ;
+  int varlog_level = qmlog::Debug ;
 #if F_IMAGE_TYPE
 #warning F_IMAGE_TYPE !
   string image_type = getenv("IMAGE_TYPE") ?: "" ;
@@ -40,19 +40,19 @@ int main(int ac, char **av)
   if (not debug_flag)
   {
     if (image_type=="PR")
-      syslog_level = LOG_LEVEL_INTERNAL, varlog_level = LOG_LEVEL_INTERNAL ;
+      syslog_level = qmlog::None, varlog_level = qmlog::None ;
     else if(image_type=="RD")
-      syslog_level = LOG_LEVEL_NOTICE ;
+      syslog_level = qmlog::Notice ;
     else if(image_type=="TR")
-      syslog_level = LOG_LEVEL_INFO ;
+      syslog_level = qmlog::Info ;
   }
 #endif
 
-  INIT_LOGGER() ;
-  ADD_PERMANENT_SYSLOG (syslog_level, LOG_MAX_LOCATION, SysLogDev::DefaultFormat) ;
-  ADD_PERMANENT_FILE_LOG ("/var/log/timed.log", varlog_level, LOG_MAX_LOCATION, FileLoggerDev::DefaultFormat) ;
+  qmlog::init() ;
+  new qmlog::log_syslog(syslog_level) ;
+  new qmlog::log_file("/var/log/timed.log", varlog_level) ;
   if(isatty(2)) // stderr is a terminal
-    ADD_PERMANENT_STDERR_LOG (LOG_LEVEL_DEBUG, LOG_MAX_LOCATION, StdErrLoggerDev::DefaultFormat) ;
+    new qmlog::log_stderr(qmlog::Debug) ;
 
 #if F_IMAGE_TYPE
   log_notice("time daemon started, image_type='%s', debug_flag=%d", image_type.c_str(), debug_flag) ;

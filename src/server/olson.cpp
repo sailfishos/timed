@@ -25,7 +25,7 @@
 #include <string>
 using namespace std ;
 
-#include <qm/log>
+#include <qmlog.h>
 
 #include "timeutil.h"
 #include "olson.h"

@@ -28,7 +28,7 @@
 #include <QTimer>
 #include <ContextProvider>
 
-#include <qm/log>
+#include <qmlog.h>
 
 #include "automata.h"
 #include "timeutil.h"

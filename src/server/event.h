@@ -33,7 +33,7 @@ using namespace std ;
 #include <QDBusPendingCallWatcher>
 
 #include <iodata/iodata.h>
-#include <qm/log>
+#include <qmlog.h>
 
 #include <timed/event>
 

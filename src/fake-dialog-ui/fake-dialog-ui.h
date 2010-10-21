@@ -35,7 +35,7 @@ using namespace std ;
 #include <QDBusAbstractAdaptor>
 #include <QTimer>
 
-#include <qm/log>
+#include <qmlog.h>
 
 #include <timed/interface>
 #include <timed-voland/reminder>

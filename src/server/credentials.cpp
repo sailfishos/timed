@@ -28,7 +28,7 @@
 
 #include <QDBusReply>
 
-#include <qm/log>
+#include <qmlog.h>
 
 #include "credentials.h"
 

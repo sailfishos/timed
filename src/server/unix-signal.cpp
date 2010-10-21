@@ -25,7 +25,7 @@
 #include <fcntl.h>
 #include <signal.h>
 
-#include <qm/log>
+#include <qmlog.h>
 
 #include "unix-signal.h"
 

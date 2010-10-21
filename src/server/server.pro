@@ -10,6 +10,7 @@ INCLUDEPATH += ../h
 
 QMAKE_LIBDIR_FLAGS += -L../lib -L../voland
 LIBS += -ltimed -ltimed-voland
+CONFIG += qmlog
 
 HEADERS += adaptor.h timed.h states.h automata.h singleshot.h pinguin.h unix-signal.h onitz.h
 SOURCES += main.cpp timed.cpp states.cpp automata.cpp timeutil.cpp event.cpp misc.cpp settings.cpp unix-signal.cpp onitz.cpp
