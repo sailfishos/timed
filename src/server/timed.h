@@ -86,6 +86,7 @@ private:
   void init_backup_dbus_name() ;
   void init_main_interface_dbus_name() ;
   void init_load_events() ;
+  void init_dst_checker() ;
   void init_start_event_machine() ;
   void init_cellular_services() ;
   void init_apply_tz_settings() ;
@@ -152,6 +153,8 @@ private:
 #if 0
   QTimer *save_time_to_file_timer ;
 #endif
+  QTimer *dst_timer ;
+  std::string sent_signature ;
   tz_oracle_t *tz_oracle ;
 
   ContextProvider::Property *time_operational_p ;
@@ -168,6 +171,7 @@ private Q_SLOTS:
   void queue_threshold_timeout() ;
   void unix_signal(int signo) ;
   void nitz_notification(const cellular_info_t &) ;
+  void check_dst() ;
   void tz_by_oracle(olson *tz, tz_suggestions_t) ;
 public:
   void update_oracle_context(bool set) ;

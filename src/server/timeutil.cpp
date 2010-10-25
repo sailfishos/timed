@@ -352,3 +352,15 @@ void broken_down_t::from_time_t(const ticker_t &ticker, int *wday)
     *wday = tm.tm_wday ;
   from_struct_tm(&tm) ;
 }
+
+string dst_signature(time_t t)
+{
+  struct tm tm ;
+  if(localtime_r(&t, &tm)==NULL)
+    return "" ;
+  ostringstream os ;
+  os << ((tm.tm_isdst<0) ? "n/a;" : tm.tm_isdst ? "dst;" : "nodst;") ;
+  os << tm.tm_gmtoff << ";" ;
+  os << tm.tm_zone ;
+  return os.str() ;
+}

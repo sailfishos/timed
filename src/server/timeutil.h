@@ -91,4 +91,6 @@ inline bool broken_down_t::is_valid() const
     /* 0 <= minute && */ minute < 60 ;
 }
 
+std::string dst_signature(time_t t) ;
+
 #endif

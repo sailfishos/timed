@@ -126,6 +126,8 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   save_time_to_file() ;
 #endif
 
+  init_dst_checker() ;
+
   log_debug("starting event mahine") ;
 
   init_start_event_machine() ;
@@ -433,6 +435,14 @@ void Timed::init_cellular_services()
   QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
 }
 
+void Timed::init_dst_checker()
+{
+  log_info() ;
+  dst_timer = new QTimer ;
+  dst_timer->setSingleShot(true) ;
+  QObject::connect(dst_timer, SIGNAL(timeout()), this, SLOT(check_dst())) ;
+}
+
 void Timed::init_apply_tz_settings()
 {
   settings->postload_fix_manual_zone() ;
@@ -590,6 +600,7 @@ void Timed::send_time_settings()
   clear_invokation_flag() ;
   save_settings() ;
   settings->fix_etc_localtime() ;
+  sent_signature = dst_signature(time(NULL)) ;
   emit settings_changed(settings->get_wall_clock_info(diff), !diff.is_zero()) ;
   // emit settings_changed_1(systime) ;
   am->reshuffle_queue(diff) ;
@@ -598,6 +609,37 @@ void Timed::send_time_settings()
     delete q_pause ;
     q_pause = NULL ;
   }
+  check_dst() ; // reschedule dst timer
+}
+
+void Timed::check_dst()
+{
+  dst_timer->stop() ;
+  time_t t = time(NULL) ;
+  string signature = dst_signature(t) ;
+  if (signature != sent_signature)
+  {
+    invoke_signal() ;
+    return ;
+  }
+
+  int look_forward = 3600 ; // 1 hour
+  string signature_2 = dst_signature(t+look_forward) ;
+  if (signature_2 == signature)
+  {
+    dst_timer->start(1000*(look_forward-60)) ; // 1 minute less
+    return ;
+  }
+
+  int a=0, b=look_forward ;
+  while (b-a > 1)
+  {
+    int c = (a+b) / 2 ;
+    (signature==dst_signature(t+c) ? a : b) = c ;
+  }
+  // now 'a' is the time until the last 'old time' second
+  //     'b=a+1' until the first 'new time' second
+  dst_timer->start(1000*b) ;
 }
 
 #if 0
