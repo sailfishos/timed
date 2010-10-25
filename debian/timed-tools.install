@@ -1,3 +1,5 @@
 usr/bin/simple-client
 usr/bin/fake-dialog-ui
 usr/bin/ticker
+usr/bin/logging-test
+usr/bin/logging-test.launch
