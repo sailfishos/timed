@@ -9,7 +9,7 @@ VERSION = 0.2.18
 CONFIG += qmlog
 
 HEADERS = interface.h
-SOURCES = interface.cpp event-io.cpp event-pimple.cpp exception.cpp nanotime.cpp
+SOURCES = interface.cpp event-io.cpp event-pimple.cpp exception.cpp nanotime.cpp log.cpp
 
 SOURCES += wall-settings.cpp wall-info.cpp
 
