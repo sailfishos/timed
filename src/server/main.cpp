@@ -49,8 +49,13 @@ int main(int ac, char **av)
 #endif
 
   qmlog::init() ;
-  new qmlog::log_syslog(syslog_level) ;
-  new qmlog::log_file("/var/log/timed.log", varlog_level) ;
+  qmlog::log_syslog *syslog = new qmlog::log_syslog(syslog_level) ;
+  qmlog::log_file *varlog = new qmlog::log_file("/var/log/timed.log", varlog_level) ;
+
+  varlog->enable_fields(qmlog::All_Fields) ;
+  varlog->disable_fields(qmlog::Monotonic_Mask | qmlog::Time_Mask) ;
+  varlog->enable_fields(qmlog::Monotonic_Milli | qmlog::Time_Milli) ;
+
   if(isatty(2)) // stderr is a terminal
     new qmlog::log_stderr(qmlog::Debug) ;
 
