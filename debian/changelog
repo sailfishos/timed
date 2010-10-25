@@ -1,6 +1,12 @@
-timed (2.20) unstable; urgency=low
+timed (2.21) unstable; urgency=low
 
   * new version
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 25 Oct 2010 18:13:20 +0300
+
+timed (2.20) unstable; urgency=low
+
+  * dst change signal
 
  -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 25 Oct 2010 17:01:55 +0300
 
