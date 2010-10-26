@@ -11,7 +11,7 @@ Maemo::Timed::libtimed_logging_dispatcher_t::libtimed_logging_dispatcher_t()
   varlog->disable_fields(qmlog::Monotonic_Mask | qmlog::Time_Mask) ;
   varlog->enable_fields(qmlog::Monotonic_Milli | qmlog::Time_Milli) ;
 
-  log_critical("blah") ;
+  // log_critical("blah (in libtimed, pid=%d)", getpid()) ;
 }
 
 Maemo::Timed::libtimed_logging_dispatcher_t Maemo::Timed::libtimed_logging_dispatcher ;

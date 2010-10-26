@@ -9,7 +9,7 @@ VERSION = 0.2.18
 CONFIG += qmlog
 
 HEADERS = interface.h
-SOURCES = interface.cpp event-io.cpp event-pimple.cpp exception.cpp nanotime.cpp log.cpp
+SOURCES = interface.cpp event-io.cpp event-pimple.cpp exception.cpp nanotime.cpp log.cpp imagetype.cpp
 
 SOURCES += wall-settings.cpp wall-info.cpp
 
@@ -28,3 +28,17 @@ prf.files = timed.prf
 prf.path = /usr/share/qt4/mkspecs/features
 
 INSTALLS = target devheaders prf
+
+CONFIG(MEEGO) \
+{
+  message("MEEGO flag is set")
+  DEFINES += __MEEGO__
+} \
+else \
+{
+  message("MEEGO flag is not set, assuming HARMATTAN")
+  DEFINES += __HARMATTAN__
+  LIBS += -lsysinfo
+  QMAKE_CXXFLAGS  += -Wall -Wno-psabi
+}
+

@@ -24,6 +24,10 @@
 #include "adaptor.h"
 #include "timed.h"
 #include "event.h"
+
+#include "timed/imagetype.h"
+#include "timed/log.h"
+
 #include "f.h"
 
 #include <qmlog.h>
@@ -35,7 +39,8 @@ int main(int ac, char **av)
   int varlog_level = qmlog::Debug ;
 #if F_IMAGE_TYPE
 #warning F_IMAGE_TYPE !
-  string image_type = getenv("IMAGE_TYPE") ?: "" ;
+  // string image_type = getenv("IMAGE_TYPE") ?: "" ;
+  string image_type = imagetype() ;
   bool debug_flag = access(F_FORCE_DEBUG_PATH, F_OK) == 0 ;
   if (not debug_flag)
   {
@@ -58,6 +63,8 @@ int main(int ac, char **av)
 
   if(isatty(2)) // stderr is a terminal
     new qmlog::log_stderr(qmlog::Debug) ;
+
+  qmlog::object.get_current_dispatcher()->bind_slave(LIBTIMED_LOGGING_DISPATCHER) ;
 
 #if F_IMAGE_TYPE
   log_notice("time daemon started, image_type='%s', debug_flag=%d", image_type.c_str(), debug_flag) ;
