@@ -1,8 +1,9 @@
 timed (2.21) unstable; urgency=low
 
-  * new version
+  * logging test
+  * Fixes: NB#199815 - Alarm notifications are not displayed when the time and date is changed to the previous date
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 25 Oct 2010 18:13:20 +0300
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 27 Oct 2010 17:07:24 +0300
 
 timed (2.20) unstable; urgency=low
 

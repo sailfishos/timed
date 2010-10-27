@@ -536,15 +536,24 @@ using namespace std ;
       for(set<event_t*>::iterator it=s->events.begin(); it!=s->events.end(); ++it)
       {
         event_t *e = *it ;
-        bool skip = false ;
-        if(back.is_zero())
-          skip = e->has_ticker() || (e->flags & EventFlags::Snoozing) ;
-        if(skip)
+        bool snoozing = !! (e->flags & EventFlags::Snoozing) ;
+        bool system_time_changing = not back.is_zero() ;
+
+        if (snoozing and system_time_changing)
+        {
+          e->ticker = e->trigger + (- back.to_time_t()) ;
+          request_state(e, sch) ;
+        }
+
+        if (snoozing)
           continue ;
-        if(e->flags & EventFlags::Empty_Recurring)
+
+        if (e->has_ticker() and not system_time_changing)
+          continue ;
+
+        if(e->flags & EventFlags::Empty_Recurring) // TODO: rewrite recurrence calculation and get rid of "Empty_Recurring"
           e->invalidate_t() ;
-        if(!back.is_zero() && (e->flags & EventFlags::Snoozing))
-          e->trigger -= back.to_time_t() ;
+
         request_state(e, sch) ;
       }
     }
