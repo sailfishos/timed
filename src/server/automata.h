@@ -195,6 +195,9 @@ struct event_t ;
     void load(const iodata::record *) ;
     void load_events(const iodata::array *events_data, bool trusted_source, bool use_cookies) ;
     void cancel_backup_events() ;
+  private:
+    string s_states() ;
+    string s_transition_queue() ;
   } ;
 
   struct queue_pause

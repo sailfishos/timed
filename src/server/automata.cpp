@@ -33,6 +33,7 @@
 
 #include <algorithm>
 #include <map>
+#include <string>
 #include <set>
 #include <iostream>
 #include <sstream>
@@ -368,6 +369,37 @@ using namespace std ;
   void machine::open_epoch()
   {
     epoch->open() ;
+  }
+
+  string machine::s_states()
+  {
+    ostringstream os ;
+    map<string, set<event_t*> > s2e ;
+    for (map<cookie_t, event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
+    {
+      event_t *e = it->second ;
+      string name = e->get_state()==NULL ? "<null>" : e->get_state()->name ;
+      s2e[name].insert(e) ;
+    }
+
+    for (map<string, set<event_t*> >::const_iterator it=s2e.begin(); it!=s2e.end(); ++it)
+      for (set<event_t*>::const_iterator q=it->second.begin(); q!=it->second.end(); ++q)
+        os << (q==it->second.begin() ? string(it==s2e.begin()?"":" ")+it->first+":" : ",") << (*q)->cookie.value() ;
+
+    return os.str() ;
+  }
+
+  string machine::s_transition_queue()
+  {
+    ostringstream os ;
+    for(deque<pair<event_t*, state*> >::const_iterator it=transition_queue.begin(); it!=transition_queue.end(); ++it)
+    {
+      cookie_t c = it->first->cookie ;
+      state *s = it->second ;
+      bool first = it==transition_queue.begin() ;
+      os << (first ? "" : ", ") << c.value() << "->" << (s?s->name:"null") ;
+    }
+    return os.str() ;
   }
 
   void machine::process_transition_queue()
