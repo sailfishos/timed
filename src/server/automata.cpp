@@ -404,9 +404,12 @@ using namespace std ;
 
   void machine::process_transition_queue()
   {
-    // abort() ;
     if(transition_in_progress())
+    {
+      log_info("process_transition_queue() is already in progress, returning") ;
       return ; // never do it recursively
+    }
+    log_debug("begin processing, states: %s tqueue: %s" , s_states().c_str(), s_transition_queue().c_str()) ;
     transition_start_time = ticker_t(now()) ;
     bool queue_changed = false ;
     for(; !transition_queue.empty(); queue_changed = true, transition_queue.pop_front())
@@ -433,6 +436,7 @@ using namespace std ;
         delete e ;
       }
     }
+    log_debug("processing done,  states: %s tqueue: %s" , s_states().c_str(), s_transition_queue().c_str()) ;
     update_rtc_alarm() ;
     transition_start_time = ticker_t(0) ;
     if(queue_changed)
