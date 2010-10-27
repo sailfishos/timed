@@ -553,8 +553,9 @@ using namespace std ;
 
   void machine::request_state(event_t *e, state *st)
   {
+    // log_info("request_state(%u,%s)", e->cookie.value(), st?st->name:"null") ;
     transition_queue.push_back(make_pair(e, st)) ;
-    // TODO: I would like to log the current queue state
+    // log_info("done; transition_queue: %s; states: %s", s_transition_queue().c_str(), s_states().c_str()) ;
   }
 
   void machine::request_state(event_t *e, const char *state_name)
