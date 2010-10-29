@@ -29,7 +29,7 @@
 #include <sys/creds.h> // move it to creds.h or credentials.h
 #endif
 
-#include <qmlog.h>
+#include <qmlog>
 #include <iodata/iodata>
 
 #include "timed/interface"

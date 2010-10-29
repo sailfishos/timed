@@ -7,7 +7,7 @@
 #define QMLOG_DEFAULT_DISPATCHER LIBTIMED_LOGGING_DISPATCHER
 #endif
 
-#include <qmlog.h>
+#include <qmlog>
 
 namespace Maemo
 {

@@ -25,7 +25,7 @@
 
 #include <pcrecpp.h>
 
-#include <qmlog.h>
+#include <qmlog>
 
 #include <timed/event>
 

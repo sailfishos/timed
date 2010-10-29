@@ -27,7 +27,7 @@ using namespace std ;
 #include <QDBusConnection>
 #include <QDebug>
 
-#include <qmlog.h>
+#include <qmlog>
 
 #include "timed-voland/interface"
 
@@ -87,8 +87,6 @@ fake_dialog_ui::fake_dialog_ui(int ac, char **av)
 int main(int ac, char **av)
 {
   qmlog::init() ;
-  new qmlog::log_syslog() ;
-  new qmlog::log_stderr() ;
   new qmlog::log_file("/tmp/fake-dialog-ui.log") ;
 
   log_info("started") ;

@@ -21,7 +21,7 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#include <qmlog.h>
+#include <qmlog>
 
 #include "misc.h"
 

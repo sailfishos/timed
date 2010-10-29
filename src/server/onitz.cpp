@@ -27,7 +27,7 @@
 
 #include <pcrecpp.h>
 
-#include <qmlog.h>
+#include <qmlog>
 
 #include "onitz.h"
 #include "misc.h"

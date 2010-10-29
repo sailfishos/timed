@@ -33,7 +33,7 @@ using namespace std ;
 #include <QObject>
 #include <QDateTime>
 
-#include <qmlog.h>
+#include <qmlog>
 
 #if F_CELLULAR_QT
 #  include <NetworkTime>

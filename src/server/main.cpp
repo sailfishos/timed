@@ -30,7 +30,7 @@
 
 #include "f.h"
 
-#include <qmlog.h>
+#include <qmlog>
 
 #include <QMetaType>
 int main(int ac, char **av)
@@ -54,17 +54,23 @@ int main(int ac, char **av)
 #endif
 
   qmlog::init() ;
+#if 0
   qmlog::log_syslog *syslog = new qmlog::log_syslog(syslog_level) ;
+#else
+  qmlog::syslog()->reduce_max_level(syslog_level) ;
+#endif
   qmlog::log_file *varlog = new qmlog::log_file("/var/log/timed.log", varlog_level) ;
 
-  varlog->enable_fields(qmlog::All_Fields) ;
-  varlog->disable_fields(qmlog::Monotonic_Mask | qmlog::Time_Mask) ;
   varlog->enable_fields(qmlog::Monotonic_Milli | qmlog::Time_Milli) ;
 
-  if(isatty(2)) // stderr is a terminal
-    new qmlog::log_stderr(qmlog::Debug) ;
+  if (not isatty(2)) // stderr is not a terminal -> no stderr logging
+    delete qmlog::stderr() ;
 
+#if 0
   qmlog::object.get_current_dispatcher()->bind_slave(LIBTIMED_LOGGING_DISPATCHER) ;
+#else
+  qmlog::bind_slave(LIBTIMED_LOGGING_DISPATCHER) ;
+#endif
 
 #if F_IMAGE_TYPE
   log_notice("time daemon started, image_type='%s', debug_flag=%d", image_type.c_str(), debug_flag) ;
