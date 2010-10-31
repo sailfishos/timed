@@ -1,8 +1,9 @@
 timed (2.22) unstable; urgency=low
 
   * using new qmlog API
+  * Fixes: NB#178813 - syslog verbose logging
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Sun, 31 Oct 2010 18:46:20 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 01 Nov 2010 00:02:03 +0200
 
 timed (2.21) unstable; urgency=low
 
