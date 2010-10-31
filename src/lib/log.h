@@ -1,11 +1,21 @@
 #ifndef LIBTIMED_LOG_H
 #define LIBTIMED_LOG_H
 
-#define LIBTIMED_LOGGING_DISPATCHER (& Maemo::Timed::libtimed_logging_dispatcher)
+#define LIBTIMED_LOGGING_DISPATCHER (Maemo::Timed::get_libtimed_logging_dispatcher())
 
 #ifndef QMLOG_DISPATCHER
 #define QMLOG_DISPATCHER LIBTIMED_LOGGING_DISPATCHER
 #endif
+
+namespace qmlog { class dispatcher_t ; }
+
+namespace Maemo
+{
+  namespace Timed
+  {
+    qmlog::dispatcher_t *get_libtimed_logging_dispatcher() ;
+  }
+}
 
 #include <qmlog>
 
@@ -22,6 +32,7 @@ namespace Maemo
      ~libtimed_logging_dispatcher_t() { }
     } ;
     extern libtimed_logging_dispatcher_t libtimed_logging_dispatcher ;
+    inline qmlog::dispatcher_t *get_libtimed_logging_dispatcher() { return &libtimed_logging_dispatcher ; }
   }
 }
 
