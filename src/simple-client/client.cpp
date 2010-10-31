@@ -37,7 +37,7 @@ using namespace std ;
 
 #include <pcrecpp.h>
 
-#include <qm/log>
+#include <qmlog>
 
 #include <timed/interface>
 #include <timed/event>
