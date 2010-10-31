@@ -24,7 +24,7 @@
 #ifndef PINGUIN_H
 #define PINGUIN_H
 
-#include <qm/log>
+#include <qmlog>
 
 #include <timed-voland/interface>
 

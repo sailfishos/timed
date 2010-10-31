@@ -25,17 +25,57 @@
 #include "timed.h"
 #include "event.h"
 
+#include "timed/imagetype.h"
+#include "timed/log.h"
+
+#include "f.h"
+
+#include <qmlog>
+
 #include <QMetaType>
 int main(int ac, char **av)
 {
-  const size_t pwd_len = 1024 ;
-  char pwd[pwd_len], *p = getcwd(pwd, pwd_len) ;
-  bool is_root = p!=NULL && strcmp(pwd, "/")==0 ;
-  const char *log_file = is_root ? "/var/log/timed.log" : "timed.log" ;
+  int syslog_level = qmlog::Full ;
+  int varlog_level = qmlog::Full ;
+#if F_IMAGE_TYPE
+#warning F_IMAGE_TYPE !
+  // string image_type = getenv("IMAGE_TYPE") ?: "" ;
+  string image_type = imagetype() ;
+  bool debug_flag = access(F_FORCE_DEBUG_PATH, F_OK) == 0 ;
+  if (not debug_flag)
+  {
+    if (image_type=="PR")
+      syslog_level = qmlog::None, varlog_level = qmlog::None ;
+    else if(image_type=="RD")
+      syslog_level = qmlog::Notice ;
+    else if(image_type=="TR")
+      syslog_level = qmlog::Info ;
+  }
+#endif
 
-  log_init("timed", log_file, true, true) ;
-  log_info("timed started.") ;
+  // qmlog::init() ;
+#if 0
+  qmlog::log_syslog *syslog = new qmlog::log_syslog(syslog_level) ;
+#else
+  qmlog::syslog()->reduce_max_level(syslog_level) ;
+#endif
+  qmlog::log_file *varlog = new qmlog::log_file("/var/log/timed.log", varlog_level) ;
 
+  varlog->enable_fields(qmlog::Monotonic_Milli | qmlog::Time_Milli) ;
+
+  if (not isatty(2)) // stderr is not a terminal -> no stderr logging
+    delete qmlog::stderr() ;
+
+#if 0
+  qmlog::object.get_current_dispatcher()->bind_slave(LIBTIMED_LOGGING_DISPATCHER) ;
+#else
+  LIBTIMED_LOGGING_DISPATCHER->set_proxy(qmlog::dispatcher()) ;
+#endif
+
+  log_notice("time daemon started, debug_flag=%d, syslog_level=%d /var/log-level=%d", debug_flag, qmlog::syslog()->log_level(), varlog->log_level()) ;
+#if F_IMAGE_TYPE
+  log_notice("image_type='%s'", image_type.c_str()) ;
+#endif
 
   // system("hwclock -s") ; // temporary hack
   try

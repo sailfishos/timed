@@ -50,7 +50,7 @@ using namespace std ;
 #include <QDBusPendingReply>
 
 #include <iodata/validator.h>
-#include <qm/log>
+#include <qmlog>
 
 #include "timed/event-io.h"
 #include "timed/nanotime.h"

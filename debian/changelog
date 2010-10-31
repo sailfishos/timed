@@ -1,3 +1,9 @@
+timed (2.22) unstable; urgency=low
+
+  * using new qmlog API
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Sun, 31 Oct 2010 18:46:20 +0200
+
 timed (2.21) unstable; urgency=low
 
   * logging test

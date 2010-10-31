@@ -30,7 +30,7 @@ using namespace std ;
 
 #include <QDBusPendingCallWatcher>
 
-#include <qm/log>
+#include <qmlog>
 
 #include "timed/event-io.h"
 #include "timed/nanotime.h"

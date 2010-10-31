@@ -26,7 +26,7 @@
 #include <stdlib.h>
 using namespace std ;
 
-#include <qm/log>
+#include <qmlog>
 
 #include "event.h"
 #include "timeutil.h"

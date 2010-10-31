@@ -29,6 +29,7 @@
 #include <timed/qmacro.h>
 
 #include "nanotime.h"
+#include "log.h"
 
 nanotime_t nanotime_t::systime_at_zero() // TODO: rename it to start_up_time()
 {
@@ -74,7 +75,9 @@ int nanotime_t::set_systime(const nanotime_t &t)
   struct timeval tv = { t.sec(), micro } ;
   if(next_micro && ++tv.tv_usec==NANO/1000)
     ++tv.tv_sec, tv.tv_usec = 0 ;
+  log_info("executing settimeofday(sec=%lld, usec=%ld", (long long)tv.tv_sec, tv.tv_usec) ;
   int res = settimeofday(&tv, NULL) ;
+  log_info("settimeofday() returned '%d'", res) ;
   return res ;
 }
 

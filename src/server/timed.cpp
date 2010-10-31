@@ -33,7 +33,7 @@
 #include <ContextProvider>
 
 #include <timed/interface>
-#include <qm/log>
+#include <qmlog>
 
 #include "adaptor.h"
 #include "backup.h"
