@@ -35,8 +35,8 @@
 #include <QMetaType>
 int main(int ac, char **av)
 {
-  int syslog_level = qmlog::Debug ;
-  int varlog_level = qmlog::Debug ;
+  int syslog_level = qmlog::Full ;
+  int varlog_level = qmlog::Full ;
 #if F_IMAGE_TYPE
 #warning F_IMAGE_TYPE !
   // string image_type = getenv("IMAGE_TYPE") ?: "" ;
@@ -53,7 +53,7 @@ int main(int ac, char **av)
   }
 #endif
 
-  qmlog::init() ;
+  // qmlog::init() ;
 #if 0
   qmlog::log_syslog *syslog = new qmlog::log_syslog(syslog_level) ;
 #else
@@ -69,13 +69,12 @@ int main(int ac, char **av)
 #if 0
   qmlog::object.get_current_dispatcher()->bind_slave(LIBTIMED_LOGGING_DISPATCHER) ;
 #else
-  qmlog::bind_slave(LIBTIMED_LOGGING_DISPATCHER) ;
+  LIBTIMED_LOGGING_DISPATCHER->set_proxy(qmlog::dispatcher()) ;
 #endif
 
+  log_notice("time daemon started, debug_flag=%d, syslog_level=%d /var/log-level=%d", debug_flag, qmlog::syslog()->log_level(), varlog->log_level()) ;
 #if F_IMAGE_TYPE
-  log_notice("time daemon started, image_type='%s', debug_flag=%d", image_type.c_str(), debug_flag) ;
-#else
-  log_notice("time daemon started") ;
+  log_notice("image_type='%s'", image_type.c_str()) ;
 #endif
 
   // system("hwclock -s") ; // temporary hack

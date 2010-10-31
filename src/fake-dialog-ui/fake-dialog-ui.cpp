@@ -86,7 +86,6 @@ fake_dialog_ui::fake_dialog_ui(int ac, char **av)
 
 int main(int ac, char **av)
 {
-  qmlog::init() ;
   new qmlog::log_file("/tmp/fake-dialog-ui.log") ;
 
   log_info("started") ;
