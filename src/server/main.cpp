@@ -57,12 +57,14 @@ int main(int ac, char **av)
   qmlog::log_file *varlog = new qmlog::log_file("/var/log/timed.log", varlog_level) ;
   varlog->enable_fields(qmlog::Monotonic_Milli | qmlog::Time_Milli) ;
 
-  if (not isatty(2)) // stderr is not a terminal -> no stderr logging
+  bool isatty_2 = isatty(2) ;
+
+  if (not isatty_2) // stderr is not a terminal -> no stderr logging
     delete qmlog::stderr() ;
 
   LIBTIMED_LOGGING_DISPATCHER->set_proxy(qmlog::dispatcher()) ;
 
-  log_notice("time daemon started, debug_flag=%d, syslog-level=%d /var/log-level=%d", debug_flag, qmlog::syslog()->log_level(), varlog->log_level()) ;
+  log_notice("time daemon started, debug_flag=%d, syslog-level=%d /var/log-level=%d isatty(2)=%d", debug_flag, qmlog::syslog()->log_level(), varlog->log_level(), isatty_2) ;
 
 #if F_IMAGE_TYPE
   log_notice("image_type='%s'", image_type.c_str()) ;
