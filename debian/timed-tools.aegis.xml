@@ -39,11 +39,13 @@
     <!-- end of all capabilities -->
     <for path="/usr/bin/simple-client" id="simple-client" />
   </request>
+  <!--
   <request>
     <credential match="CAP::*"/>
     <credential name="ReadUserData"/>
     <credential name="ReadWriteUserData"/>
     <for path="/usr/bin/logging-test" id="logging-test" />
   </request>
+  -->
 </aegis>
 
