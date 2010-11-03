@@ -14,8 +14,11 @@ LIBS += -ltimed
 SOURCES = ticker.cpp
 HEADERS = ticker.h
 
-INSTALLS += target
+INSTALLS += target qmtime-users
 target.path = $$(DESTDIR)/usr/bin
+
+qmtime-users.files = qmtime-users.sh
+qmtime-users.path = $$(DESTDIR)/usr/bin
 
 CONFIG(MEEGO) \
 {
