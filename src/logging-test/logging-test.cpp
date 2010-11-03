@@ -29,13 +29,28 @@
 #include <unistd.h>
 #include <time.h>
 
+char *name()
+{
+  static char buf[1024] ;
+  *buf = '\0' ;
+  FILE *cmdline = fopen("/proc/self/cmdline", "r") ;
+  if (cmdline)
+  {
+    size_t res = fread(buf, 1, 1000, cmdline) ;
+    buf[res] = '\0' ;
+    fclose(cmdline) ;
+  }
+  return buf ;
+}
+
 int main()
 {
-  char buf[100] ;
+  char buf[2000] ;
   time_t t=time(NULL) ;
   struct tm tm ;
   localtime_r(&t, &tm) ;
-  sprintf(buf, "logging-test[%d]: %04d-%02d-%02d %02d-%02d-%02d", getpid(), tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec) ;
+
+  sprintf(buf, "logging-test[%d]: %04d-%02d-%02d %02d:%02d:%02d cmdline='%s'", getpid(), tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, name()) ;
   fprintf(stderr, "%s\n", buf) ;
   openlog("logging-test", LOG_NOWAIT|LOG_DAEMON, LOG_DAEMON) ;
   syslog(LOG_CRIT, "%s", buf) ;
