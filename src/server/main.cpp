@@ -35,6 +35,10 @@
 #include <QMetaType>
 int main(int ac, char **av)
 {
+  const size_t cwd_len = 16 ;
+  char cwd[cwd_len], *p = getcwd(cwd, cwd_len) ;
+  bool cwd_is_root = p!=NULL && strcmp(cwd, "/")==0 ;
+
   int syslog_level = qmlog::Full ;
   int varlog_level = qmlog::Full ;
 
@@ -54,12 +58,13 @@ int main(int ac, char **av)
 
   qmlog::syslog()->reduce_max_level(syslog_level) ;
 
-  qmlog::log_file *varlog = new qmlog::log_file("/var/log/timed.log", varlog_level) ;
+  const char *log_file = cwd_is_root ? "/var/log/timed.log" : "timed.log" ;
+  qmlog::log_file *varlog = new qmlog::log_file(log_file, varlog_level) ;
   varlog->enable_fields(qmlog::Monotonic_Milli | qmlog::Time_Milli) ;
 
   bool isatty_2 = isatty(2) ;
 
-  if (not isatty_2) // stderr is not a terminal -> no stderr logging
+  if (not isatty_2 or cwd_is_root) // stderr is not a terminal or started by upstart -> no stderr logging
     delete qmlog::stderr() ;
 
   LIBTIMED_LOGGING_DISPATCHER->set_proxy(qmlog::dispatcher()) ;
