@@ -33,9 +33,16 @@ Maemo::Timed::libtimed_logging_dispatcher_t::libtimed_logging_dispatcher_t()
 
   varlog->enable_fields(qmlog::Monotonic_Milli | qmlog::Time_Milli) ;
 
+  attach(qmlog::stderr()) ;
+
   set_process_name(qmlog::process_name()) ;
 
-  // log_critical("blah (in libtimed, pid=%d)", getpid()) ;
+  // log_debug("blah in constructor... (in libtimed, pid=%d)", getpid()) ;
+}
+
+Maemo::Timed::libtimed_logging_dispatcher_t::~libtimed_logging_dispatcher_t()
+{
+  // log_debug("blah in destructor... (in libtimed, pid=%d)", getpid()) ;
 }
 
 void Maemo::Timed::libtimed_logging_dispatcher_t::set_process_name(const std::string &new_name)
