@@ -28,4 +28,5 @@ CONFIG(MEEGO) \
 else \
 {
   CONFIG += cellular-qt
+  QMAKE_CXXFLAGS  += -Wall -Wno-psabi
 }
