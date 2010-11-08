@@ -1,3 +1,9 @@
+timed (2.24) unstable; urgency=low
+
+  * new version
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 08 Nov 2010 20:41:16 +0200
+
 timed (2.23) unstable; urgency=low
 
   * Fixes: NB#202276 - removed bogus token request
