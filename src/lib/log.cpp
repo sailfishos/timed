@@ -53,4 +53,14 @@ void Maemo::Timed::libtimed_logging_dispatcher_t::set_process_name(const std::st
   dispatcher_t::set_process_name(name) ;
 }
 
+void Maemo::Timed::croak()
+{
+  log_debug("croak") ;
+}
+
 Maemo::Timed::libtimed_logging_dispatcher_t Maemo::Timed::libtimed_logging_dispatcher ;
+
+qmlog::dispatcher_t *Maemo::Timed::get_libtimed_logging_dispatcher()
+{
+  return &libtimed_logging_dispatcher ;
+}
