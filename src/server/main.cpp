@@ -42,13 +42,21 @@ int main(int ac, char **av)
   int syslog_level = qmlog::Full ;
   int varlog_level = qmlog::Full ;
 
+  bool enable_qmlog = true ;
+
+  bool debug_flag_timed = access(F_FORCE_DEBUG_PATH, F_OK) == 0 ;
+  bool debug_flag_qmlog = access(QMLOG_ENABLER1, F_OK) == 0 ;
+
 #if F_IMAGE_TYPE
   string image_type = imagetype() ;
-  bool debug_flag = access(F_FORCE_DEBUG_PATH, F_OK) == 0 ;
+  bool debug_flag = debug_flag_timed or debug_flag_qmlog ;
   if (not debug_flag)
   {
     if (image_type=="PR")
+    {
       syslog_level = varlog_level = qmlog::None ;
+      enable_qmlog = false ; // possibly will change below
+    }
     else if(image_type=="RD")
       syslog_level = qmlog::Notice ;
     else if(image_type=="TR")
@@ -66,10 +74,16 @@ int main(int ac, char **av)
 
   if (not isatty_2 or cwd_is_root) // stderr is not a terminal or started by upstart -> no stderr logging
     delete qmlog::stderr() ;
+  else
+    enable_qmlog = true ; // even on PR type image, if stderr needed
+
+  if (enable_qmlog)
+    qmlog::enable() ;
 
   LIBTIMED_LOGGING_DISPATCHER->set_proxy(qmlog::dispatcher()) ;
 
-  log_notice("time daemon started, debug_flag=%d, syslog-level=%d /var/log-level=%d isatty(2)=%d", debug_flag, qmlog::syslog()->log_level(), varlog->log_level(), isatty_2) ;
+  log_notice("time daemon started; debug_flags: timed=%d, qmlog=%d; syslog-level: %d /var/log-level: %d isatty(2)=%d",
+          debug_flag_timed, debug_flag_qmlog, qmlog::syslog()->log_level(), varlog->log_level(), isatty_2) ;
 
 #if F_IMAGE_TYPE
   log_notice("image_type='%s'", image_type.c_str()) ;
