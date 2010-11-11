@@ -38,6 +38,14 @@ bool Maemo::Timed::Interface::settings_changed_connect(QObject *object, const ch
     return false ;
 }
 
+bool Maemo::Timed::Interface::settings_changed_disconnect(QObject *object, const char *slot)
+{
+  static const char *s = Maemo::Timed::service() ;
+  static const char *o = Maemo::Timed::objpath() ;
+  static const char *i = Maemo::Timed::interface() ;
+  return Maemo::Timed::bus().disconnect(s,o,i,"settings_changed",object,slot) ;
+}
+
 Maemo::Timed::Interface::Interface(QObject *parent)
   : QDBusInterface(Maemo::Timed::service(), Maemo::Timed::objpath(), Maemo::Timed::interface(), Maemo::Timed::bus(), parent)
 {

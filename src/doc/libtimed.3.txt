@@ -51,6 +51,11 @@ DAEMON INTERFACE
   in case of time setting change. Return value indicates if the connection was
   performed.
   +
+  bool *settings_changed_disconnect*(QObject &ast; object, const char &ast; slot) -
+  disconnects the given object/slot pair from the D-Bus signal sent by the daemon
+  in case of time setting change. Returns true if the disconnection was
+  successful.
+  +
   The 'slot' must have the signature
   'void settings_changed(const Maemo::Timed::WallClock::Info &info, bool
   time_changed)'. If not, then the call will fail, no signal will be delivered, and a

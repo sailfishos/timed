@@ -72,6 +72,7 @@ namespace Maemo
       Interface(QObject *parent=NULL) ;
       // -- dbus signals -- //
       bool settings_changed_connect(QObject *object, const char *slot) ;
+      bool settings_changed_disconnect(QObject *object, const char *slot) ;
       // -- application methods -- //
       qtdbus_method(get_wall_clock_info, (void)) ;
       qtdbus_method(wall_clock_settings, (const Maemo::Timed::WallClock::Settings &s), s.dbus_output(__PRETTY_FUNCTION__)) ;
