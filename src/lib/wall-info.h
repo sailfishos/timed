@@ -52,6 +52,9 @@ struct Maemo::Timed::WallClock::wall_info_pimple_t
   int seconds_east_of_gmt ;  // -6x3600 (USA), 3x3600 (MSK), 5.5x3600 (India)
   QString abbreviation ; // "MSK", "EEST", "UTC"
 
+  bool nitz_supported ;
+  QString default_timezone ;
+
   nanotime_t systime_diff ;
 } ;
 

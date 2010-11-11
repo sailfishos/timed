@@ -68,6 +68,7 @@ private:
 
 public:
   bool is_nitz_supported() { return nitz_supported ; }
+  const string &default_timezone() { return tz_by_default ; }
   const string &get_settings_path() { return settings_path ; }
 
 private:
@@ -123,7 +124,6 @@ Q_SIGNALS:
   // void settings_changed_1(bool system_time) ;
 public:
   Timed(int ac, char **av) ;
-  const string &get_default_timezone() { return default_timezone ; }
   int get_default_gmt_offset() { return default_gmt_offset ; }
 
 private:
@@ -137,7 +137,6 @@ private:
   string save_time_path ;
 #endif
   string events_path, settings_path ;
-  string default_timezone ;
   int default_gmt_offset ;
   void load_rc() ;
   void load_settings() ;

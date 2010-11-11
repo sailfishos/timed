@@ -173,6 +173,16 @@ struct timespec Maemo::Timed::WallClock::Info::clockDiffNano() const
   return p->systime_diff.to_timespec() ;
 }
 
+bool Maemo::Timed::WallClock::Info::nitzSupported() const
+{
+  return p->nitz_supported ;
+}
+
+QString Maemo::Timed::WallClock::Info::defaultTimezone() const
+{
+  return p->default_timezone ;
+}
+
 QString Maemo::Timed::WallClock::Info::str() const
 {
   if(p==NULL)
@@ -195,6 +205,8 @@ QString Maemo::Timed::WallClock::Info::str() const
   os << "h" ;
   os << " (" << p->abbreviation << ")" ;
   os << " clock_back=" << p->systime_diff ;
+  os << " nitz_supported=" << p->nitz_supported ;
+  os << " default_timezone=" << p->default_timezone.toStdString().c_str() ;
   os << "}" << flush ;
   return res ;
 }
@@ -207,7 +219,8 @@ QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::WallClock::Inf
     << x.p->flag_time_nitz << x.p->flag_local_cellular << x.p->flag_auto_dst << x.p->flag_format_24
     << x.p->clocks << x.p->zones << x.p->offsets
     << x.p->data_sources << x.p->systime_diff
-    << x.p->localtime_symlink << x.p->human_readable_tz << x.p->seconds_east_of_gmt << x.p->abbreviation ;
+    << x.p->localtime_symlink << x.p->human_readable_tz << x.p->seconds_east_of_gmt << x.p->abbreviation
+    << x.p->nitz_supported << x.p->default_timezone ;
 }
 
 const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::WallClock::Info &x)
@@ -218,7 +231,8 @@ const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::WallClock
     >> x.p->flag_time_nitz >> x.p->flag_local_cellular >> x.p->flag_auto_dst >> x.p->flag_format_24
     >> x.p->clocks >> x.p->zones >> x.p->offsets
     >> x.p->data_sources >> x.p->systime_diff
-    >> x.p->localtime_symlink >> x.p->human_readable_tz >> x.p->seconds_east_of_gmt >> x.p->abbreviation ;
+    >> x.p->localtime_symlink >> x.p->human_readable_tz >> x.p->seconds_east_of_gmt >> x.p->abbreviation
+    >> x.p->nitz_supported >> x.p->default_timezone ;
 
   bool rubbish = false ;
 

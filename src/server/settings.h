@@ -125,6 +125,7 @@ struct cellular_zone_t : public zone_source_t
   // iodata::record *save() const ;
 } ;
 
+// TODO: remove this?
 struct customization_settings
 {
   customization_settings() ;

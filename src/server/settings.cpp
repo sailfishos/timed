@@ -458,6 +458,9 @@ Maemo::Timed::WallClock::wall_info_pimple_t *source_settings::get_wall_clock_inf
   p->systime_diff = back ;
   log_debug("back=%s", back.str().c_str()) ;
 
+  p->nitz_supported = o->is_nitz_supported() ;
+  p->default_timezone = o->default_timezone().c_str() ;
+
   return p ;
 }
 
@@ -634,7 +637,7 @@ void source_settings::postload_fix_manual_zone()
   {
     if(auto_dst)
     {
-      tz = o->get_default_timezone() ;
+      tz = o->default_timezone() ;
       if(check_target(symlink_target(manual_zone->value)) < 0)
         tz = "Etc/GMT" ;
     }

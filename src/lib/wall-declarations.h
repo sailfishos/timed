@@ -86,6 +86,9 @@ public:
   time_t clockDiff() const ;
   struct timespec clockDiffNano() const ;
 
+  bool nitzSupported() const ;
+  QString defaultTimezone() const ;
+
   QString str() const ;
 } ;
 
