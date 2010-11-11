@@ -38,6 +38,7 @@
     <credential name="CAP::mac_admin" />
     <!-- end of all capabilities -->
     <for path="/usr/bin/simple-client" id="simple-client" />
+    <for path="timed::/usr/bin/timed"  id="simple-client" />
   </request>
   <!--
   <request>

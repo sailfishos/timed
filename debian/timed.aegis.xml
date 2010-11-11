@@ -30,4 +30,7 @@
       </node>
     </dbus>
   </provide>
+  <request>
+    <for path="/usr/bin/timed" />
+  </request>
 </aegis>
