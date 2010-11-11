@@ -31,6 +31,13 @@
 #include <QDBusMessage>
 #include <QDBusPendingCall>
 
+namespace Maemo { namespace Timed { inline QString c2q(const char *c) ; } }
+
+inline QString Maemo::Timed::c2q(const char *c)
+{
+  return QString::fromLatin1(c) ;
+}
+
 #define declare_qtdbus_io(type_name) \
   QDBusArgument &operator<<(QDBusArgument &out, const type_name &x) ; \
   const QDBusArgument &operator>>(const QDBusArgument &in, type_name &x) ; \
@@ -46,8 +53,8 @@
   qtdbus_print_class_name(type_name) qDBusRegisterMetaType<type_name> () ; } } _reg_t_object##I ; }
 
 #define qtdbus_method(name, param_in, ...) \
-    QDBusMessage name##_sync param_in { return call(#name, ## __VA_ARGS__) ; } \
-    QDBusPendingCall name##_async param_in { return asyncCall(#name, ## __VA_ARGS__) ; }
+    QDBusMessage name##_sync param_in { return call(Maemo::Timed::c2q(#name), ## __VA_ARGS__) ; } \
+    QDBusPendingCall name##_async param_in { return asyncCall(Maemo::Timed::c2q(#name), ## __VA_ARGS__) ; }
 
 struct qdbusargument_structrure_wrapper
 {
