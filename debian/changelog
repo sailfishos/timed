@@ -1,3 +1,9 @@
+timed (2.25) unstable; urgency=low
+
+  * new version
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 11 Nov 2010 12:50:02 +0200
+
 timed (2.24) unstable; urgency=low
 
   * minor fixes, mostly about logging

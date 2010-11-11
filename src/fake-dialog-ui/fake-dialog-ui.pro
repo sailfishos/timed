@@ -4,7 +4,7 @@ QT += dbus
 TEMPLATE = app
 TARGET = fake-dialog-ui
 
-VERSION = 2.24
+VERSION = 2.25
 
 INCLUDEPATH += ../h
 
