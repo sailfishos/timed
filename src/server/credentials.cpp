@@ -110,15 +110,15 @@ bool credentials_t::apply_and_compare()
 
   ostringstream os ;
 
-  bool equal = true ;
+  bool id_matches = true ;
 
-#define COMMA (os << (equal ? "" : ", ") )
+#define COMMA (os << (id_matches ? "" : ", ") )
 
   if (current.uid != uid)
-    COMMA << "current uid='" << current.uid << "' (requested uid='" << uid <<"')", equal = false ;
+    COMMA << "current uid='" << current.uid << "' (requested uid='" << uid <<"')", id_matches = false ;
 
   if (current.gid != gid)
-    COMMA << "current gid='" << current.gid << "' (requested gid='" << gid <<"')", equal = false ;
+    COMMA << "current gid='" << current.gid << "' (requested gid='" << gid <<"')", id_matches = false ;
 
 #if F_TOKENS_AS_CREDENTIALS
 
@@ -131,8 +131,6 @@ bool credentials_t::apply_and_compare()
   if (!all_accrued)
     os << "}" ;
 
-  equal = equal && all_accrued ;
-
   int all_dropped = true ;
 #define COMMA_D (all_dropped ? COMMA << "tokens not dropped: {" : os << ", ")
 
@@ -142,7 +140,7 @@ bool credentials_t::apply_and_compare()
   if (!all_dropped)
     os << "}" ;
 
-  equal = equal && all_dropped ;
+  bool equal = id_matches and all_accrued and all_dropped ;
 
 #undef COMMA_A
 #undef COMMA_D
@@ -154,7 +152,7 @@ bool credentials_t::apply_and_compare()
   if(!equal)
     log_warning("applied and wanted credentials differ: %s", os.str().c_str()) ;
 
-  return equal ;
+  return id_matches and all_dropped ;
 }
 
 credentials_t credentials_t::from_current_process()
