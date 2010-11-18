@@ -716,6 +716,16 @@ bool source_settings::wall_clock_settings(const Maemo::Timed::WallClock::wall_se
     // If this fails, reject.
     if(op_zone & (Op_Set_Timezone_Manual | Op_Set_Timezone_Cellular_Fbk))
     {
+      if (p_zone.empty())
+      {
+        p_zone = manual_zone->value ;
+        log_notice("empty zone given, replacing by '%s'", p_zone.c_str()) ;
+        if (check_target(symlink_target(p_zone)) < 0)
+        {
+          p_zone = o->default_timezone() ;
+          log_notice("current time zone invalid, replacing by '%s'", p_zone.c_str()) ;
+        }
+      }
       if(check_target(symlink_target(p_zone)) < 0)
       {
         log_error("rejecting invalid timezone: '%s'", p_zone.c_str()) ;
