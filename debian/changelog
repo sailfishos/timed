@@ -1,3 +1,9 @@
+timed (2.26) unstable; urgency=low
+
+  * minor fix, timezone setting
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 18 Nov 2010 23:29:57 +0200
+
 timed (2.25) unstable; urgency=low
 
   * three more client methods
