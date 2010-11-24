@@ -182,7 +182,7 @@ void Maemo::Timed::Event::setBackupFlag()
 void Maemo::Timed::Event::setFakeFlag()
 {
   setKeepAliveFlag() ;
-  qDebug() << "The method" << __PRETTY_FUNCTION__ << "is deprecated and will be removed, please use setKeepAliveFlag() instead!" ;
+  log_error("The method %s' is deprecated, please use setKeepAliveFlag() instead!", __PRETTY_FUNCTION__) ;
 }
 
 void Maemo::Timed::Event::suppressTimeoutSnooze()
@@ -388,7 +388,7 @@ namespace Maemo
 {
   namespace Timed
   {
-#define XXX qDebug()<<__FILE__<<__LINE__<<"mons"<<R->mons<<"mday"<<R->mday ;
+#define XXX log_debug("mons=0%o, mday=0%o", R->mons, R->mday) ;
     bool Event::Recurrence::isEmpty() const
     {
       const recurrence_io_t *R = p->rio() ;

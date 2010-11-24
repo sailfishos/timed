@@ -26,7 +26,9 @@
 
 #include <timed/wallclock>
 
+#include "log.h"
 #include "wall-info.h"
+
 register_qtdbus_metatype(Maemo::Timed::WallClock::Info, 0) ;
 
 Maemo::Timed::WallClock::Info::Info() // invalid object
@@ -251,7 +253,7 @@ const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::WallClock
 #undef _check
 
   if(rubbish)
-    qWarning() << "some rubbish submitted via D-Bus in" << __PRETTY_FUNCTION__ ;
+    log_error("not valid input submitted via dbus (Maemo::Timed::WallClock::Info)") ;
 
   return in ;
 }

@@ -46,6 +46,8 @@ using namespace std ;
 #include <NetworkTime>
 #endif
 
+#include <qmlog>
+
 #include "timed/interface"
 #include "timed/wallclock"
 
@@ -74,13 +76,13 @@ public:
       abbreviation = x.value().tzAbbreviation() ;
     }
     else
-      qWarning() << "D-Bus call timed->get_wall_clock_info_sync() failed: " << timed->lastError().message() ;
+      log_warning("D-Bus call timed->get_wall_clock_info_sync() failed: %s", timed->lastError().message().toStdString().c_str()) ;
 
     bool a = timed->settings_changed_connect(this, SLOT(settings(const Maemo::Timed::WallClock::Info &, bool))) ;
     if(a)
       cout << "connected to D-Bus signal, waiting for time settings change signal" << endl ;
     else
-      qCritical() << "not connected to D-Bus signal, no time change signal will be delivered!" ;
+      log_critical("not connected to D-Bus signal, no time change signal will be delivered!") ;
 
     QDBusConnection dsme_bus = QDBusConnection::systemBus() ;
     QString path = Maemo::Timed::objpath() ;
@@ -90,7 +92,7 @@ public:
     if(aa)
       cout << "connected to system bus signal '" << signal.toStdString() << "'" << endl ;
     else
-      qCritical() << "not connected to system bus signal" << signal ;
+      log_critical("not connected to system bus signal '%s'",signal.toStdString().c_str()) ;
 
 #if USE_CELLULAR_QT
     cellular_time = new Cellular::NetworkTime ;

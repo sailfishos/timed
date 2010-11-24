@@ -1,8 +1,8 @@
 timed (2.27) unstable; urgency=low
 
-  * new version
+  * Fixed: NB#206854 - timed using qDebug() printing messages to stderr
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 22 Nov 2010 16:02:35 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 24 Nov 2010 13:24:39 +0200
 
 timed (2.26) unstable; urgency=low
 

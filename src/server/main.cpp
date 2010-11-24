@@ -39,6 +39,8 @@ int main(int ac, char **av)
   char cwd[cwd_len], *p = getcwd(cwd, cwd_len) ;
   bool cwd_is_root = p!=NULL && strcmp(cwd, "/")==0 ;
 
+  // fprintf(stderr, "getcwd returned '%s'", p?cwd:"(null)") ;
+
   int syslog_level = qmlog::Full ;
   int varlog_level = qmlog::Full ;
 

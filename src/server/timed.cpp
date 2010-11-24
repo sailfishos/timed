@@ -57,7 +57,7 @@ static void spam()
   qlonglong A=1111, B=2222 ;
   QString str = "bebe " ;
   str += QString(" timestamp: %1/%2").arg(A).arg(B) ;
-  qDebug() << str ;
+  log_debug("%s", str.toStdString().c_str()) ;
 #endif
 #if NO_SPAM
   log_info("AA") ;
