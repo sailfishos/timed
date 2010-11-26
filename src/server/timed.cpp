@@ -201,7 +201,7 @@ void Timed::init_scratchbox_mode()
   }
   log_info("%s" "SCRATCHBOX detected", scratchbox_mode ? "" : "no ") ;
 #else
-  scratcbox_mode = false ;
+  scratchbox_mode = false ;
 #endif
 }
 
