@@ -9,7 +9,7 @@ Build-Depends: debhelper (>= 7),
  libcontextprovider-dev,
  libcontextsubscriber-dev,
  libiodata-dev,
- libqmlog-dev,
+ libqmlog-dev (>= 0.0.9),
  libpcre3-dev,
  libcellular-qt-dev,
  libcreds2-dev,
@@ -38,14 +38,14 @@ Description: time daemon
 Package: libtimed0
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, libqmlog0 (>= 0.0.9)
 Description: timed client library
  Qt based API for communication with timed
 
 Package: libtimed-voland0
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, libqmlog0 (>= 0.0.9)
 Description: timed client library for voland
  Qt based API for communication between voland and timed
 
