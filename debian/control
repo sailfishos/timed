@@ -29,7 +29,7 @@ Standards-Version: 3.8.0
 Package: timed
 Conflicts: timehd (<< 2.0)
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, tzdata
+Depends: ${shlibs:Depends}, ${misc:Depends}, tzdata, tzdata-timed
 Description: time daemon
  The time daemon (timed) managing system time, time
  zone and settings, executing actions at given time and managing the event
