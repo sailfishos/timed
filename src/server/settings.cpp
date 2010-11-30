@@ -33,6 +33,7 @@
 
 #include "daemon/flags.h"
 #include "timed/wall-settings.h"
+#include "timed/aliases.h"
 
 #include "timed.h"
 #include "settings.h"
@@ -716,6 +717,21 @@ bool source_settings::wall_clock_settings(const Maemo::Timed::WallClock::wall_se
     // If this fails, reject.
     if(op_zone & (Op_Set_Timezone_Manual | Op_Set_Timezone_Cellular_Fbk))
     {
+      if (not p_zone.empty())
+      {
+        string main_name = Maemo::Timed::tz_alias_to_name(p_zone) ;
+        if(main_name.empty())
+        {
+          log_error("rejecting invalid timezone: '%s' (not a well known name)", p_zone.c_str()) ;
+          return false ;
+        }
+        else if (main_name != p_zone)
+        {
+          log_notice("replacing the alias time zone name '%s' by the main Olson name '%s'", p_zone.c_str(), main_name.c_str()) ;
+          p_zone = main_name ;
+        }
+      }
+
       if (p_zone.empty())
       {
         p_zone = manual_zone->value ;
