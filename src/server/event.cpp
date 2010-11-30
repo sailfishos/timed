@@ -31,6 +31,7 @@
 
 #include "timed/event-pimple.h"
 #include "timed/event-io.h"
+#include "timed/aliases.h"
 
 #include "misc.h"
 
@@ -165,6 +166,13 @@ event_t *event_t::from_dbus_iface(const event_io_t *eio)
     e->snooze[i+1] = si ;
     map_q_to_std(eio->buttons[i].attr.txt, e->b_attr[i].txt) ;
     check_attr(str_printf("button #%d", i), e->b_attr[i], true) ;
+  }
+
+  if (e->has_timezone() and not Maemo::Timed::is_tz_name(e->tz))
+  {
+    log_error("a new event is rejected because of invalid time zone: '%s'", e->tz.c_str()) ;
+    delete e ;
+    return NULL ;
   }
 
   unsigned _ctzp = (e->has_ticker() << 12) | (e->has_time() << 8) | (e->has_timezone() << 4) | (e->has_recurrence() << 0 ) ;
