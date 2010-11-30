@@ -93,7 +93,7 @@ string Maemo::Timed::tz_alias_to_name(const string &tz)
   return zones[it->second] ;
 }
 
-void free_file_memory(char *buffer)
+void free_file_memory(const char *buffer)
 {
   delete[] buffer ;
 }

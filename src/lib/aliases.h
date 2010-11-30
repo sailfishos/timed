@@ -9,7 +9,7 @@ namespace Maemo
   {
     void free_tz_list() ;
     bool is_tz_name(const std::string &tz) ;
-    std::string tz_alias_to_name(const string &tz) ;
+    std::string tz_alias_to_name(const std::string &tz) ;
   }
 }
 
