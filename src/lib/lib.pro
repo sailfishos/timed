@@ -4,12 +4,12 @@ QT += dbus
 QT -= gui
 
 TARGET = timed
-VERSION = 0.2.28
+VERSION = 0.2.29
 
 CONFIG += qmlog
 
 HEADERS = interface.h
-SOURCES = interface.cpp event-io.cpp event-pimple.cpp exception.cpp nanotime.cpp log.cpp imagetype.cpp
+SOURCES = interface.cpp event-io.cpp event-pimple.cpp exception.cpp nanotime.cpp log.cpp imagetype.cpp aliases.cpp
 
 SOURCES += wall-settings.cpp wall-info.cpp
 
