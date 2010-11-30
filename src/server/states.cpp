@@ -28,6 +28,7 @@
 #include <timed-voland/interface>
 #include "timed-voland/reminder-pimple.h"
 #include <timed/nanotime.h>
+#include <timed/aliases.h>
 
 #include "event.h"
 
@@ -112,17 +113,20 @@ void state_scheduler::enter(event_t *e)
     T.tm_year = e->t.year - 1900 ;
     T.tm_isdst = -1 ;
     log_debug("%d-%d-%d %d:%d", e->t.year, e->t.month, e->t.day, e->t.hour, e->t.minute) ;
-    e->trigger = e->has_timezone() ? mktime_oversea(&T, e->tz): mktime_local(&T) ;
+    if (not e->has_timezone())
+      e->trigger = mktime_local(&T) ;
+    else if(Maemo::Timed::is_tz_name(e->tz))
+      e->trigger = mktime_oversea(&T, e->tz) ;
+    else
+      log_error("can't schedule an event for an unknown time zone '%s'", e->tz.c_str()) ;
+
     log_debug("now=%ld e->trigger=%ld diff=%ld", time(NULL), e->trigger.value(), e->trigger.value()-time(NULL)) ;
     log_debug("e->has_timezone()=%d", e->has_timezone()) ;
     if(!e->trigger.is_valid())
     {
-      log_debug() ;
       log_error("Failed to calculate trigger time for %s", e->t.str().c_str()) ;
       next_state = "ABORTED" ; // TODO: make a new state "FAILED" for this case
-      log_debug() ;
     }
-    log_debug() ;
   }
   else if(e->has_recurrence())
     next_state = "RECURRED" ;
