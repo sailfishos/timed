@@ -32,14 +32,19 @@ void read_tz_list()
   const char *txt = read_file(ZONE_ALIAS) ;
 
   if (txt==NULL)
+  {
+    log_error("can't load olson name list (%s): %m", ZONE_ALIAS) ;
     return ;
+  }
+
+  // log_debug("loaded %d bytes from '%s'", strlen(txt), ZONE_ALIAS) ;
 
   bool new_line = true ;
-  for(const char *p=txt; *p != '\0'; ++p)
+  for(const char *p=txt; *p != '\0'; )
   {
     if (isspace(*p))
     {
-      if (*p=='\n')
+      if (*p++=='\n')
         new_line = true ;
     }
     else
@@ -54,8 +59,13 @@ void read_tz_list()
         new_line = false ;
       }
       alias_to_zone[word] = zones.size() - 1 ;
+      // log_debug("word: '%s' is alias for zone %d (name '%s')", word.c_str(), alias_to_zone[word], zones[alias_to_zone[word]].c_str()) ;
     }
   }
+
+  log_notice("loaded '%s': %d time zone names (%d with aliases)", ZONE_ALIAS, zones.size(), alias_to_zone.size()) ;
+
+  loaded = true ;
 
   free_file_memory(txt) ;
 }
