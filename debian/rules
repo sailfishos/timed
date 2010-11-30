@@ -43,7 +43,7 @@ install: build
 	dh_testdir
 	dh_installdirs
 	cd src && make install INSTALL_ROOT=$(CURDIR)/debian/tmp
-	cd src/political && INSTALL_ROOT=$(CURDIR)/debian/tmp ./debian-install.sh
+	# cd src/political && INSTALL_ROOT=$(CURDIR)/debian/tmp ./debian-install.sh
 	# ln -sf timed $(CURDIR)/debian/tmp/usr/bin/cute-timed
 	dh_link -ptimed usr/bin/timed usr/bin/cute-timed
 
