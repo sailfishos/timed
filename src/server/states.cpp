@@ -394,7 +394,10 @@ ticker_t state_recurred::apply_pattern(broken_down_t &t, int wday, const recurre
       }
       log_debug() ;
       if(!td.same_struct_tm(&tm))
+      {
+        td.increment_min(1) ;
         continue ;
+      }
       log_debug() ;
       t = td ;
       return ticker_t(time) ;
