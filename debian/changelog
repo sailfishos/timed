@@ -1,3 +1,9 @@
+timed (2.30) unstable; urgency=low
+
+  * new ver
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 02 Dec 2010 14:30:21 +0200
+
 timed (2.29) unstable; urgency=low
 
   * making time zone handling more strict
