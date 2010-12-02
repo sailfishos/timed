@@ -77,8 +77,8 @@ struct broken_down_t
 inline unsigned int broken_down_t::month_length(unsigned y, unsigned m)
 {
   static unsigned int month_length_table[12] = {31,28,31,30,31,30,31,31,30,31,30,31} ;
-  log_debug("y=%d m=%d month_length_table[m-1]=%d+%d", y, m, month_length_table[m-1], (m==2 && (y&0x03)==0)) ;
-  return month_length_table[m-1] + (m==2 && (y&0x03)==0) ; // uh-oh! Problem-2100 ;-)
+  // log_debug("y=%d m=%d month_length_table[m-1]=%d+%d", y, m, month_length_table[m-1], (m==2 && (y&0x03)==0)) ;
+  return month_length_table[m-1] + (m==2 and (y&0x03)==0 and (y%100!=0 or y%400==0)) ;
 }
 
 inline bool broken_down_t::is_valid() const
