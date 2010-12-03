@@ -1,8 +1,8 @@
 timed (2.30) unstable; urgency=low
 
-  * new ver
+  * Fixes: NB#208737 - setting clock alarm to skipped hour is making timed unusable
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 02 Dec 2010 14:30:21 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Fri, 03 Dec 2010 16:34:14 +0200
 
 timed (2.29) unstable; urgency=low
 
