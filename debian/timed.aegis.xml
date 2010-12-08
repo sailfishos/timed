@@ -31,6 +31,9 @@
     </dbus>
   </provide>
   <request>
+    <credential name="CAP::setgid" />
+    <credential name="CAP::setuid" />
+    <credential name="CAP::sys_time" />
     <for path="/usr/bin/timed" />
   </request>
 </aegis>

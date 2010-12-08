@@ -1,8 +1,8 @@
 timed (2.31) unstable; urgency=low
 
-  * new version
+  * Fixes: NB#210287 - timed doesn't have CAP_SYS_TIME
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 08 Dec 2010 16:30:44 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 08 Dec 2010 16:36:16 +0200
 
 timed (2.30) unstable; urgency=low
 
