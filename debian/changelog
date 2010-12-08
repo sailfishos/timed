@@ -1,8 +1,9 @@
 timed (2.31) unstable; urgency=low
 
   * Fixes: NB#210287 - timed doesn't have CAP_SYS_TIME
+  * More printing in case of inconsistent user/actdead state
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 08 Dec 2010 16:36:16 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 08 Dec 2010 17:43:01 +0200
 
 timed (2.30) unstable; urgency=low
 

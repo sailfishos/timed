@@ -167,12 +167,25 @@ void Timed::init_scratchbox_mode()
 void Timed::init_act_dead()
 {
 #if F_ACTING_DEAD
-  act_dead_mode = access("/tmp/ACT_DEAD", F_OK) == 0 ;
-  if (not scratchbox_mode)
+  bool tmp_act_dead = access("/tmp/ACT_DEAD", F_OK) == 0 ;
+  if (not scratchbox_mode) // checking consistency
   {
-    bool user_mode = access("/tmp/USER", F_OK) == 0 ;
-    log_assert(act_dead_mode != user_mode) ;
+    bool tmp_user = access("/tmp/USER", F_OK) == 0 ;
+    string tmp_state ;
+    iodata::storage::read_file_to_string("/tmp/STATE", tmp_state) ;
+    bool mode_is_user = tmp_user and not tmp_act_dead and tmp_state == "USER\n" ;
+    bool mode_is_act_dead = not tmp_user and tmp_act_dead and tmp_state == "ACT_DEAD\n" ;
+    if(not mode_is_user and not mode_is_act_dead)
+    {
+      log_critical("timed can't start: inconsistent device mode indication") ;
+      log_critical("/tmp/USER %s exist", tmp_user ? "does" : "doesn't") ;
+      log_critical("/tmp/ACT_DEAD %s exist", tmp_act_dead ? "does" : "doesn't") ;
+      log_critical("content of /tmp/STATE: '%s'", tmp_state.c_str()) ;
+      sleep(2) ;
+      log_abort("aborting, tmp_user=%d, tmp_act_dead=%d tmp_state=%s", tmp_user, tmp_act_dead, tmp_state.c_str()) ;
+    }
   }
+  act_dead_mode = tmp_act_dead ;
   log_info("running in %s mode", act_dead_mode ? "ACT_DEAD" : "USER") ;
 #else
   act_dead_mode = false ;
