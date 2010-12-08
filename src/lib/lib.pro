@@ -27,7 +27,10 @@ devheaders.path  = /usr/include/timed
 prf.files = timed.prf
 prf.path = /usr/share/qt4/mkspecs/features
 
-INSTALLS = target devheaders prf
+pc.files = timed-voland.pc
+pc.path = /usr/lib/pkgconfig
+
+INSTALLS = target devheaders prf pc
 
 CONFIG(MEEGO) \
 {

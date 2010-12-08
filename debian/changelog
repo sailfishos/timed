@@ -3,8 +3,9 @@ timed (2.31) unstable; urgency=low
   * Fixes: NB#210287 - timed doesn't have CAP_SYS_TIME
   * More printing in case of inconsistent user/actdead state
   * removed dependency of the old timehd package
+  * Fixes: NB#210336 - pc files
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 08 Dec 2010 17:45:31 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 08 Dec 2010 18:08:01 +0200
 
 timed (2.30) unstable; urgency=low
 

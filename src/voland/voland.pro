@@ -19,6 +19,9 @@ devheaders.path  = /usr/include/timed-voland
 prf.files = timed-voland.prf
 prf.path = /usr/share/qt4/mkspecs/features
 
-INSTALLS = target devheaders prf
+pc.files = timed-voland.pc
+pc.path = /usr/lib/pkgconfig
+
+INSTALLS = target devheaders prf pc
 
 QMAKE_CXXFLAGS  += -Wall -Wno-psabi
