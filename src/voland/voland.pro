@@ -4,7 +4,7 @@ QT += dbus
 QT -= gui
 
 TARGET = timed-voland
-VERSION = 0.2.30
+VERSION = 0.2.31
 
 HEADERS = interface.h
 SOURCES = interface.cpp reminder-pimple.cpp
