@@ -431,7 +431,7 @@ using namespace std ;
       }
       else
       {
-        log_info("Destroying the event %u (event object %p)", e->cookie, e) ;
+        log_info("Destroying the event %u (event object %p)", e->cookie.value(), e) ;
         events.erase(e->cookie) ;
         delete e ;
       }
