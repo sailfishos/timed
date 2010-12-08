@@ -69,7 +69,7 @@ Description: test cases for timed
 
 Package: timehd
 Architecture: any
-Depends: ${misc:Depends}, timed (>= ${binary:Version}), timed-tools (>= ${binary:Version})
+Depends: ${misc:Depends}
 Description: empty package
  Empty
 
