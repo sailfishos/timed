@@ -450,7 +450,7 @@ void Timed::init_cellular_services()
 
 void Timed::init_dst_checker()
 {
-  log_info() ;
+  log_debug() ;
   dst_timer = new QTimer ;
   dst_timer->setSingleShot(true) ;
   QObject::connect(dst_timer, SIGNAL(timeout()), this, SLOT(check_dst())) ;
@@ -608,7 +608,7 @@ void Timed::invoke_signal(const nanotime_t &back)
 void Timed::send_time_settings()
 {
   log_debug() ;
-  log_info("settings->cellular_zone='%s'", settings->cellular_zone->zone().c_str()) ;
+  log_debug("settings->cellular_zone='%s'", settings->cellular_zone->zone().c_str()) ;
   nanotime_t diff = systime_back ;
   clear_invokation_flag() ;
   save_settings() ;

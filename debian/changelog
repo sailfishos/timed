@@ -4,8 +4,9 @@ timed (2.31) unstable; urgency=low
   * More printing in case of inconsistent user/actdead state
   * removed dependency of the old timehd package
   * Fixes: NB#210336 - pc files
+  * Fixes: NB#209981 - less log_info, more log_debug
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 08 Dec 2010 18:08:01 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 08 Dec 2010 19:11:42 +0200
 
 timed (2.30) unstable; urgency=low
 

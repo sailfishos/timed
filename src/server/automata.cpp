@@ -406,7 +406,7 @@ using namespace std ;
   {
     if(transition_in_progress())
     {
-      log_info("process_transition_queue() is already in progress, returning") ;
+      log_debug("process_transition_queue() is already in progress, returning") ;
       return ; // never do it recursively
     }
     log_debug("begin processing, states: %s tqueue: %s" , s_states().c_str(), s_transition_queue().c_str()) ;
@@ -431,7 +431,7 @@ using namespace std ;
       }
       else
       {
-        log_info("Destroying the element %p", e) ;
+        log_info("Destroying the event %u (event object %p)", e->cookie, e) ;
         events.erase(e->cookie) ;
         delete e ;
       }
@@ -609,7 +609,7 @@ using namespace std ;
       request_state(events[e->cookie = cookie_t(next_cookie++)] = e, "START") ;
       if(process_queue)
         invoke_process_transition_queue() ;
-      log_info("event cookie=%d", e->cookie.value()) ;
+      log_info("new event: cookie=%d, object=%p", e->cookie.value(), e) ;
       return e->cookie ;
     }
 
@@ -630,10 +630,10 @@ using namespace std ;
       if (cookie)
       {
         valid = true ;
-        log_info("event[%d]: accepted, cookie=%d", i, cookie) ;
+        log_debug("event[%d]: accepted, cookie=%d", i, cookie) ;
       }
       else
-        log_info("event[%d]: rejected", i) ;
+        log_warning("event[%d]: rejected", i) ;
     }
     if(valid)
       invoke_process_transition_queue() ;
@@ -970,14 +970,14 @@ using namespace std ;
 
     log_assert(r) ;
 
-    log_info("Beginning the action list dump") ;
+    log_debug("Beginning the action list dump") ;
     for(vector<unsigned>::const_iterator it=r->begin(); it!=r->end(); ++it)
-      log_info("Action %d, cred_key: '%s'", *it, actions[*it].cred_key().c_str()) ;
-    log_info("Done:     the action list dump") ;
+      log_debug("Action %d, cred_key: '%s'", *it, actions[*it].cred_key().c_str()) ;
+    log_debug("Done:     the action list dump") ;
 
-    log_info("Beginning the action array sorting") ;
+    log_debug("Beginning the action array sorting") ;
     sort(r->begin(), r->end(), action_comparison_t(this)) ;
-    log_info("Done:     the action array sorting") ;
+    log_debug("Done:     the action array sorting") ;
 
     unsigned start_index = ~0 ; // invalid value
     string current_key ; // empty key (invalid?)
