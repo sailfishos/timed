@@ -5,8 +5,9 @@ timed (2.31) unstable; urgency=low
   * removed dependency of the old timehd package
   * Fixes: NB#210336 - pc files
   * Fixes: NB#209981 - less log_info, more log_debug
+  * Fixes: NB#208557 - new act-dead / user detection
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 08 Dec 2010 19:11:42 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 09 Dec 2010 16:11:27 +0200
 
 timed (2.30) unstable; urgency=low
 

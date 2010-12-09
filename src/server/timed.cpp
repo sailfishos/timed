@@ -31,6 +31,7 @@
 #include <QDBusConnectionInterface>
 
 #include <ContextProvider>
+#include <dsme/dsme_dbus_if.h>
 
 #include <timed/interface>
 #include <qmlog>
@@ -164,33 +165,100 @@ void Timed::init_scratchbox_mode()
 // * Condition "running in ACT DEAD mode" is detected.
 // * When running on Harmattan device (not scratchbox!):
 //      some sanity checks are performed.
+
+#if F_ACTING_DEAD
+// Ask DSME: are we in ACT_DEAD mode?
+// Returns:
+//          -1: nobody knows (for example: DSME not running)
+//           0: USER mode
+//           1: ACT_DEAD mode
+static int is_act_dead_by_dsme()
+{
+  QDBusInterface dsme(dsme_service, dsme_req_path, dsme_req_interface, QDBusConnection::systemBus()) ;
+  if (not dsme.isValid())
+  {
+    log_error("DSME interface isn't valid") ;
+    return -1 ;
+  }
+
+  QDBusReply<QString> res = dsme.call(dsme_get_state) ;
+
+  if (not res.isValid())
+  {
+    log_error("DSME returned invalid answer, last error: '%s'", QDBusConnection::systemBus().lastError().message().toStdString().c_str()) ;
+    return -1 ;
+  }
+
+  QString mode = res.value() ;
+  log_debug("got a mode string from DSME: '%s'", mode.toStdString().c_str()) ;
+
+  if (mode=="USER")
+    return 0 ;
+  else if (mode=="ACTDEAD")
+    return 1 ;
+  else
+    return -1 ;
+}
+
+// Detecting run mode by /tmp/USER, /tmp/ACT_DEAD, /tmp/STATUS
+// Returns:
+//          -1: nobody knows (files are not in consistent state)
+//           0: USER mode
+//           1: ACT_DEAD mode
+static int is_act_dead_by_status_files()
+{
+  bool tmp_act_dead = access("/tmp/ACT_DEAD", F_OK) == 0 ;
+  bool tmp_user = access("/tmp/USER", F_OK) == 0 ;
+  string tmp_state ;
+  iodata::storage::read_file_to_string("/tmp/STATE", tmp_state) ;
+  bool mode_is_user = tmp_user and not tmp_act_dead and tmp_state == "USER\n" ;
+  bool mode_is_act_dead = not tmp_user and tmp_act_dead and tmp_state == "ACT_DEAD\n" ;
+
+  if (mode_is_user)
+    return 0 ;
+  else if (mode_is_act_dead)
+    return 1 ;
+  else
+  {
+    log_error("inconsistent device mode indication, more info follows") ;
+    log_error("/tmp/USER %s exist", tmp_user ? "does" : "doesn't") ;
+    log_error("/tmp/ACT_DEAD %s exist", tmp_act_dead ? "does" : "doesn't") ;
+    log_error("content of /tmp/STATE: '%s'", tmp_state.c_str()) ;
+    return -1 ;
+  }
+}
+
+// Make two stage detection, return only if successfully detected
+static bool init_act_dead_v2(bool use_status_files)
+{
+  int dsme_mode = is_act_dead_by_dsme() ;
+  if (0<=dsme_mode) // got an answer
+    return dsme_mode ;
+
+  if (use_status_files)
+  {
+    int sb_mode = is_act_dead_by_status_files() ;
+    if (0<=sb_mode)
+      return sb_mode ;
+  }
+
+  // oops, we don't know which mode we're running in; let's die
+
+  sleep(2) ;
+  log_abort("can't detect device mode, terminating") ;
+}
+#endif
+
 void Timed::init_act_dead()
 {
 #if F_ACTING_DEAD
-  bool tmp_act_dead = access("/tmp/ACT_DEAD", F_OK) == 0 ;
-  if (not scratchbox_mode) // checking consistency
-  {
-    bool tmp_user = access("/tmp/USER", F_OK) == 0 ;
-    string tmp_state ;
-    iodata::storage::read_file_to_string("/tmp/STATE", tmp_state) ;
-    bool mode_is_user = tmp_user and not tmp_act_dead and tmp_state == "USER\n" ;
-    bool mode_is_act_dead = not tmp_user and tmp_act_dead and tmp_state == "ACT_DEAD\n" ;
-    if(not mode_is_user and not mode_is_act_dead)
-    {
-      log_critical("timed can't start: inconsistent device mode indication") ;
-      log_critical("/tmp/USER %s exist", tmp_user ? "does" : "doesn't") ;
-      log_critical("/tmp/ACT_DEAD %s exist", tmp_act_dead ? "does" : "doesn't") ;
-      log_critical("content of /tmp/STATE: '%s'", tmp_state.c_str()) ;
-      sleep(2) ;
-      log_abort("aborting, tmp_user=%d, tmp_act_dead=%d tmp_state=%s", tmp_user, tmp_act_dead, tmp_state.c_str()) ;
-    }
-  }
-  act_dead_mode = tmp_act_dead ;
-  log_info("running in %s mode", act_dead_mode ? "ACT_DEAD" : "USER") ;
+  act_dead_mode = init_act_dead_v2(scratchbox_mode) ;
 #else
   act_dead_mode = false ;
 #endif
+  log_notice("running in %s mode", act_dead_mode ? "ACT_DEAD" : "USER") ;
 }
+
 
 // * Reading configuration file
 // * Warning if no exists (which is okey)

@@ -25,7 +25,7 @@ SOURCES += backup.cpp
 HEADERS += backup.h
 
 CONFIG += link_pkgconfig iodata
-PKGCONFIG += contextprovider-1.0 libpcrecpp
+PKGCONFIG += contextprovider-1.0 libpcrecpp dsme_dbus_if
 
 target.path = $$(DESTDIR)/usr/bin
 
