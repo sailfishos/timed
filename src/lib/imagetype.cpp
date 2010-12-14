@@ -45,6 +45,7 @@ string imagetype()
   int get = sysinfo_get_value(sc, "/device/sw-release-ver", &value, &length) ;
   if (get!=0)
   {
+    sysinfo_finish(sc) ;
     free(sc) ;
     return result ;
   }
@@ -68,6 +69,7 @@ string imagetype()
     result = string((const char*)(value+im_start), im_len) ;
 
   free(value) ;
+  sysinfo_finish(sc) ;
   free(sc) ;
 
   return result ;
