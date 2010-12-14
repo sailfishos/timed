@@ -104,6 +104,7 @@ string str_printf(const char *format, ...)
     }
     if(iteration > 0)
       delete[] p ;
+    ++ iteration ;
   } while(!printed) ;
 
   return formatted ;
