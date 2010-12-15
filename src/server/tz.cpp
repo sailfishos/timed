@@ -78,6 +78,7 @@ tz_oracle_t::~tz_oracle_t()
   delete tz_single ;
   delete tz_distinct ;
   delete delay ;
+  delete validator() ;
 }
 
 void tz_oracle_t::read_timezones_by_country()
