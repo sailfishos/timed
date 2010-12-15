@@ -317,6 +317,7 @@ void Timed::init_customization()
   }
 
   delete c ;
+  delete storage ;
 }
 
 // * read settings
