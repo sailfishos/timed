@@ -46,7 +46,6 @@ string imagetype()
   if (get!=0)
   {
     sysinfo_finish(sc) ;
-    free(sc) ;
     return result ;
   }
 
@@ -70,7 +69,6 @@ string imagetype()
 
   free(value) ;
   sysinfo_finish(sc) ;
-  free(sc) ;
 
   return result ;
 }
