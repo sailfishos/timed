@@ -270,13 +270,18 @@ void Timed::init_configuration()
   else
     log_warning("configuration file '%s' corrupted or non-existing, using default values", configuration_path()) ;
 
+  // delete config_storage ;
+  log_debug("config_storage not deleted") ;
+
   events_path = c->get("queue_path")->str() ; // TODO: make C++ variables match data fields
   settings_path = c->get("settings_path")->str() ;
   threshold_period_long = c->get("queue_threshold_long")->value() ;
   threshold_period_short = c->get("queue_threshold_short")->value() ;
   ping_period = c->get("voland_ping_sleep")->value() ;
   ping_max_num = c->get("voland_ping_retries")->value() ;
+  log_debug("deleting iodata::record *c") ;
   delete c ;
+  log_debug("done") ;
 }
 
 static bool parse_boolean(const string &str)
