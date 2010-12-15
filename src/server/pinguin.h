@@ -70,6 +70,10 @@
       needed = false ;
       QObject::connect(timer, SIGNAL(timeout()), this, SLOT(timeout())) ;
     }
+   ~pinguin()
+    {
+      delete timer ;
+    }
     void ping()
     {
       log_debug() ;

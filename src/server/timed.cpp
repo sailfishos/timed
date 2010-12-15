@@ -549,6 +549,8 @@ void Timed::stop_stuff()
   delete long_save_threshold_timer ;
   log_debug() ;
   delete tz_oracle ;
+  log_debug() ;
+  delete dst_timer ;
   log_notice("stop_stuff() DONE") ;
 }
 
