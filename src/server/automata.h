@@ -58,13 +58,15 @@ struct event_t ;
   {
     state(const char *, machine *) ;
     machine *om ;
-    const char *name ;
+    string sname ;
     uint32_t action_mask ;
+    const char *name() const { return sname.c_str() ; }
     uint32_t get_action_mask() { return action_mask ; }
     void set_action_mask(uint32_t a) { action_mask = a ; }
     virtual void enter(event_t *) ;
     virtual void leave(event_t *) ;
     virtual uint32_t cluster_bits() { return 0 ; }
+    virtual ~state() ;
   } ;
 
   struct io_state : public QObject, public state
@@ -75,13 +77,15 @@ struct event_t ;
     void leave(event_t *) ;
     virtual void abort(event_t *) ;
     // virtual bool save_in_due_state() = 0 ;
+    virtual ~io_state() { }
     Q_OBJECT ;
   } ;
 
   struct gate_state : public io_state
   {
     gate_state(const char *name, const char *nxt, machine *, QObject *p=NULL) ;
-    const char *nxt_state ;
+    virtual ~gate_state() { }
+    string nxt_state ;
     bool is_open ;
     void enter(event_t *) ;
     Q_OBJECT ;
@@ -96,6 +100,7 @@ struct event_t ;
   struct concentrating_state : public gate_state
   {
     concentrating_state(const char *name, const char *nxt, machine *m, QObject *p=NULL) : gate_state(name, nxt, m, p) { }
+    virtual ~concentrating_state() { }
     Q_OBJECT ;
   public Q_SLOTS:
     void open() ;
@@ -104,7 +109,8 @@ struct event_t ;
   struct filter_state : public gate_state
   {
     filter_state(const char *name, const char *retry, const char *nxt, machine *, QObject *p=NULL) ;
-    const char *next ;
+    virtual ~filter_state() { }
+    string next ;
     virtual bool filter(event_t *) = 0 ;
     void enter(event_t *) ;
     Q_OBJECT ;
@@ -118,8 +124,9 @@ struct event_t ;
   {
     machine *om ;
     uint32_t bit ;
-    const char *name ;
-    abstract_cluster(machine *m, uint32_t b, const char *n) : om(m), bit(b), name(strdup(n)) { }
+    string name ;
+    abstract_cluster(machine *m, uint32_t b, const char *n) : om(m), bit(b), name(n) { }
+    virtual ~abstract_cluster() { }
     virtual void enter(event_t *e) = 0 ;
     virtual void leave(event_t *) { }
   } ;
@@ -127,6 +134,7 @@ struct event_t ;
   struct machine : public QObject
   {
     machine(const Timed *daemon) ;
+    virtual ~machine() ;
 
     const Timed *owner ;
     int next_cookie ;
@@ -162,6 +170,7 @@ struct event_t ;
     void reshuffle_queue(const nanotime_t &back) ;
     void request_state(event_t *e, state *st) ;
     void request_state(event_t *e, const char *state_name) ;
+    void request_state(event_t *e, const string &state_name) ;
     void send_queue_context() ;
     Q_OBJECT ;
   public Q_SLOTS:

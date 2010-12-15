@@ -65,9 +65,13 @@ using namespace std ;
 
   state::state(const char *n, machine *m) : om(m)
   {
-    name = strdup(n) ;
-    log_assert(name!=NULL) ;
+    log_assert(n!=NULL) ;
+    sname = n ;
     action_mask = 0 ;
+  }
+
+  state::~state()
+  {
   }
 
   void state::enter(event_t *e)
@@ -76,7 +80,7 @@ using namespace std ;
     uint32_t cluster_after = cluster_bits() ;
     uint32_t off = cluster_before & ~cluster_after ;
     uint32_t on = cluster_after & ~cluster_before ;
-    log_debug("[%d]->%s before=0x%08X after=0x%08X off=0x%08X on=0x%08X", e->cookie.value(), name, cluster_before, cluster_after, off, on) ;
+    log_debug("[%d]->%s before=0x%08X after=0x%08X off=0x%08X on=0x%08X", e->cookie.value(), name(), cluster_before, cluster_after, off, on) ;
     for(uint32_t b; b = (off ^ (off-1)), b &= off ; off ^= b)
       om->clusters[b]->leave(e) ;
 
@@ -127,10 +131,9 @@ using namespace std ;
 
   gate_state::gate_state(const char *name, const char *nxt, machine *m, QObject *p) :
     io_state(name, m, p),
-    nxt_state(strdup(nxt)),
+    nxt_state(nxt),
     is_open(false)
   {
-    log_assert(nxt_state!=NULL) ;
   }
 
   void gate_state::close()
@@ -167,7 +170,7 @@ using namespace std ;
 
   filter_state::filter_state(const char *name, const char *retry, const char *nxt, machine *m, QObject *p) :
     gate_state(name, retry, m, p),
-    next(strdup(nxt))
+    next(nxt)
   {
     QObject::connect(this, SIGNAL(closed()), this, SLOT(emit_close())) ;
   }
@@ -243,14 +246,14 @@ using namespace std ;
     } ;
     log_debug() ;
     for(int i=0; S[i]; ++i)
-      states[S[i]->name] = S[i] ;
+      states[S[i]->name()] = S[i] ;
 
 
     log_debug() ;
     for(int i=0; i<=Maemo::Timed::Number_of_Sys_Buttons; ++i)
     {
       state *s = new state_button(this, -i) ;
-      states[s->name] = s ;
+      states[s->name()] = s ;
       button_states[-i] = s ;
     }
 
@@ -258,7 +261,7 @@ using namespace std ;
     for(int i=1; i<=Maemo::Timed::Max_Number_of_App_Buttons; ++i)
     {
       state *s = new state_button(this, i) ;
-      states[s->name] = s ;
+      states[s->name()] = s ;
       button_states[i] = s ;
     }
 
@@ -350,6 +353,25 @@ using namespace std ;
     log_debug("last line") ;
   }
 
+  machine::~machine()
+  {
+    log_debug() ;
+
+    log_notice("deleting events") ;
+    for (map<cookie_t, event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
+      delete it->second ;
+
+    log_notice("deleting clusters") ;
+    for (map<uint32_t, abstract_cluster*>::iterator it=clusters.begin(); it!=clusters.end(); ++it)
+      delete it->second ;
+
+    log_notice("deleting states") ;
+    for (map<string, state*>::iterator it=states.begin(); it!=states.end(); ++it)
+      delete it->second ;
+
+    log_debug() ;
+  }
+
   void machine::device_mode_detected(bool user_mode)
   {
     filter_state *flt_user = dynamic_cast<filter_state*> (states["FLT_USER"]) ;
@@ -378,7 +400,7 @@ using namespace std ;
     for (map<cookie_t, event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
     {
       event_t *e = it->second ;
-      string name = e->get_state()==NULL ? "<null>" : e->get_state()->name ;
+      string name = e->get_state()==NULL ? "<null>" : e->get_state()->name() ;
       s2e[name].insert(e) ;
     }
 
@@ -397,7 +419,7 @@ using namespace std ;
       cookie_t c = it->first->cookie ;
       state *s = it->second ;
       bool first = it==transition_queue.begin() ;
-      os << (first ? "" : ", ") << c.value() << "->" << (s?s->name:"null") ;
+      os << (first ? "" : ", ") << c.value() << "->" << (s?s->name():"null") ;
     }
     return os.str() ;
   }
@@ -417,8 +439,8 @@ using namespace std ;
       event_t *e = transition_queue.front().first ;
       state *old_state = e->get_state() ;
       state *new_state = transition_queue.front().second ;
-      log_assert(new_state!=old_state, "New state is the same as the old one (%s)", old_state->name) ;
-#define state_name(p) (p?p->name:"null")
+      log_assert(new_state!=old_state, "New state is the same as the old one (%s)", old_state->name()) ;
+#define state_name(p) (p?p->name():"null")
       log_info("State transition %d:'%s'->'%s'", e->cookie.value(), state_name(old_state), state_name(new_state)) ;
 #undef state_name
       if(old_state)
@@ -569,11 +591,16 @@ using namespace std ;
 
   void machine::request_state(event_t *e, const char *state_name)
   {
+    request_state(e, string(state_name)) ;
+  }
+
+  void machine::request_state(event_t *e, const string &state_name)
+  {
     state *new_state = NULL ;
-    if(state_name)
+    if(not state_name.empty())
     {
       map<string, state*>::iterator it = states.find(state_name) ;
-      log_assert(it!=states.end(), "Unknown state: '%s'", state_name) ;
+      log_assert(it!=states.end(), "Unknown state: '%s'", state_name.c_str()) ;
       new_state = it->second ;
     }
     request_state(e, new_state) ;
@@ -670,7 +697,7 @@ using namespace std ;
     if(it==events.end())
       return ;
     event_t *e = it->second ;
-    a.insert("STATE", e->st->name) ;
+    a.insert("STATE", e->st->name()) ;
     a.insert("COOKIE", QString("%1").arg(c.value())) ;
     for(attribute_t::const_iterator at=e->attr.txt.begin(); at!=e->attr.txt.end(); at++)
     {
@@ -690,7 +717,7 @@ using namespace std ;
     event_t *e = events[c] ;
     if(e->st != states["DLG_USER"])
     {
-      log_error("Unexpected response for event [%d] in state %s", c.value(), e->st->name) ;
+      log_error("Unexpected response for event [%d] in state %s", c.value(), e->st->name()) ;
       return false ;
     }
     if(value < -Maemo::Timed::Number_of_Sys_Buttons)

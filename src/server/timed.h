@@ -93,6 +93,9 @@ private:
   void init_apply_tz_settings() ;
 
 public:
+  void stop_machine() ;
+
+public:
 
   machine *am ;
   pinguin *ping ;

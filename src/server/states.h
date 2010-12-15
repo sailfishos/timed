@@ -37,6 +37,7 @@
   struct state_start : public state
   {
     state_start(machine *am) : state("START",am) {}
+    virtual ~state_start() { }
     void enter(event_t *e) ;
   } ;
 
@@ -46,6 +47,7 @@
     static const char *lost ;
   public:
     state_epoch(machine *am) ;
+    virtual ~state_epoch() { }
   public Q_SLOTS:
     void open() ; // a virtual slot
   } ;
@@ -53,18 +55,21 @@
   struct state_new : public state
   {
     state_new(machine *am) : state("NEW",am) {}
+    virtual ~state_new() { }
     void enter(event_t *e) ;
   } ;
 
   struct state_scheduler : public state
   {
     state_scheduler(machine *am) : state("SCHEDULER",am) {}
+    virtual ~state_scheduler() {}
     void enter(event_t *e) ;
   } ;
 
   struct state_qentry : public state
   {
     state_qentry(machine *am) : state("QENTRY",am) {}
+    virtual ~state_qentry() { }
     void enter(event_t *e) ;
     uint32_t cluster_bits() { return EventFlags::Cluster_Queue ; }
   } ;
@@ -73,6 +78,7 @@
   {
     int pause_x ;
     state_queued(machine *am) ;
+    virtual ~state_queued() ;
     void enter(event_t *e) ;
     void leave(event_t *e) ;
     void timer_start() ;
@@ -97,24 +103,28 @@
   struct state_missed : public state
   {
     state_missed(machine *am) : state("MISSED",am) {}
+    virtual ~state_missed() { }
     void enter(event_t *e) ;
   } ;
 
   struct state_due : public state
   {
     state_due(machine *am) : state("DUE",am) {}
+    virtual ~state_due() { }
     void enter(event_t *e) ;
   } ;
 
   struct state_skipped : public state
   {
     state_skipped(machine *am) : state("SKIPPED",am) {}
+    virtual ~state_skipped() {}
     void enter(event_t *e) { om->request_state(e, "SERVED") ; }
   } ;
 
   struct state_flt_conn : public filter_state
   {
     state_flt_conn(machine *am) : filter_state("FLT_CONN", "QENTRY", "FLT_ALRM", am) { }
+    virtual ~state_flt_conn() { }
     uint32_t cluster_bits() { return EventFlags::Cluster_Queue ; }
     bool filter(event_t *) ;
     Q_OBJECT ;
@@ -123,6 +133,7 @@
   struct state_flt_alrm : public filter_state
   {
     state_flt_alrm(machine *am) : filter_state("FLT_ALRM", "QENTRY", "FLT_USER", am) { }
+    virtual ~state_flt_alrm() { }
     uint32_t cluster_bits() { return EventFlags::Cluster_Queue ; }
     bool filter(event_t *) ;
     Q_OBJECT ;
@@ -131,6 +142,7 @@
   struct state_flt_user : public filter_state
   {
     state_flt_user(machine *am) : filter_state("FLT_USER", "QENTRY", "QUEUED", am) {}
+    virtual ~state_flt_user() { }
     uint32_t cluster_bits() { return EventFlags::Cluster_Queue ; }
     bool filter(event_t *) ;
     Q_OBJECT ;
@@ -139,12 +151,14 @@
   struct state_snoozed : public state
   {
     state_snoozed(machine *am) : state("SNOOZED",am) {}
+    virtual ~state_snoozed() { }
     void enter(event_t *e) ;
   } ;
 
   struct state_recurred : public state
   {
     state_recurred(machine *am) : state("RECURRED",am) {}
+    virtual ~state_recurred() { }
     void enter(event_t *e) ;
     ticker_t apply_pattern(broken_down_t &t, int wday, const recurrence_pattern_t *p) ;
   } ;
@@ -152,6 +166,7 @@
   struct state_armed : public gate_state
   {
     state_armed(machine *am) : gate_state("ARMED", "TRIGGERED", am) { }
+    virtual ~state_armed() { }
   private:
     Q_OBJECT ;
   } ;
@@ -159,6 +174,7 @@
   struct state_triggered : public state
   {
     state_triggered(machine *am) : state("TRIGGERED",am) {}
+    virtual ~state_triggered() { }
     void enter(event_t *e) ;
   } ;
 
@@ -167,35 +183,41 @@
     signed no ;
     static QString init_name(signed n) ;
     state_button(machine *am, signed n) ;
+    virtual ~state_button() { }
     void enter(event_t *e) ;
   } ;
 
   struct state_served : public state
   {
     state_served(machine *am) : state("SERVED",am) {}
+    virtual ~state_served() { }
     void enter(event_t *e) ;
   } ;
 
   struct state_tranquil : public io_state
   {
     state_tranquil(machine *am) : io_state("TRANQUIL", am) { }
+    virtual ~state_tranquil() { }
   } ;
 
   struct state_removed : public state
   {
     state_removed(machine *am) : state("REMOVED",am) {}
+    virtual ~state_removed() { }
     void enter(event_t *e) ;
   } ;
 
   struct state_finalized : public state
   {
     state_finalized(machine *am) : state("FINALIZED",am) {}
+    virtual ~state_finalized() { }
     void enter(event_t *e) ;
   } ;
 
   struct state_aborted : public state
   {
     state_aborted(machine *am) : state("ABORTED",am) {}
+    virtual ~state_aborted() { }
     void enter(event_t *e) ;
   } ;
 
@@ -203,6 +225,7 @@
   {
   public:
     state_dlg_wait(machine *am) : gate_state("DLG_WAIT", "DLG_CNTR", am) { }
+    virtual ~state_dlg_wait() { }
     void enter(event_t *e) ;
     uint32_t cluster_bits() { return EventFlags::Cluster_Dialog ; }
   Q_SIGNALS:
@@ -215,6 +238,7 @@
   {
     const char *back ;
     state_dlg_cntr(machine *am) : concentrating_state("DLG_CNTR", "DLG_REQU", am), back("DLG_WAIT") { }
+    virtual ~state_dlg_cntr() { }
     uint32_t cluster_bits() { return EventFlags::Cluster_Dialog ; }
     void request_voland() ;
   public Q_SLOTS:
@@ -227,6 +251,7 @@
   struct state_dlg_requ : public gate_state
   {
     state_dlg_requ(machine *am) : gate_state("DLG_REQU", "DLG_WAIT", am) { }
+    virtual ~state_dlg_requ() { }
     void enter(event_t *e) ;
     uint32_t cluster_bits() { return EventFlags::Cluster_Dialog ; }
     void abort(event_t *e) ;
@@ -237,6 +262,7 @@
   struct state_dlg_user : public gate_state
   {
     state_dlg_user(machine *am) : gate_state("DLG_USER", "DLG_WAIT", am) { }
+    virtual ~state_dlg_user() { }
     uint32_t cluster_bits() { return EventFlags::Cluster_Dialog ; }
     void abort(event_t *e) ;
     Q_OBJECT ;
@@ -246,12 +272,14 @@
   struct state_dlg_resp : public state
   {
     state_dlg_resp(machine *am) : state("DLG_RESP", am) { }
+    virtual ~state_dlg_resp() { }
   } ;
 
   struct cluster_queue : public abstract_cluster
   {
     QMap<QString,QVariant> alarm_triggers ;
     cluster_queue(machine *m) : abstract_cluster(m, EventFlags::Cluster_Queue, "QUEUE") { }
+    virtual ~cluster_queue() { }
     void enter(event_t *e) ;
     void leave(event_t *e) ;
   } ;
@@ -260,6 +288,7 @@
   {
     set<event_t *> bootup_events ;
     cluster_dialog(machine *m) : abstract_cluster(m, EventFlags::Cluster_Dialog, "DIALOG") { }
+    virtual ~cluster_dialog() { }
     void enter(event_t *e) ;
     void leave(event_t *e) ;
     bool has_bootup_events() ;

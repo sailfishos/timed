@@ -150,6 +150,11 @@ state_queued::state_queued(machine *am) : io_state("QUEUED",am)
   connect(alarm_timer, SIGNAL(timeout()), this, SLOT(alarm_timeout())) ;
 }
 
+state_queued::~state_queued()
+{
+  delete alarm_timer ;
+}
+
 void state_queued::engine_pause(int dx)
 {
   log_debug("dx=%d, current pause value: '%d', new value will be %d", dx, pause_x, pause_x+dx) ;
@@ -287,7 +292,7 @@ void state_queued::filter_closed(filter_state *f_st)
       continue ;
     event_found = true ;
     log_debug("event_found=%d", event_found) ;
-    log_debug("event [%u] found in state '%s', requesting staet '%s'", it->second->cookie.value(), name, f_st->name) ;
+    log_debug("event [%u] found in state '%s', requesting staet '%s'", it->second->cookie.value(), name(), f_st->name()) ;
     om->request_state(it->second, f_st) ;
   }
   log_debug("event_found=%d", event_found) ;
@@ -638,7 +643,7 @@ void cluster_queue::enter(event_t *e)
     QString key = QString("%1").arg(e->cookie.value()) ;
     uint64_t value = (uint64_t)nanotime_t::NANO * e->trigger.value() ;
     alarm_triggers.insert(key, value) ;
-    log_debug("inserted %s=>%lld, state=%s", key.toStdString().c_str(), value, e->st->name) ;
+    log_debug("inserted %s=>%lld, state=%s", key.toStdString().c_str(), value, e->st->name()) ;
     om->context_changed = true ;
   }
 }
@@ -653,7 +658,7 @@ void cluster_queue::leave(event_t *e)
     log_debug() ;
     QString key = QString("%1").arg(e->cookie.value()) ;
     alarm_triggers.remove(key) ;
-    log_debug("removed %s=>'' state=%s", key.toStdString().c_str(), e->st ? e->st->name : "null") ;
+    log_debug("removed %s=>'' state=%s", key.toStdString().c_str(), e->st ? e->st->name() : "null") ;
     om->context_changed = true ;
   }
 }

@@ -518,6 +518,11 @@ void Timed::init_apply_tz_settings()
     invoke_signal() ;
 }
 
+void Timed::stop_machine()
+{
+  delete am ;
+}
+
 
 // Move the stuff below to machine:: class
 
