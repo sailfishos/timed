@@ -2193,3 +2193,496 @@ namespace Alarm
     QVector <Button*> buttons ;
 }
 #endif
+
+#if 0
+#define CUST_FILE "/etc/clockd/clockd-settings.default"
+QByteArray customization_settings::get_hash()
+{
+  QByteArray hash;
+  QFile custFile(CUST_FILE);
+  if (custFile.open(QIODevice::ReadOnly))
+  {
+    QByteArray bytes = custFile.read(10*1000);
+    hash = QCryptographicHash::hash(bytes, QCryptographicHash::Sha1);
+  }
+  else
+  {
+    log_error("Could not open customization file "CUST_FILE);
+  }
+  return hash.toBase64();
+}
+
+iodata::storage* customization_settings::get_storage()
+{
+    iodata::storage *s = new iodata::storage();
+    s->set_primary_path("/etc/timed-cust.rc");
+    s->set_validator("/usr/share/timed/typeinfo/timed-cust-rc.type", "timed_cust_rc_t");
+    return s;
+}
+
+void customization_settings::check_customization(int ac, char **av)
+{
+    /**
+     * If we have --cust, read the values from the script file,
+     * and save them with iodata::storage.
+     */
+    const char cust[] = "--cust";
+    for (int i=1; i < ac; i++)
+    {
+      if (!strncmp(cust, av[i], strlen(cust)))
+      {
+        log_debug("--cust");
+
+        // Get the envs to a record.
+        struct customization_settings settings;
+        char *envVal = NULL;
+
+        envVal = getenv("CLOCKD_NET_TIME");
+        if (envVal)
+        {
+            log_debug("CUST CLOCKD_NET_TIME: %s", envVal);
+          if (!strncmp(envVal, "yes", 3) ||
+              !strncmp(envVal, "no", 2) ||
+              !strncmp(envVal, "disabled", 8))
+          {
+              settings.time_nitz_str = envVal;
+          }
+          else
+          {
+            log_error("Invalid CLOCKD_NET_TIME value");
+          }
+        }
+        else
+        {
+          log_error("no CLOCKD_NET_TIME");
+        }
+
+        envVal = getenv("CLOCKD_TIME_FORMAT");
+        if (envVal)
+        {
+          log_debug("CUST CLOCKD_TIME_FORMAT: %s", envVal);
+          if (!strncmp(envVal, "R", 1) ||
+              !strncmp(envVal, "r", 1))
+          {
+            settings.format_24_str = envVal;
+          }
+          else
+          {
+            log_error("Invalid CLOCKD_TIME_FORMAT value");
+          }
+
+        }
+        else
+        {
+          log_error("no CLOCKD_TIME_FORMAT");
+        }
+        envVal = getenv("CLOCKD_DEFAULT_TZ");
+        if (envVal)
+        {
+            log_debug("CUST CLOCKD_DEFAULT_TZ: %s", envVal);
+          settings.default_tz = envVal;
+        }
+
+        iodata::record *r = settings.save();
+
+        QByteArray hash = get_hash();
+        log_debug("CUST hash: %s", hash.data());
+        r->add("hash", hash.data());
+
+        // Save the record to a storage.
+        iodata::storage *s = get_storage();
+        s->save(r);
+        delete s;
+        delete r;
+
+        exit(0);
+      }
+    }
+
+    /**
+     * Check that have up to date customization data.
+     * If not, fork timed with --cust and do it.
+     */
+    QByteArray hash = get_hash();
+    if (!hash.isEmpty())
+    {
+      iodata::storage *custStorage = get_storage();
+      iodata::record *custRecord = custStorage->load();
+      bool newCust = true;
+      if (custStorage->source() != -1 && custRecord)
+      {
+        const iodata::item *sum = custRecord->get("hash");
+        if (sum && sum->str() == hash.data())
+        {
+          newCust = false;
+        }
+        else
+        {
+          newCust = true;
+        }
+      }
+      delete custRecord;
+      delete custStorage;
+
+      if (newCust)
+      {
+        log_debug("CUST forking...");
+        QString cmd = "source "CUST_FILE;
+        cmd += "; ";
+        cmd += av[0];
+        cmd += " --cust";
+        log_debug("CUST %s", cmd.toAscii().data());
+        system(cmd.toAscii().data());
+      }
+    }
+}
+
+customization_settings::customization_settings()
+{
+  log_debug() ;
+
+  net_time_enabled = true;
+  time_nitz = true;
+  format_24 = false;
+  default_tz = "327";
+}
+
+void customization_settings::load(const iodata::record * record)
+{
+  log_debug() ;
+
+  time_nitz_str = record->get("time_nitz")->str().c_str();
+  format_24_str = record->get("format_24")->str().c_str();
+  default_tz = record->get("default_tz")->str().c_str();
+
+  log_debug("CUST time_nitz_str: %s", time_nitz_str.toAscii().data());
+  log_debug("CUST format_24_str: %s", format_24_str.toAscii().data());
+  log_debug("CUST default_tz: %s", default_tz.toAscii().data());
+
+  if (time_nitz_str == "disabled")
+  {
+    net_time_enabled=false;
+  }
+  else
+  {
+    net_time_enabled=true;
+  }
+  if (time_nitz_str == "yes")
+  {
+    time_nitz = true;
+  }
+  else if (time_nitz_str == "no")
+  {
+    time_nitz = false;
+  }
+  if (format_24_str == "r")
+  {
+    format_24 = false;
+  }
+  else if (format_24_str == "R")
+  {
+    format_24 = true;
+  }
+
+  log_debug("CUST time_nitz: %d", time_nitz);
+  log_debug("CUST format_24: %d", format_24);
+  log_debug("CUST net_time_enabled: %d", net_time_enabled);
+
+  valueMap.insert(QString("CLOCKD_NET_TIME"), time_nitz_str);
+  valueMap.insert(QString("CLOCKD_TIME_FORMAT"), format_24_str);
+  valueMap.insert(QString("CLOCKD_DEFAULT_TZ"), default_tz);
+}
+
+QMap<QString, QVariant> customization_settings::get_values()
+{
+  return valueMap;
+}
+
+void customization_settings::load()
+{
+    iodata::storage *custStorage = get_storage();
+    iodata::record *custRecord = custStorage->load();
+    load(custRecord);
+    delete custRecord;
+    delete custStorage;
+}
+
+iodata::record* customization_settings::save()
+{
+  iodata::record *r = new iodata::record;
+  r->add("time_nitz", time_nitz_str.toAscii().data());
+  r->add("format_24", format_24_str.toAscii().data());
+  r->add("default_tz", default_tz.toAscii().data());
+  return r;
+}
+#endif
+
+#if 0
+  QMap<QString, QVariant> customization_values()
+  {
+    log_debug() ;
+    return timed->cust_settings->get_values();
+  }
+#endif
+
+#if 0
+  void machine::call_returned(QDBusPendingCallWatcher *w)
+  {
+    if(watcher_to_event.count(w)==0)
+    {
+      log_critical("unknown QDBusPendingCallWatcher %p", w) ;
+      return ;
+    }
+    event_t *e = watcher_to_event[w] ;
+    if(e->dialog_req_watcher!=w)
+    {
+      log_critical("oops, will terminate in a moment...") ;
+      log_debug("w=%p, e=%p, e->cookie=%d", w, e, e->cookie.value()) ;
+    }
+    log_assert(e->dialog_req_watcher==w) ;
+    e->process_dialog_ack() ;
+  }
+#endif
+
+#if 0
+  void event_t::process_dialog_ack() // should be move to state_dlg_requ?
+  {
+    QDBusPendingReply<bool> reply = *dialog_req_watcher ;
+    bool ok = reply.isValid() && reply.value() ;
+    if(ok)
+    {
+      st->om->request_state(this, "DLG_USER") ;
+      st->om->process_transition_queue() ;
+    }
+    else
+      log_error("Requesting event %d dialog failed: %s", cookie.value(), reply.error().message().toStdString().c_str()) ;
+    delete dialog_req_watcher ;
+    dialog_req_watcher = NULL ;
+  }
+#endif
+
+#if 0
+    r->add("default_snooze", default_snooze_value) ;
+    filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
+    r->add("alarms", flt_alrm->is_open ? 1 : 0) ;
+#endif
+
+#if 0
+    default_snooze_value = r->get("default_snooze")->value() ;
+#endif
+
+#if 0
+    for(unsigned i=0; i < a->size(); ++i)
+    {
+      const iodata::record *ee = a->get(i)->rec() ;
+      cookie_t c(ee->get("cookie")->value()) ;
+      event_t *e = new event_t ;
+      events[e->cookie = c] = e ;
+
+      e->ticker = ticker_t(ee->get("ticker")->value()) ;
+      e->t.load(ee->get("t")->rec()) ;
+
+      e->tz = ee->get("tz")->str() ;
+
+      e->attr.load(ee->get("attr")->rec()) ;
+      e->flags = ee->get("flags")->decode(event_t::codec) ;
+      iodata::load(e->recrs, ee->get("recrs")->arr()) ;
+      iodata::load(e->actions, ee->get("actions")->arr()) ;
+      iodata::load_int_array(e->snooze, ee->get("snooze")->arr()) ;
+      iodata::load(e->b_attr, ee->get("b_attr")->arr()) ;
+      e->last_triggered = ticker_t(ee->get("dialog_time")->value()) ;
+      e->tsz_max = ee->get("tsz_max")->value() ;
+      e->tsz_counter = ee->get("tsz_counter")->value() ;
+      e->client_creds.load(ee->get("client_creds")->rec()) ;
+      e->cred_modifier.load(ee->get("cred_modifier")->arr()) ;
+
+      const char *next_state = "START" ;
+
+      if(e->flags & EventFlags::Empty_Recurring)
+        e->invalidate_t() ;
+
+      request_state(e, next_state) ;
+    }
+#endif
+
+#if 0
+    filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
+    if(r->get("alarms")->value())
+      flt_alrm->open() ;
+    else
+      flt_alrm->close() ;
+    // alarm_gate(true, r->get("alarms")->value()) ;
+#endif
+
+#if 0
+    int default_snooze(int new_value=0) ;
+#endif
+
+#if 0
+    void call_returned(QDBusPendingCallWatcher *) ; // rename ?
+#endif
+
+#if 0
+    int default_snooze_value ;
+#endif
+
+#if 0
+  int machine::default_snooze(int new_value)
+  {
+    if(30 <= new_value) // TODO: make it configurierable?
+    {
+      default_snooze_value = new_value ;
+      emit queue_to_be_saved() ;
+    }
+    return default_snooze_value ;
+  }
+#endif
+
+#if 0 // old implementation
+void Timed::backup()
+{
+  system("mkdir /tmp/.timed-backup; cp /var/cache/timed/*.data /etc/timed.rc /etc/timed-cust.rc /tmp/.timed-backup; chmod -R 0777 /tmp/.timed-backup");
+}
+void Timed::backup_finished()
+{
+  system("rm -rf /tmp/.timed-backup");
+}
+void Timed::restore()
+{
+}
+void Timed::restore_finished()
+{
+  system("cp -f /tmp/.timed-backup/*.data /var/cache/timed; cp -f /tmp/.timed-backup/*.rc /etc");
+  backup_finished();
+  QCoreApplication::exit(1);
+}
+#endif
+
+#if 0
+  dialog_req_watcher = NULL ;
+#endif
+
+#if 0
+  if(dialog_req_watcher)
+  {
+    log_debug("dialog_req_watcher still alive, deleting") ;
+    delete dialog_req_watcher ;
+  }
+#endif
+
+#if 0
+  QDBusPendingCallWatcher *dialog_req_watcher ;
+#endif
+
+#if 0 // TRIGGERED state seems to be better for this
+  // Frist get rif of one time trigger info:
+  e->ticker = ticker_t() ;
+  e->invalidate_t() ;
+#endif
+
+#if 0
+  o->save_time_to_file() ;
+#endif
+
+#if 0
+  Maemo::Timed::Voland::Interface ifc ;
+  if(!ifc.isValid())
+  {
+    string msg = Maemo::Timed::Voland::bus().lastError().message().toStdString() ;
+    log_critical("Can't use voland interface: %s", msg.c_str()) ;
+    return ;
+  }
+  Maemo::Timed::Voland::reminder_pimple_t *p = new Maemo::Timed::Voland::reminder_pimple_t ;
+  log_debug("was vergessen?") ;
+  p->flags = e->flags & EventFlags::Voland_Mask ;
+  p->cookie = e->cookie.value() ;
+  map_std_to_q(e->attr.txt, p->attr) ;
+  p->buttons.resize(e->b_attr.size()) ;
+  for(int i=0; i<p->buttons.size(); ++i)
+    map_std_to_q(e->b_attr[i].txt, p->buttons[i].attr) ;
+  QDBusPendingCall async = ifc.open_async(Maemo::Timed::Voland::Reminder(p));
+  if(e->dialog_req_watcher)
+  {
+    log_error("orphan dialog_req_watcher=%p, e=%p, cookie=%d", e->dialog_req_watcher, e, e->cookie.value()) ;
+    delete e->dialog_req_watcher ;
+  }
+  e->dialog_req_watcher = new QDBusPendingCallWatcher(async);
+  om->watcher_to_event[e->dialog_req_watcher] = e ;
+  QObject::connect(e->dialog_req_watcher, SIGNAL(finished(QDBusPendingCallWatcher*)), om, SLOT(call_returned(QDBusPendingCallWatcher*))) ;
+#endif
+
+#if 0
+  {
+    om->watcher_to_event.erase(e->dialog_req_watcher) ;
+    delete e->dialog_req_watcher ;
+    e->dialog_req_watcher = NULL ;
+  }
+#endif
+
+#if 0
+  save_time_to_file_timer = new QTimer ;
+  QObject::connect(save_time_to_file_timer, SIGNAL(timeout()), this, SLOT(save_time_to_file())) ;
+  save_time_to_file() ;
+#endif
+
+#if 0 // XXX: remove it for ever
+  save_time_path = c->get("saved_utc_time_path")->str() ;
+#endif
+
+#if 0
+  cust_settings = new customization_settings();
+  cust_settings->load();
+#endif
+
+#if 0
+  // we can't do it here:
+  //   first get dbus name (as a mutex), then fix the files
+#endif
+
+#if 0
+void Timed::save_time_to_file()
+{
+  save_time_to_file_timer->stop() ;
+
+  if(FILE *fp = fopen(save_time_path.c_str(), "w"))
+  {
+    const int time_length = 32 ;
+    char value[time_length+1] ;
+
+    time_t tick = time(NULL) ;
+    struct tm tm ;
+    gmtime_r(&tick, &tm) ;
+    strftime(value, time_length, "%F %T", &tm) ;
+
+    fprintf(fp, "%s\n", value) ;
+    if(fclose(fp)==0)
+      log_info("current time (%s) saved in %s", value, save_time_path.c_str()) ;
+    else
+      log_error("can't write to file %s: %m", save_time_path.c_str()) ;
+  }
+  else
+    log_error("can't open file %s: %m", save_time_path.c_str()) ;
+
+  save_time_to_file_timer->start(1000*3600) ; // 1 hour
+}
+#endif
+
+#if 0
+  customization_settings *cust_settings;
+#endif
+
+#if 0
+  string save_time_path ;
+#endif
+
+#if 0
+  QTimer *save_time_to_file_timer ;
+#endif
+
+#if 0
+  void save_time_to_file() ;
+#endif
+
+#if 0
+    map<QDBusPendingCallWatcher *, event_t *> watcher_to_event ;
+#endif
