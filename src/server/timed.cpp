@@ -385,7 +385,9 @@ void Timed::init_create_event_machine()
 
 void Timed::init_context_objects()
 {
-  (new ContextProvider::Service(Maemo::Timed::bus()))->setAsDefault() ;
+  context_service = new ContextProvider::Service(Maemo::Timed::bus()) ;
+  context_service -> setAsDefault() ;
+
   log_debug("(new ContextProvider::Service(Maemo::Timed::bus()))->setAsDefault()") ;
 
   ContextProvider::Property("Alarm.Trigger") ;
@@ -522,6 +524,32 @@ void Timed::init_apply_tz_settings()
 void Timed::stop_machine()
 {
   delete am ;
+}
+void Timed::stop_context()
+{
+  delete context_service ;
+}
+void Timed::stop_stuff()
+{
+  log_debug() ;
+  delete ping ;
+  log_debug() ;
+  delete settings ;
+  log_debug() ;
+  // delete ses_iface ;
+  log_debug() ;
+  delete voland_watcher ;
+  log_debug() ;
+  delete event_storage ;
+  log_debug() ;
+  delete settings_storage ;
+  log_debug() ;
+  delete short_save_threshold_timer ;
+  log_debug() ;
+  delete long_save_threshold_timer ;
+  log_debug() ;
+  delete tz_oracle ;
+  log_notice("stop_stuff() DONE") ;
 }
 
 

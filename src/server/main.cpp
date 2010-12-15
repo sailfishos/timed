@@ -119,6 +119,8 @@ int main(int ac, char **av)
         sleep(99999) ;
     }
     server->stop_machine() ;
+    server->stop_context() ;
+    server->stop_stuff() ;
     return result ;
   }
   catch(const iodata::validator::exception &e)

@@ -94,6 +94,8 @@ private:
 
 public:
   void stop_machine() ;
+  void stop_context() ;
+  void stop_stuff() ;
 
 public:
 
@@ -151,6 +153,7 @@ private:
   tz_oracle_t *tz_oracle ;
 
   ContextProvider::Property *time_operational_p ;
+  ContextProvider::Service *context_service ;
 public:
   void invoke_signal(const nanotime_t &) ;
   void invoke_signal() { nanotime_t zero ; invoke_signal(zero) ; }
