@@ -62,6 +62,7 @@ struct tz_oracle_t : public QObject
   QTimer *delay ; // TODO: make a fuzzy timer
 
   tz_oracle_t() ;
+ ~tz_oracle_t() ;
 public slots:
   void mcc_delay_timeout() ;
   void nitz_data(const cellular_info_t &) ;

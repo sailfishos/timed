@@ -73,6 +73,13 @@ tz_oracle_t::tz_oracle_t()
   delay->setSingleShot(true) ;
 }
 
+tz_oracle_t::~tz_oracle_t()
+{
+  delete tz_single ;
+  delete tz_distinct ;
+  delete delay ;
+}
+
 void tz_oracle_t::read_timezones_by_country()
 {
   iodata::record *rec = open_database("/usr/share/tzdata-timed/zones-by-country.data", "zones_by_country_t") ;
