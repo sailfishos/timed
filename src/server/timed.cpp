@@ -270,8 +270,6 @@ void Timed::init_configuration()
   else
     log_warning("configuration file '%s' corrupted or non-existing, using default values", configuration_path()) ;
 
-  // delete config_storage ;
-  log_debug("config_storage not deleted") ;
 
   events_path = c->get("queue_path")->str() ; // TODO: make C++ variables match data fields
   settings_path = c->get("settings_path")->str() ;
@@ -281,6 +279,8 @@ void Timed::init_configuration()
   ping_max_num = c->get("voland_ping_retries")->value() ;
   log_debug("deleting iodata::record *c") ;
   delete c ;
+  log_debug("deleting config_storage") ;
+  delete config_storage ;
   log_debug("done") ;
 }
 
