@@ -1,6 +1,6 @@
 timed (2.31) unstable; urgency=low
 
-  * Fixes: NB#210287 - timed doesn't have CAP_SYS_TIME
+  * Fixes: NB-210287 - timed doesn't have CAP_SYS_TIME
   * More printing in case of inconsistent user/actdead state
   * removed dependency of the old timehd package
   * Fixes: NB#210336 - pc files
@@ -8,7 +8,7 @@ timed (2.31) unstable; urgency=low
   * Fixes: NB#208557 - new act-dead / user detection
   * a memory leak fixed
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Tue, 14 Dec 2010 14:22:13 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 15 Dec 2010 13:18:27 +0200
 
 timed (2.30) unstable; urgency=low
 
