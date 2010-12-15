@@ -325,11 +325,6 @@ void state_missed::enter(event_t *e)
 void state_due::enter(event_t *e)
 {
   state::enter(e) ;
-#if 0 // TRIGGERED state seems to be better for this
-  // Frist get rif of one time trigger info:
-  e->ticker = ticker_t() ;
-  e->invalidate_t() ;
-#endif
 
   // assume it's not missed, this flag will be set in MISSED state
   e->flags &= ~ EventFlags::Missed ;
@@ -612,45 +607,12 @@ void state_dlg_cntr::request_voland()
 void state_dlg_requ::enter(event_t *e)
 {
   gate_state::enter(e) ;
-#if 0
-  Maemo::Timed::Voland::Interface ifc ;
-  if(!ifc.isValid())
-  {
-    string msg = Maemo::Timed::Voland::bus().lastError().message().toStdString() ;
-    log_critical("Can't use voland interface: %s", msg.c_str()) ;
-    return ;
-  }
-  Maemo::Timed::Voland::reminder_pimple_t *p = new Maemo::Timed::Voland::reminder_pimple_t ;
-  log_debug("was vergessen?") ;
-  p->flags = e->flags & EventFlags::Voland_Mask ;
-  p->cookie = e->cookie.value() ;
-  map_std_to_q(e->attr.txt, p->attr) ;
-  p->buttons.resize(e->b_attr.size()) ;
-  for(int i=0; i<p->buttons.size(); ++i)
-    map_std_to_q(e->b_attr[i].txt, p->buttons[i].attr) ;
-  QDBusPendingCall async = ifc.open_async(Maemo::Timed::Voland::Reminder(p));
-  if(e->dialog_req_watcher)
-  {
-    log_error("orphan dialog_req_watcher=%p, e=%p, cookie=%d", e->dialog_req_watcher, e, e->cookie.value()) ;
-    delete e->dialog_req_watcher ;
-  }
-  e->dialog_req_watcher = new QDBusPendingCallWatcher(async);
-  om->watcher_to_event[e->dialog_req_watcher] = e ;
-  QObject::connect(e->dialog_req_watcher, SIGNAL(finished(QDBusPendingCallWatcher*)), om, SLOT(call_returned(QDBusPendingCallWatcher*))) ;
-#endif
 }
 
 void state_dlg_requ::abort(event_t *e)
 {
   if (e->request_watcher)
     e->request_watcher->detach(e) ;
-#if 0
-  {
-    om->watcher_to_event.erase(e->dialog_req_watcher) ;
-    delete e->dialog_req_watcher ;
-    e->dialog_req_watcher = NULL ;
-  }
-#endif
 
   Maemo::Timed::Voland::Interface ifc ;
   ifc.close_async(e->cookie.value()) ;

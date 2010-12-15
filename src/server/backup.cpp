@@ -33,26 +33,6 @@ static const string backup_dir = "/tmp/.timed-backup" ;
 static const string backup_queue = backup_dir + "/events.backup.data" ;
 static const string backup_settings = backup_dir + "/timed-settings.backup.data" ;
 
-#if 0 // old implementation
-void Timed::backup()
-{
-  system("mkdir /tmp/.timed-backup; cp /var/cache/timed/*.data /etc/timed.rc /etc/timed-cust.rc /tmp/.timed-backup; chmod -R 0777 /tmp/.timed-backup");
-}
-void Timed::backup_finished()
-{
-  system("rm -rf /tmp/.timed-backup");
-}
-void Timed::restore()
-{
-}
-void Timed::restore_finished()
-{
-  system("cp -f /tmp/.timed-backup/*.data /var/cache/timed; cp -f /tmp/.timed-backup/*.rc /etc");
-  backup_finished();
-  QCoreApplication::exit(1);
-}
-#endif
-
 bool execute(const string &command)
 {
   const char *cmd = command.c_str() ;

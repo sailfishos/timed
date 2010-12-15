@@ -97,9 +97,6 @@ public:
   machine *am ;
   pinguin *ping ;
   source_settings *settings ;
-#if 0
-  customization_settings *cust_settings;
-#endif
 
   void load_events() ;
   void check_voland_service() ;
@@ -133,9 +130,6 @@ private:
   simple_timer *short_save_threshold_timer, *long_save_threshold_timer ;
   unsigned threshold_period_long, threshold_period_short ;
   unsigned ping_period, ping_max_num ;
-#if 0
-  string save_time_path ;
-#endif
   string events_path, settings_path ;
   int default_gmt_offset ;
   void load_rc() ;
@@ -149,9 +143,6 @@ private:
   Q_INVOKABLE void send_time_settings() ;
   bool signal_invoked ;
   nanotime_t systime_back ;
-#if 0
-  QTimer *save_time_to_file_timer ;
-#endif
   QTimer *dst_timer ;
   std::string sent_signature ;
   tz_oracle_t *tz_oracle ;
@@ -163,9 +154,6 @@ public:
   void clear_invokation_flag() { signal_invoked = false ; systime_back.invalidate() ; }
 public Q_SLOTS:
   void event_queue_changed() ;
-#if 0
-  void save_time_to_file() ;
-#endif
 private Q_SLOTS:
   void queue_threshold_timeout() ;
   void unix_signal(int signo) ;

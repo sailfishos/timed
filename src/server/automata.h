@@ -137,11 +137,7 @@ struct event_t ;
     deque <pair <event_t*, state*> > transition_queue ;
     ticker_t transition_start_time ;
     bool context_changed ;
-    map<QDBusPendingCallWatcher *, event_t *> watcher_to_event ;
     map<int, state*> button_states ;
-#if 0
-    int default_snooze_value ;
-#endif
     int dialog_discard_threshold ;
     int32_t signalled_bootup ;
     state_epoch *epoch ;
@@ -169,9 +165,6 @@ struct event_t ;
     void send_queue_context() ;
     Q_OBJECT ;
   public Q_SLOTS:
-#if 0
-    void call_returned(QDBusPendingCallWatcher *) ; // rename ?
-#endif
   Q_SIGNALS:
     void engine_pause(int dx) ;
     void voland_registered() ;
@@ -182,9 +175,6 @@ struct event_t ;
     void child_created(unsigned, int) ;
   public:
     void emit_child_created(unsigned cookie, int pid) { emit child_created(cookie, pid) ; }
-#if 0
-    int default_snooze(int new_value=0) ;
-#endif
     queue_pause *initial_pause ;
     void emit_engine_pause(int dx) { emit engine_pause(dx) ; }
     void start() ; //  { delete initial_pause ; initial_pause = NULL ; process_transition_queue() ; }

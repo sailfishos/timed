@@ -639,25 +639,6 @@ using namespace std ;
       invoke_process_transition_queue() ;
   }
 
-#if 0
-  void machine::call_returned(QDBusPendingCallWatcher *w)
-  {
-    if(watcher_to_event.count(w)==0)
-    {
-      log_critical("unknown QDBusPendingCallWatcher %p", w) ;
-      return ;
-    }
-    event_t *e = watcher_to_event[w] ;
-    if(e->dialog_req_watcher!=w)
-    {
-      log_critical("oops, will terminate in a moment...") ;
-      log_debug("w=%p, e=%p, e->cookie=%d", w, e, e->cookie.value()) ;
-    }
-    log_assert(e->dialog_req_watcher==w) ;
-    e->process_dialog_ack() ;
-  }
-#endif
-
   void machine::query(const QMap<QString,QVariant> &words, QList<QVariant> &res)
   {
     vector<string> qk, qv ;
@@ -770,23 +751,6 @@ using namespace std ;
     value ? filter->open() : filter->close() ;
   }
 
-#if 0
-  void event_t::process_dialog_ack() // should be move to state_dlg_requ?
-  {
-    QDBusPendingReply<bool> reply = *dialog_req_watcher ;
-    bool ok = reply.isValid() && reply.value() ;
-    if(ok)
-    {
-      st->om->request_state(this, "DLG_USER") ;
-      st->om->process_transition_queue() ;
-    }
-    else
-      log_error("Requesting event %d dialog failed: %s", cookie.value(), reply.error().message().toStdString().c_str()) ;
-    delete dialog_req_watcher ;
-    dialog_req_watcher = NULL ;
-  }
-#endif
-
   uint32_t machine::attr(uint32_t mask)
   {
     return flags & mask ;
@@ -808,67 +772,14 @@ using namespace std ;
     r->add("events", q) ;
     if(not for_backup)
       r->add("next_cookie", next_cookie) ;
-#if 0
-    r->add("default_snooze", default_snooze_value) ;
-    filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
-    r->add("alarms", flt_alrm->is_open ? 1 : 0) ;
-#endif
-
     return r ;
   }
 
   void machine::load(const iodata::record *r)
   {
     next_cookie = r->get("next_cookie")->value() ;
-#if 0
-    default_snooze_value = r->get("default_snooze")->value() ;
-#endif
     const iodata::array *a = r->get("events")->arr() ;
-#if 0
-    for(unsigned i=0; i < a->size(); ++i)
-    {
-      const iodata::record *ee = a->get(i)->rec() ;
-      cookie_t c(ee->get("cookie")->value()) ;
-      event_t *e = new event_t ;
-      events[e->cookie = c] = e ;
-
-      e->ticker = ticker_t(ee->get("ticker")->value()) ;
-      e->t.load(ee->get("t")->rec()) ;
-
-      e->tz = ee->get("tz")->str() ;
-
-      e->attr.load(ee->get("attr")->rec()) ;
-      e->flags = ee->get("flags")->decode(event_t::codec) ;
-      iodata::load(e->recrs, ee->get("recrs")->arr()) ;
-      iodata::load(e->actions, ee->get("actions")->arr()) ;
-      iodata::load_int_array(e->snooze, ee->get("snooze")->arr()) ;
-      iodata::load(e->b_attr, ee->get("b_attr")->arr()) ;
-      e->last_triggered = ticker_t(ee->get("dialog_time")->value()) ;
-      e->tsz_max = ee->get("tsz_max")->value() ;
-      e->tsz_counter = ee->get("tsz_counter")->value() ;
-      e->client_creds.load(ee->get("client_creds")->rec()) ;
-      e->cred_modifier.load(ee->get("cred_modifier")->arr()) ;
-
-      const char *next_state = "START" ;
-
-      if(e->flags & EventFlags::Empty_Recurring)
-        e->invalidate_t() ;
-
-      request_state(e, next_state) ;
-    }
-#else
     load_events(a, true, true) ;
-#endif
-
-#if 0
-    filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
-    if(r->get("alarms")->value())
-      flt_alrm->open() ;
-    else
-      flt_alrm->close() ;
-#else
-    // alarm_gate(true, r->get("alarms")->value()) ;
-#endif
   }
 
   void machine::load_events(const iodata::array *events_data, bool trusted_source, bool use_cookies)
@@ -922,18 +833,6 @@ using namespace std ;
 
     log_debug("cancelled all the bacjup events") ;
   }
-
-#if 0
-  int machine::default_snooze(int new_value)
-  {
-    if(30 <= new_value) // TODO: make it configurierable?
-    {
-      default_snooze_value = new_value ;
-      emit queue_to_be_saved() ;
-    }
-    return default_snooze_value ;
-  }
-#endif
 
   // TODO: do it accessible from outside of this file:
   //       too many uncaught exceptions :)

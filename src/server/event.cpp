@@ -44,9 +44,6 @@ event_t::event_t()
   flags = 0 ;
   tsz_max = tsz_counter = 0 ;
   st = NULL ;
-#if 0
-  dialog_req_watcher = NULL ;
-#endif
   request_watcher = NULL ;
 }
 
@@ -57,13 +54,6 @@ event_t::~event_t()
     log_debug("request_watcher still alive, detaching") ;
     request_watcher->detach(this) ;
   }
-#if 0
-  if(dialog_req_watcher)
-  {
-    log_debug("dialog_req_watcher still alive, deleting") ;
-    delete dialog_req_watcher ;
-  }
-#endif
 }
 
 static void copy_recr(const recurrence_io_t &from, recurrence_pattern_t &to)

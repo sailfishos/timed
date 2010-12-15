@@ -121,12 +121,6 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   init_cellular_services() ;
   log_debug() ;
 
-#if 0
-  save_time_to_file_timer = new QTimer ;
-  QObject::connect(save_time_to_file_timer, SIGNAL(timeout()), this, SLOT(save_time_to_file())) ;
-  save_time_to_file() ;
-#endif
-
   init_dst_checker() ;
 
   log_debug("starting event mahine") ;
@@ -283,9 +277,6 @@ void Timed::init_configuration()
   ping_period = c->get("voland_ping_sleep")->value() ;
   ping_max_num = c->get("voland_ping_retries")->value() ;
   delete c ;
-#if 0 // XXX: remove it for ever
-  save_time_path = c->get("saved_utc_time_path")->str() ;
-#endif
 }
 
 static bool parse_boolean(const string &str)
@@ -327,11 +318,6 @@ void Timed::init_customization()
 // * apply customization defaults, if needed
 void Timed::init_read_settings()
 {
-#if 0
-  cust_settings = new customization_settings();
-  cust_settings->load();
-#endif
-
   settings_storage = new iodata::storage ;
   settings_storage->set_primary_path(settings_path) ;
   settings_storage->set_secondary_path(settings_path+".bak") ;
@@ -346,11 +332,6 @@ void Timed::init_read_settings()
   apply_cust("time_nitz", auto_time_by_default) ;
   apply_cust("local_cellular", guess_tz_by_default) ;
 #undef apply_cust
-
-#if 0
-  // we can't do it here:
-  //   first get dbus name (as a mutex), then fix the files
-#endif
 
   settings = new source_settings(this) ; // TODO: use tz_by_default here
   settings->load(tree, tz_by_default) ;
@@ -722,34 +703,6 @@ void Timed::check_dst()
   //     'b=a+1' until the first 'new time' second
   dst_timer->start(1000*b) ;
 }
-
-#if 0
-void Timed::save_time_to_file()
-{
-  save_time_to_file_timer->stop() ;
-
-  if(FILE *fp = fopen(save_time_path.c_str(), "w"))
-  {
-    const int time_length = 32 ;
-    char value[time_length+1] ;
-
-    time_t tick = time(NULL) ;
-    struct tm tm ;
-    gmtime_r(&tick, &tm) ;
-    strftime(value, time_length, "%F %T", &tm) ;
-
-    fprintf(fp, "%s\n", value) ;
-    if(fclose(fp)==0)
-      log_info("current time (%s) saved in %s", value, save_time_path.c_str()) ;
-    else
-      log_error("can't write to file %s: %m", save_time_path.c_str()) ;
-  }
-  else
-    log_error("can't open file %s: %m", save_time_path.c_str()) ;
-
-  save_time_to_file_timer->start(1000*3600) ; // 1 hour
-}
-#endif
 
 void Timed::unix_signal(int signo)
 {
