@@ -176,6 +176,7 @@ struct event_t
 
   static iodata::bit_codec *codec ;
   static void codec_initializer() ;
+  static void codec_destructor() ;
   iodata::record *save(bool for_backup) ;
 } ;
 

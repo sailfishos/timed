@@ -314,6 +314,17 @@ void event_t::codec_initializer()
   log_debug() ;
 }
 
+void event_t::codec_destructor()
+{
+  delete event_t::codec ;
+  delete action_t::codec ;
+  delete recurrence_pattern_t::mins_codec ;
+  delete recurrence_pattern_t::hour_codec ;
+  delete recurrence_pattern_t::mday_codec ;
+  delete recurrence_pattern_t::wday_codec ;
+  delete recurrence_pattern_t::mons_codec ;
+}
+
 iodata::record *attribute_t::save() const
 {
   iodata::record *r = new iodata::record ;
@@ -442,4 +453,19 @@ void action_t::load(const iodata::record *r)
   attr.load(r->get("attr")->rec()) ;
   flags = r->get("flags")->decode(codec) ;
   cred_modifier.load(r->get("cred_modifier")->arr()) ;
+}
+
+namespace
+{
+  struct singleton_t
+  {
+    singleton_t()
+    {
+      event_t::codec_initializer() ;
+    }
+   ~singleton_t()
+    {
+      event_t::codec_destructor() ;
+    }
+  } singleton ;
 }

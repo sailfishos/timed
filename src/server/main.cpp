@@ -93,7 +93,6 @@ int main(int ac, char **av)
 
   try
   {
-    event_t::codec_initializer() ;
     Timed *server = new Timed(ac,av) ;
     int result = server->exec() ;
     string halt = server->is_halted() ;
