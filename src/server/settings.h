@@ -51,6 +51,7 @@ struct source_t
 
 struct utc_source_t : public source_t
 {
+  virtual ~utc_source_t() { }
   nanotime_t value ;
   virtual nanotime_t value_at_zero() const { return nanotime_t(0,0) ; }
 } ;
@@ -58,6 +59,7 @@ struct utc_source_t : public source_t
 struct manual_utc_t : public utc_source_t
 {
   manual_utc_t() { value = nanotime_t::systime_at_zero() ; }
+  virtual ~manual_utc_t() { }
   const char* name() const { return "manual_utc" ; }
   bool available() const { return true ; }
   nanotime_t value_at_zero() const { return value ; }
@@ -66,6 +68,7 @@ struct manual_utc_t : public utc_source_t
 struct nitz_utc_t : public utc_source_t
 {
   nitz_utc_t() ;
+  virtual ~nitz_utc_t() { }
   const char* name() const { return "nitz_utc" ; }
   bool available() const ;
   nanotime_t value_at_zero() const ;
@@ -73,12 +76,14 @@ struct nitz_utc_t : public utc_source_t
 
 struct ntp_utc_t : public utc_source_t
 {
+  virtual ~ntp_utc_t() { }
   const char* name() const { return "ntp_utc" ; }
   bool available() const { return false ; }
 } ;
 
 struct gps_utc_t : public utc_source_t
 {
+  virtual ~gps_utc_t() { }
   const char* name() const { return "gps_utc" ; }
   bool available() const { return false ; }
 } ;
@@ -88,11 +93,13 @@ struct offset_source_t : public source_t
   int value ;
   virtual int offset() const { return value ; }
   offset_source_t() { value = -1 ; }
+  virtual ~offset_source_t() { }
   bool available() const { return value!=-1 ; }
 } ;
 
 struct manual_offset_t : public offset_source_t
 {
+  virtual ~manual_offset_t() { }
   const char* name() const { return "manual_offset" ; }
   void load(const iodata::record *) ;
   iodata::record *save() const ;
@@ -100,12 +107,14 @@ struct manual_offset_t : public offset_source_t
 
 struct nitz_offset_t : public offset_source_t
 {
+  virtual ~nitz_offset_t() { }
   const char* name() const { return "nitz_offset" ; }
 } ;
 
 struct zone_source_t : public source_t
 {
   string value ;
+  virtual ~zone_source_t() { }
   virtual string zone() const { return value ; }
   bool available() const { return !value.empty() ; }
   void load(const iodata::record *) ;
@@ -114,11 +123,13 @@ struct zone_source_t : public source_t
 
 struct manual_zone_t : public zone_source_t
 {
+  virtual ~manual_zone_t() { }
   const char *name() const { return "manual_zone" ; }
 } ;
 
 struct cellular_zone_t : public zone_source_t
 {
+  virtual ~cellular_zone_t() { }
   tz_suggestions_t suggestions ;
   const char *name() const { return "cellular_zone" ; }
   // void load(const iodata::record *) ;
@@ -153,6 +164,7 @@ struct customization_settings
 struct source_settings
 {
   source_settings(Timed *owner) ;
+  virtual ~source_settings() ;
   Timed *o ;
 
   zone_source_t *manual_zone ;

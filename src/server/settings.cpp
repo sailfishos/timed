@@ -113,6 +113,12 @@ source_settings::source_settings(Timed *owner)
 #undef _creat // spell it without 'e' ;-)
 }
 
+source_settings::~source_settings()
+{
+  for (map<string, source_t*>::iterator it=src.begin(); it!=src.end(); ++it)
+    delete it->second ;
+}
+
 int source_settings::default_snooze() const
 {
   return default_snooze_value ;
