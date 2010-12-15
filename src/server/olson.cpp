@@ -30,7 +30,7 @@ using namespace std ;
 #include "timeutil.h"
 #include "olson.h"
 
-map<string, olson*> olson::zonetab ;
+map<string, olson*> *olson::zonetab = NULL ;
 
 olson::olson(const string &name) : zone_name(name)
 {
@@ -38,9 +38,11 @@ olson::olson(const string &name) : zone_name(name)
 
 olson *olson::by_name(const string &zone)
 {
-  map<string,olson*>::iterator it = zonetab.find(zone) ;
-  if(it==zonetab.end())
-    it = zonetab.insert(make_pair(zone, new olson(zone))).first ;
+  if (zonetab==NULL)
+    zonetab = new map<string, olson*> ;
+  map<string,olson*>::iterator it = zonetab->find(zone) ;
+  if(it==zonetab->end())
+    it = zonetab->insert(make_pair(zone, new olson(zone))).first ;
   return it->second ;
 }
 
@@ -59,4 +61,25 @@ bool olson::match(time_t at, int offset, int dst_flag)
   log_debug("input: at=%ld, offset=%d, dst_flag=%d; zone: name=%s, gmt_off=%ld isdst=%d; return: %s",
      at, offset, dst_flag, zone_name.c_str(), tm.tm_gmtoff, tm.tm_isdst, result?"YES":"NO") ;
   return result ;
+}
+
+void olson::destructor()
+{
+  log_debug("zonetab=%p", zonetab) ;
+  if (not zonetab)
+    return ;
+  for(map<string, olson*>::iterator it=zonetab->begin(); it!=zonetab->end(); ++it)
+    delete it->second ;
+  delete zonetab ;
+}
+
+namespace
+{
+  struct singleton_t
+  {
+    ~singleton_t()
+    {
+      olson::destructor() ;
+    }
+  } singleton ;
 }

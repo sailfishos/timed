@@ -30,14 +30,16 @@
 class olson
 {
   std::string zone_name ;
-  static std::map<std::string, olson*> zonetab ;
+  static std::map<std::string, olson*> *zonetab ;
 
   olson(const std::string &name) ;
 
 public:
   std::string name() { return zone_name ; }
   static olson *by_name(const std::string &) ;
+  static void destructor() ;
   bool match(time_t at, int offset, int dst_flag) ;
 } ;
+
 
 #endif
