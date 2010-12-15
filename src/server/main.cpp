@@ -120,6 +120,7 @@ int main(int ac, char **av)
     server->stop_machine() ;
     server->stop_context() ;
     server->stop_stuff() ;
+    delete server ;
     return result ;
   }
   catch(const iodata::validator::exception &e)
