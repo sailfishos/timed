@@ -822,7 +822,7 @@ void Timed::tz_by_oracle(olson *tz, tz_suggestions_t s)
 
 void Timed::update_oracle_context(bool set)
 {
-  static ContextProvider::Property oracle_p("/com/nokia/time/timezone/oracle") ;
+  static ContextProvider::Property oracle_p("/com/nokia/time/time_zone/oracle") ;
   static const char * const uncertain_key = "uncertain" ;
   static const char * const primary_key = "primary_candidates" ;
   static const char * const possible_key = "possible_candidates" ;
