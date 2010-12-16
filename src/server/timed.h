@@ -127,6 +127,7 @@ Q_SIGNALS:
   // void settings_changed_1(bool system_time) ;
 public:
   Timed(int ac, char **av) ;
+  virtual ~Timed() ;
   int get_default_gmt_offset() { return default_gmt_offset ; }
 
 private:

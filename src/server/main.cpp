@@ -117,10 +117,6 @@ int main(int ac, char **av)
       for(;;)
         sleep(99999) ;
     }
-    server->stop_machine() ;
-    server->stop_context() ;
-    server->stop_dbus() ;
-    server->stop_stuff() ;
     delete server ;
     UnixSignal::uninitialize() ;
     return result ;

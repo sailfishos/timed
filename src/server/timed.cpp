@@ -521,6 +521,13 @@ void Timed::init_apply_tz_settings()
     invoke_signal() ;
 }
 
+Timed::~Timed()
+{
+  stop_machine() ;
+  stop_context() ;
+  stop_dbus() ;
+  stop_stuff() ;
+}
 void Timed::stop_machine()
 {
   delete am ;
