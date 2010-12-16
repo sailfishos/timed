@@ -551,6 +551,8 @@ void Timed::stop_stuff()
   delete tz_oracle ;
   log_debug() ;
   delete dst_timer ;
+  log_debug() ;
+  cellular_handler::uninitialize() ;
   log_notice("stop_stuff() DONE") ;
 }
 

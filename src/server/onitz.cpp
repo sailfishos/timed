@@ -69,12 +69,27 @@ void cellular_handler::emulate_operator_signal()
 #endif
 }
 
+cellular_handler *cellular_handler::static_object = NULL ;
+
 cellular_handler *cellular_handler::object()
 {
-  static cellular_handler *obj = NULL ;
-  if(obj==NULL)
-    obj = new cellular_handler ;
-  return obj ;
+  if(static_object==NULL)
+    static_object = new cellular_handler ;
+  return static_object ;
+}
+
+void cellular_handler::uninitialize()
+{
+  if(static_object==NULL)
+    return ;
+  delete static_object ;
+  static_object = NULL ;
+}
+
+cellular_handler::~cellular_handler()
+{
+  delete cop ;
+  delete cnt ;
 }
 
 void cellular_handler::fake_nitz_signal(int mcc, int offset, int time, int dst)

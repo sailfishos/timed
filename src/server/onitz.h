@@ -95,6 +95,9 @@ struct cellular_info_t
 struct cellular_handler : public QObject
 {
   Q_OBJECT ;
+private:
+  static cellular_handler *static_object ;
+  virtual ~cellular_handler() ;
 #if F_CELLULAR_QT
   Cellular::NetworkTime *cnt ;
   Cellular::NetworkOperator *cop ;
@@ -105,6 +108,7 @@ signals:
   void cellular_data_received(const cellular_info_t &) ;
 public:
   static cellular_handler *object() ;
+  static void uninitialize() ;
   void fake_nitz_signal(int mcc, int offset, int time, int dst) ;
 private slots:
 #if F_CELLULAR_QT
