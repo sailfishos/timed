@@ -5,3 +5,4 @@ usr/bin/logging-test
 usr/bin/logging-test.launch
 usr/bin/qmtime-users.sh
 usr/bin/ntp-helper
+usr/bin/memory
