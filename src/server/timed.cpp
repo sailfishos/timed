@@ -401,7 +401,7 @@ void Timed::init_context_objects()
 
 void Timed::init_backup_object()
 {
-  QObject *backup_object = new QObject ;
+  backup_object = new QObject ;
   new backup_t(this, backup_object) ;
   // XXX: what if we're using system bus: how should backup know this?
   // TODO: if using system bus, keep track of started/terminated sessions? (omg!)
@@ -529,6 +529,10 @@ void Timed::stop_context()
 {
   delete context_service ;
   delete time_operational_p ;
+}
+void Timed::stop_dbus()
+{
+  delete backup_object ;
 }
 void Timed::stop_stuff()
 {

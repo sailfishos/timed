@@ -96,6 +96,7 @@ public:
   void stop_machine() ;
   void stop_context() ;
   void stop_stuff() ;
+  void stop_dbus() ;
 
 public:
 
@@ -154,6 +155,8 @@ private:
 
   ContextProvider::Property *time_operational_p ;
   ContextProvider::Service *context_service ;
+
+  QObject *backup_object ;
 public:
   void invoke_signal(const nanotime_t &) ;
   void invoke_signal() { nanotime_t zero ; invoke_signal(zero) ; }
