@@ -21,6 +21,9 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
+#include <set>
+using namespace std ;
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -29,12 +32,13 @@
 
 #include "unix-signal.h"
 
+UnixSignal * UnixSignal::static_object = NULL ;
+
 UnixSignal * UnixSignal::object()
 {
-  static UnixSignal *p = NULL ;
-  if(p==NULL)
-    p = new UnixSignal ;
-  return p ;
+  if (static_object==NULL)
+    static_object = new UnixSignal ;
+  return static_object ;
 }
 
 UnixSignal::UnixSignal()
@@ -70,6 +74,24 @@ UnixSignal::UnixSignal()
   QObject::connect(notifier, SIGNAL(activated(int)), this, SLOT(process_signal(int))) ;
 }
 
+UnixSignal::~UnixSignal()
+{
+  delete notifier ;
+  set<int> sigs = handled ;
+  for (set<int>::iterator it=sigs.begin(); it!=sigs.end(); ++it)
+    handle(*it, false) ;
+  close(write_fd()) ;
+  close(read_fd()) ;
+}
+
+void UnixSignal::uninitialize()
+{
+  if (static_object==NULL)
+    return ;
+  delete static_object ;
+  static_object = NULL ;
+}
+
 void UnixSignal::handler(int signo)
 {
   if(object()->pending.count(signo))
@@ -99,17 +121,24 @@ void UnixSignal::process_signal(int fd)
 
 int UnixSignal::handle(int signo, bool enable)
 {
+  if (enable and handled.count(signo))
+    return 0 ;
+  if (not enable and handled.count(signo)==0)
+    return 0 ;
+
   struct sigaction sa ;
   sa.sa_flags = 0 ;
   if(enable)
   {
     sigfillset(&sa.sa_mask) ;
     sa.sa_handler = UnixSignal::handler ;
+    handled.insert(signo) ;
   }
   else
   {
     sigemptyset(&sa.sa_mask) ;
     sa.sa_handler = SIG_DFL ;
+    handled.erase(signo) ;
   }
   pending.erase(signo) ;
   return sigaction(signo, &sa, NULL) ;

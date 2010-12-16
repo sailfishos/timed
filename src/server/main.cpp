@@ -122,6 +122,7 @@ int main(int ac, char **av)
     server->stop_dbus() ;
     server->stop_stuff() ;
     delete server ;
+    UnixSignal::uninitialize() ;
     return result ;
   }
   catch(const iodata::validator::exception &e)
