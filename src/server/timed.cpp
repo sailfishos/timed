@@ -528,6 +528,7 @@ void Timed::stop_machine()
 void Timed::stop_context()
 {
   delete context_service ;
+  delete time_operational_p ;
 }
 void Timed::stop_stuff()
 {
