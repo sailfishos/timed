@@ -2,5 +2,11 @@
 
 int main(int ac, char **av)
 {
-  return 0 ;
+  memory_t *app = new memory_t(ac, av) ;
+  int res = app->exec() ;
+
+  delete app ;
+
+  return res ;
 }
+
