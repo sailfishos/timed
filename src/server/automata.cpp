@@ -652,7 +652,11 @@ using namespace std ;
     bool valid = false ;
     for(int i=0; i<lst.ee.size(); ++i)
     {
+#if 1
       unsigned cookie = add_event(&lst.ee[i], false, &creds, NULL).value() ;
+#else // make some testing here
+      unsigned cookie = add_event(&lst.ee[i], false, NULL  , &message).value() ;
+#endif
       res.push_back(cookie) ;
       if (cookie)
       {
