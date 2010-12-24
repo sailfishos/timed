@@ -109,6 +109,8 @@ machine_t::machine_t(const Timed *daemon) : timed(daemon)
   log_assert(dlg_cntr!=NULL) ;
 #endif
 
+  state_armed->open() ;
+
   QObject::connect(state_dlg_wait, SIGNAL(voland_needed()), this, SIGNAL(voland_needed())) ;
 
   QObject::connect(state_dlg_wait, SIGNAL(closed()), state_dlg_requ, SLOT(open())) ;
@@ -399,9 +401,9 @@ void machine_t::reshuffle_queue(const nanotime_t &back)
 
 void machine_t::request_state(event_t *e, abstract_state_t *st)
 {
-  // log_info("request_state(%u,%s)", e->cookie.value(), st?st->name:"null") ;
+  log_debug("request_state(%u,%s)", e->cookie.value(), st?st->name():"null") ;
   transition_queue.push_back(make_pair(e, st)) ;
-  // log_info("done; transition_queue: %s; states: %s", s_transition_queue().c_str(), s_states().c_str()) ;
+  log_debug("done; transition_queue: %s; states: %s", s_transition_queue().c_str(), s_states().c_str()) ;
 }
 
 #if 0
