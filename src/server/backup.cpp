@@ -193,7 +193,5 @@ bool backup_t::save_settings_as(const string &path)
 
 void backup_t::disable_triggering()
 {
-  gate_state *armed = dynamic_cast<gate_state*> (timed->am->states["ARMED"]) ;
-  log_assert(armed!=NULL) ;
-  armed->close() ;
+  timed->am->state_armed->close() ;
 }

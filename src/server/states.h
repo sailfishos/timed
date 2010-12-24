@@ -34,6 +34,7 @@
 #include "timeutil.h"
 #include "flags.h"
 
+#if 0
   struct state_start : public state
   {
     state_start(machine *am) : state("START",am) {}
@@ -274,24 +275,6 @@
     state_dlg_resp(machine *am) : state("DLG_RESP", am) { }
     virtual ~state_dlg_resp() { }
   } ;
-
-  struct cluster_queue : public abstract_cluster
-  {
-    QMap<QString,QVariant> alarm_triggers ;
-    cluster_queue(machine *m) : abstract_cluster(m, EventFlags::Cluster_Queue, "QUEUE") { }
-    virtual ~cluster_queue() { }
-    void enter(event_t *e) ;
-    void leave(event_t *e) ;
-  } ;
-
-  struct cluster_dialog : public abstract_cluster
-  {
-    set<event_t *> bootup_events ;
-    cluster_dialog(machine *m) : abstract_cluster(m, EventFlags::Cluster_Dialog, "DIALOG") { }
-    virtual ~cluster_dialog() { }
-    void enter(event_t *e) ;
-    void leave(event_t *e) ;
-    bool has_bootup_events() ;
-  } ;
+#endif
 
 #endif // STATES_H

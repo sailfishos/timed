@@ -24,12 +24,6 @@
 #include "f.h"
 
 #include <pwd.h>
-#include <errno.h>
-#include <sys/ioctl.h>
-#include <linux/rtc.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
 #include <algorithm>
 #include <map>
@@ -63,6 +57,7 @@ using namespace std ;
 #include "credentials.h"
 #include "timed.h"
 
+#if 0
   state::state(const char *n, machine *m) : om(m)
   {
     log_assert(n!=NULL) ;
@@ -185,7 +180,9 @@ using namespace std ;
     else
       gate_state::enter(e) ;
   }
+#endif
 
+#if 0
   void machine::start()
   {
     delete initial_pause ;
@@ -864,7 +861,9 @@ using namespace std ;
 
     log_debug("cancelled all the bacjup events") ;
   }
+#endif
 
+#if 0
   // TODO: do it accessible from outside of this file:
   //       too many uncaught exceptions :)
   struct event_exception : public std::exception
@@ -876,7 +875,9 @@ using namespace std ;
     event_exception(const string &msg) : message(msg), pid_value(getpid()) { }
    ~event_exception() throw() { }
   } ;
+#endif
 
+#if 0
   // what a mess... event_t::stuff should be in event.cpp
 
   void event_t::sort_and_run_actions(uint32_t mask)
@@ -1242,7 +1243,9 @@ using namespace std ;
     log_assert(false, "obsolete function") ;
     return false ;
   }
+#endif
 
+#if 0
 request_watcher_t::request_watcher_t(machine *om)
 {
   this->om = om ;
@@ -1326,3 +1329,4 @@ void request_watcher_t::call_returned(QDBusPendingCallWatcher *w)
 
   delete this ;
 }
+#endif

@@ -46,6 +46,9 @@ using namespace std ;
 #include "credentials.h"
 #include "automata.h"
 
+struct request_watcher_t ;
+struct abstract_state_t ;
+
 struct recurrence_pattern_t
 {
   uint64_t mins ;
@@ -111,7 +114,6 @@ struct action_t
   void load(const iodata::record *r) ;
 } ;
 
-struct state ;
 
 struct event_t
 {
@@ -143,11 +145,11 @@ struct event_t
 
   ticker_t trigger, last_triggered ;
   int to_be_snoozed ;
-  state *st ;
+  abstract_state_t *state ;
   request_watcher_t *request_watcher ;
 
-  state *get_state() { return st ; }
-  void set_state(state *s) { st=s ; }
+  abstract_state_t *get_state() { return state ; }
+  void set_state(abstract_state_t *new_state) { state = new_state ; }
   void sort_and_run_actions(uint32_t) ;
   bool operator() (unsigned i, unsigned j) ; // actions security key comparison operator
   void run_actions(uint32_t) ;
@@ -188,6 +190,16 @@ struct action_comparison_t
   {
     return event->actions[i].cred_key() < event->actions[j].cred_key() ;
   }
+} ;
+
+struct event_exception : public std::exception
+{
+  string message ;
+  pid_t pid_value ;
+
+  pid_t pid() const { return pid_value ; }
+  event_exception(const string &msg) : message(msg), pid_value(getpid()) { }
+ ~event_exception() throw() { }
 } ;
 
 #endif

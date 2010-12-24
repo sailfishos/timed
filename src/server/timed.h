@@ -39,6 +39,7 @@
 #include "unix-signal.h"
 #include "onitz.h"
 #include "olson.h"
+#include "machine.h"
 #include "tz.h"
 
 struct Timed : public QCoreApplication
@@ -100,7 +101,7 @@ public:
 
 public:
 
-  machine *am ;
+  machine_t *am ;
   pinguin *ping ;
   source_settings *settings ;
 
@@ -146,7 +147,7 @@ public:
 private:
   Q_INVOKABLE void save_event_queue() ;
 
-  queue_pause *q_pause ;
+  machine_t::pause_t *q_pause ;
   Q_INVOKABLE void send_time_settings() ;
   bool signal_invoked ;
   nanotime_t systime_back ;

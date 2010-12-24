@@ -39,6 +39,7 @@
 #include "misc.h"
 #include "timed.h"
 
+#if 0
 void state_start::enter(event_t *e)
 {
   state::enter(e) ;
@@ -683,3 +684,4 @@ bool cluster_dialog::has_bootup_events()
 {
   return !bootup_events.empty() ;
 }
+#endif

@@ -54,6 +54,7 @@ struct state_epoch ;
 
 struct event_t ;
 
+#if 0
   struct state
   {
     state(const char *, machine *) ;
@@ -119,7 +120,9 @@ struct event_t ;
   private Q_SLOTS:
     void emit_close() { emit closed(this) ; }
   } ;
+#endif
 
+#if 0
   struct abstract_cluster
   {
     machine *om ;
@@ -130,7 +133,9 @@ struct event_t ;
     virtual void enter(event_t *e) = 0 ;
     virtual void leave(event_t *) { }
   } ;
+#endif
 
+#if 0
   struct machine : public QObject
   {
     machine(const Timed *daemon) ;
@@ -222,5 +227,6 @@ private:
 private Q_SLOTS:
   void call_returned(QDBusPendingCallWatcher *w) ;
 } ;
+#endif // 0
 
 #endif

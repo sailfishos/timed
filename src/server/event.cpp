@@ -34,8 +34,11 @@
 #include "timed/aliases.h"
 
 #include "misc.h"
+#include "machine.h"
 
 #include "event.h"
+
+#include "f.h"
 
 using namespace Maemo::Timed ;
 
@@ -43,8 +46,9 @@ event_t::event_t()
 {
   flags = 0 ;
   tsz_max = tsz_counter = 0 ;
-  st = NULL ;
+  state = NULL ;
   request_watcher = NULL ;
+  cookie = cookie_t(0) ; // paranoid
 }
 
 event_t::~event_t()
@@ -453,6 +457,346 @@ void action_t::load(const iodata::record *r)
   attr.load(r->get("attr")->rec()) ;
   flags = r->get("flags")->decode(codec) ;
   cred_modifier.load(r->get("cred_modifier")->arr()) ;
+}
+
+void event_t::sort_and_run_actions(uint32_t mask)
+{
+  if (mask==0) // TODO: check, if this check is not yet done on state_* layer...
+    return ;
+
+  // don't want to call unnecesary constructor here
+  vector <unsigned> *r = NULL ;
+
+  for (unsigned i=0; i<actions.size(); ++i)
+    if(actions[i].flags & mask) // something to run
+    {
+      if (r==NULL)
+        r = new vector <unsigned> ;
+      r->push_back(i) ;
+    }
+
+  if (r==NULL) // nothing to do
+    return ;
+
+  log_assert(r) ;
+
+  log_debug("Beginning the action list dump") ;
+  for(vector<unsigned>::const_iterator it=r->begin(); it!=r->end(); ++it)
+    log_debug("Action %d, cred_key: '%s'", *it, actions[*it].cred_key().c_str()) ;
+  log_debug("Done:     the action list dump") ;
+
+  log_debug("Beginning the action array sorting") ;
+  sort(r->begin(), r->end(), action_comparison_t(this)) ;
+  log_debug("Done:     the action array sorting") ;
+
+  unsigned start_index = ~0 ; // invalid value
+  string current_key ; // empty key (invalid?)
+  for(unsigned i=0, have_exec=false; i < r->size(); ++i)
+  {
+    action_t &a = actions[(*r) [i]] ;
+    bool i_exec = a.flags & ActionFlags::Run_Command ; // current action is an exec action
+    bool start_now = a.cred_key() != current_key || (have_exec && i_exec) ; // either new key or second exec
+    if (start_now && i>0)
+      run_actions(*r, start_index, i) ;
+    if (start_now || i==0) // i==0 is probably redundant, as cred_key should never be empty
+    {
+      have_exec = i_exec ;
+      start_index = i ;
+      current_key = a.cred_key() ;
+    }
+  }
+
+  log_assert(r->size()>0) ; // to be sure for the run_actions() call below
+  run_actions(*r, start_index, r->size()) ;
+
+  delete r ;
+}
+
+void event_t::run_actions(const vector<unsigned> &acts, unsigned begin, unsigned end)
+{
+  log_debug("begin=%d, end=%d, actions: %s", begin, end, print_vector(acts, begin, end).c_str()) ;
+  const action_t &a_begin = actions [acts[begin]] ;
+
+  // we want to detect, it the exeption was thrown in the daemon itself or in a child
+  pid_t daemon = getpid() ;
+
+  try
+  {
+    if (fork_and_set_credentials_v3(a_begin)>0) // parent
+      return ;
+  }
+  catch(const event_exception &e)
+  {
+    log_error("action list %d%s failed: %s", cookie.value(), print_vector(acts, begin, end).c_str(), e.message.c_str()) ;
+    pid_t process = e.pid() ;
+    if (process!=daemon)
+    {
+      log_info("terminating child (pid=%d) of daemon (pid=%d)", process, daemon) ;
+      ::exit(1) ;
+    }
+  }
+
+  // now we're running in the child with proper credentials, so let's execute dbus stuff !
+
+  unsigned exec_action_i = ~0 ; // not found yet
+  QDBusConnection *conn[2] = {NULL, NULL} ; // 0->system, 1->session
+  const QString cname = "timed-private" ;
+
+  int dbus_fail_counter = 0 ;
+
+  for (unsigned i=begin; i<end; ++i)
+  {
+    const unsigned acts_i = acts[i] ;
+    const action_t &a = actions [acts_i] ;
+
+    if (a.flags & ActionFlags::Run_Command)
+      exec_action_i = acts_i ;
+
+    if((a.flags & ActionFlags::DBus_Action) == 0)
+      continue ;
+
+    try
+    {
+      // set up message to be sent
+      QString path = string_std_to_q(find_action_attribute("DBUS_PATH", a)) ;
+      QString ifac = string_std_to_q(find_action_attribute("DBUS_INTERFACE", a, (a.flags & ActionFlags::DBus_Signal)!=0)) ;
+
+      QDBusMessage message ;
+
+      if (a.flags & ActionFlags::DBus_Method)
+      {
+        QString serv = string_std_to_q(find_action_attribute("DBUS_SERVICE", a)) ;
+        QString meth = string_std_to_q(find_action_attribute("DBUS_METHOD", a)) ;
+        message = QDBusMessage::createMethodCall(serv, path, ifac, meth) ;
+      }
+      else
+      {
+        QString sgnl = string_std_to_q(find_action_attribute("DBUS_SIGNAL", a)) ;
+        message = QDBusMessage::createSignal(path, ifac, sgnl) ;
+      }
+
+      QMap<QString,QVariant> param ;
+
+      if (a.flags & ActionFlags::Send_Cookie)
+        param["COOKIE"] = QString("%1").arg(cookie.value()) ;
+
+      if (a.flags & ActionFlags::Send_Event_Attributes)
+        add_strings(param, attr.txt) ;
+
+      if (a.flags & ActionFlags::Send_Action_Attributes)
+        add_strings(param, a.attr.txt) ;
+
+      message << QVariant::fromValue(param) ;
+
+      int bus = (a.flags & ActionFlags::Use_System_Bus) ? 0 : 1 ;
+      QDBusConnection * &c = conn[bus] ;
+
+      if (c==NULL) // not used yes, have to create object and connect
+      {
+        QDBusConnection::BusType ctype = bus==0 ? QDBusConnection::SystemBus : QDBusConnection::SessionBus ;
+        c = new QDBusConnection(QDBusConnection::connectToBus(ctype, cname)) ;
+      }
+
+      if (c->send(message))
+        log_debug("%u[%d]: D-Bus Message sent", cookie.value(), acts_i) ;
+      else
+        throw event_exception(c->lastError().message().toStdString().c_str()) ;
+    }
+    catch(const event_exception &e)
+    {
+      log_error("%u[%d]: dbus-action not executed: %s", cookie.value(), acts_i, e.message.c_str()) ;
+      ++ dbus_fail_counter ;
+    }
+  }
+
+  for(int c=0; c<2; ++c)
+    if(QDBusConnection *cc = conn[c])
+    {
+      // as we are about to exit immediately after queuing
+      // and there seems to be no way to flush the connection
+      // and be sure that we have actually transmitted the
+      // message -> do a dummy synchronous query from dbus
+      // daemon and hope that is enough to get the actual
+      // message to be delivered ...
+      QString connection_name  = cc->baseService() ;
+      unsigned owner = get_name_owner_from_dbus_sync(*cc, connection_name) ;
+
+      // it should be us (either pid or uid dependin on feature set) ...
+      log_debug("pid=%d, ruid=%d, euid=%d, connection owner is '%u'", getpid(), getuid(), geteuid(), owner) ;
+      QDBusConnection::disconnectFromBus(connection_name) ;
+      delete cc ;
+    }
+
+  if(dbus_fail_counter)
+    log_warning("failed to exeute %d out of %u dbus actions", dbus_fail_counter, end-begin) ;
+
+  if(exec_action_i == ~0u) // no exec action in this action package
+    ::exit(dbus_fail_counter<100 ? dbus_fail_counter : 100) ; // exit value can't be toooo large
+
+  // All the dbus actions are done. Now we have to execute the only command line action
+
+  const action_t &a = actions [exec_action_i] ;
+
+  string cmd = find_action_attribute("COMMAND", a) ;
+  if(a.flags & ActionFlags::Send_Cookie)
+  {
+    log_debug("cmd='%s', COOKIE to be replaced by value", cmd.c_str()) ;
+    using namespace pcrecpp ;
+    static RE exp("(<COOKIE>)|\\b(COOKIE)\\b", UTF8()) ;
+    ostringstream decimal ;
+    decimal << cookie.value() ;
+    exp.GlobalReplace(decimal.str(), &cmd);
+    log_debug("cmd='%s', COOKIE replaced", cmd.c_str()) ;
+  }
+  log_info("execuing command line action %u[%d]: '%s'", cookie.value(), exec_action_i, cmd.c_str());
+  execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL) ;
+  log_error("execl(/bin/sh -c '%s') failed: %m", cmd.c_str());
+
+  ::exit(101) ; // use dbus_fail_counter here as well?
+}
+
+bool event_t::accrue_privileges(const action_t &a)
+{
+  credentials_t creds = credentials_t::from_current_process() ;
+
+#if F_TOKENS_AS_CREDENTIALS
+  const cred_modifier_t &E = cred_modifier, &A = a.cred_modifier ;
+
+  // tokens_to_accrue1 := EVENT.add - ACTION.drop
+  set<string> tokens_to_accrue1 = E.tokens_by_value(true) ;
+  set_change<string> (tokens_to_accrue1, A.tokens_by_value(false), false) ;
+
+  // tokens_to_accrue2 := ACTION.add - EVENT.drop
+  set<string> tokens_to_accrue2 = A.tokens_by_value(true) ;
+  set_change<string> (tokens_to_accrue2, E.tokens_by_value(false), false) ;
+
+  // creds += (tokens_to_accrue 1+2)
+  set_change<string> (creds.tokens, tokens_to_accrue1, true) ;
+  set_change<string> (creds.tokens, tokens_to_accrue2, true) ;
+#endif // F_TOKENS_AS_CREDENTIALS
+
+  string uid = find_action_attribute("USER", a, false) ;
+  string gid = find_action_attribute("GROUP", a, false) ;
+
+  if (!uid.empty())
+    creds.uid = uid ;
+  if (!gid.empty())
+    creds.gid = gid ;
+
+  return creds.apply_and_compare() ;
+}
+
+bool event_t::drop_privileges(const action_t &a)
+{
+  credentials_t creds = client_creds ;
+
+#if F_TOKENS_AS_CREDENTIALS
+  const cred_modifier_t &E = cred_modifier, &A = a.cred_modifier ;
+
+  // tokens_to_remove1 := EVENT.drop - ACTION.add
+  set<string> tokens_to_remove1 = E.tokens_by_value(false) ;
+  set_change<string> (tokens_to_remove1, A.tokens_by_value(true), false) ;
+
+  // tokens_to_remove2 := ACTION.drop - EVENT.add
+  set<string> tokens_to_remove2 = A.tokens_by_value(false) ;
+  set_change<string> (tokens_to_remove2, E.tokens_by_value(true), false) ;
+
+  // creds := client_creds - (tokens_to_remove 1+2)
+  set_change<string> (creds.tokens, tokens_to_remove1, false) ;
+  set_change<string> (creds.tokens, tokens_to_remove2, false) ;
+#endif // F_TOKENS_AS_CREDENTIALS
+
+  return creds.apply_and_compare() ;
+}
+
+string event_t::find_action_attribute(const string &key, const action_t &a, bool exc)
+{
+  string value = a.attr(key) ;
+  if(value.empty())
+    value = attr(key) ;
+  if(value.empty() && exc)
+    throw event_exception(string("empty attribute '")+key+"'") ;
+  return value ;
+}
+
+void event_t::add_strings(QMap<QString, QVariant> &x, const map<string,string> &y)
+{
+  for(map<string,string>::const_iterator it=y.begin(); it!=y.end(); ++it)
+    x.insert(string_std_to_q(it->first), QVariant::fromValue(string_std_to_q(it->second))) ;
+}
+
+pid_t event_t::fork_and_set_credentials_v3(const action_t &action)
+{
+  pid_t pid = fork() ;
+
+  if (pid<0) // can't fork
+  {
+    log_error("fork() failed: %m") ;
+    throw event_exception("can't fork");
+  }
+  else if (pid>0) // parent
+  {
+    log_info("forked successfully, child pid: '%d'", pid) ;
+    state->machine->emit_child_created(cookie.value(), pid) ;
+    return pid ;
+  }
+  else // child
+  {
+    log_info("event [%u]: in child process", cookie.value()) ;
+
+    if (setsid() < 0) // detach from session
+    {
+      log_error("setsid() failed: %m") ;
+      throw event_exception("can't detach from session") ;
+    }
+
+    if (!drop_privileges(action))
+      throw event_exception("can't drop privileges") ;
+
+    if (!accrue_privileges(action))
+      log_warning("can't accrue privileges, still continuing") ;
+
+    // Skipping all the uid/gid settings, because it's part of
+    // credentials_t::apply() (or it should be at least)
+
+    // TODO: go to home dir _here_ !
+
+    // That's it then, isn't it?
+
+    return pid ;
+  }
+}
+
+iodata::record *event_t::save(bool for_backup)
+{
+  iodata::record *r = new iodata::record ;
+  r->add("cookie", cookie.value()) ;
+  r->add("ticker", ticker.value()) ;
+  r->add("t", t.save()) ;
+  r->add("tz", new iodata::bytes(tz)) ;
+  r->add("attr", attr.save() ) ;
+  r->add("flags", new iodata::bitmask(flags &~ EventFlags::Cluster_Mask, codec)) ;
+  r->add("recrs", iodata::save(recrs)) ;
+  r->add("snooze", iodata::save_int_array(snooze)) ;
+  r->add("b_attr", iodata::save(b_attr)) ;
+
+  r->add("dialog_time", (flags & EventFlags::In_Dialog) ? last_triggered.value() : 0) ;
+  r->add("tsz_max", tsz_max) ;
+  r->add("tsz_counter", tsz_counter) ;
+
+  if(not for_backup)
+    r->add("actions", iodata::save(actions)) ;
+  if(not for_backup)
+    r->add("client_creds", client_creds.save()) ;
+  if(not for_backup)
+    r->add("cred_modifier", cred_modifier.save()) ;
+  return r ;
+}
+
+bool event_t::compute_recurrence()
+{
+  log_assert(false, "obsolete function") ;
+  return false ;
 }
 
 namespace

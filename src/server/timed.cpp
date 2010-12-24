@@ -347,7 +347,7 @@ void Timed::init_read_settings()
 
 void Timed::init_create_event_machine()
 {
-  am = new machine(this) ;
+  am = new machine_t(this) ;
   log_debug("am=new machine done") ;
   q_pause = NULL ;
 
@@ -709,7 +709,7 @@ void Timed::invoke_signal(const nanotime_t &back)
   QMetaMethod method = this->metaObject()->method(methodIndex);
   method.invoke(this, Qt::QueuedConnection);
   log_assert(q_pause==NULL) ;
-  q_pause = new queue_pause(am) ;
+  q_pause = new machine_t::pause_t(am) ;
   log_debug("new q_pause=%p", q_pause) ;
 }
 
