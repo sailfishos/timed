@@ -31,7 +31,7 @@
 #include <QVariant>
 #include <QDBusMessage>
 #include <QDBusPendingCall>
-#include <QDBusInterface>
+#include <QDBusAbstractInterface>
 
 #include <timed/event>
 #include <timed/wallclock>
@@ -59,7 +59,7 @@ namespace Maemo
       return QDBusConnection::sessionBus() ;
     }
     // struct signal_receiver ;
-    class Interface : public QDBusInterface
+    class Interface : public QDBusAbstractInterface
     {
       Q_OBJECT ;
       // struct signal_receiver *receiver ;

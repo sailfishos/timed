@@ -7,8 +7,10 @@ timed (2.31) unstable; urgency=low
   * Fixes: NB#209981 - less log_info, more log_debug
   * Fixes: NB#208557 - new act-dead / user detection
   * a memory leak fixed
+  * refactored event flow and some structures
+  * Fixes: NB#214062 - libtimed triggers dbus introspection even if it is not needed
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 15 Dec 2010 13:18:27 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Fri, 24 Dec 2010 21:55:42 +0200
 
 timed (2.30) unstable; urgency=low
 

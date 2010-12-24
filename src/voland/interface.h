@@ -28,7 +28,7 @@
 
 #include <QList>
 #include <QVector>
-#include <QDBusInterface>
+#include <QDBusAbstractInterface>
 #include <QDBusAbstractAdaptor>
 
 #include <timed/qmacro.h>
@@ -56,7 +56,7 @@ namespace Maemo
       {
         return QDBusConnection::sessionBus() ;
       }
-      class Interface : public QDBusInterface
+      class Interface : public QDBusAbstractInterface
       {
         Q_OBJECT ;
       public:
@@ -87,7 +87,7 @@ namespace Maemo
       {
         return "/com/nokia/ta_voland" ;
       }
-      class TaInterface : public QDBusInterface
+      class TaInterface : public QDBusAbstractInterface
       {
         Q_OBJECT ;
       public:
@@ -124,7 +124,7 @@ namespace Maemo
       {
         return "/com/nokia/voland_activation" ;
       }
-      class ActivationInterface : public QDBusInterface
+      class ActivationInterface : public QDBusAbstractInterface
       {
         Q_OBJECT ;
       public:

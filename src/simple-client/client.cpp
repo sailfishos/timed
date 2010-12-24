@@ -23,7 +23,7 @@
 ***************************************************************************/
 #include <QCoreApplication>
 #include <QDBusConnection>
-#include <QDBusInterface>
+#include <QDBusAbstractInterface>
 #include <QDBusReply>
 #include <QDebug>
 #include <QMap>

@@ -21,7 +21,7 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#include <QDBusInterface>
+#include <QDBusAbstractInterface>
 #include <QDebug>
 
 #include <timed-voland/reminder>

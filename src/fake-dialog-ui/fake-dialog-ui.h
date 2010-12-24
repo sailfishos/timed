@@ -30,7 +30,7 @@ using namespace std ;
 
 #include <QCoreApplication>
 #include <QDebug>
-#include <QDBusInterface>
+#include <QDBusAbstractInterface>
 #include <QDBusReply>
 #include <QDBusAbstractAdaptor>
 #include <QDBusArgument>

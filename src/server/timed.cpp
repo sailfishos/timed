@@ -28,14 +28,15 @@
 #include <sys/wait.h>
 
 #include <QDBusConnection>
+#include <QDBusInterface>
 #include <QDBusConnectionInterface>
 
 #include <ContextProvider>
-#include <dsme/dsme_dbus_if.h>
 
 #include <timed/interface>
 #include <qmlog>
 
+#include "interfaces.h"
 #include "adaptor.h"
 #include "backup.h"
 #include "timed.h"
@@ -168,7 +169,9 @@ void Timed::init_scratchbox_mode()
 //           1: ACT_DEAD mode
 static int is_act_dead_by_dsme()
 {
-  QDBusInterface dsme(dsme_service, dsme_req_path, dsme_req_interface, QDBusConnection::systemBus()) ;
+  // QDBusInterface dsme(dsme_service, dsme_req_path, dsme_req_interface, QDBusConnection::systemBus()) ;
+  DsmeReqInterface dsme ;
+
   if (not dsme.isValid())
   {
     log_error("DSME interface isn't valid") ;

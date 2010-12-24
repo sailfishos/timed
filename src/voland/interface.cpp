@@ -25,7 +25,7 @@
 #include <timed-voland/ta_interface>
 
 Maemo::Timed::Voland::Interface::Interface(QObject *parent)
-  : QDBusInterface
+  : QDBusAbstractInterface
     (
      Maemo::Timed::Voland::service(),
      Maemo::Timed::Voland::objpath(),
@@ -37,7 +37,7 @@ Maemo::Timed::Voland::Interface::Interface(QObject *parent)
 }
 
 Maemo::Timed::Voland::TaInterface::TaInterface(QObject *parent)
-  : QDBusInterface
+  : QDBusAbstractInterface
     (
      Maemo::Timed::Voland::service(),
      Maemo::Timed::Voland::ta_objpath(),
@@ -49,7 +49,7 @@ Maemo::Timed::Voland::TaInterface::TaInterface(QObject *parent)
 }
 
 Maemo::Timed::Voland::ActivationInterface::ActivationInterface(QObject *parent)
-  : QDBusInterface
+  : QDBusAbstractInterface
     (
      Maemo::Timed::Voland::activation_service(),
      Maemo::Timed::Voland::activation_objpath(),

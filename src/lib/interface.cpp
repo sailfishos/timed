@@ -47,6 +47,6 @@ bool Maemo::Timed::Interface::settings_changed_disconnect(QObject *object, const
 }
 
 Maemo::Timed::Interface::Interface(QObject *parent)
-  : QDBusInterface(Maemo::Timed::service(), Maemo::Timed::objpath(), Maemo::Timed::interface(), Maemo::Timed::bus(), parent)
+  : QDBusAbstractInterface(Maemo::Timed::service(), Maemo::Timed::objpath(), Maemo::Timed::interface(), Maemo::Timed::bus(), parent)
 {
 }
