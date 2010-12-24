@@ -403,7 +403,7 @@ void machine_t::request_state(event_t *e, abstract_state_t *st)
 {
   log_debug("request_state(%u,%s)", e->cookie.value(), st?st->name():"null") ;
   transition_queue.push_back(make_pair(e, st)) ;
-  log_debug("done; transition_queue: %s; states: %s", s_transition_queue().c_str(), s_states().c_str()) ;
+  // log_debug("done; transition_queue: %s; states: %s", s_transition_queue().c_str(), s_states().c_str()) ;
 }
 
 #if 0
