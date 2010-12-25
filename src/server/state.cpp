@@ -29,6 +29,7 @@ void abstract_state_t::go_to(event_t *e)
   machine->request_state(e, this) ;
 }
 
+#if 0
 void abstract_state_t::enter(event_t *e)
 {
   uint32_t cluster_before = e->flags & EventFlags::Cluster_Mask ;
@@ -46,6 +47,25 @@ void abstract_state_t::enter(event_t *e)
     for(uint32_t b; b = (on ^ (on-1)), b &= on ; on ^= b)
       machine->clusters[b]->enter(e) ;
 }
+#else
+void abstract_state_t::enter(event_t *e)
+{
+  uint32_t cluster_after = cluster_bits() ;
+  if (uint32_t on_xor_off = (e->flags ^ cluster_after) & EventFlags::Cluster_Mask)
+  {
+    uint32_t on = on_xor_off & cluster_after ;
+    if (uint32_t off = on_xor_off ^ on)
+      for (uint32_t b; b = (off ^ (off-1)), b &= off ; off ^= b)
+        machine->clusters[b]->leave(e) ;
+
+    e->flags ^= on_xor_off ;
+
+    if (on)
+      for(uint32_t b; b = (on ^ (on-1)), b &= on ; on ^= b)
+        machine->clusters[b]->enter(e) ;
+  }
+}
+#endif
 
 void abstract_state_t::leave(event_t *)
 {
