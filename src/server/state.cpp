@@ -20,10 +20,6 @@ abstract_state_t::abstract_state_t(const string &state_name, machine_t *owner)
   action_mask = 0 ;
 }
 
-abstract_state_t::~abstract_state_t()
-{
-}
-
 void abstract_state_t::go_to(event_t *e)
 {
   machine->request_state(e, this) ;
@@ -66,15 +62,6 @@ void abstract_state_t::enter(event_t *e)
   }
 }
 #endif
-
-void abstract_state_t::leave(event_t *)
-{
-}
-
-abstract_io_state_t::abstract_io_state_t(const string &state_name, machine_t *owner)
-  : abstract_state_t(state_name, owner)
-{
-}
 
 void abstract_io_state_t::enter(event_t *e)
 {
@@ -120,7 +107,6 @@ void abstract_gate_state_t::enter(event_t *e)
     abstract_io_state_t::enter(e) ;
 }
 
-
 void abstract_gate_state_t::close()
 {
   is_open = false ;
@@ -157,16 +143,13 @@ abstract_filter_state_t::abstract_filter_state_t(const string &state_name, const
   abstract_gate_state_t(state_name, retry_state_name, owner)
 {
   s_thru_state = thru_state_name ;
-  // s_retry_state = retry_state_name ;
-  thru_state /* = retry_state */ = NULL ;
+  thru_state = NULL ;
   QObject::connect(this, SIGNAL(closed()), this, SLOT(emit_close())) ;
 }
 
 void abstract_filter_state_t::resolve_names()
 {
   thru_state = machine->state_by_name(s_thru_state) ;
-  // retry_state = machine->state_by_name(s_retry_state) ;
-  log_debug("thru_state=%p"/*", retry_state=%p"*/, thru_state/*, retry_state*/) ;
   abstract_gate_state_t::resolve_names() ;
 }
 
@@ -181,17 +164,13 @@ void abstract_filter_state_t::enter(event_t *e)
     abstract_gate_state_t::enter(e) ;
 }
 
-// *** //
+// States //
 
 void state_start_t::enter(event_t *e)
 {
   abstract_state_t::enter(e) ;
   machine->state_epoch->go_to(e) ;
 }
-
-#if 0
-const char *state_epoch::lost = "/var/cache/timed/SYSTEM_TIME_LOST" ;
-#endif
 
 state_epoch_t::state_epoch_t(machine_t *owner) : abstract_gate_state_t("EPOCH", "NEW", owner)
 {
@@ -204,7 +183,6 @@ void state_epoch_t::open()
     log_critical("can't unlink '%s': %m", lost()) ;
   abstract_gate_state_t::open() ;
 }
-
 
 void state_new_t::enter(event_t *e)
 {
@@ -394,18 +372,10 @@ void state_queued_t::timer_stop()
 
 ticker_t state_queued_t::next_bootup()
 {
-#if 0
-  ticker_t tick ; // default value: invalid
-  set<event_pair>::const_iterator it = bootup.begin() ;
-  if(it!=bootup.end())
-    tick = it->first ;
-  return tick ;
-#else
   if (not bootup.empty())
     return bootup.begin()->first ;
   else
     return ticker_t() ;
-#endif
 }
 
 ticker_t state_queued_t::next_rtc_bootup()
@@ -452,17 +422,17 @@ void state_queued_t::filter_closed(abstract_filter_state_t *f_st)
 
 bool state_flt_conn_t::filter(event_t *e)
 {
-  return (e->flags & EventFlags::Need_Connection) != 0 ;
+  return e->flags & EventFlags::Need_Connection ;
 }
 
 bool state_flt_alrm_t::filter(event_t *e)
 {
-  return (e->flags & EventFlags::Alarm) != 0 ;
+  return e->flags & EventFlags::Alarm ;
 }
 
 bool state_flt_user_t::filter(event_t *e)
 {
-  return (e->flags & EventFlags::User_Mode) != 0 ;
+  return e->flags & EventFlags::User_Mode ;
 }
 
 void state_missed_t::enter(event_t *e)
@@ -504,8 +474,8 @@ void state_snoozed_t::enter(event_t *e)
 {
   abstract_state_t::enter(e) ;
   log_assert(e->to_be_snoozed > 0) ;
-  // compute next trigger time and jump back to queue
 
+  // compute next trigger time and jump back to queue
   if(e->flags & EventFlags::Aligned_Snooze)
     e->ticker = ticker_align(e->last_triggered, e->to_be_snoozed, machine->transition_started());
   else
@@ -655,7 +625,6 @@ void state_button_t::enter(event_t *e)
   }
 
   // handle special value, +1 means default snooze
-  // It's hardcoded for 5min for now...
   if(snooze_length==+1)
     snooze_length = machine->timed->settings->default_snooze() ;
 
@@ -671,18 +640,14 @@ void state_button_t::enter(event_t *e)
 void state_served_t::enter(event_t *e)
 {
   abstract_state_t::enter(e) ;
-#if 0
-  bool recu = e->has_recurrence() ;
-  bool keep = e->to_be_keeped() ;
-  machine->request_state(e, recu ? "RECURRED" : keep ? "TRANQUIL" : "REMOVED") ;
-#else
+
   if (e->has_recurrence())
     machine->state_recurred->go_to(e) ;
   else if (e->to_be_keeped())
     machine->state_tranquil->go_to(e) ;
   else
     machine->state_removed->go_to(e) ;
-#endif
+
   machine->process_transition_queue() ;
 }
 
@@ -771,7 +736,7 @@ void state_dlg_cntr_t::request_voland()
     log_debug() ;
     Maemo::Timed::Voland::Reminder R(p) ;
     reminders.push_back(QVariant::fromValue(R)) ;
-#if 1 // GET RID OF THIS PIECE SOON !
+#if 0 // GET RID OF THIS PIECE SOON !
     log_debug() ;
     Maemo::Timed::Voland::Reminder RR = R ;
     ifc.open_async(RR); // fire and forget

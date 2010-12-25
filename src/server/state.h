@@ -22,6 +22,7 @@ struct event_t ;
 struct abstract_state_t
 {
   abstract_state_t(const std::string &state_name, machine_t *owner) ;
+  virtual ~abstract_state_t() { }
   machine_t *machine ;
   std::string s_name ;
   uint32_t action_mask ;
@@ -30,16 +31,15 @@ struct abstract_state_t
   void set_action_mask(uint32_t a) { action_mask = a ; }
   void go_to(event_t *e) ;
   virtual void enter(event_t *) ;
-  virtual void leave(event_t *) ;
+  virtual void leave(event_t *) { }
   virtual uint32_t cluster_bits() { return 0 ; }
   virtual void resolve_names() { }
-  virtual ~abstract_state_t() ;
 } ;
 
 struct abstract_io_state_t : public QObject, public abstract_state_t
 {
   std::set<event_t *> events ;
-  abstract_io_state_t(const std::string &state_name, machine_t *owner) ;
+  abstract_io_state_t(const std::string &state_name, machine_t *owner) : abstract_state_t(state_name, owner) { }
   void enter(event_t *) ;
   void leave(event_t *) ;
   virtual void abort(event_t *) ;
@@ -79,8 +79,8 @@ struct abstract_filter_state_t : public abstract_gate_state_t
 {
   abstract_filter_state_t(const std::string &state_name, const std::string &retry_state_name, const std::string &thru_state_name, machine_t *owner) ;
   virtual ~abstract_filter_state_t() { }
-  std::string s_thru_state/*, s_retry_state*/ ;
-  abstract_state_t *thru_state/*, *retry_state */;
+  std::string s_thru_state ;
+  abstract_state_t *thru_state ;
   void resolve_names() ;
   virtual bool filter(event_t *) = 0 ;
   void enter(event_t *) ;
