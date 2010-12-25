@@ -674,6 +674,10 @@ void Timed::queue_threshold_timeout()
 
 void Timed::save_event_queue()
 {
+#if 0
+  log_warning("skipping writing queue file") ;
+  return ;
+#endif
   iodata::record *queue = am->save(false) ; // false = full queue, not backup
   int res = event_storage->save(queue) ;
 
