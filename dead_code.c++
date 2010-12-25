@@ -2686,3 +2686,2342 @@ void Timed::save_time_to_file()
 #if 0
     map<QDBusPendingCallWatcher *, event_t *> watcher_to_event ;
 #endif
+
+#if 0
+  struct state_start : public state
+  {
+    state_start(machine *am) : state("START",am) {}
+    virtual ~state_start() { }
+    void enter(event_t *e) ;
+  } ;
+
+  struct state_epoch : public gate_state
+  {
+    Q_OBJECT ;
+    static const char *lost ;
+  public:
+    state_epoch(machine *am) ;
+    virtual ~state_epoch() { }
+  public Q_SLOTS:
+    void open() ; // a virtual slot
+  } ;
+
+  struct state_new : public state
+  {
+    state_new(machine *am) : state("NEW",am) {}
+    virtual ~state_new() { }
+    void enter(event_t *e) ;
+  } ;
+
+  struct state_scheduler : public state
+  {
+    state_scheduler(machine *am) : state("SCHEDULER",am) {}
+    virtual ~state_scheduler() {}
+    void enter(event_t *e) ;
+  } ;
+
+  struct state_qentry : public state
+  {
+    state_qentry(machine *am) : state("QENTRY",am) {}
+    virtual ~state_qentry() { }
+    void enter(event_t *e) ;
+    uint32_t cluster_bits() { return EventFlags::Cluster_Queue ; }
+  } ;
+
+  struct state_queued : public io_state
+  {
+    int pause_x ;
+    state_queued(machine *am) ;
+    virtual ~state_queued() ;
+    void enter(event_t *e) ;
+    void leave(event_t *e) ;
+    void timer_start() ;
+    void timer_stop() ;
+    QTimer *alarm_timer ;
+    typedef pair<ticker_t, event_t *> event_pair ;
+    ticker_t next_bootup() ;
+    ticker_t next_rtc_bootup() ;
+    set<event_pair> queue ;
+    set<event_pair> bootup ;
+    uint32_t cluster_bits() { return EventFlags::Cluster_Queue ; }
+    Q_OBJECT ;
+  public Q_SLOTS:
+    void engine_pause(int dx) ;
+    void alarm_timeout() ;
+    void filter_closed(filter_state *f_st) ;
+  Q_SIGNALS:
+    void sleep() ;
+  } ;
+
+
+  struct state_missed : public state
+  {
+    state_missed(machine *am) : state("MISSED",am) {}
+    virtual ~state_missed() { }
+    void enter(event_t *e) ;
+  } ;
+
+  struct state_due : public state
+  {
+    state_due(machine *am) : state("DUE",am) {}
+    virtual ~state_due() { }
+    void enter(event_t *e) ;
+  } ;
+
+  struct state_skipped : public state
+  {
+    state_skipped(machine *am) : state("SKIPPED",am) {}
+    virtual ~state_skipped() {}
+    void enter(event_t *e) { om->request_state(e, "SERVED") ; }
+  } ;
+
+  struct state_flt_conn : public filter_state
+  {
+    state_flt_conn(machine *am) : filter_state("FLT_CONN", "QENTRY", "FLT_ALRM", am) { }
+    virtual ~state_flt_conn() { }
+    uint32_t cluster_bits() { return EventFlags::Cluster_Queue ; }
+    bool filter(event_t *) ;
+    Q_OBJECT ;
+  } ;
+
+  struct state_flt_alrm : public filter_state
+  {
+    state_flt_alrm(machine *am) : filter_state("FLT_ALRM", "QENTRY", "FLT_USER", am) { }
+    virtual ~state_flt_alrm() { }
+    uint32_t cluster_bits() { return EventFlags::Cluster_Queue ; }
+    bool filter(event_t *) ;
+    Q_OBJECT ;
+  } ;
+
+  struct state_flt_user : public filter_state
+  {
+    state_flt_user(machine *am) : filter_state("FLT_USER", "QENTRY", "QUEUED", am) {}
+    virtual ~state_flt_user() { }
+    uint32_t cluster_bits() { return EventFlags::Cluster_Queue ; }
+    bool filter(event_t *) ;
+    Q_OBJECT ;
+  } ;
+
+  struct state_snoozed : public state
+  {
+    state_snoozed(machine *am) : state("SNOOZED",am) {}
+    virtual ~state_snoozed() { }
+    void enter(event_t *e) ;
+  } ;
+
+  struct state_recurred : public state
+  {
+    state_recurred(machine *am) : state("RECURRED",am) {}
+    virtual ~state_recurred() { }
+    void enter(event_t *e) ;
+    ticker_t apply_pattern(broken_down_t &t, int wday, const recurrence_pattern_t *p) ;
+  } ;
+
+  struct state_armed : public gate_state
+  {
+    state_armed(machine *am) : gate_state("ARMED", "TRIGGERED", am) { }
+    virtual ~state_armed() { }
+  private:
+    Q_OBJECT ;
+  } ;
+
+  struct state_triggered : public state
+  {
+    state_triggered(machine *am) : state("TRIGGERED",am) {}
+    virtual ~state_triggered() { }
+    void enter(event_t *e) ;
+  } ;
+
+  struct state_button : public state
+  {
+    signed no ;
+    static QString init_name(signed n) ;
+    state_button(machine *am, signed n) ;
+    virtual ~state_button() { }
+    void enter(event_t *e) ;
+  } ;
+
+  struct state_served : public state
+  {
+    state_served(machine *am) : state("SERVED",am) {}
+    virtual ~state_served() { }
+    void enter(event_t *e) ;
+  } ;
+
+  struct state_tranquil : public io_state
+  {
+    state_tranquil(machine *am) : io_state("TRANQUIL", am) { }
+    virtual ~state_tranquil() { }
+  } ;
+
+  struct state_removed : public state
+  {
+    state_removed(machine *am) : state("REMOVED",am) {}
+    virtual ~state_removed() { }
+    void enter(event_t *e) ;
+  } ;
+
+  struct state_finalized : public state
+  {
+    state_finalized(machine *am) : state("FINALIZED",am) {}
+    virtual ~state_finalized() { }
+    void enter(event_t *e) ;
+  } ;
+
+  struct state_aborted : public state
+  {
+    state_aborted(machine *am) : state("ABORTED",am) {}
+    virtual ~state_aborted() { }
+    void enter(event_t *e) ;
+  } ;
+
+  struct state_dlg_wait : public gate_state
+  {
+  public:
+    state_dlg_wait(machine *am) : gate_state("DLG_WAIT", "DLG_CNTR", am) { }
+    virtual ~state_dlg_wait() { }
+    void enter(event_t *e) ;
+    uint32_t cluster_bits() { return EventFlags::Cluster_Dialog ; }
+  Q_SIGNALS:
+    void voland_needed() ;
+  private:
+    Q_OBJECT ;
+  } ;
+
+  struct state_dlg_cntr : public concentrating_state
+  {
+    const char *back ;
+    state_dlg_cntr(machine *am) : concentrating_state("DLG_CNTR", "DLG_REQU", am), back("DLG_WAIT") { }
+    virtual ~state_dlg_cntr() { }
+    uint32_t cluster_bits() { return EventFlags::Cluster_Dialog ; }
+    void request_voland() ;
+  public Q_SLOTS:
+    void open() ;
+    void send_back() ;
+  private:
+    Q_OBJECT ;
+  } ;
+
+  struct state_dlg_requ : public gate_state
+  {
+    state_dlg_requ(machine *am) : gate_state("DLG_REQU", "DLG_WAIT", am) { }
+    virtual ~state_dlg_requ() { }
+    void enter(event_t *e) ;
+    uint32_t cluster_bits() { return EventFlags::Cluster_Dialog ; }
+    void abort(event_t *e) ;
+    Q_OBJECT ;
+  public Q_SLOTS:
+  } ;
+
+  struct state_dlg_user : public gate_state
+  {
+    state_dlg_user(machine *am) : gate_state("DLG_USER", "DLG_WAIT", am) { }
+    virtual ~state_dlg_user() { }
+    uint32_t cluster_bits() { return EventFlags::Cluster_Dialog ; }
+    void abort(event_t *e) ;
+    Q_OBJECT ;
+  public Q_SLOTS:
+  } ;
+
+  struct state_dlg_resp : public state
+  {
+    state_dlg_resp(machine *am) : state("DLG_RESP", am) { }
+    virtual ~state_dlg_resp() { }
+  } ;
+#endif
+
+#if 0
+void state_start::enter(event_t *e)
+{
+  state::enter(e) ;
+  om->request_state(e, "EPOCH") ;
+}
+
+const char *state_epoch::lost = "/var/cache/timed/SYSTEM_TIME_LOST" ;
+
+state_epoch::state_epoch(machine *am) :
+  gate_state("EPOCH", "NEW", am)
+{
+  if(access(lost, F_OK) != 0)
+    is_open = true ;
+}
+
+void state_epoch::open()
+{
+  if(!is_open && unlink(lost)<0)
+    log_critical("can't unlink '%s': %m", lost) ;
+  gate_state::open() ;
+}
+
+
+void state_new::enter(event_t *e)
+{
+  state::enter(e) ;
+  const char *next_state = "ABORTED" ;  // TODO: make a new state "FAILED" for this case
+
+  if(e->flags & EventFlags::In_Dialog)
+  {
+    ticker_t t_now = om->transition_start_time ;
+
+    bool restore = true ;
+    if(e->last_triggered.is_valid() && t_now - e->last_triggered > om->dialog_discard_threshold)
+      restore = false ;
+
+    if(restore)
+    {
+      e->last_triggered = t_now ;
+      next_state = "DLG_WAIT" ;
+    }
+    else
+    {
+      e->flags &= ~ EventFlags::In_Dialog ;
+      next_state = "SERVED" ;
+    }
+  }
+  else if(e->has_ticker() || e->has_time() || e->has_recurrence())
+    next_state = "SCHEDULER" ;
+  else if(e->to_be_keeped())
+    next_state = "TRANQUIL" ;
+
+  om->request_state(e, next_state) ;
+  om->process_transition_queue() ;
+}
+
+void state_scheduler::enter(event_t *e)
+{
+  state::enter(e) ;
+  log_debug() ;
+  const char *next_state = "QENTRY" ;
+  if(e->has_ticker())
+    e->trigger = ticker_t(e->ticker) ;
+  else if(e->has_time())
+  {
+    struct tm T;
+    T.tm_sec = 0 ;
+    T.tm_min = e->t.minute ;
+    T.tm_hour = e->t.hour ;
+    T.tm_mday = e->t.day ;
+    T.tm_mon = e->t.month - 1 ;
+    T.tm_year = e->t.year - 1900 ;
+    T.tm_isdst = -1 ;
+    log_debug("%d-%d-%d %d:%d", e->t.year, e->t.month, e->t.day, e->t.hour, e->t.minute) ;
+    if (not e->has_timezone())
+      e->trigger = mktime_local(&T) ;
+    else if(Maemo::Timed::is_tz_name(e->tz))
+      e->trigger = mktime_oversea(&T, e->tz) ;
+    else
+      log_error("can't schedule an event for an unknown time zone '%s'", e->tz.c_str()) ;
+
+    log_debug("now=%ld e->trigger=%ld diff=%ld", time(NULL), e->trigger.value(), e->trigger.value()-time(NULL)) ;
+    log_debug("e->has_timezone()=%d", e->has_timezone()) ;
+    if(!e->trigger.is_valid())
+    {
+      log_error("Failed to calculate trigger time for %s", e->t.str().c_str()) ;
+      next_state = "ABORTED" ; // TODO: make a new state "FAILED" for this case
+    }
+  }
+  else if(e->has_recurrence())
+    next_state = "RECURRED" ;
+  log_debug() ;
+  om->request_state(e, next_state) ;
+  log_debug() ;
+}
+
+void state_qentry::enter(event_t *e)
+{
+  state::enter(e) ;
+  log_assert(e->trigger.is_valid()) ;
+  om->request_state(e, "FLT_CONN") ;
+}
+
+state_queued::state_queued(machine *am) : io_state("QUEUED",am)
+{
+  pause_x = 0 ;
+  alarm_timer = new QTimer ;
+  alarm_timer->setSingleShot(true) ;
+  connect(alarm_timer, SIGNAL(timeout()), this, SLOT(alarm_timeout())) ;
+}
+
+state_queued::~state_queued()
+{
+  delete alarm_timer ;
+}
+
+void state_queued::engine_pause(int dx)
+{
+  log_debug("dx=%d, current pause value: '%d', new value will be %d", dx, pause_x, pause_x+dx) ;
+  if(pause_x==0)
+  {
+    log_assert(dx>0) ;
+    timer_stop() ;
+  }
+  pause_x += dx ;
+  if(pause_x==0)
+  {
+    log_assert(dx<0) ;
+    // log_assert(not "debugging assert -> abort()") ;
+    timer_start() ;
+  }
+}
+
+void state_queued::alarm_timeout()
+{
+  queue_pause x(om) ;
+  log_info("waked up by alarm_timer") ;
+  ticker_t time_now = now() ;
+  log_debug("time_now=%ld queue.begin=%ld", time_now.value(), queue.begin()!=queue.end() ? queue.begin()->first.value() : (time_t)-1) ;
+  typedef set<event_pair>::iterator iterator ;
+  bool event_found = false ;
+  for(iterator it=queue.begin(); it!=queue.end() && it->first <= time_now; ++it, event_found=true)
+    om->request_state(it->second, "DUE") ;
+  if(event_found)
+    om->process_transition_queue() ;
+  else
+    log_info("No due event found, need to sleep more") ;
+}
+
+void state_queued::enter(event_t *e)
+{
+  io_state::enter(e) ;
+  queue_pause x(om) ;
+  event_pair p = make_pair(e->trigger, e) ;
+  queue.insert(p) ;
+  if(e->flags & EventFlags::Boot)
+    bootup.insert(p) ;
+}
+
+void state_queued::leave(event_t *e)
+{
+  queue_pause x(om) ;
+  event_pair p = make_pair(e->trigger, e) ;
+  queue.erase(p) ;
+  bootup.erase(p) ;
+  io_state::leave(e) ;
+}
+
+void state_queued::timer_start()
+{
+  if(queue.empty())
+  {
+    log_info("go to sleep, no alarm queued") ;
+    om->send_queue_context() ;
+    emit sleep() ;
+    return ;
+  }
+
+  nanotime_t time_to_wait = nanotime_t(queue.begin()->first.value(), 0) - nanotime_t::systime_now() ;
+  bool no_sleep = false ;
+  if(time_to_wait<0)
+  {
+    log_info("no sleep today: an alarm is %s seconds overdue", (-time_to_wait).str().c_str()) ;
+    no_sleep = true ;
+  }
+  else
+    log_info("go to sleep, next alarm in %s seconds", time_to_wait.str().c_str()) ;
+
+  if(no_sleep)
+    alarm_timer->start(0) ;
+  else
+  {
+    static const int threshold = 3600 ; // One hour
+    int milisec ;
+    if(time_to_wait<threshold)
+      milisec = time_to_wait.sec() * 1000 + time_to_wait.nano() / 1000000 ;
+    else
+      milisec = (threshold-1) * 1000 ;
+    log_debug("starting alarm_timer for %d milisec", milisec) ;
+    alarm_timer->start(milisec) ;
+    om->send_queue_context() ;
+    emit sleep() ;
+  }
+}
+
+void state_queued::timer_stop()
+{
+  alarm_timer->stop() ;
+}
+
+ticker_t state_queued::next_bootup()
+{
+  ticker_t tick ; // default value: invalid
+  set<event_pair>::const_iterator it = bootup.begin() ;
+  if(it!=bootup.end())
+    tick = it->first ;
+  return tick ;
+}
+
+ticker_t state_queued::next_rtc_bootup()
+{
+  ticker_t current_time = om->transition_start_time ;
+  if(!current_time.is_valid()) // not in transition
+    current_time = now() ;
+
+  ticker_t threshold = current_time + RenameMeNameSpace::Dsme_Poweroff_Threshold ;
+
+  ticker_t tick ; // default value: invalid
+  typedef set<event_pair>::const_iterator iterator ;
+  for(iterator it = bootup.begin(); it != bootup.end(); ++it)
+  {
+    if(it->first <= threshold)
+      continue ;
+    tick = it->first ;
+    break ;
+  }
+
+  return tick ;
+}
+
+void state_queued::filter_closed(filter_state *f_st)
+{
+  log_assert(!f_st->is_open) ;
+  queue_pause x(om) ;
+  typedef set<event_pair>::iterator iterator ;
+  bool event_found = false ;
+  log_debug("event_found=%d", event_found) ;
+  for(iterator it=queue.begin(); it!=queue.end(); ++it)
+  {
+    if(! f_st->filter(it->second))
+      continue ;
+    event_found = true ;
+    log_debug("event_found=%d", event_found) ;
+    log_debug("event [%u] found in state '%s', requesting staet '%s'", it->second->cookie.value(), name(), f_st->name()) ;
+    om->request_state(it->second, f_st) ;
+  }
+  log_debug("event_found=%d", event_found) ;
+  if(event_found)
+    om->process_transition_queue() ;
+}
+
+bool state_flt_conn::filter(event_t *e)
+{
+  return (e->flags & EventFlags::Need_Connection) != 0 ;
+}
+
+bool state_flt_alrm::filter(event_t *e)
+{
+  return (e->flags & EventFlags::Alarm) != 0 ;
+}
+
+bool state_flt_user::filter(event_t *e)
+{
+  return (e->flags & EventFlags::User_Mode) != 0 ;
+}
+
+void state_missed::enter(event_t *e)
+{
+  state::enter(e) ;
+  const char *next_state = "SKIPPED" ;
+
+  e->flags |= EventFlags::Missed ;
+
+  if(e->flags & EventFlags::Trigger_If_Missed)
+    next_state = "ARMED" ;
+  om->request_state(e, next_state) ;
+}
+
+void state_due::enter(event_t *e)
+{
+  state::enter(e) ;
+
+  // assume it's not missed, this flag will be set in MISSED state
+  e->flags &= ~ EventFlags::Missed ;
+
+  const char *next_state = "ARMED" ;
+  if(e->flags & EventFlags::Empty_Recurring)
+    next_state = "RECURRED" ;
+  else if(om->transition_started() - e->trigger > RenameMeNameSpace::Missing_Threshold)
+    next_state = "MISSED" ;
+  om->request_state(e, next_state) ;
+  log_debug("event [%d]: e->trigger=%ld, now=%ld, state->%s", e->cookie.value(), e->trigger.value(), om->transition_started().value(), next_state) ;
+  e->last_triggered = om->transition_started() ;
+  e->flags &= ~ EventFlags::Snoozing ;
+}
+
+void state_snoozed::enter(event_t *e)
+{
+  state::enter(e) ;
+  log_assert(e->to_be_snoozed > 0) ;
+  // compute next trigger time and jump back to queue
+
+  if(e->flags & EventFlags::Aligned_Snooze)
+    e->ticker = ticker_align(e->last_triggered, e->to_be_snoozed, om->transition_started());
+  else
+    e->ticker = om->transition_started() + e->to_be_snoozed ;
+
+  e->flags |= EventFlags::Snoozing ;
+  e->to_be_snoozed = 0 ; // doesn't need it anymore
+  om->request_state(e, "SCHEDULER") ;
+  om->invoke_process_transition_queue() ;
+}
+
+ticker_t state_recurred::apply_pattern(broken_down_t &t, int wday, const recurrence_pattern_t *p)
+{
+  unsigned nxt_year = t.year + 1 ;
+  if(broken_down_t::YEARX <= nxt_year)
+    -- nxt_year ;
+  broken_down_t started = t ;
+  for(bool today_flag=true;  t.find_a_good_day(p, wday, today_flag, nxt_year) ; today_flag=false)
+  {
+    log_debug() ;
+    broken_down_t td = t ;
+    if(!today_flag)
+      td.hour = td.minute = 0 ;
+    while(td.find_a_good_minute(p))
+    {
+      struct tm tm ;
+      td.to_struct_tm(&tm) ;
+      log_debug("td=(%s)", td.str().c_str()) ;
+      log_debug("tm=%s", tm_str(&tm).c_str()) ;
+      time_t time = mktime(&tm) ;
+      log_debug("time=%d", (int)time) ;
+      if(time==time_t(-1))
+        continue ;
+      log_debug() ;
+      if(time <= om->transition_started().value())
+      {
+        log_debug() ;
+        td.increment_min(1) ;
+        log_debug() ;
+        continue ;
+      }
+      log_debug() ;
+      if(!td.same_struct_tm(&tm))
+      {
+        td.increment_min(1) ;
+        continue ;
+      }
+      log_debug() ;
+      t = td ;
+      return ticker_t(time) ;
+    }
+  }
+  log_debug() ;
+  return ticker_t(0) ;
+}
+
+void state_recurred::enter(event_t *e)
+{
+  state::enter(e) ;
+  switch_timezone x(e->tz) ;
+  broken_down_t best, now ;
+  int now_wday ;
+  now.from_time_t(om->transition_started(), &now_wday) ;
+  ticker_t best_ticker = ticker_t(0) ;
+  for(unsigned i=0; i<e->recrs.size(); ++i)
+  {
+    broken_down_t t = now ;
+    ticker_t res = apply_pattern(t, now_wday, &e->recrs[i]) ;
+    if(res.is_valid() && (!best_ticker.is_valid() || res<best_ticker))
+      best = t, best_ticker = res ;
+  }
+  const char *next_state = "QENTRY" ;
+  if(best_ticker.is_valid())
+  {
+    e->flags &= ~ EventFlags::Empty_Recurring ;
+    e->trigger = best_ticker ;
+  }
+  else
+  {
+    e->flags |= EventFlags::Empty_Recurring ;
+    e->t.year = now.year+1, e->t.month = 12, e->t.day = 31, e->t.hour = 0, e->t.minute = 42 ;
+    if(e->t.is_valid()) // it valid from until 2036
+      next_state = "SCHEDULER" ; // back to scheduler
+    else
+      next_state = "ABORTED" ; // TODO: FAILED is better here
+  }
+  om->request_state(e, next_state) ;
+}
+
+void state_triggered::enter(event_t *e)
+{
+  state::enter(e) ;
+
+  // Frist get rid of one time trigger info:
+  e->ticker = ticker_t() ;
+  e->invalidate_t() ;
+
+  if(e->flags & EventFlags::Single_Shot)
+    e->recrs.resize(0) ; // no recurrence anymore
+  om->request_state(e, e->flags & EventFlags::Reminder ? "DLG_WAIT" : "SERVED") ;
+  om->process_transition_queue() ;
+}
+
+QString state_button::init_name(signed no)
+{
+  QString template_str = "BUTTON_%1_%2" ;
+  return QString(template_str).arg(no>0 ? "APP" : "SYS").arg(no>0 ? no : -no) ;
+}
+
+state_button::state_button(machine *am, signed n) : state(init_name(n).toStdString().c_str(), am)
+{
+  no = n ;
+  set_action_mask(no>0 ? ActionFlags::app_button(no) : ActionFlags::sys_button(-no)) ;
+}
+
+void state_button::enter(event_t *e)
+{
+  log_debug("Voland-response: cookie=%d, button-value=%d", e->cookie.value(), no) ;
+  state::enter(e) ;
+  int snooze_length = 0 ;
+
+  if (e->tsz_max)
+  {
+    log_debug("processing restricted timeout snooze event: cookie=%d, max=%d, count=%d", e->cookie.value(), e->tsz_max, e->tsz_counter) ;
+    if (no!=0)
+      e->tsz_counter=0 ;
+    else if (e->tsz_counter < e->tsz_max)
+    {
+      ++ e->tsz_counter ;
+      snooze_length = e->snooze[0] ;
+    }
+    log_debug("processed: cookie=%d, max=%d, count=%d, snooze=%d", e->cookie.value(), e->tsz_max, e->tsz_counter, snooze_length) ;
+  }
+  else if (no==0)
+    snooze_length = e->snooze[0] ;
+
+  if(no==-1) // system wide default snooze button #1
+    snooze_length = +1 ;
+  else if(no>0)
+  {
+    log_assert((unsigned)no < e->snooze.size()) ;
+    snooze_length = e->snooze[no] ;
+  }
+
+  // handle special value, +1 means default snooze
+  // It's hardcoded for 5min for now...
+  if(snooze_length==+1)
+    snooze_length = om->owner->settings->default_snooze() ;
+
+  if(snooze_length > 0)
+  {
+    e->to_be_snoozed = snooze_length ;
+    om->request_state(e, "SNOOZED") ;
+  }
+  else
+  {
+    om->request_state(e, "SERVED") ;
+  }
+}
+
+void state_served::enter(event_t *e)
+{
+  state::enter(e) ;
+  bool recu = e->has_recurrence() ;
+  bool keep = e->to_be_keeped() ;
+  om->request_state(e, recu ? "RECURRED" : keep ? "TRANQUIL" : "REMOVED") ;
+  om->process_transition_queue() ;
+}
+
+void state_removed::enter(event_t *e)
+{
+  state::enter(e) ;
+  om->request_state(e, "FINALIZED") ;
+  om->process_transition_queue() ;
+}
+
+void state_finalized::enter(event_t *e)
+{
+  state::enter(e) ;
+  om->request_state(e, (state*)NULL) ;
+  om->process_transition_queue() ;
+}
+
+void state_aborted::enter(event_t *e)
+{
+  state::enter(e) ;
+  om->request_state(e, "FINALIZED") ;
+  om->process_transition_queue() ;
+}
+
+void state_dlg_wait::enter(event_t *e)
+{
+  e->flags |= EventFlags::In_Dialog ;
+  if(!is_open)
+    emit voland_needed() ;
+  gate_state::enter(e) ;
+}
+
+void state_dlg_cntr::open()
+{
+  log_debug() ;
+  if (not events.empty())
+    request_voland() ;
+  concentrating_state::open() ;
+  log_debug() ;
+}
+
+void state_dlg_cntr::send_back()
+{
+  log_debug() ;
+  for(set<event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
+    om->request_state(*it, back) ;
+  if (not events.empty())
+    om->process_transition_queue() ;
+  log_debug() ;
+}
+
+void state_dlg_cntr::request_voland()
+{
+  if (events.empty())
+    return ; // avoid a memory leak for 'w' below.
+
+  QList<QVariant> reminders ;
+  request_watcher_t *w = new request_watcher_t(om) ;
+  Maemo::Timed::Voland::Interface ifc ;
+  for(set<event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
+  {
+    event_t *e = *it ;
+    w->attach(e) ;
+    Maemo::Timed::Voland::reminder_pimple_t *p = new Maemo::Timed::Voland::reminder_pimple_t ;
+    log_debug("was soll ich schon vergessen haben?") ;
+    p->flags = e->flags & EventFlags::Voland_Mask ;
+    log_debug() ;
+    p->cookie = e->cookie.value() ;
+    log_debug() ;
+    map_std_to_q(e->attr.txt, p->attr) ;
+    log_debug() ;
+    p->buttons.resize(e->b_attr.size()) ;
+    log_debug() ;
+    for(int i=0; i<p->buttons.size(); ++i)
+      map_std_to_q(e->b_attr[i].txt, p->buttons[i].attr) ;
+    log_debug() ;
+    log_debug() ;
+    Maemo::Timed::Voland::Reminder R(p) ;
+    reminders.push_back(QVariant::fromValue(R)) ;
+#if 1 // GET RID OF THIS PIECE SOON !
+    log_debug() ;
+    Maemo::Timed::Voland::Reminder RR = R ;
+    ifc.open_async(RR); // fire and forget
+    log_debug() ;
+#endif
+    log_debug() ;
+  }
+  log_debug() ;
+  QDBusPendingCall async = ifc.open_async(reminders) ;
+  w->watch(async) ;
+}
+
+void state_dlg_requ::enter(event_t *e)
+{
+  gate_state::enter(e) ;
+}
+
+void state_dlg_requ::abort(event_t *e)
+{
+  if (e->request_watcher)
+    e->request_watcher->detach(e) ;
+
+  Maemo::Timed::Voland::Interface ifc ;
+  ifc.close_async(e->cookie.value()) ;
+
+  io_state::abort(e) ;
+}
+
+void state_dlg_user::abort(event_t *e)
+{
+  Maemo::Timed::Voland::Interface ifc ;
+  ifc.close_async(e->cookie.value()) ;
+
+  io_state::abort(e) ;
+}
+
+void cluster_queue::enter(event_t *e)
+{
+  log_debug() ;
+  bool empty_r = e->flags & EventFlags::Empty_Recurring ;
+  bool alarm = e->flags & EventFlags::Alarm ;
+  if(alarm && !empty_r)
+  {
+    QString key = QString("%1").arg(e->cookie.value()) ;
+    uint64_t value = (uint64_t)nanotime_t::NANO * e->trigger.value() ;
+    alarm_triggers.insert(key, value) ;
+    log_debug("inserted %s=>%lld, state=%s", key.toStdString().c_str(), value, e->st->name()) ;
+    om->context_changed = true ;
+  }
+}
+
+void cluster_queue::leave(event_t *e)
+{
+  bool empty_r = e->flags & EventFlags::Empty_Recurring ;
+  bool alarm = e->flags & EventFlags::Alarm ;
+  log_debug() ;
+  if(alarm && !empty_r)
+  {
+    log_debug() ;
+    QString key = QString("%1").arg(e->cookie.value()) ;
+    alarm_triggers.remove(key) ;
+    log_debug("removed %s=>'' state=%s", key.toStdString().c_str(), e->st ? e->st->name() : "null") ;
+    om->context_changed = true ;
+  }
+}
+
+void cluster_dialog::enter(event_t *e)
+{
+  bool is_bootup = e->flags & EventFlags::Boot ;
+  if(is_bootup)
+    log_debug("insertng [%d]  to  cluster_dialog", e->cookie.value()) ;
+  if(is_bootup)
+    bootup_events.insert(e) ;
+}
+
+void cluster_dialog::leave(event_t *e)
+{
+  if(bootup_events.count(e))
+    log_debug("removing [%d] from cluster_dialog", e->cookie.value()) ;
+  bootup_events.erase(e) ;
+}
+
+bool cluster_dialog::has_bootup_events()
+{
+  return !bootup_events.empty() ;
+}
+#endif
+
+#if 0
+  struct state
+  {
+    state(const char *, machine *) ;
+    machine *om ;
+    string sname ;
+    uint32_t action_mask ;
+    const char *name() const { return sname.c_str() ; }
+    uint32_t get_action_mask() { return action_mask ; }
+    void set_action_mask(uint32_t a) { action_mask = a ; }
+    virtual void enter(event_t *) ;
+    virtual void leave(event_t *) ;
+    virtual uint32_t cluster_bits() { return 0 ; }
+    virtual ~state() ;
+  } ;
+
+  struct io_state : public QObject, public state
+  {
+    set <event_t *> events ;
+    io_state(const char *, machine *, QObject *p = NULL) ;
+    void enter(event_t *) ;
+    void leave(event_t *) ;
+    virtual void abort(event_t *) ;
+    // virtual bool save_in_due_state() = 0 ;
+    virtual ~io_state() { }
+    Q_OBJECT ;
+  } ;
+
+  struct gate_state : public io_state
+  {
+    gate_state(const char *name, const char *nxt, machine *, QObject *p=NULL) ;
+    virtual ~gate_state() { }
+    string nxt_state ;
+    bool is_open ;
+    void enter(event_t *) ;
+    Q_OBJECT ;
+  public Q_SLOTS:
+    void close() ;
+    virtual void open() ;
+  Q_SIGNALS:
+    void closed() ;
+    void opened() ;
+  } ;
+
+  struct concentrating_state : public gate_state
+  {
+    concentrating_state(const char *name, const char *nxt, machine *m, QObject *p=NULL) : gate_state(name, nxt, m, p) { }
+    virtual ~concentrating_state() { }
+    Q_OBJECT ;
+  public Q_SLOTS:
+    void open() ;
+  } ;
+
+  struct filter_state : public gate_state
+  {
+    filter_state(const char *name, const char *retry, const char *nxt, machine *, QObject *p=NULL) ;
+    virtual ~filter_state() { }
+    string next ;
+    virtual bool filter(event_t *) = 0 ;
+    void enter(event_t *) ;
+    Q_OBJECT ;
+  Q_SIGNALS:
+    void closed(filter_state *state) ;
+  private Q_SLOTS:
+    void emit_close() { emit closed(this) ; }
+  } ;
+#endif
+
+#if 0
+  struct abstract_cluster
+  {
+    machine *om ;
+    uint32_t bit ;
+    string name ;
+    abstract_cluster(machine *m, uint32_t b, const char *n) : om(m), bit(b), name(n) { }
+    virtual ~abstract_cluster() { }
+    virtual void enter(event_t *e) = 0 ;
+    virtual void leave(event_t *) { }
+  } ;
+#endif
+
+#if 0
+  struct machine : public QObject
+  {
+    machine(const Timed *daemon) ;
+    virtual ~machine() ;
+
+    const Timed *owner ;
+    int next_cookie ;
+    uint32_t flags ;
+    map<string, state*> states ;
+    map<cookie_t, event_t*> events ;
+    map<uint32_t, abstract_cluster*> clusters ;
+    deque <pair <event_t*, state*> > transition_queue ;
+    ticker_t transition_start_time ;
+    bool context_changed ;
+    map<int, state*> button_states ;
+    int dialog_discard_threshold ;
+    int32_t signalled_bootup ;
+    state_epoch *epoch ;
+
+    bool transition_in_progress() { return transition_start_time.is_valid() ; }
+    ticker_t transition_started() { return transition_start_time ; }
+    uint32_t attr(uint32_t mask) ;
+    cookie_t add_event(const Maemo::Timed::event_io_t *, bool process_queue, const credentials_t *pcreds, const QDBusMessage *message) ;
+    void add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVariant> &res, const QDBusMessage &message) ;
+    void query(const QMap<QString,QVariant> &words, QList<QVariant> &res ) ;
+    void get_event_attributes(cookie_t c, QMap<QString,QVariant> &a) ;
+    bool cancel_by_cookie(cookie_t c) ;
+    void cancel_event(event_t *e) ;
+    event_t *find_event(cookie_t c) ;
+    void alarm_gate(bool value) ;
+    bool dialog_response(cookie_t c, int value) ;
+    Q_INVOKABLE void process_transition_queue() ;
+    void update_rtc_alarm() ;
+    ticker_t calculate_bootup() ;
+    void send_bootup_signal() ;
+    void invoke_process_transition_queue() ;
+    void reshuffle_queue(const nanotime_t &back) ;
+    void request_state(event_t *e, state *st) ;
+    void request_state(event_t *e, const char *state_name) ;
+    void request_state(event_t *e, const string &state_name) ;
+    void send_queue_context() ;
+    Q_OBJECT ;
+  public Q_SLOTS:
+  Q_SIGNALS:
+    void engine_pause(int dx) ;
+    void voland_registered() ;
+    void voland_unregistered() ;
+    void queue_to_be_saved() ;
+    void voland_needed() ;
+    void next_bootup_event(int) ;
+    void child_created(unsigned, int) ;
+  public:
+    void emit_child_created(unsigned cookie, int pid) { emit child_created(cookie, pid) ; }
+    queue_pause *initial_pause ;
+    void emit_engine_pause(int dx) { emit engine_pause(dx) ; }
+    void start() ; //  { delete initial_pause ; initial_pause = NULL ; process_transition_queue() ; }
+    void device_mode_detected(bool user_mode) ;
+    bool is_epoch_open() ;
+    void open_epoch() ;
+    iodata::record *save(bool for_backup) ;
+    void load(const iodata::record *) ;
+    void load_events(const iodata::array *events_data, bool trusted_source, bool use_cookies) ;
+    void cancel_backup_events() ;
+  private:
+    string s_states() ;
+    string s_transition_queue() ;
+  } ;
+
+  struct queue_pause
+  {
+    machine *om ;
+    queue_pause(machine *m) : om(m) { om->emit_engine_pause(+1) ; }
+   ~queue_pause() { om->emit_engine_pause(-1) ; }
+  } ;
+
+struct request_watcher_t : public QObject
+{
+  request_watcher_t(machine *) ;
+ ~request_watcher_t() ;
+  void watch(const QDBusPendingCall &async_call) ;
+  void attach(event_t *e) ;
+  void detach(event_t *e) ;
+private:
+  void detach_not_destroy(event_t *e) ;
+  Q_OBJECT ;
+  set<event_t*> events ;
+  machine *om ;
+  QDBusPendingCallWatcher *w ;
+private Q_SLOTS:
+  void call_returned(QDBusPendingCallWatcher *w) ;
+} ;
+#endif // 0
+
+#if 0
+  state::state(const char *n, machine *m) : om(m)
+  {
+    log_assert(n!=NULL) ;
+    sname = n ;
+    action_mask = 0 ;
+  }
+
+  state::~state()
+  {
+  }
+
+  void state::enter(event_t *e)
+  {
+    uint32_t cluster_before = e->flags & EventFlags::Cluster_Mask ;
+    uint32_t cluster_after = cluster_bits() ;
+    uint32_t off = cluster_before & ~cluster_after ;
+    uint32_t on = cluster_after & ~cluster_before ;
+    log_debug("[%d]->%s before=0x%08X after=0x%08X off=0x%08X on=0x%08X", e->cookie.value(), name(), cluster_before, cluster_after, off, on) ;
+    for(uint32_t b; b = (off ^ (off-1)), b &= off ; off ^= b)
+      om->clusters[b]->leave(e) ;
+
+    e->flags &= ~ EventFlags::Cluster_Mask ;
+    e->flags |= cluster_after ;
+    for(uint32_t b; b = (on ^ (on-1)), b &= on ; on ^= b)
+      om->clusters[b]->enter(e) ;
+  }
+
+  void state::leave(event_t *)
+  {
+  }
+
+  io_state::io_state(const char *n, machine *m, QObject *parent)
+    : QObject(parent), state(n, m)
+  {
+  }
+
+  void io_state::enter(event_t *e)
+  {
+    state::enter(e) ; // process clusters
+    events.insert(e) ;
+  }
+
+  void io_state::leave(event_t *e)
+  {
+    events.erase(e) ;
+    state::leave(e) ; // does nothing
+  }
+
+  void io_state::abort(event_t *e)
+  {
+    om->request_state(e, "ABORTED") ;
+    om->process_transition_queue() ;
+  }
+
+  void gate_state::enter(event_t *e)
+  {
+    if(is_open)
+    {
+      state::enter(e) ;
+      om->request_state(e, nxt_state) ;
+      om->process_transition_queue() ;
+    }
+    else
+      io_state::enter(e) ;
+  }
+
+  gate_state::gate_state(const char *name, const char *nxt, machine *m, QObject *p) :
+    io_state(name, m, p),
+    nxt_state(nxt),
+    is_open(false)
+  {
+  }
+
+  void gate_state::close()
+  {
+    is_open = false ;
+    emit closed() ;
+  }
+
+  void gate_state::open()
+  {
+    log_debug() ;
+    is_open = true ;
+    log_debug() ;
+    for(set<event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
+      om->request_state(*it, nxt_state) ;
+    log_debug("events.empty()=%d", events.empty()) ;
+    if (not events.empty())
+      om->process_transition_queue() ;
+    log_debug() ;
+    emit opened() ;
+  }
+
+  void concentrating_state::open()
+  {
+    // Not setting "is_open" to true: it's always closed
+    // Not emit any opened() / closed() signals
+    log_debug() ;
+    for(set<event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
+      om->request_state(*it, nxt_state) ;
+    if (not events.empty())
+      om->process_transition_queue() ;
+    log_debug() ;
+  }
+
+  filter_state::filter_state(const char *name, const char *retry, const char *nxt, machine *m, QObject *p) :
+    gate_state(name, retry, m, p),
+    next(nxt)
+  {
+    QObject::connect(this, SIGNAL(closed()), this, SLOT(emit_close())) ;
+  }
+
+  void filter_state::enter(event_t *e)
+  {
+    if(is_open || ! filter(e))
+    {
+      om->request_state(e, next) ;
+      om->process_transition_queue() ;
+    }
+    else
+      gate_state::enter(e) ;
+  }
+#endif
+
+#if 0
+  void machine::start()
+  {
+    delete initial_pause ;
+    initial_pause = NULL ;
+    process_transition_queue() ;
+  }
+
+  machine::machine(const Timed *daemon) : owner(daemon)
+  {
+    log_debug() ;
+    // T = transition state
+    // IO = waiting for i/o state
+    // G = gate state
+    // C = concentrating gate state
+    // F = filtering state
+    // A = actions allowed
+    // -->NEW loaded as new
+    // -->DUE loaded as due
+    state *S[] =
+    {
+      new state_start(this),          // T
+        epoch =
+      new state_epoch(this),          // T
+      new state_new(this),            // T
+      new state_scheduler(this),      // T
+      new state_qentry(this),         // T
+      new state_flt_conn(this),       // IO G F -->NEW
+      new state_flt_alrm(this),       // IO G F -->NEW
+      new state_flt_user(this),       // IO G F -->NEW
+      new state_queued(this),         // IO A   -->NEW
+
+      new state_due(this),            // T
+
+      new state_missed(this),         // T A
+//      new state_postponed(this),      // T
+      new state_skipped(this),        // T
+
+      new state_armed(this),          // IO G
+      new state_triggered(this),      // T A
+
+      new state_dlg_wait(this),       // IO G   -->DUE
+      new state_dlg_cntr(this),       // IO C   -->DUE
+      new state_dlg_requ(this),       // IO G   -->DUE
+      new state_dlg_user(this),       // IO G   -->DUE
+      new state_dlg_resp(this),       // T
+
+      /* state_button: below */       // T A
+
+      new state_snoozed(this),        // T
+      new state_recurred(this),       // T
+      new state_served(this),         // T
+      new state_tranquil(this),       // IO A -->DUE
+
+      new state_removed(this),        // T
+      new state_aborted(this),        // T
+      new state_finalized(this),      // T A
+      NULL
+    } ;
+    log_debug() ;
+    for(int i=0; S[i]; ++i)
+      states[S[i]->name()] = S[i] ;
+
+
+    log_debug() ;
+    for(int i=0; i<=Maemo::Timed::Number_of_Sys_Buttons; ++i)
+    {
+      state *s = new state_button(this, -i) ;
+      states[s->name()] = s ;
+      button_states[-i] = s ;
+    }
+
+    log_debug() ;
+    for(int i=1; i<=Maemo::Timed::Max_Number_of_App_Buttons; ++i)
+    {
+      state *s = new state_button(this, i) ;
+      states[s->name()] = s ;
+      button_states[i] = s ;
+    }
+
+    log_debug() ;
+    states["TRIGGERED"]->set_action_mask(ActionFlags::State_Triggered) ;
+    states["QUEUED"]->set_action_mask(ActionFlags::State_Queued) ;
+    states["MISSED"]->set_action_mask(ActionFlags::State_Missed) ;
+    states["TRANQUIL"]->set_action_mask(ActionFlags::State_Tranquil) ;
+    states["FINALIZED"]->set_action_mask(ActionFlags::State_Finalized) ;
+    states["DUE"]->set_action_mask(ActionFlags::State_Due) ;
+    states["SNOOZED"]->set_action_mask(ActionFlags::State_Snoozed) ;
+    states["SERVED"]->set_action_mask(ActionFlags::State_Served) ;
+    states["ABORTED"]->set_action_mask(ActionFlags::State_Aborted) ;
+    if(0) states["FAILED"]->set_action_mask(ActionFlags::State_Failed) ;
+
+    log_debug() ;
+    io_state *queued = dynamic_cast<io_state*> (states["QUEUED"]) ;
+    log_assert(queued!=NULL) ;
+
+    gate_state *armed = dynamic_cast<gate_state*> (states["ARMED"]) ;
+    log_assert(armed!=NULL) ;
+    armed->open() ; // will be closed in some very special situations
+
+    log_debug() ;
+    gate_state *dlg_wait = dynamic_cast<gate_state*> (states["DLG_WAIT"]) ;
+    gate_state *dlg_requ = dynamic_cast<gate_state*> (states["DLG_REQU"]) ;
+    gate_state *dlg_user = dynamic_cast<gate_state*> (states["DLG_USER"]) ;
+    gate_state *dlg_cntr = dynamic_cast<gate_state*> (states["DLG_CNTR"]) ;
+    log_assert(dlg_wait!=NULL) ;
+    log_assert(dlg_requ!=NULL) ;
+    log_assert(dlg_user!=NULL) ;
+    log_assert(dlg_cntr!=NULL) ;
+
+    QObject::connect(dlg_wait, SIGNAL(voland_needed()), this, SIGNAL(voland_needed())) ;
+
+    QObject::connect(dlg_wait, SIGNAL(closed()), dlg_requ, SLOT(open())) ;
+    QObject::connect(dlg_wait, SIGNAL(closed()), dlg_user, SLOT(open())) ;
+    QObject::connect(dlg_requ, SIGNAL(closed()), dlg_wait, SLOT(open())) ;
+
+    QObject::connect(this, SIGNAL(voland_registered()), dlg_requ, SLOT(close())) ;
+    QObject::connect(this, SIGNAL(voland_registered()), dlg_user, SLOT(close())) ;
+    QObject::connect(this, SIGNAL(voland_unregistered()), dlg_wait, SLOT(close())) ;
+    QObject::connect(this, SIGNAL(voland_unregistered()), dlg_cntr, SLOT(send_back())) ;
+
+    QObject::connect(queued, SIGNAL(sleep()), dlg_cntr, SLOT(open()), Qt::QueuedConnection) ;
+    QObject::connect(dlg_wait, SIGNAL(opened()), dlg_cntr, SLOT(open()), Qt::QueuedConnection) ;
+
+    log_debug() ;
+    filter_state *flt_conn = dynamic_cast<filter_state*> (states["FLT_CONN"]) ;
+    filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
+    filter_state *flt_user = dynamic_cast<filter_state*> (states["FLT_USER"]) ;
+    log_assert(flt_conn) ;
+    log_assert(flt_alrm) ;
+    log_assert(flt_user) ;
+
+    QObject::connect(flt_conn, SIGNAL(closed(filter_state*)), queued, SLOT(filter_closed(filter_state*))) ;
+    QObject::connect(flt_alrm, SIGNAL(closed(filter_state*)), queued, SLOT(filter_closed(filter_state*))) ;
+    QObject::connect(flt_user, SIGNAL(closed(filter_state*)), queued, SLOT(filter_closed(filter_state*))) ;
+
+
+    log_debug() ;
+    QObject::connect(this, SIGNAL(engine_pause(int)), queued, SLOT(engine_pause(int))) ;
+    log_debug() ;
+    initial_pause = new queue_pause(this) ;
+    log_debug() ;
+
+    cluster_queue *c_queue = new cluster_queue(this) ;
+    log_debug() ;
+    clusters[c_queue->bit] = c_queue ;
+    log_debug() ;
+
+    cluster_dialog *c_dialog = new cluster_dialog(this) ;
+    log_debug() ;
+    clusters[c_dialog->bit] = c_dialog ;
+    log_debug() ;
+    signalled_bootup = -1 ; // no signal sent yet
+    log_debug() ;
+
+    log_debug("owner->settings->alarms_are_enabled=%d", owner->settings->alarms_are_enabled) ;
+    log_debug() ;
+    alarm_gate(owner->settings->alarms_are_enabled) ;
+    log_debug() ;
+
+    transition_start_time = ticker_t(0) ;
+    log_debug() ;
+    next_cookie = 1 ;
+    log_debug() ;
+    context_changed = false ;
+    log_debug("last line") ;
+  }
+
+  machine::~machine()
+  {
+    log_debug() ;
+
+    log_notice("deleting events") ;
+    for (map<cookie_t, event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
+      delete it->second ;
+
+    log_notice("deleting clusters") ;
+    for (map<uint32_t, abstract_cluster*>::iterator it=clusters.begin(); it!=clusters.end(); ++it)
+      delete it->second ;
+
+    log_notice("deleting states") ;
+    for (map<string, state*>::iterator it=states.begin(); it!=states.end(); ++it)
+      delete it->second ;
+
+    log_debug() ;
+  }
+
+  void machine::device_mode_detected(bool user_mode)
+  {
+    filter_state *flt_user = dynamic_cast<filter_state*> (states["FLT_USER"]) ;
+    log_assert(flt_user) ;
+    if(user_mode)
+      flt_user->open() ;
+    else
+      flt_user->close() ;
+    log_info("device_mode_detected: %s", user_mode ? "USER" : "ACT_DEAD") ;
+  }
+
+  bool machine::is_epoch_open()
+  {
+    return epoch->is_open ;
+  }
+
+  void machine::open_epoch()
+  {
+    epoch->open() ;
+  }
+
+  string machine::s_states()
+  {
+    ostringstream os ;
+    map<string, set<event_t*> > s2e ;
+    for (map<cookie_t, event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
+    {
+      event_t *e = it->second ;
+      string name = e->get_state()==NULL ? "<null>" : e->get_state()->name() ;
+      s2e[name].insert(e) ;
+    }
+
+    for (map<string, set<event_t*> >::const_iterator it=s2e.begin(); it!=s2e.end(); ++it)
+      for (set<event_t*>::const_iterator q=it->second.begin(); q!=it->second.end(); ++q)
+        os << (q==it->second.begin() ? string(it==s2e.begin()?"":" ")+it->first+":" : ",") << (*q)->cookie.value() ;
+
+    return os.str() ;
+  }
+
+  string machine::s_transition_queue()
+  {
+    ostringstream os ;
+    for(deque<pair<event_t*, state*> >::const_iterator it=transition_queue.begin(); it!=transition_queue.end(); ++it)
+    {
+      cookie_t c = it->first->cookie ;
+      state *s = it->second ;
+      bool first = it==transition_queue.begin() ;
+      os << (first ? "" : ", ") << c.value() << "->" << (s?s->name():"null") ;
+    }
+    return os.str() ;
+  }
+
+  void machine::process_transition_queue()
+  {
+    if(transition_in_progress())
+    {
+      log_debug("process_transition_queue() is already in progress, returning") ;
+      return ; // never do it recursively
+    }
+    // log_debug("begin processing, states: %s tqueue: %s" , s_states().c_str(), s_transition_queue().c_str()) ;
+    transition_start_time = ticker_t(now()) ;
+    bool queue_changed = false ;
+    for(; !transition_queue.empty(); queue_changed = true, transition_queue.pop_front())
+    {
+      event_t *e = transition_queue.front().first ;
+      state *old_state = e->get_state() ;
+      state *new_state = transition_queue.front().second ;
+      log_assert(new_state!=old_state, "New state is the same as the old one (%s)", old_state->name()) ;
+#define state_name(p) (p?p->name():"null")
+      log_info("State transition %d:'%s'->'%s'", e->cookie.value(), state_name(old_state), state_name(new_state)) ;
+#undef state_name
+      if(old_state)
+        old_state->leave(e) ;
+      e->set_state(new_state) ;
+      if(new_state)
+      {
+        new_state->enter(e) ;
+        e->sort_and_run_actions(new_state->get_action_mask()) ;
+      }
+      else
+      {
+        log_info("Destroying the event %u (event object %p)", e->cookie.value(), e) ;
+        events.erase(e->cookie) ;
+        delete e ;
+      }
+    }
+    // log_debug("processing done,  states: %s tqueue: %s" , s_states().c_str(), s_transition_queue().c_str()) ;
+    update_rtc_alarm() ;
+    transition_start_time = ticker_t(0) ;
+    if(queue_changed)
+      emit queue_to_be_saved() ;
+    if(context_changed)
+      send_queue_context() ;
+    send_bootup_signal() ;
+  }
+
+  void machine::update_rtc_alarm()
+  {
+    state_queued *q = dynamic_cast<state_queued*> (states["QUEUED"]) ;
+    log_assert(q!=NULL) ;
+    time_t tick = q->next_rtc_bootup().value() ;
+    if(tick>0) // valid
+    {
+      tick -= RenameMeNameSpace::Bootup_Length ;
+      if(tick < transition_start_time.value())
+        tick = -1 ;
+    }
+    struct rtc_wkalrm rtc ;
+    memset(&rtc, 0, sizeof(struct rtc_wkalrm)) ;
+
+    if(tick>0) // still valid
+      rtc.enabled = 1 ;
+    else
+    {
+      rtc.enabled = 0 ;
+      tick = transition_start_time.value() ; // need a valid timestamp
+    }
+
+    log_debug("rtc.enabled=%d", rtc.enabled) ;
+    struct tm tm ;
+    gmtime_r(&tick, &tm) ;
+    memset(&rtc.time, -1, sizeof rtc.time) ;
+#define cp(name) rtc.time.tm_##name = tm.tm_##name
+    cp(sec), cp(min), cp(hour), cp(mday), cp(mon), cp(year) ;
+#undef cp
+
+    int fd = open("/dev/rtc0", O_RDONLY) ;
+    if(fd<0)
+    {
+      log_error("Can't open real time clock: %s", strerror(errno)) ;
+      return ;
+    }
+    int res = ioctl(fd, RTC_WKALM_SET, &rtc) ;
+    if(res<0)
+      log_error("Can't set real time clock alarm: %s", strerror(errno)) ;
+    else
+      log_info("Real time clock alarm: %s", !rtc.enabled ? "OFF"
+        : str_printf("ON (%04d-%02d-%02d %02d:%02d:%02d)",
+          rtc.time.tm_year+1900, rtc.time.tm_mon+1, rtc.time.tm_mday,
+          rtc.time.tm_hour, rtc.time.tm_min, rtc.time.tm_sec).c_str()) ;
+    close(fd) ;
+  }
+
+  ticker_t machine::calculate_bootup()
+  {
+    cluster_dialog *d = dynamic_cast<cluster_dialog*> (clusters[EventFlags::Cluster_Dialog]) ;
+    log_assert(d!=NULL) ;
+    if(d->has_bootup_events())
+      return ticker_t(1) ; // right now
+    state_queued *q = dynamic_cast<state_queued*> (states["QUEUED"]) ;
+    log_assert(q!=NULL) ;
+    return q->next_bootup() ;
+  }
+
+  void machine::send_bootup_signal()
+  {
+    log_debug() ;
+    ticker_t tick = calculate_bootup() ;
+    int32_t next_bootup = 0 ;
+    if(tick.is_valid())
+      next_bootup = tick.value() ;
+    log_debug("signalled_bootup=%d, next_bootup=%d", signalled_bootup, next_bootup) ;
+    if(signalled_bootup<0 || signalled_bootup!=next_bootup)
+      emit next_bootup_event(signalled_bootup=next_bootup) ;
+    log_debug() ;
+  }
+
+  void machine::invoke_process_transition_queue()
+  {
+    int methodIndex = this->metaObject()->indexOfMethod("process_transition_queue()");
+    QMetaMethod method = this->metaObject()->method(methodIndex);
+    method.invoke(this, Qt::QueuedConnection);
+  }
+
+  void machine::reshuffle_queue(const nanotime_t &back)
+  {
+    // log_assert(false, "not implemented") ;
+    state *sch = states["SCHEDULER"] ;
+    const char *from[] = {"QUEUED","FLT_CONN","FLT_ALRM","FLT_USER",NULL} ;
+    for(const char **name=from; *name; ++name)
+    {
+      io_state *s = dynamic_cast<io_state*> (states[*name]) ;
+      log_assert(s) ;
+      for(set<event_t*>::iterator it=s->events.begin(); it!=s->events.end(); ++it)
+      {
+        event_t *e = *it ;
+        bool snoozing = !! (e->flags & EventFlags::Snoozing) ;
+        bool system_time_changing = not back.is_zero() ;
+
+        if (snoozing and system_time_changing)
+        {
+          e->ticker = e->trigger + (- back.to_time_t()) ;
+          request_state(e, sch) ;
+        }
+
+        if (snoozing)
+          continue ;
+
+        if (e->has_ticker() and not system_time_changing)
+          continue ;
+
+        if(e->flags & EventFlags::Empty_Recurring) // TODO: rewrite recurrence calculation and get rid of "Empty_Recurring"
+          e->invalidate_t() ;
+
+        request_state(e, sch) ;
+      }
+    }
+    process_transition_queue() ;
+  }
+
+  void machine::request_state(event_t *e, state *st)
+  {
+    // log_info("request_state(%u,%s)", e->cookie.value(), st?st->name:"null") ;
+    transition_queue.push_back(make_pair(e, st)) ;
+    // log_info("done; transition_queue: %s; states: %s", s_transition_queue().c_str(), s_states().c_str()) ;
+  }
+
+  void machine::request_state(event_t *e, const char *state_name)
+  {
+    request_state(e, string(state_name)) ;
+  }
+
+  void machine::request_state(event_t *e, const string &state_name)
+  {
+    state *new_state = NULL ;
+    if(not state_name.empty())
+    {
+      map<string, state*>::iterator it = states.find(state_name) ;
+      log_assert(it!=states.end(), "Unknown state: '%s'", state_name.c_str()) ;
+      new_state = it->second ;
+    }
+    request_state(e, new_state) ;
+  }
+
+  void machine::send_queue_context()
+  {
+    log_debug() ;
+    static ContextProvider::Property alarm_triggers_p("Alarm.Trigger") ;
+    log_debug() ;
+    static ContextProvider::Property alarm_present_t("Alarm.Present") ;
+    log_debug() ;
+    cluster_queue *c_queue = dynamic_cast<cluster_queue*> (clusters[EventFlags::Cluster_Queue]) ;
+    log_debug() ;
+    alarm_triggers_p.setValue(QVariant::fromValue(c_queue->alarm_triggers)) ;
+    log_debug() ;
+    alarm_present_t.setValue(!c_queue->alarm_triggers.isEmpty()) ;
+    log_debug() ;
+    context_changed = false ;
+    log_debug() ;
+  }
+
+  cookie_t machine::add_event(const Maemo::Timed::event_io_t *eio, bool process_queue, const credentials_t *p_creds, const QDBusMessage *p_message)
+  {
+    // The credentials for the event are either already known (p_creds)
+    //   or have to be established by the QDBusMessage structure (from dbus daemon)
+    // Using pointers instead of usual C++ references, just because a NULL-reference
+    //   usually confuses people (though working just fine)
+    if(event_t *e = event_t::from_dbus_iface(eio))
+    {
+      if(e->actions.size() > 0)
+        e->client_creds = p_creds ? *p_creds : credentials_t::from_dbus_connection(*p_message) ;
+      request_state(events[e->cookie = cookie_t(next_cookie++)] = e, "START") ;
+      if(process_queue)
+        invoke_process_transition_queue() ;
+      log_info("new event: cookie=%d, object=%p", e->cookie.value(), e) ;
+      return e->cookie ;
+    }
+
+    return cookie_t(0) ;
+  }
+
+  void machine::add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVariant> &res, const QDBusMessage &message)
+  {
+    // Here we're asking credentials immediately, not like in add_event
+    // TODO:
+    // But may be it's reasonable first to check, if we really have actions?
+    credentials_t creds = credentials_t::from_dbus_connection(message) ;
+    bool valid = false ;
+    for(int i=0; i<lst.ee.size(); ++i)
+    {
+#if 1
+      unsigned cookie = add_event(&lst.ee[i], false, &creds, NULL).value() ;
+#else // make some testing here
+      unsigned cookie = add_event(&lst.ee[i], false, NULL  , &message).value() ;
+#endif
+      res.push_back(cookie) ;
+      if (cookie)
+      {
+        valid = true ;
+        log_debug("event[%d]: accepted, cookie=%d", i, cookie) ;
+      }
+      else
+        log_warning("event[%d]: rejected", i) ;
+    }
+    if(valid)
+      invoke_process_transition_queue() ;
+  }
+
+  void machine::query(const QMap<QString,QVariant> &words, QList<QVariant> &res)
+  {
+    vector<string> qk, qv ;
+    for(QMap<QString,QVariant>::const_iterator it=words.begin(); it!=words.end(); ++it)
+    {
+      qk.push_back(string_q_to_std(it.key())) ;
+      qv.push_back(string_q_to_std(it.value().toString())) ;
+    }
+    unsigned N = qk.size() ;
+    for(map<cookie_t, event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
+    {
+      bool text_matches = true ;
+      for(unsigned i=0; text_matches && i<N; ++i)
+      {
+        map<string,string>::const_iterator F = it->second->attr.txt.find(qk[i]) ;
+        if(F==it->second->attr.txt.end())
+          text_matches = qv[i]=="" ;
+        else
+          text_matches = qv[i]==F->second ;
+      }
+      if(text_matches)
+        res.push_back(it->second->cookie.value()) ;
+    }
+  }
+
+  void machine::get_event_attributes(cookie_t c, QMap<QString,QVariant> &a)
+  {
+    map<cookie_t,event_t*>::iterator it = events.find(c) ;
+    if(it==events.end())
+      return ;
+    event_t *e = it->second ;
+    a.insert("STATE", e->st->name()) ;
+    a.insert("COOKIE", QString("%1").arg(c.value())) ;
+    for(attribute_t::const_iterator at=e->attr.txt.begin(); at!=e->attr.txt.end(); at++)
+    {
+      QString key = string_std_to_q(at->first) ;
+      QString val = string_std_to_q(at->second) ;
+      a.insert(key,val) ;
+    }
+  }
+
+  bool machine::dialog_response(cookie_t c, int value)
+  {
+    if(events.count(c)==0)
+    {
+      log_error("Invalid cookie [%d] in respond", c.value()) ;
+      return false ;
+    }
+    event_t *e = events[c] ;
+    if(e->st != states["DLG_USER"])
+    {
+      log_error("Unexpected response for event [%d] in state %s", c.value(), e->st->name()) ;
+      return false ;
+    }
+    if(value < -Maemo::Timed::Number_of_Sys_Buttons)
+    {
+      log_error("Invalid negative value in respond: event [%d], value=%d", c.value(), value) ;
+      return false ;
+    }
+    int b = e->b_attr.size() ;
+    if(value > b)
+    {
+      log_error("Invalid value in respond: event [%d], value=%d, number of buttons: %d", c.value(), value, b) ;
+      return false ;
+    }
+    log_assert(button_states.count(value)>0, "value=%d, count=%d", value,button_states.count(value) ) ;
+    request_state(e, button_states[value]) ;
+    e->flags &= ~ EventFlags::In_Dialog ;
+    invoke_process_transition_queue() ;
+    return true ;
+  }
+
+  event_t *machine::find_event(cookie_t c)
+  {
+    log_assert(!transition_in_progress()) ;
+    process_transition_queue() ;
+
+    map<cookie_t,event_t*>::iterator it = events.find(c) ;
+    return it==events.end() ? NULL : it->second ;
+  }
+
+  bool machine::cancel_by_cookie(cookie_t c) // XXX need some clean up here?
+  {
+    queue_pause x(this) ;
+
+    if(event_t *e = find_event(c))
+    {
+      cancel_event(e) ;
+      return true ;
+    }
+    else
+    {
+      log_error("[%d]: cookie not found", c.value()) ;
+      return false ;
+    }
+  }
+
+  void machine::cancel_event(event_t *e)
+  {
+    // TODO: assert (queue is paused)
+    io_state *s = dynamic_cast<io_state*> (e->st) ;
+    log_assert(s) ;
+    s->abort(e) ;
+  }
+
+  void machine::alarm_gate(bool value)
+  {
+    filter_state *filter = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
+    log_assert(filter) ;
+    value ? filter->open() : filter->close() ;
+  }
+
+  uint32_t machine::attr(uint32_t mask)
+  {
+    return flags & mask ;
+  }
+
+  iodata::record *machine::save(bool for_backup)
+  {
+    iodata::record *r = new iodata::record ;
+    iodata::array *q = new iodata::array ;
+
+    for(map<cookie_t, event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
+    {
+      event_t *e = it->second ;
+      if(for_backup and not (e->flags & EventFlags::Backup))
+        continue ;
+      q->add(e->save(for_backup)) ;
+    }
+
+    r->add("events", q) ;
+    if(not for_backup)
+      r->add("next_cookie", next_cookie) ;
+    return r ;
+  }
+
+  void machine::load(const iodata::record *r)
+  {
+    next_cookie = r->get("next_cookie")->value() ;
+    const iodata::array *a = r->get("events")->arr() ;
+    load_events(a, true, true) ;
+  }
+
+  void machine::load_events(const iodata::array *events_data, bool trusted_source, bool use_cookies)
+  {
+    for(unsigned i=0; i < events_data->size(); ++i)
+    {
+      const iodata::record *ee = events_data->get(i)->rec() ;
+      unsigned cookie = use_cookies ? ee->get("cookie")->value() : next_cookie++ ;
+      event_t *e = new event_t ;
+      events[e->cookie = cookie_t(cookie)] = e ;
+
+      e->ticker = ticker_t(ee->get("ticker")->value()) ;
+      e->t.load(ee->get("t")->rec()) ;
+
+      e->tz = ee->get("tz")->str() ;
+
+      e->attr.load(ee->get("attr")->rec()) ;
+      e->flags = ee->get("flags")->decode(event_t::codec) ;
+      iodata::load(e->recrs, ee->get("recrs")->arr()) ;
+      iodata::load_int_array(e->snooze, ee->get("snooze")->arr()) ;
+      iodata::load(e->b_attr, ee->get("b_attr")->arr()) ;
+      e->last_triggered = ticker_t(ee->get("dialog_time")->value()) ;
+      e->tsz_max = ee->get("tsz_max")->value() ;
+      e->tsz_counter = ee->get("tsz_counter")->value() ;
+      if(trusted_source)
+      {
+        iodata::load(e->actions, ee->get("actions")->arr()) ;
+        e->client_creds.load(ee->get("client_creds")->rec()) ;
+        e->cred_modifier.load(ee->get("cred_modifier")->arr()) ;
+      }
+
+      const char *next_state = "START" ;
+
+      if(e->flags & EventFlags::Empty_Recurring)
+        e->invalidate_t() ;
+
+      request_state(e, next_state) ;
+    }
+  }
+
+  void machine::cancel_backup_events()
+  {
+    // TODO: assert (queue is paused)
+    vector<event_t*> backup ;
+    for(map<cookie_t, event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
+      if (it->second->flags & EventFlags::Backup)
+        backup.push_back(it->second) ;
+
+    for(vector<event_t*>::const_iterator it=backup.begin(); it!=backup.end(); ++it)
+      cancel_event(*it) ;
+
+    log_debug("cancelled all the bacjup events") ;
+  }
+#endif
+
+#if 0
+  // TODO: do it accessible from outside of this file:
+  //       too many uncaught exceptions :)
+  struct event_exception : public std::exception
+  {
+    string message ;
+    pid_t pid_value ;
+
+    pid_t pid() const { return pid_value ; }
+    event_exception(const string &msg) : message(msg), pid_value(getpid()) { }
+   ~event_exception() throw() { }
+  } ;
+#endif
+
+#if 0
+  // what a mess... event_t::stuff should be in event.cpp
+
+  void event_t::sort_and_run_actions(uint32_t mask)
+  {
+    if (mask==0) // TODO: check, if this check is not yet done on state_* layer...
+      return ;
+
+    // don't want to call unnecesary constructor here
+    vector <unsigned> *r = NULL ;
+
+    for (unsigned i=0; i<actions.size(); ++i)
+      if(actions[i].flags & mask) // something to run
+      {
+        if (r==NULL)
+          r = new vector <unsigned> ;
+        r->push_back(i) ;
+      }
+
+    if (r==NULL) // nothing to do
+      return ;
+
+    log_assert(r) ;
+
+    log_debug("Beginning the action list dump") ;
+    for(vector<unsigned>::const_iterator it=r->begin(); it!=r->end(); ++it)
+      log_debug("Action %d, cred_key: '%s'", *it, actions[*it].cred_key().c_str()) ;
+    log_debug("Done:     the action list dump") ;
+
+    log_debug("Beginning the action array sorting") ;
+    sort(r->begin(), r->end(), action_comparison_t(this)) ;
+    log_debug("Done:     the action array sorting") ;
+
+    unsigned start_index = ~0 ; // invalid value
+    string current_key ; // empty key (invalid?)
+    for(unsigned i=0, have_exec=false; i < r->size(); ++i)
+    {
+      action_t &a = actions[(*r) [i]] ;
+      bool i_exec = a.flags & ActionFlags::Run_Command ; // current action is an exec action
+      bool start_now = a.cred_key() != current_key || (have_exec && i_exec) ; // either new key or second exec
+      if (start_now && i>0)
+        run_actions(*r, start_index, i) ;
+      if (start_now || i==0) // i==0 is probably redundant, as cred_key should never be empty
+      {
+        have_exec = i_exec ;
+        start_index = i ;
+        current_key = a.cred_key() ;
+      }
+    }
+
+    log_assert(r->size()>0) ; // to be sure for the run_actions() call below
+    run_actions(*r, start_index, r->size()) ;
+
+    delete r ;
+  }
+
+  template <class element_t>
+  string print_vector(const vector<element_t> &array, unsigned begin, unsigned end)
+  {
+    ostringstream os ;
+
+    for(unsigned i=begin, first=true; i<end; ++i)
+    {
+      os << ( first ? first=false, "[" : ", " ) ;
+      os << array[i] ;
+    }
+    os << "]" ;
+    return os.str() ;
+  }
+
+  template <class element_t> // an yet another hihgly inefficient function :-(
+  void set_change(set<element_t> &x, const set<element_t> &y, bool add)
+  {
+    for(typename set<element_t>::const_iterator it=y.begin(); it!=y.end(); ++it)
+      if(add)
+        x.insert(*it) ;
+      else
+        x.erase(*it) ;
+  }
+
+  void event_t::run_actions(const vector<unsigned> &acts, unsigned begin, unsigned end)
+  {
+    log_debug("begin=%d, end=%d, actions: %s", begin, end, print_vector(acts, begin, end).c_str()) ;
+    const action_t &a_begin = actions [acts[begin]] ;
+
+    // we want to detect, it the exeption was thrown in the daemon itself or in a child
+    pid_t daemon = getpid() ;
+
+    try
+    {
+      if (fork_and_set_credentials_v3(a_begin)>0) // parent
+        return ;
+    }
+    catch(const event_exception &e)
+    {
+      log_error("action list %d%s failed: %s", cookie.value(), print_vector(acts, begin, end).c_str(), e.message.c_str()) ;
+      pid_t process = e.pid() ;
+      if (process!=daemon)
+      {
+        log_info("terminating child (pid=%d) of daemon (pid=%d)", process, daemon) ;
+        ::exit(1) ;
+      }
+    }
+
+    // now we're running in the child with proper credentials, so let's execute dbus stuff !
+
+    unsigned exec_action_i = ~0 ; // not found yet
+    QDBusConnection *conn[2] = {NULL, NULL} ; // 0->system, 1->session
+    const QString cname = "timed-private" ;
+
+    int dbus_fail_counter = 0 ;
+
+    for (unsigned i=begin; i<end; ++i)
+    {
+      const unsigned acts_i = acts[i] ;
+      const action_t &a = actions [acts_i] ;
+
+      if (a.flags & ActionFlags::Run_Command)
+        exec_action_i = acts_i ;
+
+      if((a.flags & ActionFlags::DBus_Action) == 0)
+        continue ;
+
+      try
+      {
+        // set up message to be sent
+        QString path = string_std_to_q(find_action_attribute("DBUS_PATH", a)) ;
+        QString ifac = string_std_to_q(find_action_attribute("DBUS_INTERFACE", a, (a.flags & ActionFlags::DBus_Signal)!=0)) ;
+
+        QDBusMessage message ;
+
+        if (a.flags & ActionFlags::DBus_Method)
+        {
+          QString serv = string_std_to_q(find_action_attribute("DBUS_SERVICE", a)) ;
+          QString meth = string_std_to_q(find_action_attribute("DBUS_METHOD", a)) ;
+          message = QDBusMessage::createMethodCall(serv, path, ifac, meth) ;
+        }
+        else
+        {
+          QString sgnl = string_std_to_q(find_action_attribute("DBUS_SIGNAL", a)) ;
+          message = QDBusMessage::createSignal(path, ifac, sgnl) ;
+        }
+
+        QMap<QString,QVariant> param ;
+
+        if (a.flags & ActionFlags::Send_Cookie)
+          param["COOKIE"] = QString("%1").arg(cookie.value()) ;
+
+        if (a.flags & ActionFlags::Send_Event_Attributes)
+          add_strings(param, attr.txt) ;
+
+        if (a.flags & ActionFlags::Send_Action_Attributes)
+          add_strings(param, a.attr.txt) ;
+
+        message << QVariant::fromValue(param) ;
+
+        int bus = (a.flags & ActionFlags::Use_System_Bus) ? 0 : 1 ;
+        QDBusConnection * &c = conn[bus] ;
+
+        if (c==NULL) // not used yes, have to create object and connect
+        {
+          QDBusConnection::BusType ctype = bus==0 ? QDBusConnection::SystemBus : QDBusConnection::SessionBus ;
+          c = new QDBusConnection(QDBusConnection::connectToBus(ctype, cname)) ;
+        }
+
+        if (c->send(message))
+          log_debug("%u[%d]: D-Bus Message sent", cookie.value(), acts_i) ;
+        else
+          throw event_exception(c->lastError().message().toStdString().c_str()) ;
+      }
+      catch(const event_exception &e)
+      {
+        log_error("%u[%d]: dbus-action not executed: %s", cookie.value(), acts_i, e.message.c_str()) ;
+        ++ dbus_fail_counter ;
+      }
+    }
+
+    for(int c=0; c<2; ++c)
+      if(QDBusConnection *cc = conn[c])
+      {
+        // as we are about to exit immediately after queuing
+        // and there seems to be no way to flush the connection
+        // and be sure that we have actually transmitted the
+        // message -> do a dummy synchronous query from dbus
+        // daemon and hope that is enough to get the actual
+        // message to be delivered ...
+        QString connection_name  = cc->baseService() ;
+        unsigned owner = get_name_owner_from_dbus_sync(*cc, connection_name) ;
+
+        // it should be us (either pid or uid dependin on feature set) ...
+        log_debug("pid=%d, ruid=%d, euid=%d, connection owner is '%u'", getpid(), getuid(), geteuid(), owner) ;
+        QDBusConnection::disconnectFromBus(connection_name) ;
+        delete cc ;
+      }
+
+    if(dbus_fail_counter)
+      log_warning("failed to exeute %d out of %u dbus actions", dbus_fail_counter, end-begin) ;
+
+    if(exec_action_i == ~0u) // no exec action in this action package
+      ::exit(dbus_fail_counter<100 ? dbus_fail_counter : 100) ; // exit value can't be toooo large
+
+    // All the dbus actions are done. Now we have to execute the only command line action
+
+    const action_t &a = actions [exec_action_i] ;
+
+    string cmd = find_action_attribute("COMMAND", a) ;
+    if(a.flags & ActionFlags::Send_Cookie)
+    {
+      log_debug("cmd='%s', COOKIE to be replaced by value", cmd.c_str()) ;
+      using namespace pcrecpp ;
+      static RE exp("(<COOKIE>)|\\b(COOKIE)\\b", UTF8()) ;
+      ostringstream decimal ;
+      decimal << cookie.value() ;
+      exp.GlobalReplace(decimal.str(), &cmd);
+      log_debug("cmd='%s', COOKIE replaced", cmd.c_str()) ;
+    }
+    log_info("execuing command line action %u[%d]: '%s'", cookie.value(), exec_action_i, cmd.c_str());
+    execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL) ;
+    log_error("execl(/bin/sh -c '%s') failed: %m", cmd.c_str());
+
+    ::exit(101) ; // use dbus_fail_counter here as well?
+  }
+
+  bool event_t::accrue_privileges(const action_t &a)
+  {
+    credentials_t creds = credentials_t::from_current_process() ;
+
+#if F_TOKENS_AS_CREDENTIALS
+    const cred_modifier_t &E = cred_modifier, &A = a.cred_modifier ;
+
+    // tokens_to_accrue1 := EVENT.add - ACTION.drop
+    set<string> tokens_to_accrue1 = E.tokens_by_value(true) ;
+    set_change<string> (tokens_to_accrue1, A.tokens_by_value(false), false) ;
+
+    // tokens_to_accrue2 := ACTION.add - EVENT.drop
+    set<string> tokens_to_accrue2 = A.tokens_by_value(true) ;
+    set_change<string> (tokens_to_accrue2, E.tokens_by_value(false), false) ;
+
+    // creds += (tokens_to_accrue 1+2)
+    set_change<string> (creds.tokens, tokens_to_accrue1, true) ;
+    set_change<string> (creds.tokens, tokens_to_accrue2, true) ;
+#endif // F_TOKENS_AS_CREDENTIALS
+
+    string uid = find_action_attribute("USER", a, false) ;
+    string gid = find_action_attribute("GROUP", a, false) ;
+
+    if (!uid.empty())
+      creds.uid = uid ;
+    if (!gid.empty())
+      creds.gid = gid ;
+
+    return creds.apply_and_compare() ;
+  }
+
+  bool event_t::drop_privileges(const action_t &a)
+  {
+    credentials_t creds = client_creds ;
+
+#if F_TOKENS_AS_CREDENTIALS
+    const cred_modifier_t &E = cred_modifier, &A = a.cred_modifier ;
+
+    // tokens_to_remove1 := EVENT.drop - ACTION.add
+    set<string> tokens_to_remove1 = E.tokens_by_value(false) ;
+    set_change<string> (tokens_to_remove1, A.tokens_by_value(true), false) ;
+
+    // tokens_to_remove2 := ACTION.drop - EVENT.add
+    set<string> tokens_to_remove2 = A.tokens_by_value(false) ;
+    set_change<string> (tokens_to_remove2, E.tokens_by_value(true), false) ;
+
+    // creds := client_creds - (tokens_to_remove 1+2)
+    set_change<string> (creds.tokens, tokens_to_remove1, false) ;
+    set_change<string> (creds.tokens, tokens_to_remove2, false) ;
+#endif // F_TOKENS_AS_CREDENTIALS
+
+    return creds.apply_and_compare() ;
+  }
+
+  string event_t::find_action_attribute(const string &key, const action_t &a, bool exc)
+  {
+    string value = a.attr(key) ;
+    if(value.empty())
+      value = attr(key) ;
+    if(value.empty() && exc)
+      throw event_exception(string("empty attribute '")+key+"'") ;
+    return value ;
+  }
+
+  void event_t::add_strings(QMap<QString, QVariant> &x, const map<string,string> &y)
+  {
+    for(map<string,string>::const_iterator it=y.begin(); it!=y.end(); ++it)
+      x.insert(string_std_to_q(it->first), QVariant::fromValue(string_std_to_q(it->second))) ;
+  }
+
+  pid_t event_t::fork_and_set_credentials_v3(const action_t &action)
+  {
+    pid_t pid = fork() ;
+
+    if (pid<0) // can't fork
+    {
+      log_error("fork() failed: %m") ;
+      throw event_exception("can't fork");
+    }
+    else if (pid>0) // parent
+    {
+      log_info("forked successfully, child pid: '%d'", pid) ;
+      st->om->emit_child_created(cookie.value(), pid) ;
+      return pid ;
+    }
+    else // child
+    {
+      log_info("event [%u]: in child process", cookie.value()) ;
+
+      if (setsid() < 0) // detach from session
+      {
+        log_error("setsid() failed: %m") ;
+        throw event_exception("can't detach from session") ;
+      }
+
+      if (!drop_privileges(action))
+        throw event_exception("can't drop privileges") ;
+
+      if (!accrue_privileges(action))
+        log_warning("can't accrue privileges, still continuing") ;
+
+      // Skipping all the uid/gid settings, because it's part of
+      // credentials_t::apply() (or it should be at least)
+
+      // TODO: go to home dir _here_ !
+
+      // That's it then, isn't it?
+
+      return pid ;
+    }
+  }
+
+  iodata::record *event_t::save(bool for_backup)
+  {
+    iodata::record *r = new iodata::record ;
+    r->add("cookie", cookie.value()) ;
+    r->add("ticker", ticker.value()) ;
+    r->add("t", t.save()) ;
+    r->add("tz", new iodata::bytes(tz)) ;
+    r->add("attr", attr.save() ) ;
+    r->add("flags", new iodata::bitmask(flags &~ EventFlags::Cluster_Mask, codec)) ;
+    r->add("recrs", iodata::save(recrs)) ;
+    r->add("snooze", iodata::save_int_array(snooze)) ;
+    r->add("b_attr", iodata::save(b_attr)) ;
+
+    r->add("dialog_time", (flags & EventFlags::In_Dialog) ? last_triggered.value() : 0) ;
+    r->add("tsz_max", tsz_max) ;
+    r->add("tsz_counter", tsz_counter) ;
+
+    if(not for_backup)
+      r->add("actions", iodata::save(actions)) ;
+    if(not for_backup)
+      r->add("client_creds", client_creds.save()) ;
+    if(not for_backup)
+      r->add("cred_modifier", cred_modifier.save()) ;
+    return r ;
+  }
+
+  bool event_t::compute_recurrence()
+  {
+    log_assert(false, "obsolete function") ;
+    return false ;
+  }
+#endif
+
+#if 0
+request_watcher_t::request_watcher_t(machine *om)
+{
+  this->om = om ;
+  w = NULL ;
+}
+
+request_watcher_t::~request_watcher_t()
+{
+  delete w ;
+  for(set<event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
+    detach_not_destroy(*it) ;
+}
+
+void request_watcher_t::watch(const QDBusPendingCall &async_call)
+{
+  log_assert(w==NULL, "watch() called more then once") ;
+  w = new QDBusPendingCallWatcher(async_call) ;
+  QObject::connect(w, SIGNAL(finished(QDBusPendingCallWatcher*)), this, SLOT(call_returned(QDBusPendingCallWatcher*))) ;
+}
+
+void request_watcher_t::attach(event_t *e)
+{
+  // First, we have to detach a link to an orphaned watcher
+  if (e->request_watcher)
+  {
+    log_assert(e->request_watcher != this, "attaching the same event twice") ;
+    e->request_watcher->detach(e) ;
+  }
+
+  // Now attach the event to this watcher object
+  e->request_watcher = this ;
+  this->events.insert(e) ;
+}
+
+void request_watcher_t::detach_not_destroy(event_t *e)
+{
+  // First make sure, it's really attached
+  log_assert(e->request_watcher) ;
+  log_assert(e->request_watcher==this) ;
+  log_assert(this->events.count(e) > 0) ;
+
+  // Now detach:
+  e->request_watcher = NULL ;
+  this->events.erase(e) ;
+}
+
+void request_watcher_t::detach(event_t *e)
+{
+  detach_not_destroy(e) ;
+
+  // The object should be destroyed if empty
+  if (this->events.empty())
+    delete this ; // ouch! is it kosher C++ ? I hope so, at least...
+}
+
+void request_watcher_t::call_returned(QDBusPendingCallWatcher *w)
+{
+  log_debug() ;
+  log_assert(w==this->w, "oops, somethig is really wrong with qdbus...") ;
+
+  QDBusPendingReply<bool> reply = *w ;
+
+#if 0
+  if (reply.isValid() && reply.value())
+#else
+  log_info("reminder servide replied: %d,%d", reply.isValid(), reply.isValid()&&reply.value()) ;
+  if (true) // XXX: remove this after reminders returns TRUE here.
+#endif
+  {
+    for(set<event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
+      om->request_state(*it, "DLG_USER") ;
+
+    if (events.size()>0)
+      om->process_transition_queue() ;
+  }
+  else
+    log_error("DBus call voland::create failed events not listed here...") ;
+
+
+  // Don't need the watcher any more
+
+  delete this ;
+}
+#endif

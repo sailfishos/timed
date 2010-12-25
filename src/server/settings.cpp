@@ -38,7 +38,6 @@
 #include "timed.h"
 #include "settings.h"
 #include "misc.h"
-#include "states.h"
 #include "onitz.h"
 
 void source_t::load(const iodata::record *)

@@ -29,9 +29,10 @@
 #include <QDBusConnectionInterface>
 #include <QDBusServiceWatcher>
 
+#include <ContextProvider>
+
 #include <iodata/storage>
 
-#include "states.h"
 #include "wrappers.h"
 #include "singleshot.h"
 #include "pinguin.h"

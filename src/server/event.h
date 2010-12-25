@@ -44,7 +44,6 @@ using namespace std ;
 #include "timeutil.h"
 #include "flags.h"
 #include "credentials.h"
-#include "automata.h"
 
 struct request_watcher_t ;
 struct abstract_state_t ;
