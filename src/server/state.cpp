@@ -85,6 +85,7 @@ abstract_gate_state_t::abstract_gate_state_t(const string &state_name, const str
 void abstract_gate_state_t::resolve_names()
 {
   next_state = machine->state_by_name(s_next_state) ;
+  abstract_io_state_t::resolve_names() ;
 }
 
 void abstract_gate_state_t::enter(event_t *e)
@@ -132,26 +133,28 @@ void abstract_concentrating_state_t::open()
   log_debug() ;
 }
 
-abstract_filter_state_t::abstract_filter_state_t(const string &state_name, const string &retry_state_name, const string &next_state_name, machine_t *owner) :
+abstract_filter_state_t::abstract_filter_state_t(const string &state_name, const string &retry_state_name, const string &thru_state_name, machine_t *owner) :
   abstract_gate_state_t(state_name, retry_state_name, owner)
 {
-  s_next_state = next_state_name ;
-  s_retry_state = retry_state_name ;
-  next_state = retry_state = NULL ;
+  s_thru_state = thru_state_name ;
+  // s_retry_state = retry_state_name ;
+  thru_state /* = retry_state */ = NULL ;
   QObject::connect(this, SIGNAL(closed()), this, SLOT(emit_close())) ;
 }
 
 void abstract_filter_state_t::resolve_names()
 {
-  next_state = machine->state_by_name(s_next_state) ;
-  retry_state = machine->state_by_name(s_retry_state) ;
+  thru_state = machine->state_by_name(s_thru_state) ;
+  // retry_state = machine->state_by_name(s_retry_state) ;
+  log_debug("thru_state=%p"/*", retry_state=%p"*/, thru_state/*, retry_state*/) ;
+  abstract_gate_state_t::resolve_names() ;
 }
 
 void abstract_filter_state_t::enter(event_t *e)
 {
   if (is_open or not filter(e))
   {
-    machine->request_state(e, next_state) ;
+    machine->request_state(e, thru_state) ;
     machine->process_transition_queue() ;
   }
   else
@@ -702,6 +705,7 @@ state_dlg_cntr_t::state_dlg_cntr_t(machine_t *owner)
 void state_dlg_cntr_t::resolve_names()
 {
   back_state = machine->state_by_name(s_back_state) ;
+  abstract_concentrating_state_t::resolve_names() ;
 }
 
 void state_dlg_cntr_t::open()

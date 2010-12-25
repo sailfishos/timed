@@ -77,10 +77,10 @@ public Q_SLOTS:
 
 struct abstract_filter_state_t : public abstract_gate_state_t
 {
-  abstract_filter_state_t(const std::string &state_name, const std::string &retry_state_name, const std::string &next_state_name, machine_t *owner) ;
+  abstract_filter_state_t(const std::string &state_name, const std::string &retry_state_name, const std::string &thru_state_name, machine_t *owner) ;
   virtual ~abstract_filter_state_t() { }
-  std::string s_next_state, s_retry_state ;
-  abstract_state_t *next_state, *retry_state ;
+  std::string s_thru_state/*, s_retry_state*/ ;
+  abstract_state_t *thru_state/*, *retry_state */;
   void resolve_names() ;
   virtual bool filter(event_t *) = 0 ;
   void enter(event_t *) ;
