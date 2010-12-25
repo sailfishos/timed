@@ -1,6 +1,9 @@
 #ifndef CLUSTER_H
 #define CLUSTER_H
 
+struct machine_t ;
+struct event_t ;
+
 struct abstract_cluster_t
 {
   machine_t *machine ;
@@ -11,6 +14,7 @@ struct abstract_cluster_t
   virtual void enter(event_t *e) = 0 ;
   virtual void leave(event_t *) { }
 } ;
+
 struct cluster_queue_t : public abstract_cluster_t
 {
   QMap<QString,QVariant> alarm_triggers ;

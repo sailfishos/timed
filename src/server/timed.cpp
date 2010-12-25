@@ -178,7 +178,7 @@ static int is_act_dead_by_dsme()
     return -1 ;
   }
 
-  QDBusReply<QString> res = dsme.call(dsme_get_state) ;
+  QDBusReply<QString> res = dsme.get_state_sync() ;
 
   if (not res.isValid())
   {

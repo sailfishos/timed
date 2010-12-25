@@ -13,7 +13,7 @@ LIBS += -ltimed -ltimed-voland
 CONFIG += qmlog
 
 HEADERS += interfaces.h adaptor.h timed.h state.h cluster.h machine.h singleshot.h pinguin.h unix-signal.h onitz.h
-SOURCES += interfaces.cpp cluster.cpp machine.cpp state.cpp main.cpp timed.cpp timeutil.cpp event.cpp misc.cpp settings.cpp unix-signal.cpp onitz.cpp
+SOURCES += cluster.cpp machine.cpp state.cpp main.cpp timed.cpp timeutil.cpp event.cpp misc.cpp settings.cpp unix-signal.cpp onitz.cpp
 
 SOURCES += credentials.cpp aegis.cpp
 HEADERS += credentials.h

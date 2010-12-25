@@ -53,4 +53,3 @@ bool cluster_dialog_t::has_bootup_events()
 {
   return not bootup_events.empty() ;
 }
-
