@@ -4,7 +4,7 @@ QT += dbus
 QT -= gui
 
 TARGET = timed
-VERSION = 0.2.31
+VERSION = 0.2.32
 
 CONFIG += qmlog
 

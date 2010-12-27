@@ -4,7 +4,7 @@ QT += dbus network
 TEMPLATE = app
 TARGET = ntp-helper
 
-VERSION = 2.30
+VERSION = 2.32
 
 INCLUDEPATH += ../h
 
