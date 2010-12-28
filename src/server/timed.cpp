@@ -708,7 +708,9 @@ void Timed::save_settings()
 
 void Timed::invoke_signal(const nanotime_t &back)
 {
+  log_debug("systime_back=%s, back=%s", systime_back.str().c_str(), back.str().c_str()) ;
   systime_back += back ;
+  log_debug("new value: systime_back=%s", systime_back.str().c_str()) ;
   if(signal_invoked)
     return ;
   signal_invoked = true ;
