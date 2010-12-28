@@ -534,6 +534,8 @@ void event_t::run_actions(const vector<unsigned> &acts, unsigned begin, unsigned
       log_info("terminating child (pid=%d) of daemon (pid=%d)", process, daemon) ;
       ::exit(1) ;
     }
+    else // main daemon process
+      return ;
   }
 
   // now we're running in the child with proper credentials, so let's execute dbus stuff !

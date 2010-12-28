@@ -1,8 +1,9 @@
 timed (2.32) unstable; urgency=low
 
-  * new
+  * fake method to test operator change
+  * don't terminate daemon if can't fork for action
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 27 Dec 2010 13:54:46 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Tue, 28 Dec 2010 17:59:18 +0200
 
 timed (2.31) unstable; urgency=low
 
