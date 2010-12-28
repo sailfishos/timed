@@ -41,9 +41,12 @@ struct nanotime_t
   static const uint32_t NANO = 1000000000 ;
   static const int32_t EPOCH = 2145916800 ; // Fri Jan  1 00:00:00 UTC 2038
   nanotime_t() { invalidate() ; /*static_assert(sizeof(tv_sec)==4) ; static_assert(sizeof(tv_nsec)==4) ; */}
+  nanotime_t(int32_t sec) { s=sec, ns=0 ; }
   nanotime_t(int32_t sec, uint32_t nsec) { s=sec, ns=nsec ; }
   nanotime_t(const nanotime_t &x) { ns=x.ns, s=x.s ; }
   const nanotime_t &operator= (const nanotime_t &x) { ns=x.ns, s=x.s ; return *this ;}
+  void set(int32_t sec) { s=sec, ns=0 ; }
+  void set(int32_t sec, uint32_t nsec) { s=sec, ns=nsec ; }
   void fix_overflow() { while(!is_normalized()) ns-=NANO, ++s ; }
   void fix_underflow() { while(!is_normalized()) ns+=NANO, --s ; }
   const nanotime_t &operator+=(const nanotime_t &x) { s+=x.s, ns+=x.ns ; fix_overflow() ; return *this ; }

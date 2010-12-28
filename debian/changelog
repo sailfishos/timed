@@ -2,8 +2,9 @@ timed (2.32) unstable; urgency=low
 
   * fake method to test operator change
   * don't terminate daemon if can't fork for action
+  * Fixes: NB#213888 - snoozed events reshuffled 2 seconds back if operator changed
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Tue, 28 Dec 2010 17:59:18 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Tue, 28 Dec 2010 20:31:47 +0200
 
 timed (2.31) unstable; urgency=low
 

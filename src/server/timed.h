@@ -162,8 +162,8 @@ private:
   QObject *backup_object ;
 public:
   void invoke_signal(const nanotime_t &) ;
-  void invoke_signal() { nanotime_t zero ; invoke_signal(zero) ; }
-  void clear_invokation_flag() { signal_invoked = false ; systime_back.invalidate() ; }
+  void invoke_signal() { nanotime_t zero=0 ; invoke_signal(zero) ; }
+  void clear_invokation_flag() { signal_invoked = false ; systime_back.set(0) ; }
 public Q_SLOTS:
   void event_queue_changed() ;
 private Q_SLOTS:
