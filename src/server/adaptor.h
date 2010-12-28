@@ -179,8 +179,16 @@ public slots:
 
   bool fake_nitz_signal(int mcc, int offset, int time, int dst)
   {
+    log_debug("(fake) mcc=%d offset=%d time=%d dst=%d", mcc, offset, time, dst) ;
     cellular_handler::object()->fake_nitz_signal(mcc, offset, time, dst) ;
     return true ; // TODO make above method returning bool (not void) and check parameters
+  }
+
+  bool fake_operator_signal(const QString &mcc, const QString &mnc)
+  {
+    log_debug("(fake) mcc='%s' mnc='%s'", mcc.toStdString().c_str(), mnc.toStdString().c_str()) ;
+    cellular_handler::object()->new_operator(mcc, mnc) ;
+    return true ;
   }
 } ;
 

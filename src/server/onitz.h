@@ -110,7 +110,7 @@ public:
   static cellular_handler *object() ;
   static void uninitialize() ;
   void fake_nitz_signal(int mcc, int offset, int time, int dst) ;
-private slots:
+public slots:
 #if F_CELLULAR_QT
   void new_nitz_signal(const NetworkTimeInfo &) ; // { log_assert(false, "to be implemented") ; }
 #endif
