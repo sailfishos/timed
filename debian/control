@@ -66,22 +66,6 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, timed-tools (=${binary:Version}), c
 Description: test cases for timed
  Simple automated test cases, to be executed in cita
 
-# Legacy symlink, to be released only once and a fake debug package
-
-Package: timehd
-Architecture: any
-Depends: ${misc:Depends}
-Description: empty package
- Empty
-
-Package: timehd-dbg
-Section: libdevel
-Priority: extra
-Architecture: any
-Depends: timehd (= ${binary:Version}), ${misc:Depends}
-Description: empty package
- Empty
-
 # Development packages
 
 Package: libtimed-dev
