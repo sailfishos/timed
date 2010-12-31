@@ -4,7 +4,7 @@ QT += dbus
 TEMPLATE = app
 TARGET = timed
 
-VERSION = 2.32
+VERSION = $$(TIMED_VERSION)
 
 INCLUDEPATH += ../h
 

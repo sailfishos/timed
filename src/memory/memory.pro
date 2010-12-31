@@ -9,7 +9,7 @@ PKGCONFIG += contextprovider-1.0 libpcrecpp dsme_dbus_if
 TEMPLATE = app
 TARGET = memory
 
-VERSION = 2.32
+VERSION = $$(TIMED_VERSION)
 
 INCLUDEPATH += ../h
 

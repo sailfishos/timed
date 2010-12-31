@@ -4,7 +4,7 @@ QT += dbus
 TEMPLATE = app
 TARGET = ticker
 
-VERSION = 2.32
+VERSION = $$(TIMED_VERSION)
 
 INCLUDEPATH += ../h
 

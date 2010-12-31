@@ -3,6 +3,7 @@
 # vim:syntax=make:
 
 export DH_VERBOSE=1
+export TIMED_VERSION=$(shell head -n1 debian/changelog | sed "s/.*(\([^)+]*\).*/\1/")
 
 .PHONY: build clean realclean install configure binary-indep binary-arch binary
 
