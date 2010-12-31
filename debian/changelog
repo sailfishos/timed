@@ -1,8 +1,9 @@
 timed (2.33) unstable; urgency=low
 
   * extract version number from debian/changelog
+  * Fixes: NB#205616 - get rid of timehd and timehd-dbg
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Fri, 31 Dec 2010 16:25:21 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Fri, 31 Dec 2010 16:32:34 +0200
 
 timed (2.32) unstable; urgency=low
 
