@@ -187,7 +187,7 @@ static int is_act_dead_by_dsme()
   }
 
   QString mode = res.value() ;
-  log_debug("got a mode string from DSME: '%s'", mode.toStdString().c_str()) ;
+  log_notice("got a mode string from DSME: '%s'", mode.toStdString().c_str()) ;
 
   if (mode=="USER")
     return 0 ;
