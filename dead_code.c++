@@ -5025,3 +5025,41 @@ void request_watcher_t::call_returned(QDBusPendingCallWatcher *w)
   delete this ;
 }
 #endif
+
+#if 0
+    set<event_t*> junk ;
+    set<string*> sjunk ;
+    for(int i=0; i<10000; ++i)
+    {
+#if 0
+      event_t *ee = event_t::from_dbus_iface(eio) ;
+      // ee->client_creds = p_creds ? *p_creds : credentials_t::from_dbus_connection(*p_message) ;
+      junk.insert(ee) ;
+#endif
+#if 0
+      string *ss = new string ;
+      // *ss = str_printf("string %d", i) ;
+      QString q = QString("string %1").arg(i) ;
+      *ss = string_q_to_std(q) ;
+#endif
+    }
+    for(set<event_t*>::iterator it=junk.begin(); it!=junk.end(); ++it)
+      delete *it ;
+    junk.clear() ;
+    for(set<string*>::iterator it=sjunk.begin(); it!=sjunk.end(); ++it)
+      delete *it ;
+    sjunk.clear() ;
+#endif
+#if 0
+    vector<credentials_t> junk ;
+    for(int i=0; i<1000; ++i)
+    {
+      credentials_t cred = Aegis::credentials_from_dbus_connection(*p_message) ;
+      junk.push_back(cred) ;
+    }
+    junk.clear() ;
+#endif
+
+#if 0
+    request_state(events[e->cookie = cookie_t(next_cookie++)] = e, "START") ;
+#else
