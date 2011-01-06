@@ -465,10 +465,17 @@ cookie_t machine_t::add_event(const Maemo::Timed::event_io_t *eio, bool process_
   //   or have to be established by the QDBusMessage structure (from dbus daemon)
   // Using pointers instead of usual C++ references, just because a NULL-reference
   //   usually confuses people (though working just fine)
+
+#if 1
+  if (event_t *e = new event_t)
+  {
+    #include "simple-event.c++"
+#else
   if (event_t *e = event_t::from_dbus_iface(eio))
   {
     if (e->actions.size() > 0)
       e->client_creds = p_creds ? *p_creds : credentials_t::from_dbus_connection(*p_message) ;
+#endif
 #if 0
     request_state(events[e->cookie = cookie_t(next_cookie++)] = e, "START") ;
 #else
