@@ -178,10 +178,10 @@ credentials_t credentials_t::from_current_process()
 //
 // TODO: F_CREDS_AEGIS_LIBCREDS --- make this function #ifdef'ed
 
-credentials_t credentials_t::from_dbus_connection(const QDBusMessage &message)
+credentials_t::credentials_t(const QDBusMessage &message)
 {
 #if F_CREDS_AEGIS_LIBCREDS
-  return Aegis::credentials_from_dbus_connection(message) ;
+  *this = Aegis::credentials_from_dbus_connection(message) ;
 #else
 #error credentials_t;:from_dbus_connection is only implemented for aegis
 #endif
@@ -202,7 +202,7 @@ iodata::record *credentials_t::save() const
   return r ;
 }
 
-void credentials_t::load(const iodata::record *r)
+credentials_t::credentials_t(const iodata::record *r)
 {
   uid = r->get("uid")->str() ;
   gid = r->get("gid")->str() ;

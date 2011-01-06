@@ -47,6 +47,7 @@ event_t::event_t()
   flags = 0 ;
   tsz_max = tsz_counter = 0 ;
   cred_modifier = NULL ;
+  client_creds = NULL ;
   state = NULL ;
   request_watcher = NULL ;
   cookie = cookie_t(0) ; // paranoid
@@ -55,6 +56,7 @@ event_t::event_t()
 event_t::~event_t()
 {
   delete cred_modifier ;
+  delete client_creds ;
   if(request_watcher)
   {
     log_debug("request_watcher still alive, detaching") ;
@@ -706,7 +708,8 @@ bool event_t::accrue_privileges(const action_t &a)
 
 bool event_t::drop_privileges(const action_t &a)
 {
-  credentials_t creds = client_creds ;
+  log_assert(client_creds!=NULL) ;
+  credentials_t creds = *client_creds ;
 
 #if F_TOKENS_AS_CREDENTIALS
   const cred_modifier_t *E = cred_modifier, *A = a.cred_modifier ;
@@ -810,8 +813,8 @@ iodata::record *event_t::save(bool for_backup)
 
   if(not for_backup)
     r->add("actions", iodata::save(actions)) ;
-  if(not for_backup)
-    r->add("client_creds", client_creds.save()) ;
+  if(not for_backup and client_creds)
+    r->add("client_creds", client_creds->save()) ;
   if(not for_backup and cred_modifier)
     r->add("cred_modifier", cred_modifier->save()) ;
   return r ;

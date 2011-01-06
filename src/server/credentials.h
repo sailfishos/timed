@@ -48,15 +48,16 @@ struct credentials_t
 
   // TODO: make nobody/nogroup run-time option: /etc/timed.rc
   credentials_t() : uid("nobody"), gid("nogroup") { }
+  credentials_t(const credentials_t &x) : uid(x.uid), gid(x.gid), tokens(x.tokens) { }
 
   bool apply() const ; // set the credentials for the current process
   bool apply_and_compare() ; // set the credentials and check if they are really set
 
   static credentials_t from_current_process() ; // get the credentials of the current process
-  static credentials_t from_dbus_connection(const QDBusMessage &msg) ; // get from dbus client
+  credentials_t(const QDBusMessage &msg) ; // get from dbus client
 
   iodata::record *save() const ;
-  void load(const iodata::record *r) ;
+  credentials_t(const iodata::record *r) ; // load
 } ;
 
 #endif // CREDENTIALS_H

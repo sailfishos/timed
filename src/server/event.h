@@ -128,6 +128,8 @@ struct event_t
 
   uint32_t tsz_counter, tsz_max ;
   cred_modifier_t *cred_modifier ;
+  credentials_t *client_creds ;
+
 
   vector<recurrence_pattern_t> recrs ;
   vector<action_t> actions ;
@@ -173,8 +175,6 @@ struct event_t
   pid_t fork_and_set_credentials(const action_t &action, bool &error) ;
   pid_t fork_and_set_credentials_v2(const action_t &action, bool &error) ;
   pid_t fork_and_set_credentials_v3(const action_t &action) ;
-
-  credentials_t client_creds ;
 
   static iodata::bit_codec *codec ;
   static void codec_initializer() ;

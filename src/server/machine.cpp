@@ -459,9 +459,9 @@ void machine_t::send_queue_context()
   context_changed = false ;
 }
 
-cookie_t machine_t::add_event(const Maemo::Timed::event_io_t *eio, bool process_queue, const credentials_t *p_creds, const QDBusMessage *p_message)
+cookie_t machine_t::add_event(const Maemo::Timed::event_io_t *eio, bool process_queue, const credentials_t *creds, const QDBusMessage *p_message)
 {
-  // The credentials for the event are either already known (p_creds)
+  // The credentials for the event are either already known (creds)
   //   or have to be established by the QDBusMessage structure (from dbus daemon)
   // Using pointers instead of usual C++ references, just because a NULL-reference
   //   usually confuses people (though working just fine)
@@ -474,7 +474,7 @@ cookie_t machine_t::add_event(const Maemo::Timed::event_io_t *eio, bool process_
   if (event_t *e = event_t::from_dbus_iface(eio))
   {
     if (e->actions.size() > 0)
-      e->client_creds = p_creds ? *p_creds : credentials_t::from_dbus_connection(*p_message) ;
+      e->client_creds = creds ? new credentials_t(*creds) : new credentials_t(*p_message) ;
 #endif
     register_event(e) ;
 
@@ -516,15 +516,15 @@ bool machine_t::is_event_registered(event_t *e)
 
 void machine_t::add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVariant> &res, const QDBusMessage &message)
 {
-  // Here we're asking credentials immediately, not like in add_event
-  // TODO:
-  // But may be it's reasonable first to check, if we really have actions?
-  credentials_t creds = credentials_t::from_dbus_connection(message) ;
+  credentials_t *creds = NULL ;
   bool valid = false ;
   for(int i=0; i<lst.ee.size(); ++i)
   {
 #if 1
-    unsigned cookie = add_event(&lst.ee[i], false, &creds, NULL).value() ;
+    bool need_credentials = lst.ee[i].actions.size() > 0 ;
+    if (need_credentials and not creds)
+      creds = new credentials_t(message) ;
+    unsigned cookie = add_event(&lst.ee[i], false, creds, NULL).value() ;
 #else // make some testing here
     unsigned cookie = add_event(&lst.ee[i], false, NULL  , &message).value() ;
 #endif
@@ -537,6 +537,7 @@ void machine_t::add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVari
     else
       log_warning("event[%d]: rejected", i) ;
   }
+  delete creds ;
   if(valid)
     invoke_process_transition_queue() ;
 }
@@ -710,7 +711,8 @@ void machine_t::load_events(const iodata::array *events_data, bool trusted_sourc
     if(trusted_source)
     {
       iodata::load(e->actions, ee->get("actions")->arr()) ;
-      e->client_creds.load(ee->get("client_creds")->rec()) ;
+      if (e->actions.size()>0)
+        e->client_creds = new credentials_t(ee->get("client_creds")->rec()) ;
       const iodata::array *cred_modifier = ee->get("cred_modifier")->arr() ;
       if (cred_modifier->size()>0)
         e->cred_modifier = new cred_modifier_t(cred_modifier) ;
