@@ -1,3 +1,9 @@
+timed (2.34) unstable; urgency=low
+
+  * new version
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 06 Jan 2011 14:50:57 +0200
+
 timed (2.33) unstable; urgency=low
 
   * extract version number from debian/changelog
