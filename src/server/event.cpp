@@ -46,6 +46,7 @@ event_t::event_t()
 {
   flags = 0 ;
   tsz_max = tsz_counter = 0 ;
+  cred_modifier = NULL ;
   state = NULL ;
   request_watcher = NULL ;
   cookie = cookie_t(0) ; // paranoid
@@ -53,6 +54,7 @@ event_t::event_t()
 
 event_t::~event_t()
 {
+  delete cred_modifier ;
   if(request_watcher)
   {
     log_debug("request_watcher still alive, detaching") ;
@@ -143,10 +145,12 @@ event_t *event_t::from_dbus_iface(const event_io_t *eio)
   {
     e->actions[i].flags = eio->actions[i].flags ;
     map_q_to_std(eio->actions[i].attr.txt, e->actions[i].attr.txt) ;
-    e->actions[i].cred_modifier.load_from_dbus_interface(eio->actions[i].cred_modifiers) ;
+    if (eio->actions[i].cred_modifiers.size()>0)
+      e->actions[i].cred_modifier = new cred_modifier_t(eio->actions[i].cred_modifiers) ;
     check_attr(str_printf("action #%d", i), e->actions[i].attr, true) ;
   }
-  e->cred_modifier.load_from_dbus_interface(eio->cred_modifiers) ;
+  if (eio->cred_modifiers.size()>0)
+    e->cred_modifier = new cred_modifier_t(eio->cred_modifiers) ;
 
   int B = eio->buttons.size() ;
   e->snooze.resize(B+1) ;
@@ -377,7 +381,7 @@ iodata::array *cred_modifier_t::save() const
   return a ;
 }
 
-void cred_modifier_t::load(const iodata::array *a)
+cred_modifier_t::cred_modifier_t(const iodata::array *a)
 {
   for(unsigned i=0; i<a->size(); ++i)
   {
@@ -387,7 +391,7 @@ void cred_modifier_t::load(const iodata::array *a)
   }
 }
 
-void cred_modifier_t::load_from_dbus_interface(const QVector<Maemo::Timed::cred_modifier_io_t> &cmio)
+cred_modifier_t::cred_modifier_t(const QVector<Maemo::Timed::cred_modifier_io_t> &cmio)
 {
   for(int i=0; i<cmio.size(); ++i)
   {
@@ -418,29 +422,32 @@ void recurrence_pattern_t::load(const iodata::record *r)
   mons = r->get("mons")->decode(mons_codec) ;
 }
 
-string action_t::cred_key() const
+const char *action_t::cred_key() const
 {
-  if (cred_key_value.empty())
+  if (cred_key_value==NULL)
   {
     ostringstream os ;
-    os << "tokens={" ;
-    bool first = true ;
-    for (map<string,bool>::const_iterator it=cred_modifier.tokens.begin(); it!=cred_modifier.tokens.end(); ++it)
+    if (cred_modifier!=NULL)
     {
-      os << (first?first=false,"":", ") ;
-      os << (it->second?"+":"-") ;
-      os << it->first ;
+      os << "tokens={" ;
+      bool first = true ;
+      for (map<string,bool>::const_iterator it=cred_modifier->tokens.begin(); it!=cred_modifier->tokens.end(); ++it)
+      {
+        os << (first?first=false,"":", ") ;
+        os << (it->second?"+":"-") ;
+        os << it->first ;
+      }
+      os << "}" ;
     }
-    os << "}" ;
     string uid = attr("USER"), gid = attr("GROUP") ;
     if (!uid.empty())
       os << ", uid=" << uid ;
     if (!gid.empty())
       os << ", gid=" << gid ;
 
-    cred_key_value = os.str() ;
+    cred_key_value = new string(os.str()) ;
   }
-  return cred_key_value ;
+  return cred_key_value->c_str() ;
 }
 
 iodata::record *action_t::save() const
@@ -448,7 +455,8 @@ iodata::record *action_t::save() const
   iodata::record *r = new iodata::record ;
   r->add("attr", attr.save()) ;
   r->add("flags", new iodata::bitmask(flags, codec)) ;
-  r->add("cred_modifier", cred_modifier.save()) ;
+  if (cred_modifier!=NULL)
+    r->add("cred_modifier", cred_modifier->save()) ;
   return r ;
 }
 
@@ -456,7 +464,9 @@ void action_t::load(const iodata::record *r)
 {
   attr.load(r->get("attr")->rec()) ;
   flags = r->get("flags")->decode(codec) ;
-  cred_modifier.load(r->get("cred_modifier")->arr()) ;
+  const iodata::array *cred_modifier = r->get("cred_modifier")->arr() ;
+  if (cred_modifier->size()>0)
+    this->cred_modifier = new cred_modifier_t(cred_modifier) ;
 }
 
 void event_t::sort_and_run_actions(uint32_t mask)
@@ -482,7 +492,7 @@ void event_t::sort_and_run_actions(uint32_t mask)
 
   log_debug("Beginning the action list dump") ;
   for(vector<unsigned>::const_iterator it=r->begin(); it!=r->end(); ++it)
-    log_debug("Action %d, cred_key: '%s'", *it, actions[*it].cred_key().c_str()) ;
+    log_debug("Action %d, cred_key: '%s'", *it, actions[*it].cred_key()) ;
   log_debug("Done:     the action list dump") ;
 
   log_debug("Beginning the action array sorting") ;
@@ -662,15 +672,21 @@ bool event_t::accrue_privileges(const action_t &a)
   credentials_t creds = credentials_t::from_current_process() ;
 
 #if F_TOKENS_AS_CREDENTIALS
-  const cred_modifier_t &E = cred_modifier, &A = a.cred_modifier ;
+  const cred_modifier_t *E = cred_modifier, *A = a.cred_modifier ;
 
   // tokens_to_accrue1 := EVENT.add - ACTION.drop
-  set<string> tokens_to_accrue1 = E.tokens_by_value(true) ;
-  set_change<string> (tokens_to_accrue1, A.tokens_by_value(false), false) ;
+  set<string> tokens_to_accrue1 ;
+  if (E)
+    tokens_to_accrue1 = E->tokens_by_value(true) ;
+  if (E and A)
+    set_change<string> (tokens_to_accrue1, A->tokens_by_value(false), false) ;
 
   // tokens_to_accrue2 := ACTION.add - EVENT.drop
-  set<string> tokens_to_accrue2 = A.tokens_by_value(true) ;
-  set_change<string> (tokens_to_accrue2, E.tokens_by_value(false), false) ;
+  set<string> tokens_to_accrue2 ;
+  if (A)
+    tokens_to_accrue2 = A->tokens_by_value(true) ;
+  if (A and E)
+    set_change<string> (tokens_to_accrue2, E->tokens_by_value(false), false) ;
 
   // creds += (tokens_to_accrue 1+2)
   set_change<string> (creds.tokens, tokens_to_accrue1, true) ;
@@ -693,15 +709,21 @@ bool event_t::drop_privileges(const action_t &a)
   credentials_t creds = client_creds ;
 
 #if F_TOKENS_AS_CREDENTIALS
-  const cred_modifier_t &E = cred_modifier, &A = a.cred_modifier ;
+  const cred_modifier_t *E = cred_modifier, *A = a.cred_modifier ;
 
   // tokens_to_remove1 := EVENT.drop - ACTION.add
-  set<string> tokens_to_remove1 = E.tokens_by_value(false) ;
-  set_change<string> (tokens_to_remove1, A.tokens_by_value(true), false) ;
+  set<string> tokens_to_remove1 ;
+  if (E)
+    tokens_to_remove1 = E->tokens_by_value(false) ;
+  if (E and A)
+    set_change<string> (tokens_to_remove1, A->tokens_by_value(true), false) ;
 
   // tokens_to_remove2 := ACTION.drop - EVENT.add
-  set<string> tokens_to_remove2 = A.tokens_by_value(false) ;
-  set_change<string> (tokens_to_remove2, E.tokens_by_value(true), false) ;
+  set<string> tokens_to_remove2 ;
+  if (A)
+    tokens_to_remove2 = A->tokens_by_value(false) ;
+  if (A and E)
+    set_change<string> (tokens_to_remove2, E->tokens_by_value(true), false) ;
 
   // creds := client_creds - (tokens_to_remove 1+2)
   set_change<string> (creds.tokens, tokens_to_remove1, false) ;
@@ -790,8 +812,8 @@ iodata::record *event_t::save(bool for_backup)
     r->add("actions", iodata::save(actions)) ;
   if(not for_backup)
     r->add("client_creds", client_creds.save()) ;
-  if(not for_backup)
-    r->add("cred_modifier", cred_modifier.save()) ;
+  if(not for_backup and cred_modifier)
+    r->add("cred_modifier", cred_modifier->save()) ;
   return r ;
 }
 

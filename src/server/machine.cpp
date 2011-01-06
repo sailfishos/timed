@@ -466,7 +466,7 @@ cookie_t machine_t::add_event(const Maemo::Timed::event_io_t *eio, bool process_
   // Using pointers instead of usual C++ references, just because a NULL-reference
   //   usually confuses people (though working just fine)
 
-#if 1
+#if 0
   if (event_t *e = new event_t)
   {
     #include "simple-event.c++"
@@ -711,7 +711,9 @@ void machine_t::load_events(const iodata::array *events_data, bool trusted_sourc
     {
       iodata::load(e->actions, ee->get("actions")->arr()) ;
       e->client_creds.load(ee->get("client_creds")->rec()) ;
-      e->cred_modifier.load(ee->get("cred_modifier")->arr()) ;
+      const iodata::array *cred_modifier = ee->get("cred_modifier")->arr() ;
+      if (cred_modifier->size()>0)
+        e->cred_modifier = new cred_modifier_t(cred_modifier) ;
     }
 
     if(e->flags & EventFlags::Empty_Recurring)

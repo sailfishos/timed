@@ -92,21 +92,22 @@ struct cred_modifier_t
   set<string> tokens_by_value(bool accrue) const ;
 
   iodata::array *save() const ;
-  void load(const iodata::array *a) ;
+  cred_modifier_t(const iodata::array *a) ; // load
 
-  void load_from_dbus_interface(const QVector<Maemo::Timed::cred_modifier_io_t> &cmio) ;
+  cred_modifier_t(const QVector<Maemo::Timed::cred_modifier_io_t> &cmio) ;
 } ;
 
 struct action_t
 {
   attribute_t attr ;
   uint32_t flags ;
-  cred_modifier_t cred_modifier ;
+  cred_modifier_t *cred_modifier ;
 
-  action_t() { flags = 0 ; }
+  action_t() { flags = 0 ; cred_key_value = NULL ; cred_modifier = NULL ; }
+ ~action_t() { delete cred_key_value ; delete cred_modifier ; }
 
-  mutable string cred_key_value ;
-  string cred_key() const ;
+  mutable string *cred_key_value ;
+  const char *cred_key() const ;
 
   static iodata::bit_codec *codec ;
   iodata::record *save() const ;
@@ -126,7 +127,7 @@ struct event_t
   uint32_t flags ;
 
   uint32_t tsz_counter, tsz_max ;
-  cred_modifier_t cred_modifier ;
+  cred_modifier_t *cred_modifier ;
 
   vector<recurrence_pattern_t> recrs ;
   vector<action_t> actions ;
@@ -187,7 +188,7 @@ struct action_comparison_t
   action_comparison_t(const event_t *e) : event(e) { }
   bool operator() (unsigned i, unsigned j)
   {
-    return event->actions[i].cred_key() < event->actions[j].cred_key() ;
+    return strcmp(event->actions[i].cred_key(), event->actions[j].cred_key()) < 0 ;
   }
 } ;
 
