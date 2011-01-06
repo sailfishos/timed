@@ -476,11 +476,8 @@ cookie_t machine_t::add_event(const Maemo::Timed::event_io_t *eio, bool process_
     if (e->actions.size() > 0)
       e->client_creds = p_creds ? *p_creds : credentials_t::from_dbus_connection(*p_message) ;
 #endif
-#if 0
-    request_state(events[e->cookie = cookie_t(next_cookie++)] = e, "START") ;
-#else
     register_event(e) ;
-#endif
+
     if (process_queue)
       invoke_process_transition_queue() ;
     log_info("new event: cookie=%d, object=%p", e->cookie.value(), e) ;
