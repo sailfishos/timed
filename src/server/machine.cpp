@@ -808,11 +808,11 @@ void request_watcher_t::call_returned(QDBusPendingCallWatcher *w)
   bool ok = reply.isValid() and reply.value() ;
 
   abstract_io_state_t *next = machine->state_dlg_user ;
-  
+
   if (ok)
     log_notice("Voland acknowledge received, moving %d event(s) to DLG_USER", events.size()) ;
   else
-  { 
+  {
     string err = reply.isValid() ? "false returned" : reply.error().message().toStdString() ;
     log_error("Voland call 'create' failed, message: '%s'", err.c_str()) ;
     log_notice("moving %d event(s) to DLG_WAIT", events.size()) ;
@@ -821,7 +821,7 @@ void request_watcher_t::call_returned(QDBusPendingCallWatcher *w)
 
   for(set<event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
     next->go_to(*it) ;
-  
+
   if (events.size()>0)
     machine->process_transition_queue() ;
 
