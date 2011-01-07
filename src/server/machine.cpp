@@ -469,7 +469,8 @@ cookie_t machine_t::add_event(const Maemo::Timed::event_io_t *eio, bool process_
 #if 0
   if (event_t *e = new event_t)
   {
-    #include "simple-event.c++"
+    // #include "simple-event.c++"
+    #include "clock-ui-event.c++"
 #else
   if (event_t *e = event_t::from_dbus_iface(eio))
   {
