@@ -42,6 +42,7 @@
 #include "olson.h"
 #include "machine.h"
 #include "tz.h"
+#include "event.h"
 
 struct Timed : public QCoreApplication
 {
@@ -190,12 +191,14 @@ public:
     {
       log_critical("%s", e.info().c_str()) ;
     }
-#if TODO // really: TODO
+    catch(const iodata::exception &e)
+    {
+      log_critical("iodata::exception: '%s'", e.info().c_str()) ;
+    }
     catch(const event_exception &e)
     {
-      log_critical("oops, unknown std::exception: %s", e.what()) ;
+      log_critical("event_exception: pid=%d, '%s'", e.pid(), e.what()) ;
     }
-#endif
     catch(const std::exception &e)
     {
       log_critical("oops, unknown std::exception: %s", e.what()) ;

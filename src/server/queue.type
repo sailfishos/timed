@@ -19,12 +19,12 @@ event_t =
   { name = "ticker",      type = $integer,       value = 0 },
   { name = "t",           type = $record,        record="broken_down_t"},
   { name = "tz",          type = $bytes,         value = "" },
-  { name = "attr",        type = $record,        record="attribute_t"},
+  { name = "attr",        type = $array|$record, record="key_value_t"},
   { name = "flags",       type = $bitmask,       value=$0 },
   { name = "recrs",       type = $array|$record, record="recurrence_pattern_t"},
   { name = "actions",     type = $array|$record, record="action_t"},
   { name = "snooze",      type = $array|$integer                     },
-  { name = "b_attr",      type = $array|$record, record="attribute_t"},
+  { name = "b_attr",      type = $array|$record, record="b_attr_t" },
 
   // start of user notification, needed to discard old events
   { name = "dialog_time", type = $integer, value=0 },
@@ -37,16 +37,21 @@ event_t =
   { name = "cred_modifier",  type = $record|$array, record="cred_modifier_t" }
 ],
 
-attribute_t =
+key_value_t =
 [
-  { name = "txt",          type = $array|$bytes }
-//   { name = "flags",        type = $bitmask, value=$0 }
+  { name = "key",          type = $bytes },
+  { name = "val",          type = $bytes }
+],
+
+b_attr_t =
+[
+  { name = "attr", type = $record|$array, record = "key_value_t" }
 ],
 
 action_t =
 [
   { name = "flags",      type = $bitmask,       value=$0 },
-  { name = "attr",       type = $record,        record="attribute_t" },
+  { name = "attr",       type = $array|$record, record="key_value_t"},
   { name = "cred_modifier",  type = $record|$array, record="cred_modifier_t" }
 ],
 

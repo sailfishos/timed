@@ -81,8 +81,8 @@ struct attribute_t
   string operator() (const string &key) const { const_iterator it=txt.find(key) ; return it==txt.end() ? string() : it->second ; }
   void operator() (const string &key, const string &val) ;
 
-  iodata::record *save() const ;
-  void load(const iodata::record *a) ;
+  iodata::array *save() const ;
+  void load(const iodata::array *a) ;
 } ;
 
 struct cred_modifier_t

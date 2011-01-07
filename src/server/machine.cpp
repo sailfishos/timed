@@ -466,7 +466,7 @@ cookie_t machine_t::add_event(const Maemo::Timed::event_io_t *eio, bool process_
   // Using pointers instead of usual C++ references, just because a NULL-reference
   //   usually confuses people (though working just fine)
 
-#if 0
+#if 1
   if (event_t *e = new event_t)
   {
     // #include "simple-event.c++"
@@ -701,11 +701,17 @@ void machine_t::load_events(const iodata::array *events_data, bool trusted_sourc
 
     e->tz = ee->get("tz")->str() ;
 
-    e->attr.load(ee->get("attr")->rec()) ;
+    e->attr.load(ee->get("attr")->arr()) ;
     e->flags = ee->get("flags")->decode(event_t::codec) ;
     iodata::load(e->recrs, ee->get("recrs")->arr()) ;
     iodata::load_int_array(e->snooze, ee->get("snooze")->arr()) ;
-    iodata::load(e->b_attr, ee->get("b_attr")->arr()) ;
+
+    const iodata::array *a = ee->get("b_attr")->arr() ;
+    unsigned nb = a->size() ;
+    e->b_attr.resize(nb) ;
+    for(unsigned i=0; i<nb; ++i)
+      e->b_attr[i].load(a->get(i)->rec()->get("attr")->arr()) ;
+
     e->last_triggered = ticker_t(ee->get("dialog_time")->value()) ;
     e->tsz_max = ee->get("tsz_max")->value() ;
     e->tsz_counter = ee->get("tsz_counter")->value() ;

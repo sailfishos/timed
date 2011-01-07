@@ -335,28 +335,26 @@ void event_t::codec_destructor()
   delete recurrence_pattern_t::mons_codec ;
 }
 
-iodata::record *attribute_t::save() const
+iodata::array *attribute_t::save() const
 {
-  iodata::record *r = new iodata::record ;
   iodata::array *a = new iodata::array ; // XXX what if txt is empty?
   for(map<string,string>::const_iterator it=txt.begin(); it!=txt.end(); ++it)
   {
-    a->add(new iodata::bytes(it->first)) ;
-    a->add(new iodata::bytes(it->second)) ;
+    iodata::record *r = new iodata::record ;
+    r->add("key", new iodata::bytes(it->first)) ;
+    r->add("val", new iodata::bytes(it->second)) ;
+    a->add(r) ;
   }
-  r->add("txt", a) ;
-  return r ;
+  return a ;
 }
 
-void attribute_t::load(const iodata::record *r)
+void attribute_t::load(const iodata::array *a)
 {
-  const iodata::array *a = r->get("txt")->arr() ;
-  // need some warning for odd length array ?
-  for(unsigned i=0; i<a->size()/2; ++i)
+  for(unsigned i=0; i<a->size(); ++i)
   {
-    unsigned j_key = 2*i, j_val = j_key + 1 ;
-    string key = a->get(j_key)->str() ;
-    string val = a->get(j_val)->str() ;
+    const iodata::record *r = a->get(i)->rec() ;
+    string key = r->get("key")->str() ;
+    string val = r->get("val")->str() ;
     txt[key]=val ;
   }
 }
@@ -464,7 +462,7 @@ iodata::record *action_t::save() const
 
 void action_t::load(const iodata::record *r)
 {
-  attr.load(r->get("attr")->rec()) ;
+  attr.load(r->get("attr")->arr()) ;
   flags = r->get("flags")->decode(codec) ;
   const iodata::array *cred_modifier = r->get("cred_modifier")->arr() ;
   if (cred_modifier->size()>0)
@@ -805,7 +803,15 @@ iodata::record *event_t::save(bool for_backup)
   r->add("flags", new iodata::bitmask(flags &~ EventFlags::Cluster_Mask, codec)) ;
   r->add("recrs", iodata::save(recrs)) ;
   r->add("snooze", iodata::save_int_array(snooze)) ;
-  r->add("b_attr", iodata::save(b_attr)) ;
+
+  iodata::array *ba = new iodata::array ;
+  for(unsigned i=0; i<b_attr.size(); ++i)
+  {
+    iodata::record *rr = new iodata::record ;
+    rr->add("attr", b_attr[i].save()) ;
+    ba->add(rr) ;
+  }
+  r->add("b_attr", ba) ;
 
   r->add("dialog_time", (flags & EventFlags::In_Dialog) ? last_triggered.value() : 0) ;
   r->add("tsz_max", tsz_max) ;
