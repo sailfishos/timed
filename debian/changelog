@@ -1,8 +1,8 @@
 timed (2.34) unstable; urgency=low
 
-  * new version
+  * Fixes: NB#211609 - timed is using too much memory for clock alarms
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 06 Jan 2011 14:50:57 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 10 Jan 2011 17:42:46 +0200
 
 timed (2.33) unstable; urgency=low
 
