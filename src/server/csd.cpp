@@ -74,6 +74,9 @@ void csd_t::process_csd_network_time_info(const Cellular::NetworkTimeInfo &nti)
 
 string csd_t::csd_network_time_info_to_string(const Cellular::NetworkTimeInfo &nti)
 {
+  if (not nti.isValid())
+    return "{invalid}" ;
+
   ostringstream os ;
 
   os << "{zone=" << nti.offsetFromUtc() ;
