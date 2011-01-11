@@ -98,12 +98,16 @@ struct cellular_handler : public QObject
 private:
   static cellular_handler *static_object ;
   virtual ~cellular_handler() ;
+#if 0
 #if F_CELLULAR_QT
   Cellular::NetworkTime *cnt ;
   Cellular::NetworkOperator *cop ;
 #endif
+#endif
   cellular_handler() ;
+#if 0
   Q_INVOKABLE void emulate_operator_signal() ;
+#endif
 signals:
   void cellular_data_received(const cellular_info_t &) ;
 public:

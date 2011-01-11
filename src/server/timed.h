@@ -42,6 +42,7 @@
 #include "olson.h"
 #include "machine.h"
 #include "tz.h"
+#include "csd.h"
 #include "event.h"
 
 struct Timed : public QCoreApplication
@@ -106,6 +107,10 @@ public:
   machine_t *am ;
   pinguin *ping ;
   source_settings *settings ;
+  cellular_handler *nitz_object ;
+#if F_CELLULAR_QT
+  csd_t *csd ;
+#endif
 
   void load_events() ;
   void check_voland_service() ;

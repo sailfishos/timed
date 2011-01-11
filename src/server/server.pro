@@ -12,8 +12,8 @@ QMAKE_LIBDIR_FLAGS += -L../lib -L../voland
 LIBS += -ltimed -ltimed-voland
 CONFIG += qmlog
 
-HEADERS += interfaces.h adaptor.h timed.h state.h cluster.h machine.h singleshot.h pinguin.h unix-signal.h onitz.h
-SOURCES += cluster.cpp machine.cpp state.cpp main.cpp timed.cpp timeutil.cpp event.cpp misc.cpp settings.cpp unix-signal.cpp onitz.cpp
+HEADERS += csd.h interfaces.h adaptor.h timed.h state.h cluster.h machine.h singleshot.h pinguin.h unix-signal.h onitz.h
+SOURCES += csd.cpp cluster.cpp machine.cpp state.cpp main.cpp timed.cpp timeutil.cpp event.cpp misc.cpp settings.cpp unix-signal.cpp onitz.cpp
 
 SOURCES += credentials.cpp aegis.cpp
 HEADERS += credentials.h

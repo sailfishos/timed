@@ -1,3 +1,9 @@
+timed (2.36) unstable; urgency=low
+
+  * new csd layer, better cellular stuff logging
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Tue, 11 Jan 2011 18:10:57 +0200
+
 timed (2.35) unstable; urgency=low
 
   * Fixes: NB#208557 - sleeping in shutdown / reboot modes

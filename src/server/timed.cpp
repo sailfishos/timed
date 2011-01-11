@@ -512,13 +512,14 @@ void Timed::init_start_event_machine()
 
 void Timed::init_cellular_services()
 {
-  cellular_handler *nitz_object = cellular_handler::object() ;
+  nitz_object = cellular_handler::object() ;
   int nitzrez = QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), this, SLOT(nitz_notification(const cellular_info_t &))) ;
   log_debug("nitzrez=%d", nitzrez) ;
 
   tz_oracle = new tz_oracle_t ;
   QObject::connect(tz_oracle, SIGNAL(tz_detected(olson *, tz_suggestions_t)), this, SLOT(tz_by_oracle(olson *, tz_suggestions_t))) ;
   QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
+  csd = new csd_t(this) ;
 }
 
 void Timed::init_dst_checker()

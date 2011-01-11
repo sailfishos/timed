@@ -34,6 +34,7 @@
 
 cellular_handler::cellular_handler()
 {
+#if 0
 #if F_CELLULAR_QT
   cnt = new Cellular::NetworkTime ;
   cop = new Cellular::NetworkOperator ;
@@ -58,8 +59,10 @@ cellular_handler::cellular_handler()
   cnt->queryTimeInfo() ;
   QMetaObject::invokeMethod(this, "emulate_operator_signal", Qt::QueuedConnection) ;
 #endif
+#endif
 }
 
+#if 0
 void cellular_handler::emulate_operator_signal()
 {
 #if F_CELLULAR_QT
@@ -68,6 +71,7 @@ void cellular_handler::emulate_operator_signal()
   log_debug() ;
 #endif
 }
+#endif
 
 cellular_handler *cellular_handler::static_object = NULL ;
 
@@ -88,8 +92,10 @@ void cellular_handler::uninitialize()
 
 cellular_handler::~cellular_handler()
 {
+#if 0
   delete cop ;
   delete cnt ;
+#endif
 }
 
 void cellular_handler::fake_nitz_signal(int mcc, int offset, int time, int dst)

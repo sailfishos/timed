@@ -40,6 +40,7 @@
 
 #include "timed.h"
 #include "misc.h"
+#include "csd.h"
 #include "credentials.h"
 
 #include <timed/interface> // TODO: is Maemo::Timed::bus() the correct way?
@@ -179,15 +180,35 @@ public slots:
 
   bool fake_nitz_signal(int mcc, int offset, int time, int dst)
   {
-    log_debug("(fake) mcc=%d offset=%d time=%d dst=%d", mcc, offset, time, dst) ;
+    log_notice("(fake_nitz_signal) mcc=%d offset=%d time=%d dst=%d", mcc, offset, time, dst) ;
+#if 0
     cellular_handler::object()->fake_nitz_signal(mcc, offset, time, dst) ;
     return true ; // TODO make above method returning bool (not void) and check parameters
+#endif
+    time_t t = time ;
+#if 1
+    struct tm tm ;
+    if(gmtime_r(&t, &tm) != &tm)
+    {
+      log_error("gmttime_r failed in fake_nitz_signal()") ;
+      return false ;
+    }
+    QDateTime qdt(QDate(tm.tm_year+1900,tm.tm_mon+1,tm.tm_mday), QTime(tm.tm_hour,tm.tm_min,tm.tm_sec), Qt::UTC) ;
+#else
+    QDateTime qdt = QDateTime::fromTime_t(t) ;
+#endif
+    nanotime_t now = nanotime_t::monotonic_now() ;
+    QString mcc_s = str_printf("%d", mcc).c_str() ;
+    Cellular::NetworkTimeInfo nti(qdt, dst, offset, now.sec(), now.nano(), "mnc", mcc_s) ;
+    log_notice("FAKE_CSD::csd_network_time_info %s", csd_t::csd_network_time_info_to_string(nti).c_str()) ;
+    timed->csd->process_csd_network_time_info(nti) ;
+    return true ;
   }
 
   bool fake_operator_signal(const QString &mcc, const QString &mnc)
   {
-    log_debug("(fake) mcc='%s' mnc='%s'", mcc.toStdString().c_str(), mnc.toStdString().c_str()) ;
-    cellular_handler::object()->new_operator(mcc, mnc) ;
+    log_notice("FAKE_CSD::csd_network_operator {mcc='%s', mnc='%s'}", mcc.toStdString().c_str(), mnc.toStdString().c_str()) ;
+    timed->csd->process_csd_network_operator(mcc, mnc) ;
     return true ;
   }
 } ;
