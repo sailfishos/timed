@@ -167,7 +167,7 @@ void Timed::init_scratchbox_mode()
 //          -1: nobody knows (for example: DSME not running)
 //           0: USER mode
 //           1: ACT_DEAD mode
-static int is_act_dead_by_dsme()
+static int is_act_dead_by_dsme(string &dsme_mode)
 {
   // QDBusInterface dsme(dsme_service, dsme_req_path, dsme_req_interface, QDBusConnection::systemBus()) ;
   DsmeReqInterface dsme ;
@@ -186,12 +186,12 @@ static int is_act_dead_by_dsme()
     return -1 ;
   }
 
-  QString mode = res.value() ;
-  log_notice("got a mode string from DSME: '%s'", mode.toStdString().c_str()) ;
+  dsme_mode = res.value().toStdString() ;
+  log_notice("got a mode string from DSME: '%s'", dsme_mode.c_str()) ;
 
-  if (mode=="USER")
+  if (dsme_mode=="USER")
     return 0 ;
-  else if (mode=="ACTDEAD")
+  else if (dsme_mode=="ACTDEAD")
     return 1 ;
   else
     return -1 ;
@@ -228,8 +228,9 @@ static int is_act_dead_by_status_files()
 // Make two stage detection, return only if successfully detected
 static bool init_act_dead_v2(bool use_status_files)
 {
-  int dsme_mode = is_act_dead_by_dsme() ;
-  if (0<=dsme_mode) // got an answer
+  string s_dsme_mode ;
+  int dsme_mode = is_act_dead_by_dsme(s_dsme_mode) ;
+  if (0<=dsme_mode) // got a valid answer: user or act_dead
     return dsme_mode ;
 
   if (use_status_files)
@@ -241,8 +242,20 @@ static bool init_act_dead_v2(bool use_status_files)
 
   // oops, we don't know which mode we're running in; let's die
 
+  // how to die? it depends on dsme mode
+
+  log_critical("can't decide in which mode to run (dsme mode: '%s')", s_dsme_mode.c_str()) ;
+
+  if (s_dsme_mode=="SHUTDOWN" or s_dsme_mode=="REBOOT")
+  {
+    log_critical("go to sleep, waiting to be killed, bye...") ;
+    while(true) sleep(239239239) ;
+  }
+
+  log_critical("will be terminated in two seconds, bye...") ;
+
   sleep(2) ;
-  log_abort("can't detect device mode, terminating") ;
+  log_abort("aborting") ;
 }
 #endif
 
