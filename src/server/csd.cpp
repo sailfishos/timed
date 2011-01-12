@@ -27,7 +27,7 @@
 
 #include "csd.h"
 
-#if F_CELLULAR_QT
+#if F_CSD
 
 #include <NetworkTime>
 #include <NetworkOperator>
@@ -131,4 +131,4 @@ string csd_t::csd_network_time_info_to_string(const Cellular::NetworkTimeInfo &n
 
   return os.str() ;
 }
-#endif//F_CELLULAR_QT
+#endif//F_CSD

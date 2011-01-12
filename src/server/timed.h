@@ -108,7 +108,7 @@ public:
   pinguin *ping ;
   source_settings *settings ;
   cellular_handler *nitz_object ;
-#if F_CELLULAR_QT
+#if F_CSD
   csd_t *csd ;
 #endif
 

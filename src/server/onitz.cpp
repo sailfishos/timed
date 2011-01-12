@@ -35,7 +35,7 @@
 cellular_handler::cellular_handler()
 {
 #if 0
-#if F_CELLULAR_QT
+#if F_CSD
   cnt = new Cellular::NetworkTime ;
   cop = new Cellular::NetworkOperator ;
   const char *signal1 = SIGNAL(timeInfoChanged(const NetworkTimeInfo &)) ;
@@ -65,7 +65,7 @@ cellular_handler::cellular_handler()
 #if 0
 void cellular_handler::emulate_operator_signal()
 {
-#if F_CELLULAR_QT
+#if F_CSD
   log_debug() ;
   new_operator(cop->mnc(), cop->mcc()) ;
   log_debug() ;
@@ -126,7 +126,7 @@ void cellular_handler::fake_nitz_signal(int mcc, int offset, int time, int dst)
 }
 
 
-#if F_CELLULAR_QT
+#if F_CSD
 void cellular_handler::new_nitz_signal(const NetworkTimeInfo &cnti)
 {
   log_debug() ;

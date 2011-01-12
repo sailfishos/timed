@@ -26,7 +26,7 @@
 
 #include "f.h"
 
-#if F_CELLULAR_QT
+#if F_CSD
 
 #include <string>
 
@@ -57,6 +57,6 @@ public:
   virtual ~csd_t() ;
 } ;
 
-#endif//F_CELLULAR_QT
+#endif//F_CSD
 
 #endif//MAEMO_TIMED_CSD_H
