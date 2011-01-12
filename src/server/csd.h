@@ -19,10 +19,11 @@ struct csd_t : public QObject
   Timed *timed ;
   Cellular::NetworkTime *nt ;
   Cellular::NetworkOperator *op ;
-  Q_INVOKABLE void initial_csd_operator_query() ;
+  Q_INVOKABLE void csd_operator_q() ;
 private Q_SLOTS:
-  void csd_network_time_info(const NetworkTimeInfo &nti) ;
-  void csd_network_operator(const QString &mnc, const QString &mcc) ;
+  void csd_time_q(const NetworkTimeInfo &nti) ;
+  void csd_time_s(const NetworkTimeInfo &nti) ;
+  void csd_operator_s(const QString &mnc, const QString &mcc) ;
 private:
   void process_csd_network_time_info(const NetworkTimeInfo &nti) ;
   void process_csd_network_operator(const QString &mcc, const QString &mnc) ;

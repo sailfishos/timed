@@ -200,14 +200,14 @@ public slots:
     nanotime_t now = nanotime_t::monotonic_now() ;
     QString mcc_s = str_printf("%d", mcc).c_str() ;
     Cellular::NetworkTimeInfo nti(qdt, dst, offset, now.sec(), now.nano(), "mnc", mcc_s) ;
-    log_notice("FAKE_CSD::csd_network_time_info %s", csd_t::csd_network_time_info_to_string(nti).c_str()) ;
+    log_notice("FAKE_CSD::csd_time_s %s", csd_t::csd_network_time_info_to_string(nti).c_str()) ;
     timed->csd->process_csd_network_time_info(nti) ;
     return true ;
   }
 
   bool fake_operator_signal(const QString &mcc, const QString &mnc)
   {
-    log_notice("FAKE_CSD::csd_network_operator {mcc='%s', mnc='%s'}", mcc.toStdString().c_str(), mnc.toStdString().c_str()) ;
+    log_notice("FAKE_CSD::csd_operator_s {mcc='%s', mnc='%s'}", mcc.toStdString().c_str(), mnc.toStdString().c_str()) ;
     timed->csd->process_csd_network_operator(mcc, mnc) ;
     return true ;
   }

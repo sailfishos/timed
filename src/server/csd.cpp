@@ -16,9 +16,10 @@ csd_t::csd_t(Timed *owner)
   op = new Cellular::NetworkOperator ;
   static const char *time_signal1 = SIGNAL(timeInfoChanged(const NetworkTimeInfo &)) ;
   static const char *time_signal2 = SIGNAL(timeInfoQueryCompleted(const NetworkTimeInfo &)) ;
-  static const char *time_slot = SLOT(csd_network_time_info(const NetworkTimeInfo &)) ;
-  bool res1 = QObject::connect(nt, time_signal1, this, time_slot) ;
-  bool res2 = QObject::connect(nt, time_signal2, this, time_slot) ;
+  static const char *time_slot1 = SLOT(csd_time_s(const NetworkTimeInfo &)) ;
+  static const char *time_slot2 = SLOT(csd_time_q(const NetworkTimeInfo &)) ;
+  bool res1 = QObject::connect(nt, time_signal1, this, time_slot1) ;
+  bool res2 = QObject::connect(nt, time_signal2, this, time_slot2) ;
 
   if(res1 && res2)
     log_info("succesfully connected to csd time signals") ;
@@ -34,7 +35,7 @@ csd_t::csd_t(Timed *owner)
     log_error("connection to csd network operator signal failed") ;
 
   nt->queryTimeInfo() ;
-  QMetaObject::invokeMethod(this, "initial_csd_operator_query", Qt::QueuedConnection) ;
+  QMetaObject::invokeMethod(this, "csd_operator_q", Qt::QueuedConnection) ;
 }
 
 csd_t::~csd_t()
@@ -43,22 +44,28 @@ csd_t::~csd_t()
   delete op ;
 }
 
-void csd_t::initial_csd_operator_query()
+void csd_t::csd_operator_q()
 {
   QString mcc = op->mcc(), mnc = op->mnc() ;
-  log_notice("CSD::initial_csd_operator_query {mcc='%s', mnc='%s'}", mcc.toStdString().c_str(), mnc.toStdString().c_str()) ;
+  log_notice("CSD::csd_operator_q {mcc='%s', mnc='%s'}", mcc.toStdString().c_str(), mnc.toStdString().c_str()) ;
   process_csd_network_operator(mcc, mnc) ;
 }
 
-void csd_t::csd_network_operator(const QString &mnc, const QString &mcc)
+void csd_t::csd_operator_s(const QString &mnc, const QString &mcc)
 {
-  log_notice("CSD::csd_network_operator {mcc='%s', mnc='%s'}", mcc.toStdString().c_str(), mnc.toStdString().c_str()) ;
+  log_notice("CSD::csd_operator_s {mcc='%s', mnc='%s'}", mcc.toStdString().c_str(), mnc.toStdString().c_str()) ;
   process_csd_network_operator(mcc, mnc) ;
 }
 
-void csd_t::csd_network_time_info(const Cellular::NetworkTimeInfo &nti)
+void csd_t::csd_time_q(const Cellular::NetworkTimeInfo &nti)
 {
-  log_notice("CSD::csd_network_time_info %s", csd_network_time_info_to_string(nti).c_str()) ;
+  log_notice("CSD::csd_time_q %s", csd_network_time_info_to_string(nti).c_str()) ;
+  process_csd_network_time_info(nti) ;
+}
+
+void csd_t::csd_time_s(const Cellular::NetworkTimeInfo &nti)
+{
+  log_notice("CSD::csd_time_s %s", csd_network_time_info_to_string(nti).c_str()) ;
   process_csd_network_time_info(nti) ;
 }
 
