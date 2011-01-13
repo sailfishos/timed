@@ -45,6 +45,14 @@
 
 #include <timed/interface> // TODO: is Maemo::Timed::bus() the correct way?
 
+static QDateTime time_t_to_qdatetime(time_t t)
+{
+  struct tm tm ;
+  if(gmtime_r(&t, &tm) != &tm)
+    return QDateTime() ;
+  return QDateTime(QDate(tm.tm_year+1900,tm.tm_mon+1,tm.tm_mday), QTime(tm.tm_hour,tm.tm_min,tm.tm_sec), Qt::UTC) ;
+}
+
 class com_nokia_time : public QDBusAbstractAdaptor
 {
   Q_OBJECT ;
@@ -178,6 +186,28 @@ public slots:
     timed->halt(string_q_to_std(what)) ;
   }
 
+  bool fake_csd_time_signal(const QString &mcc, const QString &mnc, int offset, int time, int dst, int seconds, int nano_seconds)
+  {
+    log_notice("(fake_csd_time_signal) mcc='%s' mnc='%s' offset=%d time=%d dst=%d seconds=%d nano_seconds=%d", mcc.toStdString().c_str(), mnc.toStdString().c_str(), offset, time, dst, seconds, nano_seconds) ;
+    QDateTime qdt = time_t_to_qdatetime((time_t)time) ;
+    if (not qdt.isValid())
+    {
+      log_error("invalid time=%d parameter in in fake_csd_time_signal()", time) ;
+      return false ;
+    }
+    Cellular::NetworkTimeInfo nti(qdt, dst, offset, seconds, nano_seconds, mnc, mcc) ;
+    log_notice("FAKE_CSD::csd_time_s %s", csd_t::csd_network_time_info_to_string(nti).c_str()) ;
+    timed->csd->process_csd_network_time_info(nti) ;
+    return true ;
+  }
+
+  bool fake_csd_time_signal_now(const QString &mcc, const QString &mnc, int offset, int time, int dst)
+  {
+    log_notice("(fake_csd_time_signal_now) mcc='%s' mnc='%s' offset=%d time=%d dst=%d", mcc.toStdString().c_str(), mnc.toStdString().c_str(), offset, time, dst) ;
+    nanotime_t now = nanotime_t::monotonic_now() ;
+    return fake_csd_time_signal(mcc, mnc, offset, time, dst, now.sec(), now.nano()) ;
+  }
+
   bool fake_nitz_signal(int mcc, int offset, int time, int dst)
   {
     log_notice("(fake_nitz_signal) mcc=%d offset=%d time=%d dst=%d", mcc, offset, time, dst) ;
@@ -185,18 +215,12 @@ public slots:
     cellular_handler::object()->fake_nitz_signal(mcc, offset, time, dst) ;
     return true ; // TODO make above method returning bool (not void) and check parameters
 #endif
-    time_t t = time ;
-#if 1
-    struct tm tm ;
-    if(gmtime_r(&t, &tm) != &tm)
+    QDateTime qdt = time_t_to_qdatetime((time_t)time) ;
+    if (not qdt.isValid())
     {
-      log_error("gmttime_r failed in fake_nitz_signal()") ;
+      log_error("invalid time=%d parameter in in fake_nitz_signal()", time) ;
       return false ;
     }
-    QDateTime qdt(QDate(tm.tm_year+1900,tm.tm_mon+1,tm.tm_mday), QTime(tm.tm_hour,tm.tm_min,tm.tm_sec), Qt::UTC) ;
-#else
-    QDateTime qdt = QDateTime::fromTime_t(t) ;
-#endif
     nanotime_t now = nanotime_t::monotonic_now() ;
     QString mcc_s = str_printf("%d", mcc).c_str() ;
     Cellular::NetworkTimeInfo nti(qdt, dst, offset, now.sec(), now.nano(), "mnc", mcc_s) ;

@@ -1,8 +1,9 @@
 timed (2.36) unstable; urgency=low
 
   * new csd layer, better cellular stuff logging
+  * new methods: fake_csd_time_signal, fake_csd_time_signal_now
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Tue, 11 Jan 2011 18:10:57 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 13 Jan 2011 13:39:51 +0200
 
 timed (2.35) unstable; urgency=low
 
