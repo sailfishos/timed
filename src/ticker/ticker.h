@@ -136,7 +136,7 @@ public:
   {
     // set up logging
     // qmlog::syslog()->reduce_max_level(qmlog::Warning) ;
-    // qmlog::stderr()->reduce_max_level(qmlog::Warning) ;
+    qmlog::stderr()->reduce_max_level(qmlog::Notice) ;
     qmlog::log_file *logfile = new qmlog::log_file("/ticker.log", qmlog::Debug) ;
     logfile->enable_fields(qmlog::Monotonic_Nano | qmlog::Time_Micro) ;
 
@@ -202,12 +202,8 @@ public:
 #if NEW_CELLULAR
   void print_cellular_info(const char *signal, const Cellular::NetworkTimeInfo &nti)
   {
-    ostringstream os ;
-    os /* << "Signal" << signal << "received:" */ << nti.toString() ;
-
-    os.flush() ;
     cout << endl ;
-    log_notice("Signal '%s' received: %s", signal, s.toStdString().c_str()) ;
+    log_notice("Signal '%s' received: %s", signal, csd_network_time_info_to_string(nti).c_str()) ;
   }
 #endif // NEW_CELLULAR
 public slots:
@@ -220,10 +216,8 @@ public slots:
     struct tm tm ;
     time_t now = time(NULL) ;
     localtime_r(&now, &tm) ;
-    os << " [" << (1900+tm.tm_year) << "-" << (1+tm.tm_mon) << "-" << tm.tm_mday <<
-      " " << tm.tm_hour << ":" << tm.tm_min << ":" << tm.tm_sec << "]" << " "  ;
-    os << "(isdst=" << tm.tm_isdst << ", gmtoff=" << tm.tm_gmtoff << ", zone='" << tm.tm_zone
-      << "')" ;
+    os << str_printf(" [%04d-%02d-%02d %02d:%02d:%02d] ", (1900+tm.tm_year), (1+tm.tm_mon), tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec) ;
+    os << "(isdst=" << tm.tm_isdst << ", gmtoff=" << tm.tm_gmtoff << ", zone='" << tm.tm_zone << "')" ;
     string s = os.str() ;
     int len = s.length() ;
     string spaces = "" ;
@@ -236,24 +230,25 @@ public slots:
     for(int i=0; i<len; ++i)
       cout << (char)8 ; // ^H
     cout.flush() ;
+    log_info("*** tick ***") ;
   }
   void settings(const Maemo::Timed::WallClock::Info &info, bool time)
   {
     abbreviation = info.tzAbbreviation() ;
     cout << endl ;
-    cout << "Settings change signalled (system time " << (time ? "" : "not ") << "changed), new settings:" << endl ;
-    cout << info.str().toStdString().c_str() << endl ;
+    log_notice("Settings change signalled (system time %schanged), new settings: %s", time ? "" : "not ", info.str().toStdString().c_str()) ;
   }
   void dsme(int value)
   {
-    cout << endl ;
-    cout << "Signal for dsme detected: value=" << value ;
+    ostringstream os ;
+    os << "Signal for dsme detected: value=" << value ;
     if(value>1)
     {
       time_t now = time(NULL) ;
-      cout << " (now=" << now << " delta=value-now=" << value-now << ")" ;
+      os << " (now=" << now << " delta=value-now=" << value-now << ")" ;
     }
     cout << endl ;
+    log_notice("%s", os.str().c_str()) ;
   }
 #if NEW_CELLULAR
 
