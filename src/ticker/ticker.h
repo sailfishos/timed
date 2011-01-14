@@ -55,6 +55,73 @@ using namespace std ;
 using Cellular::NetworkTimeInfo ;
 #endif
 
+static string str_printf(const char *format, ...)
+{
+  const int buf_len = 1024, max_buf_len = buf_len*1024 ;
+  char buf[buf_len], *p = buf ;
+  va_list varg ;
+  va_start(varg, format) ;
+  int iteration = 0, printed = false ;
+  string formatted ;
+  do
+  {
+    int size = buf_len << iteration ;
+    if(size>max_buf_len)
+    {
+      log_error("Can't format string, the result is too long") ;
+      return format ;
+    }
+    if(iteration>0)
+      p = new char[size] ;
+    int res = vsnprintf(p, size, format, varg) ;
+    if(res < 0)
+    {
+      log_error("Can't format string, vsnprintf() failed") ;
+      return format ;
+    }
+    if(res < size)
+    {
+      printed = true ;
+      formatted = p ;
+    }
+    if(iteration > 0)
+      delete[] p ;
+    ++ iteration ;
+  } while(!printed) ;
+
+  return formatted ;
+}
+static string csd_network_time_info_to_string(const Cellular::NetworkTimeInfo &nti)
+{
+  if (not nti.isValid())
+    return "{invalid}" ;
+
+  ostringstream os ;
+
+  os << "{zone=" << nti.offsetFromUtc() ;
+
+  QDateTime t = nti.dateTime() ;
+  if (t.isValid())
+  {
+    string utc = str_printf("%04d-%02d-%02d,%02d:%02d:%02d", t.date().year(), t.date().month(), t.date().day(), t.time().hour(), t.time().minute(), t.time().second())  ;
+    os << ", utc=" << utc ;
+  }
+
+  int dst = nti.daylightAdjustment() ;
+  if (dst!=-1)
+    os << ", dst=" << dst ;
+
+  os << ", mcc='" << nti.mcc().toStdString() << "'" ;
+  os << ", mnc='" << nti.mnc().toStdString() << "'" ;
+
+  os << ", received=" << str_printf("%lld.%09lu", (long long)nti.timestamp()->tv_sec, nti.timestamp()->tv_nsec) ;
+
+  os << "}" ;
+
+  return os.str() ;
+}
+
+
 class ticker : public QCoreApplication
 {
   Q_OBJECT ;
