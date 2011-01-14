@@ -30,6 +30,8 @@
 
 #include <string>
 
+#include <QTimer>
+
 #include <NetworkTime>
 #include <NetworkOperator>
 using Cellular::NetworkTimeInfo ;
@@ -43,10 +45,13 @@ struct csd_t : public QObject
   Cellular::NetworkTime *nt ;
   Cellular::NetworkOperator *op ;
   Q_INVOKABLE void csd_operator_q() ;
+  QTimer *orphan_timer ;
+  Cellular::NetworkTimeInfo *orphan ;
 private Q_SLOTS:
   void csd_time_q(const NetworkTimeInfo &nti) ;
   void csd_time_s(const NetworkTimeInfo &nti) ;
   void csd_operator_s(const QString &mnc, const QString &mcc) ;
+  void orphan_timeout() ;
 private:
   void process_csd_network_time_info(const NetworkTimeInfo &nti) ;
   void process_csd_network_operator(const QString &mcc, const QString &mnc) ;

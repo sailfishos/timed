@@ -46,6 +46,8 @@ using Cellular::NetworkTimeInfo ;
 
 #include "misc.h"
 
+#include "cellular.h"
+#if 0
 struct cellular_info_t
 {
   bool flag_offset, flag_time, flag_dst, flag_mcc, flag_mnc ;
@@ -91,6 +93,7 @@ struct cellular_info_t
     return os.str() ;
   }
 } ;
+#endif
 
 struct cellular_handler : public QObject
 {
@@ -108,8 +111,12 @@ private:
 #if 0
   Q_INVOKABLE void emulate_operator_signal() ;
 #endif
+
+#if 0
 signals:
   void cellular_data_received(const cellular_info_t &) ;
+#endif
+
 public:
   static cellular_handler *object() ;
   static void uninitialize() ;

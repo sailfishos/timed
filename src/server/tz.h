@@ -35,6 +35,7 @@ using namespace std ;
 
 #include "onitz.h"
 #include "olson.h"
+#include "cellular.h"
 
 struct tz_single_t ;
 struct tz_distinct_t ;
@@ -59,13 +60,19 @@ struct tz_oracle_t : public QObject
   int mcc ;
   bool connected ;
   enum guess_quality gq ;
-  QTimer *delay ; // TODO: make a fuzzy timer
+  QTimer *waiting_operator_timer ; // TODO: make a fuzzy timer
+  cellular_operator_t *waiting_operator ;
 
   tz_oracle_t() ;
  ~tz_oracle_t() ;
 public slots:
-  void mcc_delay_timeout() ;
+  void waiting_operator_timeout() ;
+#if 0
   void nitz_data(const cellular_info_t &) ;
+#else
+  void cellular_operator(const cellular_operator_t &data) ;
+  void cellular_zone(const cellular_zone_t &data) ;
+#endif
   void user_input(olson *tz) ;
   void mcc_data(int mcc, const string &mnc) ;
 

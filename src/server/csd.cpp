@@ -99,6 +99,11 @@ void csd_t::process_csd_network_operator(const QString &mcc, const QString &mnc)
 
 void csd_t::process_csd_network_time_info(const Cellular::NetworkTimeInfo &nti)
 {
+  if (orphan) // already a nitz waiting for mcc
+  {
+    orphan_timer->stop() ;
+
+  }
   timed->nitz_object->new_nitz_signal(nti) ;
 }
 

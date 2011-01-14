@@ -40,6 +40,7 @@ std::string string_q_to_std(const QString &str) ;
 void map_q_to_std(const QMap<QString, QString> &from, std::map<std::string, std::string> &to) ;
 void map_std_to_q(const std::map<std::string, std::string> &from, QMap<QString, QString> &to) ;
 
+std::string str_iso8601(time_t t) ;
 std::string str_printf(const char *format, ...) __attribute__((format(printf,1,2))) ;
 
 inline int n_bits_64(uint64_t x)
