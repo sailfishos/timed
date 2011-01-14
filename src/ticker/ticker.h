@@ -67,12 +67,18 @@ class ticker : public QCoreApplication
 public:
   ticker(int ac, char **av) : QCoreApplication(ac,av), abbreviation("[N/A]")
   {
+    // set up logging
+    // qmlog::syslog()->reduce_max_level(qmlog::Warning) ;
+    // qmlog::stderr()->reduce_max_level(qmlog::Warning) ;
+    qmlog::log_file *logfile = new qmlog::log_file("/ticker.log", qmlog::Debug) ;
+    logfile->enable_fields(qmlog::Monotonic_Nano | qmlog::Time_Micro) ;
+
     timed = new Maemo::Timed::Interface ;
 
     QDBusReply<Maemo::Timed::WallClock::Info> x = timed->get_wall_clock_info_sync() ;
     if(x.isValid())
     {
-      cout << "Timed clock settings:\n" << x.value().str().toStdString().c_str() << endl ;
+      log_notice("Timed clock settings: %s", x.value().str().toStdString().c_str()) ;
       abbreviation = x.value().tzAbbreviation() ;
     }
     else
@@ -80,7 +86,7 @@ public:
 
     bool a = timed->settings_changed_connect(this, SLOT(settings(const Maemo::Timed::WallClock::Info &, bool))) ;
     if(a)
-      cout << "connected to D-Bus signal, waiting for time settings change signal" << endl ;
+      log_notice("connected to D-Bus signal, waiting for time settings change signal") ;
     else
       log_critical("not connected to D-Bus signal, no time change signal will be delivered!") ;
 
@@ -90,7 +96,7 @@ public:
     QString signal = "next_bootup_event" ;
     bool aa = dsme_bus.connect("", path, iface, signal, this, SLOT(dsme(int))) ;
     if(aa)
-      cout << "connected to system bus signal '" << signal.toStdString() << "'" << endl ;
+      log_notice("connected to system bus signal '%s'", signal.toStdString().c_str()) ;
     else
       log_critical("not connected to system bus signal '%s'",signal.toStdString().c_str()) ;
 
@@ -106,8 +112,14 @@ public:
     int cel2 = QObject::connect(cellular_time, SIGNAL(timeInfoQueryCompleted(const Cellular::NetworkTimeInfo &)), this, SLOT(cellular_queried(const Cellular::NetworkTimeInfo &))) ;
 #    endif
 
-    qDebug() << "connection to timeInfoChanged:" << (cel1 ? "ok" : "failed" ) ;
-    qDebug() << "connection to timeInfoQueryCompleted:" << (cel2 ? "ok" : "failed" ) ;
+    if (cel1)
+      log_notice("connected to 'timeInfoChanged' cellular signal") ;
+    else
+      log_warning("can't connect to 'timeInfoChanged' cellular signal") ;
+    if (cel2)
+      log_notice("connected to 'timeInfoQueryCompleted' cellular signal") ;
+    else
+      log_warning("can't connect to 'timeInfoQueryCompleted' cellular signal") ;
 #  else
 
     int cel = QObject::connect(cellular_time, SIGNAL(dateTimeChanged(QDateTime, int, int)), this, SLOT(cellular_changed(QDateTime, int, int))) ;
@@ -123,8 +135,12 @@ public:
 #if NEW_CELLULAR
   void print_cellular_info(const char *signal, const Cellular::NetworkTimeInfo &nti)
   {
+    ostringstream os ;
+    os /* << "Signal" << signal << "received:" */ << nti.toString() ;
+
+    os.flush() ;
     cout << endl ;
-    qDebug() << "Signal" << signal << "received:" << nti ;
+    log_notice("Signal '%s' received: %s", signal, s.toStdString().c_str()) ;
   }
 #endif // NEW_CELLULAR
 public slots:
