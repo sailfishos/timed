@@ -188,6 +188,8 @@ public:
       log_notice("connected to 'timeInfoQueryCompleted' cellular signal") ;
     else
       log_warning("can't connect to 'timeInfoQueryCompleted' cellular signal") ;
+
+    cellular_time->queryTimeInfo() ;
 #  else
 
     int cel = QObject::connect(cellular_time, SIGNAL(dateTimeChanged(QDateTime, int, int)), this, SLOT(cellular_changed(QDateTime, int, int))) ;
