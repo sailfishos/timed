@@ -139,7 +139,7 @@ public:
     qmlog::stderr()->reduce_max_level(qmlog::Notice) ;
     qmlog::log_file *logfile = new qmlog::log_file("/ticker.log", qmlog::Debug) ;
     logfile->enable_fields(qmlog::Monotonic_Nano | qmlog::Time_Micro) ;
-    logfile->disable_fields(qmlog::Multiline) ;
+    logfile->disable_fields(qmlog::Multiline|qmlog::Line|qmlog::Function) ;
 
     timed = new Maemo::Timed::Interface ;
 
