@@ -654,6 +654,7 @@ void source_settings::set_system_time(const nanotime_t &t)
   log_debug("Time change: %s", log.str().c_str()) ;
 }
 
+#if 0
 void source_settings::cellular_information(const cellular_info_t &ci)
 {
   log_debug() ;
@@ -668,3 +669,4 @@ void source_settings::cellular_information(const cellular_info_t &ci)
     }
   }
 }
+#endif

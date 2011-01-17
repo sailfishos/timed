@@ -839,6 +839,7 @@ void Timed::unix_signal(int signo)
   }
 }
 
+#if 0
 void Timed::nitz_notification(const cellular_info_t &ci)
 {
   log_debug() ;
@@ -846,6 +847,7 @@ void Timed::nitz_notification(const cellular_info_t &ci)
   settings->cellular_information(ci) ;
   log_debug() ;
 }
+#endif
 
 void Timed::tz_by_oracle(olson *tz, tz_suggestions_t s)
 {

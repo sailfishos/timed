@@ -36,26 +36,42 @@
 #include <NetworkOperator>
 using Cellular::NetworkTimeInfo ;
 
+#include "timed/nanotime.h"
+
+#include "cellular.h"
+
 class Timed ;
 
 struct csd_t : public QObject
 {
   Q_OBJECT ;
+  static const nanotime_t old_nitz_threshold ;
+  static const int operator_wait_ms = 1000 ;
   Timed *timed ;
   Cellular::NetworkTime *nt ;
   Cellular::NetworkOperator *op ;
   Q_INVOKABLE void csd_operator_q() ;
-  QTimer *orphan_timer ;
-  Cellular::NetworkTimeInfo *orphan ;
+  QTimer *timer ;
+  cellular_time_t *time ;
+  cellular_offset_t *offs ;
+  cellular_operator_t oper ;
+Q_SIGNALS:
+  void csd_cellular_time(const cellular_time_t) ;
+  void csd_cellular_offset(const cellular_offset_t) ;
+  void csd_cellular_operator(const cellular_operator_t) ;
 private Q_SLOTS:
   void csd_time_q(const NetworkTimeInfo &nti) ;
   void csd_time_s(const NetworkTimeInfo &nti) ;
   void csd_operator_s(const QString &mnc, const QString &mcc) ;
-  void orphan_timeout() ;
+  void wait_for_operator_timeout() ;
 private:
   void process_csd_network_time_info(const NetworkTimeInfo &nti) ;
   void process_csd_network_operator(const QString &mcc, const QString &mnc) ;
   friend class com_nokia_time ; // these private functions can be used by dbus fake
+private:
+  void input_csd_network_time_info(const NetworkTimeInfo &nti) ;
+  void output_csd_network_time_info() ;
+
 public:
   csd_t(Timed *owner) ;
   static std::string csd_network_time_info_to_string(const NetworkTimeInfo &nti) ;

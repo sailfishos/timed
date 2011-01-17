@@ -40,6 +40,12 @@ using namespace std ;
 struct tz_single_t ;
 struct tz_distinct_t ;
 
+struct status_t
+{
+  std::string last_zone ;
+  bool regular ;
+} ;
+
 enum guess_quality
 {
   Uncertain, Reliable, Confirmed, Canceled, Waiting, Initial
@@ -57,21 +63,26 @@ struct tz_suggestions_t
 
 struct tz_oracle_t : public QObject
 {
-  int mcc ;
+  static const int nitz_wait_ms = 1000 ;
   bool connected ;
   enum guess_quality gq ;
-  QTimer *waiting_operator_timer ; // TODO: make a fuzzy timer
-  cellular_operator_t *waiting_operator ;
+
+  QTimer *timer ;
+  cellular_operator_t *waiting_oper ;
+
+  cellular_operator_t oper ;
+  bool have_oper ;
+  status_t stat ;
 
   tz_oracle_t() ;
  ~tz_oracle_t() ;
 public slots:
-  void waiting_operator_timeout() ;
+  void waiting_for_nitz_timeout() ;
 #if 0
   void nitz_data(const cellular_info_t &) ;
 #else
   void cellular_operator(const cellular_operator_t &data) ;
-  void cellular_zone(const cellular_zone_t &data) ;
+  void cellular_offset(const cellular_offset_t &data) ;
 #endif
   void user_input(olson *tz) ;
   void mcc_data(int mcc, const string &mnc) ;
@@ -80,7 +91,9 @@ signals:
   void tz_detected(olson *tz, tz_suggestions_t) ;
 
 private:
+#if 0
   void handle_offset(const cellular_info_t &) ;
+#endif
   string mcc_to_xy(int mcc) ; // maps mcc to country code (2 chars)
   map<string, vector<string> > xy_to_tz ; // time zones by country code
   iodata::validator *validator() ;
@@ -108,5 +121,6 @@ struct tz_single_t
   tz_single_t(const iodata::record *) ;
   map<int, string> mcc_to_tz ;
 } ;
+
 
 #endif

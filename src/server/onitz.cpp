@@ -98,6 +98,7 @@ cellular_handler::~cellular_handler()
 #endif
 }
 
+#if 0
 void cellular_handler::fake_nitz_signal(int mcc, int offset, int time, int dst)
 {
   log_debug("fake nitz requested: mcc=%d offset=%d, time=%d, dst=%d", mcc, offset, time, dst) ;
@@ -124,8 +125,9 @@ void cellular_handler::fake_nitz_signal(int mcc, int offset, int time, int dst)
   emit cellular_data_received(ci) ;
   log_debug() ;
 }
+#endif
 
-
+#if 0
 #if F_CSD
 void cellular_handler::new_nitz_signal(const NetworkTimeInfo &cnti)
 {
@@ -199,7 +201,9 @@ void cellular_handler::new_nitz_signal(const NetworkTimeInfo &cnti)
   log_debug() ;
 }
 #endif
+#endif
 
+#if 0
 void cellular_handler::new_operator(const QString &mnc, const QString &mcc)
 {
   log_debug("mnc='%s', mcc='%s'", string_q_to_std(mnc).c_str(), string_q_to_std(mcc).c_str()) ;
@@ -230,3 +234,4 @@ void cellular_handler::new_operator(const QString &mnc, const QString &mcc)
   emit cellular_data_received(ci) ;
   log_debug() ;
 }
+#endif

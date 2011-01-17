@@ -76,7 +76,7 @@ void map_std_to_q(const map<string, string> &from, QMap<QString, QString> &to)
 string str_iso8601(time_t t) // 2008-05-11T15:30:00Z
 {
   struct tm tm ;
-  if (gmtime(&tm, &t)!=&tm)
+  if (gmtime_r(&t, &tm)!=&tm)
     return "n/a" ;
   else
     return str_printf("%04d-%02d-%02dT%02d:%02d:%02dZ", tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec) ;

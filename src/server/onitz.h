@@ -112,8 +112,8 @@ private:
   Q_INVOKABLE void emulate_operator_signal() ;
 #endif
 
-#if 0
 signals:
+#if 0
   void cellular_data_received(const cellular_info_t &) ;
 #endif
 
@@ -122,10 +122,12 @@ public:
   static void uninitialize() ;
   void fake_nitz_signal(int mcc, int offset, int time, int dst) ;
 public slots:
+#if 0
 #if F_CSD
   void new_nitz_signal(const NetworkTimeInfo &) ; // { log_assert(false, "to be implemented") ; }
 #endif
   void new_operator(const QString &mnc, const QString &mcc) ;
+#endif
 } ;
 
 #endif

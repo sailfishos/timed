@@ -14,9 +14,10 @@
 
 struct cellular_operator_t
 {
-  string mcc, mnc ;
+  std::string mcc, mnc ;
   int mcc_value ; // =0, if mcc="", -1, else if mcc is not a number
   cellular_operator_t() ;
+  cellular_operator_t(const std::string &mcc_s, const std::string &mnc_s) ;
 #if F_CSD
   cellular_operator_t(const QString &mcc_s, const QString &mnc_s) ;
   cellular_operator_t(const Cellular::NetworkTimeInfo &cnti) ;
@@ -35,19 +36,19 @@ struct cellular_time_t
   cellular_time_t(const Cellular::NetworkTimeInfo &cnti) ;
 #endif
   bool is_valid() const { return (bool)value ; }
-  std::string str() ;
+  std::string str() const ;
 } ;
 
-struct cellular_zone_t
+struct cellular_offset_t
 {
   cellular_operator_t oper ;
   int offset ;
   int dst ;
   time_t timestamp ;
   bool sender_time ; // is timestamp received in the same NITZ package as UTC time
-  cellular_zone_t() ;
+  cellular_offset_t() ;
 #if F_CSD
-  cellular_zone_t(const Cellular::NetworkTimeInfo &cnti) ;
+  cellular_offset_t(const Cellular::NetworkTimeInfo &cnti) ;
 #endif
   std::string str() const ;
   bool is_valid() const { return (bool)timestamp ; }

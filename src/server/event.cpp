@@ -603,11 +603,14 @@ void event_t::run_actions(const vector<unsigned> &acts, unsigned begin, unsigned
       int bus = (a.flags & ActionFlags::Use_System_Bus) ? 0 : 1 ;
       QDBusConnection * &c = conn[bus] ;
 
+      log_debug() ;
       if (c==NULL) // not used yes, have to create object and connect
       {
         QDBusConnection::BusType ctype = bus==0 ? QDBusConnection::SystemBus : QDBusConnection::SessionBus ;
+        log_debug() ;
         c = new QDBusConnection(QDBusConnection::connectToBus(ctype, cname)) ;
       }
+      log_debug() ;
 
       if (c->send(message))
         log_debug("%u[%d]: D-Bus Message sent", cookie.value(), acts_i) ;
@@ -752,7 +755,9 @@ void event_t::add_strings(QMap<QString, QVariant> &x, const map<string,string> &
 
 pid_t event_t::fork_and_set_credentials_v3(const action_t &action)
 {
+  log_debug("forking for action execution") ;
   pid_t pid = fork() ;
+  log_debug("fork() returned %d", pid) ;
 
   if (pid<0) // can't fork
   {
@@ -775,9 +780,11 @@ pid_t event_t::fork_and_set_credentials_v3(const action_t &action)
       throw event_exception("can't detach from session") ;
     }
 
+    log_debug() ;
     if (!drop_privileges(action))
       throw event_exception("can't drop privileges") ;
 
+    log_debug() ;
     if (!accrue_privileges(action))
       log_warning("can't accrue privileges, still continuing") ;
 
@@ -788,6 +795,7 @@ pid_t event_t::fork_and_set_credentials_v3(const action_t &action)
 
     // That's it then, isn't it?
 
+    log_debug() ;
     return pid ;
   }
 }

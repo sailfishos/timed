@@ -205,7 +205,9 @@ struct source_settings
   void postload_fix_manual_zone() ;
   void postload_fix_manual_offset() ;
 
+#if 0
   void cellular_information(const cellular_info_t &ci) ;
+#endif
 
 } ;
 

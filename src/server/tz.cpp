@@ -104,11 +104,14 @@ void tz_oracle_t::read_timezones_by_country()
   delete rec ;
 }
 
+#if 0
 void tz_oracle_t::mcc_delay_timeout()
 {
   log_assert(false, "oops") ;
 }
+#endif
 
+#if 0
 void tz_oracle_t::nitz_data(const cellular_info_t &ci)
 {
   log_debug() ;
@@ -119,7 +122,9 @@ void tz_oracle_t::nitz_data(const cellular_info_t &ci)
   else
     log_critical("oops") ;
 }
+#endif
 
+#if 0
 void tz_oracle_t::handle_offset(const cellular_info_t &ci)
 {
   // preliminary implementation:
@@ -189,6 +194,7 @@ void tz_oracle_t::handle_offset(const cellular_info_t &ci)
     return ;
   }
 }
+#endif
 
 string tz_oracle_t::mcc_to_xy(int mcc_value)
 {
@@ -326,4 +332,50 @@ olson * tz_distinct_t::guess_timezone(int mcc, tz_suggestions_t &list)
   return tzlist[0] ;
 }
 
-// --------------------------------------------------
+tz_oracle_t::cellular_operator(const cellular_operator_t &o)
+{
+  timer->stop() ;
+  delete waiting_oper ;
+  waiting_oper = NULL ;
+
+  bool empty = o.mcc.empty() and o.mnc.empty() ;
+  bool same = o.mcc==oper.mcc and o.mnc==oper.mnc ;
+  bool same_country = o.mcc_value > 0 and basic_mcc(o.mcc_value)==basic_mcc(oper.mcc_value) ;
+
+  log_debug("o=%s, empty=%d, same=%d, same_country", o.str().c_str(), empty, same, same_country) ;
+  if (empty) // disconnected: do nothing
+  {
+    log_debug("empty operator") ;
+    have_oper = false ;
+    return ;
+  }
+  else
+    have_oper = true ; // TODO: oper = o ;
+
+  if (same) // same as current or same as last: do nothing
+    return ;
+
+  // now the operator is changing, first we have to save status
+  save_status(status, oper) ;
+
+  oper = o ;
+
+  load_status(status, oper) ;
+  log_debug() ;
+
+  if(same_country) // nothing to do?
+    return ;
+
+  bool small_country = ... ;
+
+  if (small_country and status.regular)
+    set_by_operator() ;
+  else
+    timer->start(nitz_wait_ms) ;
+
+}
+
+int tz_oracle_t::basic_mcc(int mcc)
+{
+  return mcc ; // TODO: USA->310 etc etc
+}

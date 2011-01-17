@@ -24,6 +24,12 @@ cellular_operator_t::cellular_operator_t()
   mcc_value = 0 ;
 }
 
+cellular_operator_t::cellular_operator_t(const string &mcc_s, const string &mnc_s) :
+  mcc(mcc_s), mnc(mnc_s)
+{
+  parse_mcc(mcc.c_str()) ;
+}
+
 #if F_CSD
 cellular_operator_t::cellular_operator_t(const QString &mcc_s, const QString &mnc_s)
 {
@@ -79,14 +85,27 @@ cellular_time_t::cellular_time_t(const Cellular::NetworkTimeInfo &cnti) :
 }
 #endif
 
-cellular_zone_t::cellular_zone_t() :
+string cellular_time_t::str() const
+{
+  if (not is_valid())
+    return "{cellular_time_t::invalid}" ;
+  else
+  {
+    ostringstream os ;
+    os << "{value=" << value << "=" << str_iso8601(value) ;
+    os << ", received=" << ts.str() << "}" ;
+    return os.str() ;
+  }
+}
+
+cellular_offset_t::cellular_offset_t() :
   offset(0), dst(-1), timestamp(0), sender_time(false)
 {
   log_debug("constructed %s by default", str().c_str()) ;
 }
 
 #if F_CSD
-cellular_zone_t::cellular_zone_t(const Cellular::NetworkTimeInfo &cnti) :
+cellular_offset_t::cellular_offset_t(const Cellular::NetworkTimeInfo &cnti) :
   oper(cnti),
   offset(0), dst(-1), timestamp(0), sender_time(false)
 {
@@ -124,7 +143,7 @@ cellular_zone_t::cellular_zone_t(const Cellular::NetworkTimeInfo &cnti) :
 }
 #endif
 
-string cellular_zone_t::str() const
+string cellular_offset_t::str() const
 {
   ostringstream os ;
   if (is_valid())
@@ -151,6 +170,6 @@ string cellular_zone_t::str() const
     os << "}" ;
   }
   else
-    os << "{cellular_zone_t::invalid}" ;
+    os << "{cellular_offset_t::invalid}" ;
   return os.str() ;
 }

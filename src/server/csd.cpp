@@ -59,12 +59,22 @@ csd_t::csd_t(Timed *owner)
 
   nt->queryTimeInfo() ;
   QMetaObject::invokeMethod(this, "csd_operator_q", Qt::QueuedConnection) ;
+
+  timer = new QTimer ;
+  timer->setSingleShot(true) ;
+  QObject::connect(timer, SIGNAL(timeout()), this, SLOT(wait_for_operator_timeout())) ;
+
+  time = NULL ;
+  offs = NULL ;
 }
 
 csd_t::~csd_t()
 {
   delete nt ;
   delete op ;
+  delete timer ;
+  delete offs ;
+  delete time ;
 }
 
 void csd_t::csd_operator_q()
@@ -92,19 +102,75 @@ void csd_t::csd_time_s(const Cellular::NetworkTimeInfo &nti)
   process_csd_network_time_info(nti) ;
 }
 
-void csd_t::process_csd_network_operator(const QString &mcc, const QString &mnc)
+void csd_t::input_csd_network_time_info(const Cellular::NetworkTimeInfo &nti)
 {
-  timed->nitz_object->new_operator(mnc, mcc) ;
+  timer->stop() ;
+  cellular_time_t new_time(nti) ;
+  if (offs)
+    delete offs ;
+  offs = new cellular_offset_t(nti) ;
+  if (new_time.is_valid())
+  {
+    if (time)
+      delete time ;
+    time = new cellular_time_t(new_time) ;
+  }
 }
+
+void csd_t::output_csd_network_time_info()
+{
+  timer->stop() ; // paranoia
+  if (offs)
+  {
+    emit csd_cellular_offset(*offs) ;
+    delete offs ;
+    offs = NULL ;
+  }
+  if (time)
+  {
+    emit csd_cellular_time(*time) ;
+    delete time ;
+    time = NULL ;
+  }
+}
+
+const nanotime_t csd_t::old_nitz_threshold(2,0) ;
 
 void csd_t::process_csd_network_time_info(const Cellular::NetworkTimeInfo &nti)
 {
-  if (orphan) // already a nitz waiting for mcc
-  {
-    orphan_timer->stop() ;
+  nanotime_t actuality = nanotime_t::monotonic_now() - nanotime_t::from_timespec (*nti.timestamp()) ;
+  input_csd_network_time_info(nti) ;
 
-  }
-  timed->nitz_object->new_nitz_signal(nti) ;
+  // Decide if the data is to be sent immediately or to wait for operator change signal
+  bool current_operator = offs->oper.mcc == oper.mcc and offs->oper.mnc == oper.mnc ;
+  bool empty_operator = offs->oper.mcc.empty() and offs->oper.mnc.empty() ;
+  bool input_is_old = actuality > old_nitz_threshold ;
+  bool send_now = input_is_old or (current_operator and not empty_operator) ;
+
+  log_debug("offs->oper=%s, oper=%s, actuality=%s", offs->oper.str().c_str(), oper.str().c_str(), actuality.str().c_str()) ;
+  log_debug("current_operator=%d, empty_operator=%d, input_is_old=%d", current_operator, empty_operator, input_is_old) ;
+  log_debug("send_now=%d", send_now) ;
+
+  if (send_now)
+    output_csd_network_time_info() ;
+  else
+    timer->start(operator_wait_ms) ;
+}
+
+void csd_t::process_csd_network_operator(const QString &mcc, const QString &mnc)
+{
+  timer->stop() ;
+  oper = cellular_operator_t(mcc, mnc) ;
+  if (offs)
+    offs->oper = oper ;
+  output_csd_network_time_info() ; // if needed
+  emit csd_cellular_operator(oper) ;
+}
+
+void csd_t::wait_for_operator_timeout() // timer slot
+{
+  timer->stop() ; // paranoia
+  output_csd_network_time_info() ; // probably needed
 }
 
 string csd_t::csd_network_time_info_to_string(const Cellular::NetworkTimeInfo &nti)
