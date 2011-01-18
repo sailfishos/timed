@@ -13,6 +13,7 @@ using namespace std;
 #include "f.h"
 #include "cellular.h"
 #include "misc.h"
+#include "tzdata.h"
 
 #if F_CSD
 #include "csd.h"
@@ -20,50 +21,77 @@ using namespace std;
 
 cellular_operator_t::cellular_operator_t()
 {
-  mcc = mnc = "" ;
-  mcc_value = 0 ;
 }
 
 cellular_operator_t::cellular_operator_t(const string &mcc_s, const string &mnc_s) :
   mcc(mcc_s), mnc(mnc_s)
 {
-  parse_mcc(mcc.c_str()) ;
+  init() ;
 }
 
 #if F_CSD
 cellular_operator_t::cellular_operator_t(const QString &mcc_s, const QString &mnc_s)
 {
   mcc = mcc_s.toStdString(), mnc = mnc_s.toStdString() ;
-  parse_mcc(mcc.c_str()) ;
+  init() ;
 }
 
 cellular_operator_t::cellular_operator_t(const Cellular::NetworkTimeInfo &cnti)
 {
   if (cnti.isValid())
+  {
     mcc = cnti.mcc().toStdString(), mnc = cnti.mnc().toStdString() ;
-  parse_mcc(mcc.c_str()) ;
+    init() ;
+  }
 }
 #endif
+
+bool cellular_operator_t::operator=(const cellular_operator_t &x) const ; // same mcc & mnc
+{
+  return mcc==x.mcc and mnc==x.mnc ;
+}
+
+string cellular_operator_t::id() const
+{
+  return empty() ? "" : mcc+"/"+mnc ;
+}
+
+string cellular_operator_t::location() const
+{
+  return known_mcc() ? alpha2 : empty() ? "" : "("+id()+")" ;
+}
+
+bool cellular_operator_t::known_mcc() const
+{
+  return not alpha2.empty() ;
+}
+
+bool cellular_operator_t::empty() const
+{
+  return mcc.empty() and mnc.empty() ;
+}
 
 string cellular_operator_t::str() const
 {
   ostringstream os ;
-  os << "{mcc=" ;
-  if (mcc_value>0)
-    os << mcc_value ;
-  else
-    os << "'" << mcc << "'" ;
-  os << ",mnc='" << mnc << "'}" ;
+  os << "{mcc=" << "'" << mcc << "'" ;
+  os << ", mnc=" << "'" << mcc << "'" ;
+  if (known_mcc())
+    os << ", location='" << alpha2 << "'" ;
+  os << "}" ;
   return os.str() ;
 }
 
-void cellular_operator_t::parse_mcc(const char *p)
+void cellular_operator_t::init()
 {
+  alpha2 = tzdata::iso_3166_1_alpha2_by_mcc(mcc) ;
+#if 0
   static pcrecpp::RE integer = "(\\d+)" ;
   if (p[0]=='\0') //empty string
     mcc_value = 0 ;
   else if (not integer.FullMatch(mcc, &mcc_value))
     mcc_value = -1 ;
+#endif
 }
 
 cellular_time_t::cellular_time_t() :

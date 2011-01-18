@@ -15,16 +15,22 @@
 struct cellular_operator_t
 {
   std::string mcc, mnc ;
-  int mcc_value ; // =0, if mcc="", -1, else if mcc is not a number
+  std::string alpha2 ;
+  // int mcc_value ; // =0, if mcc="", -1, else if mcc is not a number
   cellular_operator_t() ;
   cellular_operator_t(const std::string &mcc_s, const std::string &mnc_s) ;
 #if F_CSD
   cellular_operator_t(const QString &mcc_s, const QString &mnc_s) ;
   cellular_operator_t(const Cellular::NetworkTimeInfo &cnti) ;
 #endif
+  bool operator=(const cellular_operator_t &x) const ; // same mcc & mnc
+  std::string id() const ; // like "310/07"
+  std::string location() const ; // "FI" or "001/10" for invalid MCC
+  bool known_mcc() const ; // location()==iso_3166_location()
+  bool empty() const ;
   std::string str() const ;
 private:
-  void parse_mcc(const char *) ;
+  void init() ;
 } ;
 
 struct cellular_time_t

@@ -46,6 +46,13 @@ struct status_t
   bool regular ;
 } ;
 
+// fake history implementation doing nothing
+struct history_t
+{
+  void save_status(const status_t &/*s*/, const cellular_operator_t &/*op*/) { }
+  void load_status(status_t &s, const cellular_operator_t &/*op*/) { s.last_zone="", s.regular=true ; }
+} ;
+
 enum guess_quality
 {
   Uncertain, Reliable, Confirmed, Canceled, Waiting, Initial
@@ -68,7 +75,10 @@ struct tz_oracle_t : public QObject
   enum guess_quality gq ;
 
   QTimer *timer ;
+#if 0
   cellular_operator_t *waiting_oper ;
+#endif
+  history_t *history ;
 
   cellular_operator_t oper ;
   bool have_oper ;
