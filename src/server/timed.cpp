@@ -42,6 +42,7 @@
 #include "timed.h"
 #include "settings.h"
 #include "tz.h"
+#include "tzdata.h"
 
 static void spam()
 {
@@ -512,6 +513,7 @@ void Timed::init_start_event_machine()
 
 void Timed::init_cellular_services()
 {
+  tzdata::init(tz_by_default) ;
   nitz_object = cellular_handler::object() ;
   int nitzrez = QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), this, SLOT(nitz_notification(const cellular_info_t &))) ;
   log_debug("nitzrez=%d", nitzrez) ;

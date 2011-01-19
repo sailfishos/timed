@@ -18,7 +18,7 @@ namespace tzdata
   bool is_single_zone_country(const std::string &alpha2) ;
 
   std::string set_str(const std::set<olson*> &) ;
-  void init() ;
+  void init(const std::string &default_tz) ;
 }
 
 #endif//MAEMO_TIMED_TZDATA_H
