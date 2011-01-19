@@ -28,6 +28,7 @@ using namespace std ;
 #include <qmlog>
 
 #include "timeutil.h"
+#include "misc.h"
 #include "olson.h"
 
 map<string, olson*> *olson::zonetab = NULL ;
@@ -44,6 +45,27 @@ olson *olson::by_name(const string &zone)
   if(it==zonetab->end())
     it = zonetab->insert(make_pair(zone, new olson(zone))).first ;
   return it->second ;
+}
+
+olson *olson::by_offset(int offset)
+{
+  int min15 = 15*60, units = offset/min15 ;
+  if (offset%min15)
+  {
+    log_error("can't find a time zone by offset=%d (not divisible by 15min unit)", offset) ;
+    return NULL ;
+  }
+  if (units < -60 || 60 < units)
+  {
+    log_error("can't find a time zone by offset=%d (exceeds 15h boundary)", offset) ;
+    return NULL ;
+  }
+  int sec = offset ;
+  char sign = sec<0 ? (sec=-sec, '-') : '+' ;
+  int m = sec/60, hour = m/60, min = m%60 ;
+  string name = str_printf("Iso8601/%c%02d%02d", sign, hour, min) ;
+  log_info("mapping offset=%d to zone '%s'", offset, name.c_str()) ;
+  return by_name(name) ;
 }
 
 bool olson::match(time_t at, int offset, int dst_flag)

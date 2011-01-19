@@ -224,6 +224,8 @@ string tz_oracle_t::mcc_to_xy(int mcc_value)
   return it==mcc_to_xy.end() ? "" : it->second ;
 }
 
+#if 0
+TODO something like that
 void tz_oracle_t::user_input(olson *tz)
 {
   // not used yet, no UI for that
@@ -231,6 +233,7 @@ void tz_oracle_t::user_input(olson *tz)
   s.gq = Reliable ;
   emit tz_detected(tz, s) ;
 }
+#endif
 
 #if 0
 void tz_oracle_t::mcc_data(int new_mcc, const string & /* mnc not used */)
@@ -543,3 +546,8 @@ int tz_oracle_t::basic_mcc(int mcc)
   return mcc ; // TODO: USA->310 etc etc
 }
 #endif
+
+void suggestion_t::add(olson *zone, int score)
+{
+  s[zone] = score ;
+}

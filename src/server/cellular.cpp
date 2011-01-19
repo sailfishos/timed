@@ -51,6 +51,11 @@ bool cellular_operator_t::operator==(const cellular_operator_t &x) const // same
   return mcc==x.mcc and mnc==x.mnc ;
 }
 
+bool cellular_operator_t::operator!=(const cellular_operator_t &x) const
+{
+  return not operator==(x) ;
+}
+
 string cellular_operator_t::id() const
 {
   return empty() ? "" : mcc+"/"+mnc ;

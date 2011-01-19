@@ -70,6 +70,7 @@ struct tz_suggestions_t // obsolete
 
 struct suggestion_t
 {
+  std::map<olson *, int> s ;
   void add(olson *zone, int score) ;
 } ;
 
@@ -99,8 +100,15 @@ public slots:
   void cellular_operator(const cellular_operator_t &data) ;
   void cellular_offset(const cellular_offset_t &data) ;
 #endif
+
+#if 0
+TODO:
   void user_input(olson *tz) ;
+#endif
+
+#if 0
   void mcc_data(int mcc, const string &mnc) ;
+#endif
 
 signals:
   void tz_detected(olson *tz, tz_suggestions_t) ;
