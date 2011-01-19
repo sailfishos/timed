@@ -305,7 +305,7 @@ void tz_oracle_t::set_by_offset(const cellular_offset_t &data)
     set<olson*>  rm = r ; // real minus main
     set_change<olson*>(rm, m, false) ; // false: rm-=m
     bool found = false ;
-    if (data.dst<0) // usually it means "winter time", i.e. set dst to zero
+    if (data.dst<=0) // sometimes '-1' means "winter time", i.e. set dst to zero
     {
       found = found or tzdata::filter(m, data.timestamp, data.offset, 0, result) ;
       log_debug("after try 1: found=%d", found) ;
