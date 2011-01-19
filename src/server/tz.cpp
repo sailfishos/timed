@@ -24,6 +24,7 @@
 #include "tz.h"
 #include "tzdata.h"
 
+#if 0
 iodata::validator *tz_oracle_t::validator()
 {
   static iodata::validator *v = NULL ;
@@ -31,7 +32,9 @@ iodata::validator *tz_oracle_t::validator()
     v = iodata::validator::from_file("/usr/share/timed/typeinfo/tzdata.type") ;
   return v ;
 }
+#endif
 
+#if 0
 iodata::record *tz_oracle_t::open_database(const char *path, const char *type)
 {
   iodata::storage file ;
@@ -39,11 +42,13 @@ iodata::record *tz_oracle_t::open_database(const char *path, const char *type)
   file.set_primary_path(path) ;
   return file.load() ;
 }
+#endif
 
 tz_oracle_t::tz_oracle_t()
 {
   history = new history_t ;
 
+#if 0
   if(iodata::record *single = open_database("/usr/share/tzdata-timed/single.data", "tz_single_t"))
   {
     tz_single = new tz_single_t(single) ;
@@ -69,6 +74,7 @@ tz_oracle_t::tz_oracle_t()
   // log_assert(false, "please initialize xy_to_tz!") ;
 
   read_timezones_by_country() ;
+#endif
 
   timer = new QTimer ;
   timer->setSingleShot(true) ;
@@ -77,12 +83,15 @@ tz_oracle_t::tz_oracle_t()
 tz_oracle_t::~tz_oracle_t()
 {
   delete history ;
+#if 0
   delete tz_single ;
   delete tz_distinct ;
-  delete timer ;
   delete validator() ;
+#endif
+  delete timer ;
 }
 
+#if 0
 void tz_oracle_t::read_timezones_by_country()
 {
   iodata::record *rec = open_database("/usr/share/tzdata-timed/zones-by-country.data", "zones_by_country_t") ;
@@ -105,6 +114,7 @@ void tz_oracle_t::read_timezones_by_country()
   }
   delete rec ;
 }
+#endif
 
 #if 0
 void tz_oracle_t::mcc_delay_timeout()
@@ -198,6 +208,7 @@ void tz_oracle_t::handle_offset(const cellular_info_t &ci)
 }
 #endif
 
+#if 0
 string tz_oracle_t::mcc_to_xy(int mcc_value)
 {
   static bool loaded = false ;
@@ -223,6 +234,7 @@ string tz_oracle_t::mcc_to_xy(int mcc_value)
   map<int, string>::const_iterator it = mcc_to_xy.find(mcc_value) ;
   return it==mcc_to_xy.end() ? "" : it->second ;
 }
+#endif
 
 #if 0
 TODO something like that
@@ -406,6 +418,7 @@ void tz_oracle_t::set_by_operator()
   }
 }
 
+#if 0
 tz_single_t::tz_single_t(const iodata::record *list_r)
 {
   log_debug() ;
@@ -474,6 +487,7 @@ olson * tz_distinct_t::guess_timezone(int mcc, tz_suggestions_t &list)
 
   return tzlist[0] ;
 }
+#endif
 
 void tz_oracle_t::cellular_offset(const cellular_offset_t &data)
 {
