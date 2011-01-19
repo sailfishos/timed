@@ -7,6 +7,8 @@
 #include <map>
 using namespace std ;
 
+#include <qmlog>
+
 #include "olson.h"
 #include "misc.h"
 
