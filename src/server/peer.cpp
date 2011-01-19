@@ -1,3 +1,5 @@
+#include <qmlog>
+
 #include <timed/interface>
 #include "credentials.h"
 
