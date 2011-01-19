@@ -136,6 +136,7 @@ struct cellular_zone_t : public zone_source_t
   // iodata::record *save() const ;
 } ;
 
+#if 0
 // TODO: remove this?
 struct customization_settings
 {
@@ -160,8 +161,9 @@ struct customization_settings
   static QByteArray get_hash();
 
 };
+#endif
 
-struct source_settings
+struct source_settings : public QObject
 {
   source_settings(Timed *owner) ;
   virtual ~source_settings() ;
@@ -208,7 +210,9 @@ struct source_settings
 #if 0
   void cellular_information(const cellular_info_t &ci) ;
 #endif
-
+  Q_OBJECT ;
+public Q_SLOTS:
+  void cellular_time_slot(const cellular_time_t &T) ;
 } ;
 
 #endif

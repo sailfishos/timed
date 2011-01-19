@@ -43,6 +43,7 @@
 #include "settings.h"
 #include "tz.h"
 #include "tzdata.h"
+#include "csd.h"
 
 static void spam()
 {
@@ -513,15 +514,25 @@ void Timed::init_start_event_machine()
 
 void Timed::init_cellular_services()
 {
-  tzdata::init(tz_by_default) ;
+#if 0
   nitz_object = cellular_handler::object() ;
   int nitzrez = QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), this, SLOT(nitz_notification(const cellular_info_t &))) ;
   log_debug("nitzrez=%d", nitzrez) ;
-
+#endif
+  tzdata::init(tz_by_default) ;
+  csd = new csd_t(this) ;
   tz_oracle = new tz_oracle_t ;
+
+  int res1 = QObject::connect(csd, SIGNAL(cellular_time(const cellular_time_t &)), settings, SLOT(cellular_time_slot(const cellular_time_t &))) ;
+  int res2 = QObject::connect(csd, SIGNAL(cellular_offset(const cellular_offset_t &)), tz_oracle, SLOT(cellular_offset(const cellular_offset_t &))) ;
+  int res3 = QObject::connect(csd, SIGNAL(cellular_operator(const cellular_operator_t &)), tz_oracle, SLOT(cellular_operator(const cellular_operator_t &))) ;
+
+  log_assert(res1) ;
+  log_assert(res2) ;
+  log_assert(res3) ;
+
   QObject::connect(tz_oracle, SIGNAL(tz_detected(olson *, tz_suggestions_t)), this, SLOT(tz_by_oracle(olson *, tz_suggestions_t))) ;
   QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
-  csd = new csd_t(this) ;
 }
 
 void Timed::init_dst_checker()

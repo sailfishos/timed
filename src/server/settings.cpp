@@ -89,7 +89,7 @@ iodata::record *zone_source_t::save() const
   return r ;
 }
 
-source_settings::source_settings(Timed *owner)
+source_settings::source_settings(Timed *owner) : QObject(owner)
 {
   log_debug() ;
   o = owner ;
@@ -652,6 +652,18 @@ void source_settings::set_system_time(const nanotime_t &t)
   log << "diff=" << back.str() ;
   o->invoke_signal(back) ;
   log_debug("Time change: %s", log.str().c_str()) ;
+}
+
+void source_settings::cellular_time_slot(const cellular_time_t &T)
+{
+  nanotime_t time_at_zero = nanotime_t(T.value) - T.ts ;
+  log_debug("time_at_zero=%s, (T=%s)", time_at_zero.str().c_str(), T.str().c_str()) ;
+  nitz_utc->value = time_at_zero ;
+  if(time_nitz) // we want to use nitz as time source
+  {
+    set_system_time(nitz_utc->value_at_zero()) ;
+    o->open_epoch() ;
+  }
 }
 
 #if 0
