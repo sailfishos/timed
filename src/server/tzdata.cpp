@@ -109,7 +109,7 @@ string tzdata::set_str(const set<olson*> &x)
   bool first ;
   for (set<olson*>::const_iterator it=x.begin(); it!=x.end(); ++it)
     os << (first ? first=false, "{" : ", " ) << (*it)->name() ;
-  os << (first ? " }" : "}") ;
+  os << (first ? "{ }" : "}") ;
   return os.str() ;
 }
 

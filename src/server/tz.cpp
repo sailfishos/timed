@@ -319,7 +319,7 @@ void tz_oracle_t::set_by_offset(const cellular_offset_t &data)
       found = found or tzdata::filter(rm, data.timestamp, data.offset, data.dst, result) ;
       log_debug("after try 4: found=%d", found) ;
     }
-    if (not data.sender_time) // sender time not really know, try plus/minus day
+    if (not data.sender_time) // sender time not really known, try plus/minus day
     {
       const int day = 60*60*24 ;
       found = found or tzdata::filter(r, data.timestamp-day, data.offset, data.dst, result) ;

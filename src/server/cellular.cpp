@@ -80,7 +80,7 @@ string cellular_operator_t::str() const
 {
   ostringstream os ;
   os << "{mcc=" << "'" << mcc << "'" ;
-  os << ", mnc=" << "'" << mcc << "'" ;
+  os << ", mnc=" << "'" << mnc << "'" ;
   if (known_mcc())
     os << ", location='" << alpha2 << "'" ;
   os << "}" ;
@@ -199,8 +199,8 @@ string cellular_offset_t::str() const
     else
       os << dst ;
 
-    os << (sender_time ? "sender" : "receiver") << " time=" << timestamp << "=" << str_iso8601(timestamp) ;
-    os << "}" ;
+    os << ", " << (sender_time ? "sender" : "receiver") << " time=" << timestamp << "=" << str_iso8601(timestamp) ;
+    os << " by " << oper.str() << "}" ;
   }
   else
     os << "{cellular_offset_t::invalid}" ;
