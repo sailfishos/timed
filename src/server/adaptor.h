@@ -42,6 +42,7 @@
 #include "misc.h"
 #include "csd.h"
 #include "credentials.h"
+#include "peer.h"
 
 #include <timed/interface> // TODO: is Maemo::Timed::bus() the correct way?
 
@@ -77,9 +78,9 @@ public slots:
     return timed->settings->get_wall_clock_info(nanotime_t()) ;
   }
 
-  bool wall_clock_settings(const Maemo::Timed::WallClock::wall_settings_pimple_t &p)
+  bool wall_clock_settings(const Maemo::Timed::WallClock::wall_settings_pimple_t &p, const QDBusMessage &message)
   {
-    log_debug() ;
+    // log_notice("DBUS::com.nokia.time.wall_clock_settings(%s) by %s", p.str().toStdString().c_str(), MESSAGE) ;
     // log_debug("%s", string_std_to_q(p.str()).c_str()) ;
     return timed->settings->wall_clock_settings(p) ;
   }
@@ -90,7 +91,7 @@ public slots:
     //       because an event could contain empty action set
     //       --> forwarding the QDBusMessage to Timed::add_even
     //       -->                        then to machine::add_event
-    log_debug() ;
+    log_notice("DBUS::com.nokia.time.add_event() by %s", peer::info_by_dbus_message(message).c_str()) ;
     return timed->add_event(cookie_t(), x, message).value() ;
   }
 
