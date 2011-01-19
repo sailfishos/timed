@@ -289,9 +289,10 @@ void tz_oracle_t::output(olson *zone)
 
 void tz_oracle_t::output(olson *zone, suggestion_t *s, bool sure)
 {
-  (void) s ;
-//#warning TODO
   log_notice("Time zone magically detected: '%s' (%s" "sure)", zone->name().c_str(), sure?"":"not ") ;
+  emit cellular_zone_detected(zone, *s, sure) ;
+
+  delete s ;
 }
 
 void tz_oracle_t::set_by_offset(const cellular_offset_t &data)

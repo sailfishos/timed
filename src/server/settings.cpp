@@ -666,6 +666,20 @@ void source_settings::cellular_time_slot(const cellular_time_t &T)
   }
 }
 
+void source_settings::cellular_zone_slot(olson *tz, suggestion_t s, bool sure)
+{
+  (void) sure ;
+  log_debug("time zone '%s' magicaly detected", tz->name().c_str()) ;
+  cellular_zone->value = tz->name() ;
+  cellular_zone->suggestions = s ;
+  if(local_cellular)
+  {
+    fix_etc_localtime() ;
+    // TODO: update_oracle_context(true) ;
+  }
+  o->invoke_signal() ;
+}
+
 #if 0
 void source_settings::cellular_information(const cellular_info_t &ci)
 {

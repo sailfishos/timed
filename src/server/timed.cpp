@@ -523,16 +523,20 @@ void Timed::init_cellular_services()
   csd = new csd_t(this) ;
   tz_oracle = new tz_oracle_t ;
 
-  int res1 = QObject::connect(csd, SIGNAL(cellular_time(const cellular_time_t &)), settings, SLOT(cellular_time_slot(const cellular_time_t &))) ;
-  int res2 = QObject::connect(csd, SIGNAL(cellular_offset(const cellular_offset_t &)), tz_oracle, SLOT(cellular_offset(const cellular_offset_t &))) ;
-  int res3 = QObject::connect(csd, SIGNAL(cellular_operator(const cellular_operator_t &)), tz_oracle, SLOT(cellular_operator(const cellular_operator_t &))) ;
+  int res1 = QObject::connect(csd, SIGNAL(csd_cellular_time(const cellular_time_t &)), settings, SLOT(cellular_time_slot(const cellular_time_t &))) ;
+  int res2 = QObject::connect(csd, SIGNAL(csd_cellular_offset(const cellular_offset_t &)), tz_oracle, SLOT(cellular_offset(const cellular_offset_t &))) ;
+  int res3 = QObject::connect(csd, SIGNAL(csd_cellular_operator(const cellular_operator_t &)), tz_oracle, SLOT(cellular_operator(const cellular_operator_t &))) ;
+  int res4 = QObject::connect(tz_oracle, SIGNAL(cellular_zone_detected(olson *, suggestion_t, bool)), settings, SLOT(cellular_zone_slot(olson *, suggestion_t, bool))) ;
 
   log_assert(res1) ;
   log_assert(res2) ;
   log_assert(res3) ;
+  log_assert(res4) ;
 
+#if 0
   QObject::connect(tz_oracle, SIGNAL(tz_detected(olson *, tz_suggestions_t)), this, SLOT(tz_by_oracle(olson *, tz_suggestions_t))) ;
   QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
+#endif
 }
 
 void Timed::init_dst_checker()
@@ -863,6 +867,7 @@ void Timed::nitz_notification(const cellular_info_t &ci)
 }
 #endif
 
+#if 0
 void Timed::tz_by_oracle(olson *tz, tz_suggestions_t s)
 {
   log_debug("time zone '%s' magicaly detected", tz->name().c_str()) ;
@@ -875,9 +880,12 @@ void Timed::tz_by_oracle(olson *tz, tz_suggestions_t s)
   }
   invoke_signal() ;
 }
+#endif
 
-void Timed::update_oracle_context(bool set)
+void Timed::update_oracle_context(bool s)
 {
+  log_warning("update_oracle_context(%d): NOT IMPLEMENTED", s) ;
+#if 0
   static ContextProvider::Property oracle_p("/com/nokia/time/time_zone/oracle") ;
   static const char * const uncertain_key = "uncertain" ;
   static const char * const primary_key = "primary_candidates" ;
@@ -909,6 +917,7 @@ void Timed::update_oracle_context(bool set)
   }
 
   oracle_p.setValue(map) ;
+#endif
 }
 
 void Timed::open_epoch()

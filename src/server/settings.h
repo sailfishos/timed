@@ -130,7 +130,7 @@ struct manual_zone_t : public zone_source_t
 struct cellular_zone_t : public zone_source_t
 {
   virtual ~cellular_zone_t() { }
-  tz_suggestions_t suggestions ;
+  suggestion_t suggestions ;
   const char *name() const { return "cellular_zone" ; }
   // void load(const iodata::record *) ;
   // iodata::record *save() const ;
@@ -213,6 +213,7 @@ struct source_settings : public QObject
   Q_OBJECT ;
 public Q_SLOTS:
   void cellular_time_slot(const cellular_time_t &T) ;
+  void cellular_zone_slot(olson *tz, suggestion_t s, bool sure) ;
 } ;
 
 #endif

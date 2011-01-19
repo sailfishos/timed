@@ -177,9 +177,9 @@ private Q_SLOTS:
   void unix_signal(int signo) ;
 #if 0
   void nitz_notification(const cellular_info_t &) ;
+  void tz_by_oracle(olson *tz, tz_suggestions_t) ;
 #endif
   void check_dst() ;
-  void tz_by_oracle(olson *tz, tz_suggestions_t) ;
 public:
   void update_oracle_context(bool set) ;
   void open_epoch() ;

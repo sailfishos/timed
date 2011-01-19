@@ -108,7 +108,10 @@ TODO:
 #endif
 
 signals:
+  void cellular_zone_detected(olson *, suggestion_t, bool) ;
+#if 0
   void tz_detected(olson *tz, tz_suggestions_t) ;
+#endif
 
 private:
 #if 0
