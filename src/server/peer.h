@@ -1,3 +1,6 @@
+#ifndef MAEMO_TIMED_PEER_H
+#define MAEMO_TIMED_PEER_H
+
 #include <string>
 
 #include <QDBusMessage>
@@ -8,3 +11,5 @@ namespace peer
   std::string cmdline_by_pid(pid_t pid) ;
   std::string info_by_dbus_message(const QDBusMessage &message) ;
 }
+
+#endif//MAEMO_TIMED_PEER_H
