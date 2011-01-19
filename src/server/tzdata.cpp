@@ -106,7 +106,7 @@ bool tzdata::is_single_zone_country(const string &alpha2)
 string tzdata::set_str(const set<olson*> &x)
 {
   ostringstream os ;
-  bool first ;
+  bool first = true ;
   for (set<olson*>::const_iterator it=x.begin(); it!=x.end(); ++it)
     os << (first ? first=false, "{" : ", " ) << (*it)->name() ;
   os << (first ? "{ }" : "}") ;
