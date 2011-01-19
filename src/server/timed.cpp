@@ -759,8 +759,9 @@ void Timed::send_time_settings()
   settings->fix_etc_localtime() ;
   sent_signature = dst_signature(time(NULL)) ;
   Maemo::Timed::WallClock::Info info(settings->get_wall_clock_info(diff)) ;
+  log_notice("sending signal 'settings_changed': %s", info.str().toStdString().c_str()) ;
   emit settings_changed(info, not diff.is_zero()) ;
-  log_notice("signal 'settings_changed' sent: %s", info.str().toStdString().c_str()) ;
+  log_notice("signal 'settings_changed' sent") ;
   // emit settings_changed_1(systime) ;
   am->reshuffle_queue(diff) ;
   if(q_pause)

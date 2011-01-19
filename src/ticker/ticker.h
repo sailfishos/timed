@@ -55,6 +55,73 @@ using namespace std ;
 using Cellular::NetworkTimeInfo ;
 #endif
 
+static string str_printf(const char *format, ...)
+{
+  const int buf_len = 1024, max_buf_len = buf_len*1024 ;
+  char buf[buf_len], *p = buf ;
+  va_list varg ;
+  va_start(varg, format) ;
+  int iteration = 0, printed = false ;
+  string formatted ;
+  do
+  {
+    int size = buf_len << iteration ;
+    if(size>max_buf_len)
+    {
+      log_error("Can't format string, the result is too long") ;
+      return format ;
+    }
+    if(iteration>0)
+      p = new char[size] ;
+    int res = vsnprintf(p, size, format, varg) ;
+    if(res < 0)
+    {
+      log_error("Can't format string, vsnprintf() failed") ;
+      return format ;
+    }
+    if(res < size)
+    {
+      printed = true ;
+      formatted = p ;
+    }
+    if(iteration > 0)
+      delete[] p ;
+    ++ iteration ;
+  } while(!printed) ;
+
+  return formatted ;
+}
+static string csd_network_time_info_to_string(const Cellular::NetworkTimeInfo &nti)
+{
+  if (not nti.isValid())
+    return "{invalid}" ;
+
+  ostringstream os ;
+
+  os << "{zone=" << nti.offsetFromUtc() ;
+
+  QDateTime t = nti.dateTime() ;
+  if (t.isValid())
+  {
+    string utc = str_printf("%04d-%02d-%02d,%02d:%02d:%02d", t.date().year(), t.date().month(), t.date().day(), t.time().hour(), t.time().minute(), t.time().second())  ;
+    os << ", utc=" << utc ;
+  }
+
+  int dst = nti.daylightAdjustment() ;
+  if (dst!=-1)
+    os << ", dst=" << dst ;
+
+  os << ", mcc='" << nti.mcc().toStdString() << "'" ;
+  os << ", mnc='" << nti.mnc().toStdString() << "'" ;
+
+  os << ", received=" << str_printf("%lld.%09lu", (long long)nti.timestamp()->tv_sec, nti.timestamp()->tv_nsec) ;
+
+  os << "}" ;
+
+  return os.str() ;
+}
+
+
 class ticker : public QCoreApplication
 {
   Q_OBJECT ;
@@ -67,12 +134,19 @@ class ticker : public QCoreApplication
 public:
   ticker(int ac, char **av) : QCoreApplication(ac,av), abbreviation("[N/A]")
   {
+    // set up logging
+    // qmlog::syslog()->reduce_max_level(qmlog::Warning) ;
+    qmlog::stderr()->reduce_max_level(qmlog::Notice) ;
+    qmlog::log_file *logfile = new qmlog::log_file("/ticker.log", qmlog::Debug) ;
+    logfile->enable_fields(qmlog::Monotonic_Nano | qmlog::Time_Micro) ;
+    logfile->disable_fields(qmlog::Multiline|qmlog::Line|qmlog::Function) ;
+
     timed = new Maemo::Timed::Interface ;
 
     QDBusReply<Maemo::Timed::WallClock::Info> x = timed->get_wall_clock_info_sync() ;
     if(x.isValid())
     {
-      cout << "Timed clock settings:\n" << x.value().str().toStdString().c_str() << endl ;
+      log_notice("Timed clock settings: %s", x.value().str().toStdString().c_str()) ;
       abbreviation = x.value().tzAbbreviation() ;
     }
     else
@@ -80,7 +154,7 @@ public:
 
     bool a = timed->settings_changed_connect(this, SLOT(settings(const Maemo::Timed::WallClock::Info &, bool))) ;
     if(a)
-      cout << "connected to D-Bus signal, waiting for time settings change signal" << endl ;
+      log_notice("connected to D-Bus signal, waiting for time settings change signal") ;
     else
       log_critical("not connected to D-Bus signal, no time change signal will be delivered!") ;
 
@@ -90,7 +164,7 @@ public:
     QString signal = "next_bootup_event" ;
     bool aa = dsme_bus.connect("", path, iface, signal, this, SLOT(dsme(int))) ;
     if(aa)
-      cout << "connected to system bus signal '" << signal.toStdString() << "'" << endl ;
+      log_notice("connected to system bus signal '%s'", signal.toStdString().c_str()) ;
     else
       log_critical("not connected to system bus signal '%s'",signal.toStdString().c_str()) ;
 
@@ -106,8 +180,16 @@ public:
     int cel2 = QObject::connect(cellular_time, SIGNAL(timeInfoQueryCompleted(const Cellular::NetworkTimeInfo &)), this, SLOT(cellular_queried(const Cellular::NetworkTimeInfo &))) ;
 #    endif
 
-    qDebug() << "connection to timeInfoChanged:" << (cel1 ? "ok" : "failed" ) ;
-    qDebug() << "connection to timeInfoQueryCompleted:" << (cel2 ? "ok" : "failed" ) ;
+    if (cel1)
+      log_notice("connected to 'timeInfoChanged' cellular signal") ;
+    else
+      log_warning("can't connect to 'timeInfoChanged' cellular signal") ;
+    if (cel2)
+      log_notice("connected to 'timeInfoQueryCompleted' cellular signal") ;
+    else
+      log_warning("can't connect to 'timeInfoQueryCompleted' cellular signal") ;
+
+    cellular_time->queryTimeInfo() ;
 #  else
 
     int cel = QObject::connect(cellular_time, SIGNAL(dateTimeChanged(QDateTime, int, int)), this, SLOT(cellular_changed(QDateTime, int, int))) ;
@@ -124,7 +206,7 @@ public:
   void print_cellular_info(const char *signal, const Cellular::NetworkTimeInfo &nti)
   {
     cout << endl ;
-    qDebug() << "Signal" << signal << "received:" << nti ;
+    log_notice("Signal '%s' received: %s", signal, csd_network_time_info_to_string(nti).c_str()) ;
   }
 #endif // NEW_CELLULAR
 public slots:
@@ -137,10 +219,8 @@ public slots:
     struct tm tm ;
     time_t now = time(NULL) ;
     localtime_r(&now, &tm) ;
-    os << " [" << (1900+tm.tm_year) << "-" << (1+tm.tm_mon) << "-" << tm.tm_mday <<
-      " " << tm.tm_hour << ":" << tm.tm_min << ":" << tm.tm_sec << "]" << " "  ;
-    os << "(isdst=" << tm.tm_isdst << ", gmtoff=" << tm.tm_gmtoff << ", zone='" << tm.tm_zone
-      << "')" ;
+    os << str_printf(" [%04d-%02d-%02d %02d:%02d:%02d] ", (1900+tm.tm_year), (1+tm.tm_mon), tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec) ;
+    os << "(isdst=" << tm.tm_isdst << ", gmtoff=" << tm.tm_gmtoff << ", zone='" << tm.tm_zone << "')" ;
     string s = os.str() ;
     int len = s.length() ;
     string spaces = "" ;
@@ -153,24 +233,25 @@ public slots:
     for(int i=0; i<len; ++i)
       cout << (char)8 ; // ^H
     cout.flush() ;
+    log_info("*** tick ***") ;
   }
   void settings(const Maemo::Timed::WallClock::Info &info, bool time)
   {
     abbreviation = info.tzAbbreviation() ;
     cout << endl ;
-    cout << "Settings change signalled (system time " << (time ? "" : "not ") << "changed), new settings:" << endl ;
-    cout << info.str().toStdString().c_str() << endl ;
+    log_notice("Settings change signalled (system time %schanged), new settings: %s", time ? "" : "not ", info.str().toStdString().c_str()) ;
   }
   void dsme(int value)
   {
-    cout << endl ;
-    cout << "Signal for dsme detected: value=" << value ;
+    ostringstream os ;
+    os << "Signal for dsme detected: value=" << value ;
     if(value>1)
     {
       time_t now = time(NULL) ;
-      cout << " (now=" << now << " delta=value-now=" << value-now << ")" ;
+      os << " (now=" << now << " delta=value-now=" << value-now << ")" ;
     }
     cout << endl ;
+    log_notice("%s", os.str().c_str()) ;
   }
 #if NEW_CELLULAR
 

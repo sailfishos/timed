@@ -50,7 +50,7 @@ csd_t::csd_t(Timed *owner)
     log_error("connection to cellular csd signals failed: %s %s", res1?"":time_signal1, res2?"":time_signal2) ;
 
   static const char *operator_signal = SIGNAL(operatorChanged(const QString &, const QString &)) ;
-  static const char *operator_slot = SLOT(csd_network_operator(const QString &, const QString &)) ;
+  static const char *operator_slot = SLOT(csd_operator_s(const QString &, const QString &)) ;
   int res_op = QObject::connect(op, operator_signal, this, operator_slot) ;
   if(res_op)
     log_info("succesfully connected to csd network operator signal") ;

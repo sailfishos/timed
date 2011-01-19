@@ -139,3 +139,16 @@ Architecture: any
 Depends: timed-tools (= ${binary:Version}), ${misc:Depends}
 Description: timed-tools debugging symbols
  Debugging symbols for commad line time daemon tools
+
+Package: timed-log
+Architecture: any
+Depends: ${misc:Depends}
+Description: enables verbose logging of time daemon
+ Contains the file /var/cache/timed/DEBUG, switching the logging of time daemon on
+
+Package: invalid-time
+Architecture: any
+Depends: ${misc:Depends}
+Description: makes the system time invalid
+ Contains the file /var/cache/timed/SYSTEM_TIME_LOST
+ marking the system time as invalid
