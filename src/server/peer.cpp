@@ -29,7 +29,7 @@ string peer::cmdline_by_pid(pid_t pid)
     if (n>0)
     {
       buf[n]='\0' ;
-      for (unsigned i=0; i<n; ++i)
+      for (unsigned i=0; i+1<n; ++i)
         if (not buf[i])
           buf[i]=' ' ;
     }

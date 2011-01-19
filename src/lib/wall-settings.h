@@ -44,6 +44,7 @@ struct Maemo::Timed::WallClock::wall_settings_pimple_t
     opcodes = 0 ;
     offset = 0 ;
   }
+  QString str() const ;
 } ;
 
 declare_qtdbus_io(Maemo::Timed::WallClock::wall_settings_pimple_t) ;

@@ -225,7 +225,7 @@ string credentials_t::str() const
 #if F_TOKENS_AS_CREDENTIALS
   bool first = true ;
   for (set<string>::const_iterator it=tokens.begin(); it!=tokens.end(); ++it)
-    os << (first ? first=false, "tokens=[" : ", ") << *it ;
+    os << (first ? first=false, ", tokens=[" : ", ") << *it ;
   os << (first ? "no tokens" : "]") ;
 #endif
   os << "}" ;
