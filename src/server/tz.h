@@ -42,7 +42,7 @@ struct tz_distinct_t ;
 
 struct status_t
 {
-  std::string last_zone ;
+  olson *last_zone ;
   bool regular ;
 } ;
 
@@ -50,7 +50,7 @@ struct status_t
 struct history_t
 {
   void save_status(const status_t &/*s*/, const cellular_operator_t &/*op*/) { }
-  void load_status(status_t &s, const cellular_operator_t &/*op*/) { s.last_zone="", s.regular=true ; }
+  void load_status(status_t &s, const cellular_operator_t &/*op*/) { s.last_zone=NULL, s.regular=true ; }
 } ;
 
 enum guess_quality
@@ -58,7 +58,7 @@ enum guess_quality
   Uncertain, Reliable, Confirmed, Canceled, Waiting, Initial
 } ;
 
-struct tz_suggestions_t
+struct tz_suggestions_t // obsolete
 {
   vector <olson*> zones ;
   guess_quality gq ;
@@ -66,6 +66,11 @@ struct tz_suggestions_t
   void add(olson *tz) { zones.push_back(tz) ; }
   void set(vector<olson*> list) { zones = list ; }
   tz_suggestions_t() { gq = Uncertain ; }
+} ;
+
+struct suggestion_t
+{
+  void add(olson *zone, int score) ;
 } ;
 
 struct tz_oracle_t : public QObject
@@ -114,6 +119,13 @@ private:
   tz_distinct_t *tz_distinct ;
 
   bool is_single(int mcc) ;
+
+  void set_by_offset(const cellular_offset_t &data) ;
+  // void set_by_operator(const cellular_operator_t &o) ;
+  void set_by_operator() ;
+
+  void output(olson *zone, suggestion_t *s, bool sure) ;
+  void output(olson *zone) ;
 
   Q_OBJECT ;
 } ;

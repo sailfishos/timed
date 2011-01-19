@@ -23,7 +23,8 @@ struct cellular_operator_t
   cellular_operator_t(const QString &mcc_s, const QString &mnc_s) ;
   cellular_operator_t(const Cellular::NetworkTimeInfo &cnti) ;
 #endif
-  bool operator=(const cellular_operator_t &x) const ; // same mcc & mnc
+  bool operator==(const cellular_operator_t &x) const ; // same mcc & mnc
+  bool operator!=(const cellular_operator_t &x) const ; // mcc or mnc differ
   std::string id() const ; // like "310/07"
   std::string location() const ; // "FI" or "001/10" for invalid MCC
   bool known_mcc() const ; // location()==iso_3166_location()

@@ -16,6 +16,8 @@ namespace tzdata
   olson* device_default() ;
   int filter(const std::set<olson*> &in, time_t moment, int offset, int dst, std::set<olson*> &out) ;
   bool is_single_zone_country(const std::string &alpha2) ;
+
+  std::string set_str(const std::set<olson*> &) ;
 }
 
 #endif//MAEMO_TIMED_TZDATA_H

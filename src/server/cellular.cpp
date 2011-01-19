@@ -46,7 +46,7 @@ cellular_operator_t::cellular_operator_t(const Cellular::NetworkTimeInfo &cnti)
 }
 #endif
 
-bool cellular_operator_t::operator=(const cellular_operator_t &x) const ; // same mcc & mnc
+bool cellular_operator_t::operator==(const cellular_operator_t &x) const // same mcc & mnc
 {
   return mcc==x.mcc and mnc==x.mnc ;
 }
