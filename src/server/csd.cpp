@@ -138,6 +138,11 @@ const nanotime_t csd_t::old_nitz_threshold(2,0) ;
 
 void csd_t::process_csd_network_time_info(const Cellular::NetworkTimeInfo &nti)
 {
+  if (not nti.isValid())
+  {
+    log_notice("empty time info, ignoring it") ;
+    return ;
+  }
   nanotime_t actuality = nanotime_t::monotonic_now() - nanotime_t::from_timespec (*nti.timestamp()) ;
   input_csd_network_time_info(nti) ;
 
