@@ -290,8 +290,9 @@ void machine_t::process_transition_queue()
       continue ;
     }
     abstract_state_t *old_state = e->get_state() ;
-    log_assert(new_state!=old_state, "New state is the same as the old one (%s)", old_state->name()) ;
     log_notice("State transition %d:'%s'->'%s'", e->cookie.value(), state_name(old_state), state_name(new_state)) ;
+    if (new_state==old_state)
+      log_critical("Event %d: new_state=old_state='%s'", e->cookie.value(), old_state->name()) ;
 #undef state_name
     if(old_state)
       old_state->leave(e) ;
