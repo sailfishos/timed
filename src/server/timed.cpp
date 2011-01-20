@@ -85,6 +85,9 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   init_unix_signal_handler() ;
   log_debug() ;
 
+  init_dbus_peer_info() ;
+  log_debug() ;
+
   init_scratchbox_mode() ;
   log_debug() ;
 
@@ -145,6 +148,13 @@ void Timed::init_unix_signal_handler()
   signal_object->handle(SIGINT) ;
   signal_object->handle(SIGTERM) ;
   signal_object->handle(SIGCHLD) ;
+}
+
+// * Enable questioning of Dbus peers
+void Timed::init_dbus_peer_info()
+{
+  // TODO: make it depening on qmlog::enabled() ?
+  peer =  new peer_t(true) ;
 }
 
 // * Condition "running inside of scratchbox" is detected

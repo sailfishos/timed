@@ -44,6 +44,7 @@
 #include "tz.h"
 #include "csd.h"
 #include "event.h"
+#include "peer.h"
 
 struct Timed : public QCoreApplication
 {
@@ -79,6 +80,7 @@ private:
 
   // init_* methods, to be called by constructor only
   void init_unix_signal_handler() ;
+  void init_dbus_peer_info() ;
   void init_scratchbox_mode() ;
   void init_act_dead() ;
   void init_configuration() ;
@@ -111,6 +113,7 @@ public:
 #if F_CSD
   csd_t *csd ;
 #endif
+  peer_t *peer ;
 
   void load_events() ;
   void check_voland_service() ;

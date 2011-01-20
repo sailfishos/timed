@@ -57,6 +57,7 @@
    */
 uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString &name)
 {
+  // TODO make 'dbus_daemon' interface via QDBusAbstractInterface
   QString service   =  "org.freedesktop.DBus" ;
   QString path      = "/org/freedesktop/DBus" ;
   QString interface =  "org.freedesktop.DBus" ;
