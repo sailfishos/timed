@@ -2,8 +2,16 @@ timed (2.36) unstable; urgency=low
 
   * new csd layer, better cellular stuff logging
   * new methods: fake_csd_time_signal, fake_csd_time_signal_now
+  * new tzdata layer (needs only 3 data base files)
+  * peer information asked from dbus daemon for logging
+  * a better algorithm for time zone guessing by cellular info
+  * ticker tool: working in background
+  * two new packages: invalid-time, timed-log
+  * many small fixes
+  * Fixes: NB#212572 - workaround for nitz signal coming before operator
+  * Fixes: NB#219005 - timezone guess doesn't work in America
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 13 Jan 2011 13:39:51 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 20 Jan 2011 18:12:56 +0200
 
 timed (2.35) unstable; urgency=low
 
