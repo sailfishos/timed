@@ -49,7 +49,7 @@
 #define SQC str().toStdString().c_str()
 #define QC toStdString().c_str()
 #define CC c_str()
-#define PEER peer::info_by_dbus_message(message).c_str()
+#define PEER timed->peer->info(message.service().toStdString()).c_str()
 
 static QDateTime time_t_to_qdatetime(time_t t)
 {
@@ -121,13 +121,13 @@ public slots:
     return timed->dialog_response(cookie_t(cookie), value) ;
   }
 
-  void query(const QMap<QString,QVariant> &words, QList<QVariant> &res, const QDBusMessage &message)
+  void query(const QMap<QString,QVariant> &words, const QDBusMessage &message, QList<QVariant> &res)
   {
     log_notice("DBUS::com.nokia.time.query(...) by %s", PEER) ;
     timed->am->query(words, res) ;
   }
 
-  void query_attributes(uint cookie, QMap<QString,QVariant> &a, const QDBusMessage &message)
+  void query_attributes(uint cookie, const QDBusMessage &message, QMap<QString,QVariant> &a)
   {
     log_notice("DBUS::com.nokia.time.query_attributes(cookie=%u, ...) by %s", cookie, PEER) ;
     timed->am->get_event_attributes(cookie_t(cookie), a) ;
