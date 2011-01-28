@@ -795,7 +795,7 @@ pid_t event_t::fork_and_set_credentials_v3(const action_t &action)
 
     // That's it then, isn't it?
 
-    log_debug() ;
+    log_notice("set credentais to %s", credentials_t::from_current_process().str().c_str()) ;
     return pid ;
   }
 }
