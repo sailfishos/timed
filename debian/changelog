@@ -1,8 +1,8 @@
 timed (2.37) unstable; urgency=low
 
-  * new version
+  * compiling .type files into the timed binary
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Tue, 25 Jan 2011 13:20:56 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Sun, 30 Jan 2011 21:33:16 +0200
 
 timed (2.36) unstable; urgency=low
 

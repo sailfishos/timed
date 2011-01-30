@@ -1,7 +1,8 @@
 # the old: usr/bin/timed
 usr/bin/timed
 
-usr/share/timed/typeinfo
+# compiled in, don't install
+# usr/share/timed/typeinfo
 
 usr/share/contextkit/providers/com.nokia.time.context
 

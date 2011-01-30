@@ -1,3 +1,5 @@
+_function = "customization_data_validator",
+
 customization_t =
 [
   { name = "format24", type = $bytes, value = "True" },

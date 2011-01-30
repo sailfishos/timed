@@ -12,6 +12,8 @@ QMAKE_LIBDIR_FLAGS += -L../lib -L../voland
 LIBS += -ltimed -ltimed-voland
 CONFIG += qmlog
 
+IODATA_TYPES = queue.type config.type settings.type customization.type tzdata.type
+
 HEADERS += peer.h settings.h csd.h interfaces.h adaptor.h timed.h state.h cluster.h machine.h singleshot.h pinguin.h unix-signal.h onitz.h
 SOURCES += peer.cpp tzdata.cpp cellular.cpp csd.cpp cluster.cpp machine.cpp state.cpp main.cpp timed.cpp timeutil.cpp event.cpp misc.cpp settings.cpp unix-signal.cpp onitz.cpp
 
@@ -32,8 +34,8 @@ target.path = $$(DESTDIR)/usr/bin
 xml.files  = com.nokia.time.context
 xml.path = $$(DESTDIR)/usr/share/contextkit/providers
 
-typeinfo.files = queue.type config.type settings.type customization.type tzdata.type timed-cust-rc.type
-typeinfo.path = $$(DESTDIR)/usr/share/timed/typeinfo
+# typeinfo.files = queue.type config.type settings.type customization.type tzdata.type timed-cust-rc.type
+# typeinfo.path = $$(DESTDIR)/usr/share/timed/typeinfo
 
 backupconf.files = timedbackup.conf
 backupconf.path = $$(DESTDIR)/usr/share/backup-framework/applications

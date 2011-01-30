@@ -1,6 +1,8 @@
 # TODO: check the names before moving stuff to tzdata package
 #       "list" is a horrible name, other are not much better!
 
+_function = "tzdata_validator",
+
 tz_single_t = [ { name="list", type=$array|$record|$mandatory, record="tz_single_info_t" } ],
 tz_distinct_t = [ { name="list", type=$array|$record|$mandatory, record="tz_distinct_info_t" } ],
 

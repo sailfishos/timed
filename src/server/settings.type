@@ -1,3 +1,5 @@
+_function = "settings_data_validator",
+
 settings_t =
 [
   // The value '-1' means: use default value given by customization

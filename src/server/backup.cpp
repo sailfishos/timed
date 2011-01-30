@@ -24,6 +24,9 @@
 #include <iodata/iodata>
 #include <iodata/storage>
 
+#include "queue.type.h"
+#include "settings.type.h"
+
 #include "backup.h"
 
 // The directory name, must match the path mentioned in timedbackup.conf:
@@ -108,7 +111,7 @@ bool backup_t::save_queue_as(const string &path)
   iodata::storage *backup = new iodata::storage ;
 
   backup->set_primary_path(path) ;
-  backup->set_validator(timed->event_queue_type(), "event_queue_t") ;
+  backup->set_validator(events_data_validator(), "event_queue_t") ;
   int res = backup->save(r) ;
 
   delete backup ;
@@ -133,7 +136,7 @@ bool backup_t::read_queue_from(const string &path)
   iodata::storage *backup = new iodata::storage ;
 
   backup->set_primary_path(backup_queue) ;
-  backup->set_validator(timed->event_queue_type(), "event_queue_t") ;
+  backup->set_validator(events_data_validator(), "event_queue_t") ;
 
   iodata::record *r = backup->load() ;
 
@@ -173,7 +176,7 @@ bool backup_t::save_settings_as(const string &path)
   iodata::storage *backup = new iodata::storage ;
 
   backup->set_primary_path(path) ;
-  backup->set_validator(timed->settings_file_type(), "settings_t") ;
+  backup->set_validator(settings_data_validator(), "settings_t") ;
   int res = backup->save(r) ;
 
   delete backup ;

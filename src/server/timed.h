@@ -50,14 +50,14 @@ struct Timed : public QCoreApplication
 {
 public:
   inline const char *configuration_path() { return  "/etc/timed.config" ; }
-  inline const char *configuration_type() { return  "/usr/share/timed/typeinfo/config.type" ; }
+  // inline const char *configuration_type() { return  "/usr/share/timed/typeinfo/config.type" ; }
 
   inline const char *customization_path() { return  "/usr/share/timed/customization.data" ; } // TODO: make it configurable
-  inline const char *customization_type() { return  "/usr/share/timed/typeinfo/customization.type" ; }
+  // inline const char *customization_type() { return  "/usr/share/timed/typeinfo/customization.type" ; }
 
-  inline const char *settings_file_type() { return  "/usr/share/timed/typeinfo/settings.type" ; }
+  // inline const char *settings_file_type() { return  "/usr/share/timed/typeinfo/settings.type" ; }
 
-  inline const char *event_queue_type() { return  "/usr/share/timed/typeinfo/queue.type" ; }
+  // inline const char *event_queue_type() { return  "/usr/share/timed/typeinfo/queue.type" ; }
 
 private:
   bool act_dead_mode ;

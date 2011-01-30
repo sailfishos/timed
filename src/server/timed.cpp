@@ -36,6 +36,11 @@
 #include <timed/interface>
 #include <qmlog>
 
+#include "queue.type.h"
+#include "config.type.h"
+#include "customization.type.h"
+#include "settings.type.h"
+
 #include "interfaces.h"
 #include "adaptor.h"
 #include "backup.h"
@@ -288,7 +293,7 @@ void Timed::init_configuration()
 {
   iodata::storage *config_storage = new iodata::storage ;
   config_storage->set_primary_path(configuration_path()) ;
-  config_storage->set_validator(configuration_type(), "config_t") ;
+  config_storage->set_validator(etc_timed_rc_validator(), "config_t") ;
 
   iodata::record *c = config_storage->load() ;
   log_assert(c, "loading configuration settings failed") ;
@@ -322,7 +327,7 @@ void Timed::init_customization()
 {
   iodata::storage *storage = new iodata::storage ;
   storage->set_primary_path(customization_path()) ;
-  storage->set_validator(customization_type(), "customization_t") ;
+  storage->set_validator(customization_data_validator(), "customization_t") ;
 
   iodata::record *c = storage->load() ;
   log_assert(c, "loading customization settings failed") ;
@@ -355,7 +360,7 @@ void Timed::init_read_settings()
   settings_storage = new iodata::storage ;
   settings_storage->set_primary_path(settings_path) ;
   settings_storage->set_secondary_path(settings_path+".bak") ;
-  settings_storage->set_validator(settings_file_type(), "settings_t") ;
+  settings_storage->set_validator(settings_data_validator(), "settings_t") ;
 
   iodata::record *tree = settings_storage->load() ;
 
@@ -501,7 +506,7 @@ void Timed::init_load_events()
   event_storage = new iodata::storage ;
   event_storage->set_primary_path(events_path) ;
   event_storage->set_secondary_path(events_path+".bak") ;
-  event_storage->set_validator(event_queue_type(), "event_queue_t") ;
+  event_storage->set_validator(events_data_validator(), "event_queue_t") ;
 
   iodata::record *events = event_storage->load() ;
 

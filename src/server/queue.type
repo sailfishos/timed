@@ -1,3 +1,5 @@
+_function = "events_data_validator",
+
 event_queue_t =
 [
  { name = "next_cookie",    type = $integer, value = 1 },

@@ -138,7 +138,7 @@ string tzdata::set_str(const set<olson*> &x)
 
 // --- initialization ---
 
-static iodata::validator *tzdata_validator = iodata::validator::from_file("/usr/share/timed/typeinfo/tzdata.type") ;
+#include "tzdata.type.h"
 
 #if 0
 static struct tz_distinct_t
@@ -162,7 +162,7 @@ static iodata::record *open_database(const char *path, const char *type)
 {
   log_notice("opening file '%s', reading record of type '%s'", path, type) ;
   iodata::storage file ;
-  file.set_validator(tzdata_validator, type) ;
+  file.set_validator(tzdata_validator(), type) ;
   file.set_primary_path(path) ;
   if (iodata::record *res = file.load())
     return res ;
