@@ -46,7 +46,7 @@ cud.path = $$(DESTDIR)/etc/osso-cud-scripts
 rfs.files = timed-restore-original-settings.sh
 rfs.path = $$(DESTDIR)/etc/osso-rfs-scripts
 
-INSTALLS += target xml typeinfo backupconf cud rfs
+INSTALLS += target xml backupconf cud rfs
 
 CONFIG(MEEGO) \
 {
