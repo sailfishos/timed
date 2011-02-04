@@ -14,7 +14,7 @@ LIBS += -ltimed
 CONFIG += qmlog link_pkgconfig
 PKGCONFIG += libpcrecpp
 
-SOURCES = ntp.cpp resolver.cpp xxd.cpp main.cpp
+SOURCES = ntp.cpp resolver.cpp xxd.cpp # main.cpp
 HEADERS = ntp.h   resolver.h   xxd.h
 
 INSTALLS += target
