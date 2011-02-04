@@ -31,6 +31,18 @@
 #include "nanotime.h"
 #include "log.h"
 
+nanotime_t nanotime_t::div2() const
+{
+  uint32_t y = nano() / 2 ;
+  time_t x = sec() ;
+  if (x%2 != 0)
+    x--, y+=NANO/2 ;
+  x /= 2 ;
+  while (y>=NANO)
+    ++x, y-=NANO ;
+  return nanotime_t(x,y) ;
+}
+
 nanotime_t nanotime_t::systime_at_zero() // TODO: rename it to start_up_time()
 {
   nanotime_t s = systime_now() ;

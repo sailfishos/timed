@@ -21,10 +21,17 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
+#include <vector>
+#include <string>
+using namespace std ;
+
 #include <QCoreApplication>
 
 #include <qmlog>
 
+#include <timed/nanotime.h>
+
+#include "xxd.h"
 #include "ntp.h"
 
 void ntp_receiver_t::read_datagram()
@@ -40,14 +47,46 @@ void ntp_receiver_t::read_datagram()
   }
 }
 
+#if 0
+static char print_char(unsigned char ch)
+{
+  if (ch<0x20 or ch>0x7E)
+    return '.' ;
+  return ch ;
+}
+#endif
+
 void ntp_receiver_t::process(const QByteArray &d, const QHostAddress &a, uint16_t port)
 {
-  log_debug("received %d bytes from %s:%d", d.size(), a.toString().toStdString().c_str(), port) ;
+  log_notice("received %d bytes from %s:%d", d.size(), a.toString().toStdString().c_str(), port) ;
+  vector<string> dump ;
+  xxd(d.data(), d.size(), 8, dump) ;
+  for (unsigned i=0; i<dump.size(); ++i)
+    log_notice("Data: %s", dump[i].c_str()) ;
+#if 0
+  for (int k=0; k<d.size(); k+=8)
+  {
+    char buf[80] = "" ;
+    int remains = d.size() - k ;
+    int len = remains < 8 ? remains : 8 ;
+    for (int ii=0, i; i=k+ii, ii<len; ++ii)
+      sprintf(buf+strlen(buf), "%02X ", d.at(i)) ;
+    for (int i=0; i<8-len; ++i)
+      sprintf(buf+strlen(buf), "%2s ", "") ;
+    sprintf(buf+strlen(buf), "| ") ;
+    for (int ii=0, i; i=k+ii, ii<len; ++ii)
+      sprintf(buf+strlen(buf), "%c", print_char(d.at(i))) ;
+    for (int i=0; i<8-len; ++i)
+      sprintf(buf+strlen(buf), " ") ;
+    sprintf(buf+strlen(buf), " | %2x", k) ;
+    log_notice("Data: %s", buf) ;
+  }
+#endif
 }
 
 void ntp_receiver_t::bind()
 {
-  socket -> bind(QHostAddress::LocalHost, 123) ;
+  socket -> bind(QHostAddress("0.0.0.0"), 123) ;
 }
 
 ntp_receiver_t::ntp_receiver_t()
@@ -61,9 +100,11 @@ ntp_receiver_t::~ntp_receiver_t()
   delete socket ;
 }
 
+#if 0
 int main(int ac, char **av)
 {
   QCoreApplication a(ac, av) ;
   ntp_receiver_t S ;
   return a.exec() ;
 }
+#endif
