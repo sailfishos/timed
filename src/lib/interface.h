@@ -37,6 +37,8 @@
 #include <timed/wallclock>
 #include <timed/qmacro.h>
 
+Q_DECLARE_METATYPE(QList<uint>) ;
+
 namespace Maemo
 {
   namespace Timed
@@ -79,6 +81,7 @@ namespace Maemo
       qtdbus_method(add_event, (const Maemo::Timed::Event &e), e.dbus_output(__PRETTY_FUNCTION__)) ;
       qtdbus_method(add_events, (const Maemo::Timed::Event::List &ee), ee.dbus_output()) ;
       qtdbus_method(cancel, (uint32_t cookie), cookie) ;
+      qtdbus_method(cancel_events, (const QList<uint> &cookies), QVariant::fromValue(cookies)) ;
       qtdbus_method(replace_event, (const Maemo::Timed::Event &e, uint32_t cookie), e.dbus_output(__PRETTY_FUNCTION__), cookie) ;
       qtdbus_method(query, (const QMap<QString,QVariant> &attr), QVariant::fromValue(attr)) ;
       qtdbus_method(query_attributes, (uint32_t cookie), cookie) ;

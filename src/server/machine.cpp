@@ -641,6 +641,23 @@ bool machine_t::cancel_by_cookie(cookie_t c) // XXX need some clean up here?
   }
 }
 
+void machine_t::cancel_events(const QList<uint> &cookies, QList<uint> &failed)
+{
+  pause_t x(this) ;
+  set<unsigned> done ;
+  for (int i=0; i<cookies.size(); ++i)
+  {
+    unsigned ci = cookies[i] ;
+    cookie_t c(ci) ;
+    if (done.count(ci)>0)
+      continue ;
+    done.insert(ci) ;
+    if (not cancel_by_cookie(c))
+      failed.append(ci) ;
+  }
+}
+
+
 void machine_t::cancel_event(event_t *e)
 {
   // TODO: assert (queue is paused)

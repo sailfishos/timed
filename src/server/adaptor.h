@@ -139,6 +139,12 @@ public slots:
     return timed->cancel(cookie_t(cookie)) ;
   }
 
+  void cancel_events(const QList<uint> &cookies, const QDBusMessage &message, QList<uint> &failed)
+  {
+    log_notice("DBUS::com.nokia.time.cancel_events([%d]) by %s", cookies.size(), PEER) ;
+    timed->cancel_events(cookies, failed) ;
+  }
+
   QString ping(const QDBusMessage &message)
   {
     log_notice("DBUS::com.nokia.time.ping() by %s", PEER) ;
