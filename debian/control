@@ -146,6 +146,12 @@ Depends: ${misc:Depends}
 Description: enables verbose logging of time daemon
  Contains the file /var/cache/timed/DEBUG, switching the logging of time daemon on
 
+Package: timed-home-log
+Architecture: any
+Depends: ${misc:Depends}, timed-log (= ${binary:Version})
+Description: creeates a second copy of the log file, in the user home directory tree
+ Contains the file /var/cache/timed/HOME_LOG, enabling the additional log file in user directory
+
 Package: invalid-time
 Architecture: any
 Depends: ${misc:Depends}

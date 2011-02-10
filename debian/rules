@@ -47,6 +47,7 @@ install: build
 	mkdir -p -m 0755 $(CURDIR)/debian/tmp/var/cache/timed
 	touch $(CURDIR)/debian/tmp/var/cache/timed/SYSTEM_TIME_LOST
 	touch $(CURDIR)/debian/tmp/var/cache/timed/DEBUG
+	touch $(CURDIR)/debian/tmp/var/cache/timed/HOME_LOG
 	# cd src/political && INSTALL_ROOT=$(CURDIR)/debian/tmp ./debian-install.sh
 	# ln -sf timed $(CURDIR)/debian/tmp/usr/bin/cute-timed
 	dh_link -ptimed usr/bin/timed usr/bin/cute-timed
