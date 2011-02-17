@@ -72,6 +72,16 @@ int main(int ac, char **av)
   qmlog::log_file *varlog = new qmlog::log_file(log_file, varlog_level) ;
   varlog->enable_fields(qmlog::Monotonic_Milli | qmlog::Time_Milli) ;
 
+#if F_HOME_LOG
+  bool log_file_at_home = access(F_FORCE_HOME_LOG_PATH, F_OK) == 0 ;
+  if (log_file_at_home)
+  {
+    system("touch /home/user/MyDocs/timed.log") ;
+    qmlog::log_file *home = new qmlog::log_file("/home/user/MyDocs/timed.log", varlog_level) ;
+    home->enable_fields(qmlog::Monotonic_Milli | qmlog::Time_Milli | qmlog::Close_After_Write | qmlog::Cache_If_Cant_Open | qmlog::Dont_Create_File | qmlog::Retry_If_Failed) ;
+  }
+#endif
+
   bool isatty_2 = isatty(2) ;
 
   if (not isatty_2 or cwd_is_root) // stderr is not a terminal or started by upstart -> no stderr logging
