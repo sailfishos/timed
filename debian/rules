@@ -71,7 +71,8 @@ binary-arch: install
 	dh_fixperms
 	dh_makeshlibs
 # 	dh_pysupport
-	dh_installdeb
+	dh_makeshlibs --package=libtimed0 -V 'libtimed0 (>= 2.37)'
+	dh_makeshlibs --package=libtimed-voland0 -V 'libtimed-voland0 (>= 2.37)'
 	dh_shlibdeps
 	dh_gencontrol
 	dh_md5sums

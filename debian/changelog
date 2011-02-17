@@ -5,9 +5,10 @@ timed (2.37) unstable; urgency=low
   * Changing log level on the fly
   * Logging in unmountable directory
   * Fixes: NB#225485 - cancel_events()
+  * versioned dependencies
   * some minor stuff
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 17 Feb 2011 11:31:02 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 17 Feb 2011 14:09:26 +0200
 
 timed (2.36) unstable; urgency=low
 
