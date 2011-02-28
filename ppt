@@ -33,7 +33,7 @@ Actions:
 
 Interface:
 
-* Native C++ (QtDBus) inteface
+* Native C++ (QtDBus) interface
 * Cron-like file in a special format (libiodata library)
 * Possible: reading of files in cron format (not planned for Harmattan)
 
@@ -45,6 +45,5 @@ Notifications via D-Bus:
 
 Misc:
 
-* Sane behaviour if system is lost (by battery fault for example)
+* Sane behaviour if system time is lost (by battery fault for example)
 * Kernel will notify timed, if some 3rd party is changing system time
-
