@@ -91,6 +91,7 @@ static string str_printf(const char *format, ...)
 
   return formatted ;
 }
+#if USE_CELLULAR_QT
 static string csd_network_time_info_to_string(const Cellular::NetworkTimeInfo &nti)
 {
   if (not nti.isValid())
@@ -120,7 +121,7 @@ static string csd_network_time_info_to_string(const Cellular::NetworkTimeInfo &n
 
   return os.str() ;
 }
-
+#endif // USE_CELLULAR_QT
 
 class ticker : public QCoreApplication
 {
