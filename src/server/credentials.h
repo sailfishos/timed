@@ -33,7 +33,6 @@
 using namespace std ;
 
 #include <sys/types.h>
-#include <sys/creds.h>
 #include <QDBusMessage>
 #include <QDBusConnection>
 
@@ -49,6 +48,7 @@ struct credentials_t
   // TODO: make nobody/nogroup run-time option: /etc/timed.rc
   credentials_t() : uid("nobody"), gid("nogroup") { }
   credentials_t(const credentials_t &x) : uid(x.uid), gid(x.gid), tokens(x.tokens) { }
+  credentials_t(const string &u, const string &g) : uid(u), gid(g) { }
 
   bool apply() const ; // set the credentials for the current process
   bool apply_and_compare() ; // set the credentials and check if they are really set

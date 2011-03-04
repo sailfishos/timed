@@ -24,11 +24,19 @@
 #include "f.h"
 
 #include <stdlib.h>
+#if F_CREDS_AEGIS_LIBCREDS
 #include <sys/creds.h>
+#endif // F_CREDS_AEGIS_LIBCREDS
 
 #include <QDBusReply>
 
 #include <qmlog>
+
+#if F_CREDS_UID
+#include <pwd.h>
+#include <grp.h>
+#include "timed/interface"
+#endif // F_CREDS_UID
 
 #include "credentials.h"
 
@@ -84,6 +92,42 @@ uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString
 
 #endif // F_DBUS_INFO_AS_CREDENTIALS
 
+uid_t nameToUid(string name)
+{
+  passwd *info = getpwnam(name.c_str()) ;
+  if (info)
+    return info->pw_uid ;
+  // couldn't get uid for username
+  return -1 ;
+}
+
+string uidToName(uid_t u)
+{
+  passwd *info = getpwuid(u) ;
+  if (info)
+    return info->pw_name ;
+  // couldn't get name for uid
+  return "nobody" ;
+}
+
+gid_t nameToGid(string name)
+{
+  group *info = getgrnam(name.c_str()) ;
+  if (info)
+    return info->gr_gid ;
+  // couldn't get gid for groupname
+  return -1 ;
+}
+
+string gidToName(gid_t g)
+{
+  group *info = getgrgid(g) ;
+  if (info)
+    return info->gr_name ;
+  // couldn't get name for gid
+  return "nogroup" ;
+}
+
 bool credentials_t::apply() const
 {
 #if F_CREDS_AEGIS_LIBCREDS
@@ -97,8 +141,15 @@ bool credentials_t::apply() const
   creds_free(aegis_creds_want) ;
 
   return res ;
-#else // F_CREDS_AEGIS_LIBCREDS
-#error credentials_t::apply() is only implemented for F_CREDS_AEGIS_LIBCREDS
+#elif F_CREDS_UID
+  if (setgid(nameToGid(gid)) != 0 || setuid(nameToUid(uid)) != 0)
+  {
+    log_error("uid cred_set() failed") ;
+    return false ;
+  }
+  return true ;
+#else
+#error unimplemented credentials type
 #endif
 }
 
@@ -142,10 +193,14 @@ bool credentials_t::apply_and_compare()
     os << "}" ;
 
   bool equal = id_matches and all_accrued and all_dropped ;
+  bool ret = id_matches and all_dropped ;
 
 #undef COMMA_A
 #undef COMMA_D
 
+#else
+  bool equal = id_matches ;
+  bool ret =  id_matches ;
 #endif // F_TOKENS_AS_CREDENTIALS
 
 #undef COMMA
@@ -153,7 +208,7 @@ bool credentials_t::apply_and_compare()
   if(!equal)
     log_warning("applied and wanted credentials differ: %s", os.str().c_str()) ;
 
-  return id_matches and all_dropped ;
+  return ret ;
 }
 
 credentials_t credentials_t::from_given_process(pid_t pid)
@@ -165,14 +220,23 @@ credentials_t credentials_t::from_given_process(pid_t pid)
   creds_free(aegis_creds) ;
 
   return creds ;
-#else // not F_CREDS_AEGIS_LIBCREDS
-#error credentials_t::from_given_process(pid_t) is only implemented for F_CREDS_AEGIS_LIBCREDS
+#elif F_CREDS_UID
+// TODO: currently nobody:nobody is reported for all processes
+  return credentials_t() ;
+#else
+#error unimplemented credentials type
 #endif
 }
 
 credentials_t credentials_t::from_current_process()
 {
+#if F_CREDS_AEGIS_LIBCREDS
   return credentials_t::from_given_process(0) ;
+#elif F_CREDS_UID
+  return credentials_t(uidToName(getuid()), gidToName(getgid())) ;
+#else
+#error unimplemented credentials type
+#endif
 }
 
 // TODO: F_CREDS_UID
@@ -185,9 +249,25 @@ credentials_t credentials_t::from_current_process()
 // TODO: F_CREDS_AEGIS_LIBCREDS --- make this function #ifdef'ed
 
 credentials_t::credentials_t(const QDBusMessage &message)
+: uid("nobody"), gid("nobody")
 {
 #if F_CREDS_AEGIS_LIBCREDS
   *this = Aegis::credentials_from_dbus_connection(message) ;
+#elif F_CREDS_UID
+  QString sender = message.service() ;
+  uint32_t user_id = get_name_owner_from_dbus_sync(Maemo::Timed::bus(), sender) ;
+
+  if (user_id == ~0u)
+    log_warning("can't get user (uid) of the caller, already terminated?") ;
+  else
+  {
+    passwd *info = getpwuid(user_id) ;
+    if (info)
+    {
+      uid = info->pw_name ;
+      gid = gidToName(info->pw_gid) ;
+    }
+  }
 #else
 #error credentials_t;:from_dbus_connection is only implemented for aegis
 #endif
