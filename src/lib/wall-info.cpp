@@ -55,6 +55,8 @@ Maemo::Timed::WallClock::Info::Info(const Info &x)
 
 const Maemo::Timed::WallClock::Info & Maemo::Timed::WallClock::Info::operator=(const Info &x)
 {
+  if (this==&x)
+    return *this ;
   if(p)
     delete p ;
   if(x.p)
