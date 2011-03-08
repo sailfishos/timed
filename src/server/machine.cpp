@@ -51,6 +51,7 @@ machine_t::machine_t(const Timed *daemon) : timed(daemon)
   {
     state_start = new state_start_t(this),                     // T
     state_epoch = new state_epoch_t(this),                     // T
+    state_waiting = new state_waiting_t(this),                 // IO G
     state_new = new state_new_t(this),                         // T
     state_scheduler = new state_scheduler_t(this),             // T
     state_qentry = new state_qentry_t(this),                   // T
@@ -770,6 +771,19 @@ abstract_state_t *machine_t::state_by_name(const string &name)
     if ((*it)->s_name==name)
       return *it ;
   log_abort("invalid state name '%s'", name.c_str()) ;
+}
+
+void machine_t::freeze()
+{
+  state_waiting->close() ;
+  for(set<abstract_state_t*>::iterator it=states.begin(); it!=states.end(); ++it)
+    if(abstract_io_state_t *st=dynamic_cast<abstract_io_state_t*> (*it))
+      st->abort_all(state_waiting) ;
+}
+
+void machine_t::unfreeze()
+{
+  state_waiting->open() ;
 }
 
 request_watcher_t::request_watcher_t(machine_t *owner)
