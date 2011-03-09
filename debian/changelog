@@ -1,8 +1,9 @@
 timed (2.38) unstable; urgency=low
 
   * new version
+  * Fixes: NB#234636 - language used in ntp.h is not quite c++ :)
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 17 Feb 2011 14:58:57 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 09 Mar 2011 13:00:39 +0200
 
 timed (2.37) unstable; urgency=low
 

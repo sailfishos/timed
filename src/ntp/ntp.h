@@ -175,10 +175,10 @@ struct ntp_datagram_t
     root_delay = ntp_short_t::from_uint32(U32(4)) ;
     root_dispersion = ntp_short_t::from_uint32(U32(8)) ;
     reference_id = U32(0xC) ;
-    reference = ntp_time_t::ntp_time_t(U3232(0x10)) ;
-    origin = ntp_time_t::ntp_time_t(U3232(0x18)) ;
-    receive = ntp_time_t::ntp_time_t(U3232(0x20)) ;
-    transmit = ntp_time_t::ntp_time_t(U3232(0x28)) ;
+    reference = ntp_time_t(U3232(0x10)) ;
+    origin = ntp_time_t(U3232(0x18)) ;
+    receive = ntp_time_t(U3232(0x20)) ;
+    transmit = ntp_time_t(U3232(0x28)) ;
     return true ; // XXX: do some check ???
   }
   void to_strings(std::vector<std::string> &res)
