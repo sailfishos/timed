@@ -111,6 +111,7 @@ public:
   abstract_state_t *state_by_name(const string &name) ;
   void freeze() ;
   void unfreeze() ;
+  bool is_frozen() ;
 private:
   string s_states() ;
   string s_transition_queue() ;

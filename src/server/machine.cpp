@@ -786,6 +786,11 @@ void machine_t::unfreeze()
   state_waiting->open() ;
 }
 
+bool machine_t::is_frozen()
+{
+  return state_waiting->is_closed() ;
+}
+
 request_watcher_t::request_watcher_t(machine_t *owner)
 {
   machine = owner ;

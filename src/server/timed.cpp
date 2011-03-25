@@ -96,7 +96,8 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   init_scratchbox_mode() ;
   log_debug() ;
 
-  init_act_dead() ;
+  // init_act_dead() ;
+  init_dsme_mode() ;
   log_debug() ;
 
   init_configuration() ;
@@ -275,6 +276,15 @@ static bool init_act_dead_v2(bool use_status_files)
   log_abort("aborting") ;
 }
 #endif
+
+void Timed::init_dsme_mode()
+{
+  current_mode = "(unknown)" ;
+  dsme_mode_handler = new dsme_mode_t ;
+  QObject::connect(dsme_mode_handler, SIGNAL(mode_is_changing(const string &)), dsme_mode_handler, SLOT(dsme_mode_is_changing(const string &))) ;
+  QObject::connect(dsme_mode_handler, SIGNAL(mode_reported(const string &)), dsme_mode_handler, SLOT(dsme_mode_reported(const string &))) ;
+  dsme_mode_handler->init_request() ;
+}
 
 void Timed::init_act_dead()
 {
@@ -940,3 +950,35 @@ void Timed::open_epoch()
   am->open_epoch() ;
   time_operational_p->setValue(true) ;
 }
+
+void Timed::dsme_mode_is_changing(const string &new_mode)
+{
+  log_notice("MODE: changing '%s'->'%s'", current_mode.c_str(), new_mode.c_str()) ;
+  am->freeze() ;
+}
+void Timed::dsme_mode_reported(const string &new_mode)
+{
+  log_notice("MODE: reported '%s'", new_mode.c_str()) ;
+  if (new_mode=="USER")
+    act_dead_mode = false ;
+  else if (new_mode=="ACTDEAD")
+    act_dead_mode = true ;
+  else
+  {
+    log_critical("MODE: invalid name reported by dsme: '%s'", new_mode.c_str()) ;
+    return ;
+  }
+  am->unfreeze() ;
+}
+void Timed::device_mode_reached(bool act_dead, const string &dbus_session)
+{
+  log_debug("act_dead=%d, dbus_session='%s'", act_dead, dbus_session.c_str()) ;
+  bool res = setenv("DBUS_SESSION_BUS_ADDRESS", dbus_session.c_str(), true) ;
+  if (res<0)
+  {
+    log_error("can't set DBUS_SESSION_BUS_ADDRESS environment: %m") ;
+    return ;
+  }
+  am->unfreeze() ;
+}
+

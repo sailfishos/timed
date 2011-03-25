@@ -79,6 +79,7 @@ struct abstract_gate_state_t : public abstract_io_state_t
   abstract_state_t *next_state ;
   void resolve_names() ;
   bool is_open ;
+  bool is_closed() { return not is_open ; }
   void enter(event_t *) ;
   Q_OBJECT ;
 public Q_SLOTS:

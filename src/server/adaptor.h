@@ -77,6 +77,21 @@ signals:
   void settings_changed_1(bool) ;
 
 public slots:
+
+  bool session(const QString &mode, const QString &bus_address, const QDBusMessage &message)
+  {
+    log_notice("DBUS::com.nokia.time.session(mode='%s', bus='%s') by %s", mode.QC, bus_address.QC, PEER) ;
+    bool fail = mode!="ACTDEAD" and mode!="USER" ;
+    bool act_dead = mode=="ACTDEAD" ;
+    if (fail)
+    {
+      log_critical("unknown mode '%s'", mode.QC) ;
+      return false ;
+    }
+    timed->device_mode_reached(act_dead, bus_address.toStdString()) ;
+    return true ;
+  }
+
   Maemo::Timed::WallClock::Info get_wall_clock_info(const QDBusMessage &message)
   {
     log_notice("DBUS::com.nokia.time.get_wall_clock_info() by %s", PEER) ;

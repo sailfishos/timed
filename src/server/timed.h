@@ -45,6 +45,7 @@
 #include "csd.h"
 #include "event.h"
 #include "peer.h"
+#include "dsme-mode.h"
 
 struct Timed : public QCoreApplication
 {
@@ -82,6 +83,7 @@ private:
   void init_unix_signal_handler() ;
   void init_dbus_peer_info() ;
   void init_scratchbox_mode() ;
+  void init_dsme_mode() ;
   void init_act_dead() ;
   void init_configuration() ;
   void init_customization() ;
@@ -151,6 +153,8 @@ private:
   unsigned ping_period, ping_max_num ;
   string events_path, settings_path ;
   int default_gmt_offset ;
+  dsme_mode_t *dsme_mode_handler ;
+  std::string current_mode ;
   void load_rc() ;
   void load_settings() ;
 public:
@@ -179,6 +183,10 @@ public Q_SLOTS:
 private Q_SLOTS:
   void queue_threshold_timeout() ;
   void unix_signal(int signo) ;
+  void dsme_mode_reported(const std::string &mode) ;
+  void dsme_mode_is_changing(const std::string &mode) ;
+public:
+  void device_mode_reached(bool act_dead, const std::string &dbus_session) ;
 #if 0
   void nitz_notification(const cellular_info_t &) ;
   void tz_by_oracle(olson *tz, tz_suggestions_t) ;
