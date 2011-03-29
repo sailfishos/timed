@@ -14,6 +14,9 @@ CONFIG += qmlog
 
 IODATA_TYPES = queue.type config.type settings.type customization.type tzdata.type
 
+SOURCES += dsme-mode.cpp
+HEADERS += dsme-mode.h
+
 HEADERS += peer.h settings.h csd.h interfaces.h adaptor.h timed.h state.h cluster.h machine.h singleshot.h pinguin.h unix-signal.h onitz.h
 SOURCES += peer.cpp tzdata.cpp cellular.cpp csd.cpp cluster.cpp machine.cpp state.cpp main.cpp timed.cpp timeutil.cpp event.cpp misc.cpp settings.cpp unix-signal.cpp onitz.cpp
 
@@ -40,13 +43,16 @@ xml.path = $$(DESTDIR)/usr/share/contextkit/providers
 backupconf.files = timedbackup.conf
 backupconf.path = $$(DESTDIR)/usr/share/backup-framework/applications
 
+backupscripts.files = timed-backup-script.sh timed-restore-script.sh
+backupscripts.path = $$(DESTDIR)/usr/share/backup-framework/scripts
+
 cud.files = timed-clear-device.sh
 cud.path = $$(DESTDIR)/etc/osso-cud-scripts
 
 rfs.files = timed-restore-original-settings.sh
 rfs.path = $$(DESTDIR)/etc/osso-rfs-scripts
 
-INSTALLS += target xml backupconf cud rfs
+INSTALLS += target xml backupconf backupscripts cud rfs
 
 CONFIG(MEEGO) \
 {

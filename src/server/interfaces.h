@@ -39,6 +39,7 @@ public:
   { }
 
   QDBusMessage get_state_sync(void) { return call(dsme_get_state) ; }
+  QDBusPendingCall get_state_async(void) { return asyncCall(dsme_get_state) ; }
 } ;
 
 #endif//INTERFACES_H

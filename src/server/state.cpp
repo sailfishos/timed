@@ -104,6 +104,14 @@ void abstract_io_state_t::abort(event_t *e)
   machine->process_transition_queue() ;
 }
 
+void abstract_io_state_t::abort_all(abstract_state_t *st)
+{
+  if (this==st)
+    return ;
+  for(set<event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
+    st->go_to(*it) ;
+}
+
 abstract_gate_state_t::abstract_gate_state_t(const string &state_name, const string &next_state_name, machine_t *owner)
   : abstract_io_state_t(state_name, owner)
 {
@@ -195,9 +203,14 @@ void state_start_t::enter(event_t *e)
   machine->state_epoch->go_to(e) ;
 }
 
-state_epoch_t::state_epoch_t(machine_t *owner) : abstract_gate_state_t("EPOCH", "NEW", owner)
+state_epoch_t::state_epoch_t(machine_t *owner) : abstract_gate_state_t("EPOCH", "WAITING", owner)
 {
   is_open = access(lost(), F_OK) != 0 ;
+}
+
+state_waiting_t::state_waiting_t(machine_t *owner) : abstract_gate_state_t("WAITING", "NEW", owner)
+{
+  is_open = false ;
 }
 
 void state_epoch_t::open()

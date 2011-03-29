@@ -109,6 +109,9 @@ public:
   void load_events(const iodata::array *events_data, bool trusted_source, bool use_cookies) ;
   void cancel_backup_events() ;
   abstract_state_t *state_by_name(const string &name) ;
+  void freeze() ;
+  void unfreeze() ;
+  bool is_frozen() ;
 private:
   string s_states() ;
   string s_transition_queue() ;
@@ -119,6 +122,7 @@ public:
   std::map<int, state_button_t*> buttons ;
   state_start_t *state_start ;
   state_epoch_t *state_epoch ;
+  state_waiting_t *state_waiting ;
   state_new_t *state_new ;
   state_scheduler_t *state_scheduler ;
   state_qentry_t *state_qentry ;

@@ -66,6 +66,7 @@ struct abstract_io_state_t : public QObject, public abstract_state_t
   void enter(event_t *) ;
   void leave(event_t *) ;
   virtual void abort(event_t *) ;
+  virtual void abort_all(abstract_state_t *st) ; // move all events to (usually WAITING) state st
   virtual ~abstract_io_state_t() { }
   Q_OBJECT ;
 } ;
@@ -78,6 +79,7 @@ struct abstract_gate_state_t : public abstract_io_state_t
   abstract_state_t *next_state ;
   void resolve_names() ;
   bool is_open ;
+  bool is_closed() { return not is_open ; }
   void enter(event_t *) ;
   Q_OBJECT ;
 public Q_SLOTS:
@@ -132,6 +134,14 @@ public:
   virtual ~state_epoch_t() { }
 public Q_SLOTS:
   void open() ;
+} ;
+
+struct state_waiting_t : public abstract_gate_state_t
+{
+  Q_OBJECT ;
+public:
+  state_waiting_t(machine_t *owner) ;
+  virtual ~state_waiting_t() { }
 } ;
 
 struct state_new_t : public abstract_state_t

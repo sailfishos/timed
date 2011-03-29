@@ -8,6 +8,7 @@ usr/share/contextkit/providers/com.nokia.time.context
 
 # backup framework
 usr/share/backup-framework/applications/timedbackup.conf
+usr/share/backup-framework/scripts
 
 # moved to tzdata:
 # usr/share/zoneinfo

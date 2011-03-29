@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<provider xmlns="http://contextkit.freedesktop.org/Provider" bus="session" service="com.nokia.time">
+<provider xmlns="http://contextkit.freedesktop.org/Provider" bus="system" service="com.nokia.time">
   <key name="Alarm.Present" />
   <key name="Alarm.Trigger" />
 

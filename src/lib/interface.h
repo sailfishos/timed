@@ -58,7 +58,7 @@ namespace Maemo
     }
     inline QDBusConnection bus()
     {
-      return QDBusConnection::sessionBus() ;
+      return QDBusConnection::systemBus() ;
     }
     // struct signal_receiver ;
     class Interface : public QDBusAbstractInterface
