@@ -46,6 +46,7 @@ void dsme_mode_t::dsme_state_signalled(const QString &new_mode)
 
 void dsme_mode_t::request_finished(QDBusPendingCallWatcher *watcher)
 {
+  log_debug() ;
   if (not mode_known) // ignore, if device mode already known
   {
     QDBusPendingReply<QString> r = *watcher ;

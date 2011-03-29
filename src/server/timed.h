@@ -119,6 +119,8 @@ public:
 
   void load_events() ;
   void check_voland_service() ;
+  void start_voland_watcher() ;
+  void stop_voland_watcher() ;
   cookie_t add_event(cookie_t remove, const Maemo::Timed::event_io_t &event, const QDBusMessage &message) ;
   void add_events(const Maemo::Timed::event_list_io_t &events, QList<QVariant> &res, const QDBusMessage &message) ;
   bool dialog_response(cookie_t c, int value) ;
@@ -183,14 +185,15 @@ public Q_SLOTS:
 private Q_SLOTS:
   void queue_threshold_timeout() ;
   void unix_signal(int signo) ;
-  void dsme_mode_reported(const std::string &mode) ;
-  void dsme_mode_is_changing(const std::string &mode) ;
+  void dsme_mode_reported(const string &mode) ;
+  void dsme_mode_is_changing(const string &mode) ;
 public:
   void device_mode_reached(bool act_dead, const std::string &dbus_session) ;
 #if 0
   void nitz_notification(const cellular_info_t &) ;
   void tz_by_oracle(olson *tz, tz_suggestions_t) ;
 #endif
+public Q_SLOTS:
   void check_dst() ;
 public:
   void update_oracle_context(bool set) ;

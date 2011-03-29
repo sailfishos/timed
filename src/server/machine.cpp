@@ -775,6 +775,7 @@ abstract_state_t *machine_t::state_by_name(const string &name)
 
 void machine_t::freeze()
 {
+  log_notice("freezing event machine") ;
   state_waiting->close() ;
   for(set<abstract_state_t*>::iterator it=states.begin(); it!=states.end(); ++it)
     if(abstract_io_state_t *st=dynamic_cast<abstract_io_state_t*> (*it))
@@ -783,6 +784,7 @@ void machine_t::freeze()
 
 void machine_t::unfreeze()
 {
+  log_notice("unfreezing event machine") ;
   state_waiting->open() ;
 }
 
