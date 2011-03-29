@@ -436,6 +436,7 @@ void Timed::stop_voland_watcher()
 {
   if (voland_watcher)
     delete voland_watcher ;
+  voland_watcher = NULL ;
 }
 
 void Timed::start_voland_watcher()
