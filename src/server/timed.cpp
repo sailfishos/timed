@@ -634,7 +634,7 @@ void Timed::stop_dbus()
   delete backup_object ;
   Maemo::Timed::bus().unregisterService(Maemo::Timed::service()) ;
   Maemo::Timed::bus().unregisterService("com.nokia.timed.backup") ;
-  QDBusConnection::disconnectFromBus(QDBusConnection::sessionBus().name()) ;
+  QDBusConnection::disconnectFromBus(session_bus_name.c_str()) ;
   QDBusConnection::disconnectFromBus(QDBusConnection::systemBus().name()) ;
 }
 void Timed::stop_stuff()
