@@ -404,7 +404,7 @@ void Timed::init_create_event_machine()
   QObject::connect(am, SIGNAL(child_created(unsigned,int)), this, SLOT(register_child(unsigned,int))) ;
   clear_invokation_flag() ;
 
-  ping = new pinguin(ping_period, ping_max_num) ;
+  ping = new pinguin_t(ping_period, ping_max_num, this) ;
   QObject::connect(am, SIGNAL(voland_needed()), ping, SLOT(voland_needed())) ;
   QObject::connect(this, SIGNAL(voland_registered()), ping, SLOT(voland_registered())) ;
 
@@ -637,7 +637,7 @@ void Timed::stop_dbus()
 void Timed::stop_stuff()
 {
   log_debug() ;
-  delete ping ;
+  // delete ping ;
   log_debug() ;
   delete settings ;
   log_debug() ;
@@ -705,6 +705,7 @@ bool Timed::dialog_response(cookie_t c, int value)
 
 void Timed::system_owner_changed(const QString &name, const QString &oldowner, const QString &newowner)
 {
+  log_debug() ;
   bool name_match = name==Maemo::Timed::Voland::service() ;
   if(name_match && oldowner.isEmpty() && !newowner.isEmpty())
     emit voland_registered() ;

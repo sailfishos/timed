@@ -109,7 +109,7 @@ public:
 public:
 
   machine_t *am ;
-  pinguin *ping ;
+  pinguin_t *ping ;
   source_settings *settings ;
   cellular_handler *nitz_object ;
 #if F_CSD
