@@ -1004,6 +1004,7 @@ void Timed::dsme_mode_reported(const string &new_mode)
 }
 void Timed::device_mode_reached(bool act_dead, const string &dbus_session)
 {
+  act_dead_mode = act_dead ;
   log_debug("act_dead=%d, dbus_session='%s'", act_dead, dbus_session.c_str()) ;
   bool res = setenv("DBUS_SESSION_BUS_ADDRESS", dbus_session.c_str(), true) ;
   if (res<0)
@@ -1012,6 +1013,7 @@ void Timed::device_mode_reached(bool act_dead, const string &dbus_session)
     return ;
   }
   start_voland_watcher() ;
+  am->device_mode_detected(not act_dead) ;
   am->unfreeze() ;
 }
 

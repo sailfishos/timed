@@ -606,9 +606,21 @@ void event_t::run_actions(const vector<unsigned> &acts, unsigned begin, unsigned
       log_debug() ;
       if (c==NULL) // not used yes, have to create object and connect
       {
+#if 0
         QDBusConnection::BusType ctype = bus==0 ? QDBusConnection::SystemBus : QDBusConnection::SessionBus ;
         log_debug() ;
         c = new QDBusConnection(QDBusConnection::connectToBus(ctype, cname)) ;
+#else
+        if (bus==0) // system bus
+          c = new QDBusConnection(QDBusConnection::connectToBus(QDBusConnection::SystemBus, cname)) ;
+        else
+        {
+          QString addr = "" ; // not valid address
+          if(const char *a = getenv("DBUS_SESSION_BUS_ADDRESS"))
+            addr = (QString) a ;
+          c = new QDBusConnection(QDBusConnection::connectToBus(addr, cname)) ;
+        }
+#endif
       }
       log_debug() ;
 
