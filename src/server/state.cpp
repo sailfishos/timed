@@ -751,7 +751,7 @@ void state_dlg_cntr_t::request_voland()
 
   QList<QVariant> reminders ;
   request_watcher_t *w = new request_watcher_t(machine) ;
-  Maemo::Timed::Voland::Interface ifc ;
+  Maemo::Timed::Voland::Interface ifc(machine->timed->session_bus) ;
   for(set<event_t*>::iterator it=events.begin(); it!=events.end(); ++it)
   {
     event_t *e = *it ;
@@ -795,7 +795,7 @@ void state_dlg_requ_t::abort(event_t *e)
   if (e->request_watcher)
     e->request_watcher->detach(e) ;
 
-  Maemo::Timed::Voland::Interface ifc ;
+  Maemo::Timed::Voland::Interface ifc(machine->timed->session_bus) ;
   ifc.close_async(e->cookie.value()) ;
 
   abstract_io_state_t::abort(e) ;
@@ -803,7 +803,7 @@ void state_dlg_requ_t::abort(event_t *e)
 
 void state_dlg_user_t::abort(event_t *e)
 {
-  Maemo::Timed::Voland::Interface ifc ;
+  Maemo::Timed::Voland::Interface ifc(machine->timed->session_bus) ;
   ifc.close_async(e->cookie.value()) ;
 
   abstract_io_state_t::abort(e) ;
