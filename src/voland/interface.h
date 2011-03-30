@@ -61,6 +61,7 @@ namespace Maemo
         Q_OBJECT ;
       public:
         Interface(QObject *parent=NULL) ;
+        Interface(QDBusConnection bus_connection, QObject *parent=NULL) ;
         qtdbus_method(open, (const Maemo::Timed::Voland::Reminder &data), QVariant::fromValue(data)) ;
         qtdbus_method(open, (const QList<QVariant> &data), data) ;
         qtdbus_method(close, (uint32_t cookie), cookie) ;

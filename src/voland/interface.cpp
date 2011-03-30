@@ -36,6 +36,18 @@ Maemo::Timed::Voland::Interface::Interface(QObject *parent)
 {
 }
 
+Maemo::Timed::Voland::Interface::Interface(QDBusConnection bus_connection, QObject *parent)
+  : QDBusAbstractInterface
+    (
+     Maemo::Timed::Voland::service(),
+     Maemo::Timed::Voland::objpath(),
+     Maemo::Timed::Voland::interface(),
+     bus_connection,
+     parent
+    )
+{
+}
+
 Maemo::Timed::Voland::TaInterface::TaInterface(QObject *parent)
   : QDBusAbstractInterface
     (
