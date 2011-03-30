@@ -594,7 +594,12 @@ bool machine_t::dialog_response(cookie_t c, int value)
     return false ;
   }
   event_t *e = events[c] ;
-  if (e->state != state_dlg_user)
+  if (e->state == state_dlg_requ)
+  {
+    if (e->request_watcher)
+      e->request_watcher->detach(e) ;
+  }
+  else if (e->state != state_dlg_user)
   {
     log_error("Unexpected response for event [%d] in state '%s'", c.value(), e->state->name()) ;
     return false ;
