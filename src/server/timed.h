@@ -189,6 +189,11 @@ private Q_SLOTS:
   void dsme_mode_is_changing(const string &mode) ;
 public:
   void device_mode_reached(bool act_dead, const std::string &dbus_session) ;
+private:
+  void connect_to_session_bus(const string &session_bus_address) ;
+  string session_bus_name ;
+public:
+  QDBusConnection session_bus ;
 #if 0
   void nitz_notification(const cellular_info_t &) ;
   void tz_by_oracle(olson *tz, tz_suggestions_t) ;

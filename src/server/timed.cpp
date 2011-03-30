@@ -81,7 +81,10 @@ static void spam()
 #endif
 }
 
-Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
+Timed::Timed(int ac, char **av) :
+  QCoreApplication(ac, av),
+  session_bus_name("timed_not_connected"),
+  session_bus(session_bus_name.c_str())
 {
   spam() ;
   halted = "" ; // XXX: remove it, as we don't want to halt anymore
@@ -443,11 +446,11 @@ void Timed::start_voland_watcher()
 {
   stop_voland_watcher() ;
 
-  voland_watcher = new QDBusServiceWatcher((QString)Maemo::Timed::Voland::service(), Maemo::Timed::Voland::bus()) ;
+  voland_watcher = new QDBusServiceWatcher((QString)Maemo::Timed::Voland::service(), session_bus) ;
   QObject::connect(voland_watcher, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
 
-  QDBusConnectionInterface *bus_ifc = Maemo::Timed::Voland::bus().interface() ;
-  bool voland_present = bus_ifc->isServiceRegistered(Maemo::Timed::Voland::service()) ;
+  QDBusConnectionInterface *bus_ifc = session_bus.interface() ;
+  bool voland_present = bus_ifc and bus_ifc->isServiceRegistered(Maemo::Timed::Voland::service()) ;
 
   if(voland_present)
   {
@@ -1000,8 +1003,18 @@ void Timed::dsme_mode_reported(const string &new_mode)
     log_critical("MODE: invalid name reported by dsme: '%s'", new_mode.c_str()) ;
     return ;
   }
+  if (const char *addr = getenv("DBUS_SESSION_BUS_ADDRESS"))
+    connect_to_session_bus(addr) ;
   start_voland_watcher() ;
   am->unfreeze() ;
+}
+void Timed::connect_to_session_bus(const string &session_bus_address)
+{
+  static int counter = 0 ;
+  session_bus_name = str_printf("timed_session_bus_%d", ++counter) ;
+  session_bus = QDBusConnection::connectToBus(QString::fromStdString(session_bus_address), session_bus_name.c_str()) ;
+  if (not session_bus.isConnected())
+    log_error("can't connect to session bus '%s': %s", session_bus_address.c_str(), session_bus.lastError().message().toStdString().c_str()) ;
 }
 void Timed::device_mode_reached(bool act_dead, const string &dbus_session)
 {
@@ -1011,8 +1024,10 @@ void Timed::device_mode_reached(bool act_dead, const string &dbus_session)
   if (res<0)
   {
     log_error("can't set DBUS_SESSION_BUS_ADDRESS environment: %m") ;
+    QDBusConnection::disconnectFromBus(session_bus_name.c_str()) ;
     return ;
   }
+  connect_to_session_bus(dbus_session) ;
   start_voland_watcher() ;
   am->device_mode_detected(not act_dead) ;
   am->unfreeze() ;
