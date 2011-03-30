@@ -991,6 +991,7 @@ void Timed::dsme_mode_is_changing(const string &new_mode)
   stop_voland_watcher() ;
   am->freeze() ;
 }
+
 void Timed::dsme_mode_reported(const string &new_mode)
 {
   log_notice("MODE: reported '%s'", new_mode.c_str()) ;
@@ -1008,6 +1009,7 @@ void Timed::dsme_mode_reported(const string &new_mode)
   start_voland_watcher() ;
   am->unfreeze() ;
 }
+
 void Timed::connect_to_session_bus(const string &session_bus_address)
 {
   static int counter = 0 ;
@@ -1016,6 +1018,7 @@ void Timed::connect_to_session_bus(const string &session_bus_address)
   if (not session_bus.isConnected())
     log_error("can't connect to session bus '%s': %s", session_bus_address.c_str(), session_bus.lastError().message().toStdString().c_str()) ;
 }
+
 void Timed::device_mode_reached(bool act_dead, const string &dbus_session)
 {
   act_dead_mode = act_dead ;
@@ -1032,4 +1035,3 @@ void Timed::device_mode_reached(bool act_dead, const string &dbus_session)
   am->device_mode_detected(not act_dead) ;
   am->unfreeze() ;
 }
-
