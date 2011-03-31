@@ -194,6 +194,7 @@ private:
   string session_bus_name ;
 public:
   QDBusConnection session_bus ;
+  string session_bus_address ;
 #if 0
   void nitz_notification(const cellular_info_t &) ;
   void tz_by_oracle(olson *tz, tz_suggestions_t) ;

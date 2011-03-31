@@ -84,7 +84,8 @@ static void spam()
 Timed::Timed(int ac, char **av) :
   QCoreApplication(ac, av),
   session_bus_name("timed_not_connected"),
-  session_bus(session_bus_name.c_str())
+  session_bus(session_bus_name.c_str()),
+  session_bus_address("invalid_address")
 {
   spam() ;
   halted = "" ; // XXX: remove it, as we don't want to halt anymore
@@ -1005,7 +1006,7 @@ void Timed::dsme_mode_reported(const string &new_mode)
     return ;
   }
   if (const char *addr = getenv("DBUS_SESSION_BUS_ADDRESS"))
-    connect_to_session_bus(addr) ;
+    connect_to_session_bus(session_bus_address = addr) ;
   start_voland_watcher() ;
   am->unfreeze() ;
 }
@@ -1019,10 +1020,11 @@ void Timed::connect_to_session_bus(const string &session_bus_address)
     log_error("can't connect to session bus '%s': %s", session_bus_address.c_str(), session_bus.lastError().message().toStdString().c_str()) ;
 }
 
-void Timed::device_mode_reached(bool act_dead, const string &dbus_session)
+void Timed::device_mode_reached(bool act_dead, const string &new_address)
 {
   act_dead_mode = act_dead ;
-  log_debug("act_dead=%d, dbus_session='%s'", act_dead, dbus_session.c_str()) ;
+  log_debug("act_dead=%d, new_address='%s'", act_dead, new_address.c_str()) ;
+#if 0
   bool res = setenv("DBUS_SESSION_BUS_ADDRESS", dbus_session.c_str(), true) ;
   if (res<0)
   {
@@ -1030,7 +1032,8 @@ void Timed::device_mode_reached(bool act_dead, const string &dbus_session)
     QDBusConnection::disconnectFromBus(session_bus_name.c_str()) ;
     return ;
   }
-  connect_to_session_bus(dbus_session) ;
+#endif
+  connect_to_session_bus(session_bus_address = new_address) ;
   start_voland_watcher() ;
   am->device_mode_detected(not act_dead) ;
   am->unfreeze() ;
