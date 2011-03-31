@@ -94,6 +94,7 @@ private:
   void init_main_interface_object() ;
   void init_backup_dbus_name() ;
   void init_main_interface_dbus_name() ;
+  void init_session_bus() ;
   void init_load_events() ;
   void init_dst_checker() ;
   void init_start_event_machine() ;
@@ -136,6 +137,7 @@ public Q_SLOTS:
   void system_owner_changed(const QString &name, const QString &oldowner, const QString &newowner) ;
   void send_next_bootup_event(int value) ;
   void register_child(unsigned cookie, int pid) { children[pid] = cookie ; }
+  void session_reported(const QString &address) ;
 Q_SIGNALS:
   void voland_registered() ;
   void voland_unregistered() ;

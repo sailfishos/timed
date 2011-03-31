@@ -83,9 +83,9 @@ static void spam()
 
 Timed::Timed(int ac, char **av) :
   QCoreApplication(ac, av),
-  session_bus_name("timed_not_connected"),
-  session_bus(session_bus_name.c_str()),
-  session_bus_address("invalid_address")
+//  session_bus_name("timed_not_connected"),
+  session_bus("*** not available ***")
+//  session_bus_address("invalid_address")
 {
   spam() ;
   halted = "" ; // XXX: remove it, as we don't want to halt anymore
@@ -129,6 +129,9 @@ Timed::Timed(int ac, char **av) :
   log_debug() ;
 
   init_main_interface_dbus_name() ;
+  log_debug() ;
+
+  init_session_bus() ;
   log_debug() ;
 
   init_load_events() ;
@@ -542,6 +545,19 @@ void Timed::init_main_interface_dbus_name()
     log_critical("can't register service '%s' on bus '%s': '%s'", Maemo::Timed::service(), conn_name.c_str(), msg.c_str()) ;
     log_critical("aborting") ;
     ::exit(1) ;
+  }
+}
+
+void Timed::init_session_bus()
+{
+  if (const char *environ = getenv("DBUS_SESSION_BUS_ADDRESS"))
+    connect_to_session_bus(session_bus_address = environ) ;
+  const char *slot = SLOT(session_reported(const QString &)) ;
+  bool res = QDBusConnection::systemBus().connect("", "/com/nokia/startup/signal", "com.nokia.startup.signal", "session_bus", this, slot) ;
+  if (not res)
+  {
+    const string msg = Maemo::Timed::bus().lastError().message().toStdString() ;
+    log_error("not connected to 'session_bus' signal, session bus change not available, message: '%s'", msg.c_str()) ;
   }
 }
 
@@ -1037,4 +1053,20 @@ void Timed::device_mode_reached(bool act_dead, const string &new_address)
   start_voland_watcher() ;
   am->device_mode_detected(not act_dead) ;
   am->unfreeze() ;
+}
+
+void Timed::session_reported(const QString &new_address)
+{
+  session_bus_address = new_address.toStdString() ;
+  log_notice("session bus address changed: '%s'", session_bus_address.c_str()) ;
+  if (session_bus_address.empty())
+  {
+    stop_voland_watcher() ;
+    QDBusConnection::disconnectFromBus(session_bus_name.c_str()) ;
+  }
+  else
+  {
+    connect_to_session_bus(session_bus_address) ;
+    start_voland_watcher() ;
+  }
 }
