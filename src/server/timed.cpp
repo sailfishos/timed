@@ -101,7 +101,7 @@ Timed::Timed(int ac, char **av) :
   log_debug() ;
 
   // init_act_dead() ;
-  init_dsme_mode() ;
+  // init_dsme_mode() ;
   log_debug() ;
 
   init_configuration() ;
@@ -114,6 +114,9 @@ Timed::Timed(int ac, char **av) :
   log_debug() ;
 
   init_create_event_machine() ;
+  log_debug() ;
+
+  init_device_mode() ;
   log_debug() ;
 
   init_context_objects() ;
@@ -284,15 +287,16 @@ static bool init_act_dead_v2(bool use_status_files)
 }
 #endif
 
-void Timed::init_dsme_mode()
+void Timed::init_device_mode()
 {
   current_mode = "(unknown)" ;
   dsme_mode_handler = new dsme_mode_t ;
-  QObject::connect(dsme_mode_handler, SIGNAL(mode_is_changing(const string &)), this, SLOT(dsme_mode_is_changing(const string &))) ;
+  QObject::connect(dsme_mode_handler, SIGNAL(mode_is_changing()), this, SLOT(dsme_mode_is_changing())) ;
   QObject::connect(dsme_mode_handler, SIGNAL(mode_reported(const string &)), this, SLOT(dsme_mode_reported(const string &))) ;
   dsme_mode_handler->init_request() ;
 }
 
+#if 0
 void Timed::init_act_dead()
 {
 #if F_ACTING_DEAD
@@ -302,7 +306,7 @@ void Timed::init_act_dead()
 #endif
   log_notice("running in %s mode", act_dead_mode ? "ACT_DEAD" : "USER") ;
 }
-
+#endif
 
 // * Reading configuration file
 // * Warning if no exists (which is okey)
@@ -401,7 +405,10 @@ void Timed::init_create_event_machine()
   log_debug("am=new machine done") ;
   q_pause = NULL ;
 
+  // The following call is commented out: device mode will be known later
+#if 0
   am->device_mode_detected(not act_dead_mode) ; // TODO: avoid "not" here
+#endif
 
   short_save_threshold_timer = new simple_timer(threshold_period_short) ;
   long_save_threshold_timer = new simple_timer(threshold_period_long) ;
@@ -551,7 +558,10 @@ void Timed::init_main_interface_dbus_name()
 void Timed::init_session_bus()
 {
   if (const char *environ = getenv("DBUS_SESSION_BUS_ADDRESS"))
+  {
     connect_to_session_bus(session_bus_address = environ) ;
+    start_voland_watcher() ;
+  }
   const char *slot = SLOT(session_reported(const QString &)) ;
   bool res = QDBusConnection::systemBus().connect("", "/com/nokia/startup/signal", "com.nokia.startup.signal", "session_bus", this, slot) ;
   if (not res)
@@ -1002,29 +1012,36 @@ void Timed::open_epoch()
   time_operational_p->setValue(true) ;
 }
 
-void Timed::dsme_mode_is_changing(const string &new_mode)
+void Timed::dsme_mode_is_changing()
 {
-  log_notice("MODE: changing '%s'->'%s'", current_mode.c_str(), new_mode.c_str()) ;
-  stop_voland_watcher() ;
+  log_notice("mode is changing, freezeng machine") ;
+  // stop_voland_watcher() ;
   am->freeze() ;
 }
 
-void Timed::dsme_mode_reported(const string &new_mode)
+void Timed::dsme_mode_reported(const string &mode)
 {
-  log_notice("MODE: reported '%s'", new_mode.c_str()) ;
-  if (new_mode=="USER")
-    act_dead_mode = false ;
-  else if (new_mode=="ACTDEAD")
-    act_dead_mode = true ;
+  log_notice("MODE: reported by dsme '%s'", mode.c_str()) ;
+  if (mode=="USER")
+  {
+    am->device_mode_detected(true) ;
+    am->unfreeze() ;
+  }
+  else if (mode=="ACTDEAD")
+  {
+    am->device_mode_detected(false) ;
+    am->unfreeze() ;
+  }
   else
   {
-    log_critical("MODE: invalid name reported by dsme: '%s'", new_mode.c_str()) ;
+    log_warning("MODE: machine remain frozen (mode reported by dsme: '%s')", mode.c_str()) ;
     return ;
   }
+#if 0
   if (const char *addr = getenv("DBUS_SESSION_BUS_ADDRESS"))
     connect_to_session_bus(session_bus_address = addr) ;
   start_voland_watcher() ;
-  am->unfreeze() ;
+#endif
 }
 
 void Timed::connect_to_session_bus(const string &session_bus_address)
@@ -1036,6 +1053,7 @@ void Timed::connect_to_session_bus(const string &session_bus_address)
     log_error("can't connect to session bus '%s': %s", session_bus_address.c_str(), session_bus.lastError().message().toStdString().c_str()) ;
 }
 
+#if 0
 void Timed::device_mode_reached(bool act_dead, const string &new_address)
 {
   act_dead_mode = act_dead ;
@@ -1052,6 +1070,13 @@ void Timed::device_mode_reached(bool act_dead, const string &new_address)
   connect_to_session_bus(session_bus_address = new_address) ;
   start_voland_watcher() ;
   am->device_mode_detected(not act_dead) ;
+  am->unfreeze() ;
+}
+#endif
+void Timed::device_mode_reached(bool user_mode)
+{
+  log_notice("MODE: running in %s mode", user_mode ? "USER" : "ACTDEAD") ;
+  am->device_mode_detected(user_mode) ;
   am->unfreeze() ;
 }
 

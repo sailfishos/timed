@@ -61,7 +61,9 @@ public:
   // inline const char *event_queue_type() { return  "/usr/share/timed/typeinfo/queue.type" ; }
 
 private:
+#if 0
   bool act_dead_mode ;
+#endif
 
   bool scratchbox_mode ;
 
@@ -83,12 +85,12 @@ private:
   void init_unix_signal_handler() ;
   void init_dbus_peer_info() ;
   void init_scratchbox_mode() ;
-  void init_dsme_mode() ;
   void init_act_dead() ;
   void init_configuration() ;
   void init_customization() ;
   void init_read_settings() ;
   void init_create_event_machine() ;
+  void init_device_mode() ;
   void init_context_objects() ;
   void init_backup_object() ;
   void init_main_interface_object() ;
@@ -188,9 +190,12 @@ private Q_SLOTS:
   void queue_threshold_timeout() ;
   void unix_signal(int signo) ;
   void dsme_mode_reported(const string &mode) ;
-  void dsme_mode_is_changing(const string &mode) ;
+  void dsme_mode_is_changing() ;
 public:
+#if 0
   void device_mode_reached(bool act_dead, const std::string &dbus_session) ;
+#endif
+  void device_mode_reached(bool user_mode) ;
 private:
   void connect_to_session_bus(const string &session_bus_address) ;
   string session_bus_name ;

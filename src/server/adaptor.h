@@ -78,6 +78,7 @@ signals:
 
 public slots:
 
+#if 0
   bool session(const QString &mode, const QString &bus_address, const QDBusMessage &message)
   {
     log_notice("DBUS::com.nokia.time.session(mode='%s', bus='%s') by %s", mode.QC, bus_address.QC, PEER) ;
@@ -89,6 +90,20 @@ public slots:
       return false ;
     }
     timed->device_mode_reached(act_dead, bus_address.toStdString()) ;
+    return true ;
+  }
+#endif
+
+  bool mode(const QString &mode, const QDBusMessage &message)
+  {
+    log_notice("DBUS::com.nokia.time.mode('%s') by %s", mode.QC, PEER) ;
+    bool user_mode = mode=="USER", actdead_mode = mode=="ACTDEAD" ;
+    if (not user_mode and not actdead_mode)
+    {
+      log_error("unknown mode '%s' in com.nokia.time.mode", mode.QC) ;
+      return false ;
+    }
+    timed->device_mode_reached(user_mode) ;
     return true ;
   }
 

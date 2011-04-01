@@ -8,10 +8,12 @@ using namespace std ;
 #include <qmlog>
 
 #include "dsme-mode.h"
+#include "interfaces.h"
 
 dsme_mode_t::dsme_mode_t()
 {
-  mode_known = false ;
+  signal_received = false ;
+  mode = "[unknown]" ;
   dsme_iface = new DsmeReqInterface(this) ;
   request_watcher = NULL ;
   bool res = QDBusConnection::systemBus().connect(dsme_service, dsme_sig_path, dsme_sig_interface, dsme_state_change_ind, this, SLOT(dsme_state_signalled(const QString &))) ;
@@ -31,23 +33,24 @@ void dsme_mode_t::dsme_state_signalled(const QString &new_mode)
   string m = new_mode.toStdString() ;
   if (m.empty())
   {
-    log_error("dsme signalled empty mode") ;
+    log_error("MODE: dsme signalled empty mode") ;
     return ;
   }
   if (m==mode)
   {
-    log_notice("dsme signalled the current mode='%s' again", m.c_str()) ;
+    log_warning("MODE: dsme signalled the current mode='%s' again", m.c_str()) ;
     return ;
   }
-  log_notice("dsme signalled mode='%s', old mode was '%s'", m.c_str(), mode.c_str()) ;
+  log_notice("MODE: dsme signalled change: '%s'->'%s'", mode.c_str(), m.c_str()) ;
   mode = m ;
-  emit mode_is_changing(mode) ;
+  signal_received = true ;
+  emit mode_is_changing() ;
 }
 
 void dsme_mode_t::request_finished(QDBusPendingCallWatcher *watcher)
 {
   log_debug() ;
-  if (not mode_known) // ignore, if device mode already known
+  if (not signal_received) // ignore, if device mode already known
   {
     QDBusPendingReply<QString> r = *watcher ;
 
@@ -64,4 +67,3 @@ void dsme_mode_t::request_finished(QDBusPendingCallWatcher *watcher)
   else
     log_warning("ignoring dsme state request reply, current state is '%s'", mode.c_str()) ;
 }
-
