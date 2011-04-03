@@ -69,6 +69,11 @@ struct machine_t : public QObject
   void add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVariant> &res, const QDBusMessage &message) ;
   void query(const QMap<QString,QVariant> &words, QList<QVariant> &res ) ;
   void get_event_attributes(cookie_t c, QMap<QString,QVariant> &a) ;
+
+  void get_attributes_by_cookie(uint cookie, QMap<QString,QString> &a) ;
+  void get_attributes_by_cookies(const QList<uint> &cookies, QMap<uint, QMap<QString,QString> > &a) ;
+  void get_cookies_by_attributes(const QMap<QString,QString> &words, QList<uint> &res) ;
+
   bool cancel_by_cookie(cookie_t c) ;
   void cancel_events(const QList<uint> &cookies, QList<uint> &failed) ;
   void cancel_event(event_t *e) ;

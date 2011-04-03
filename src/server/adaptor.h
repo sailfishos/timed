@@ -163,6 +163,24 @@ public slots:
     timed->am->get_event_attributes(cookie_t(cookie), a) ;
   }
 
+  void get_attributes_by_cookie(uint cookie, const QDBusMessage &message, QMap<QString,QString> &a)
+  {
+    log_notice("DBUS::com.nokia.time.get_attributes_by_cookie(%d) by %s", cookie, PEER) ;
+    timed->am->get_attributes_by_cookie(cookie, a) ;
+  }
+
+  void get_attributes_by_cookies(const QList<uint> &cookies, const QDBusMessage &message, QMap<uint, QMap<QString,QString> > &a)
+  {
+    log_notice("DBUS::com.nokia.time.get_attributes_by_cookies[%d] by %s", cookies.size(), PEER) ;
+    timed->am->get_attributes_by_cookies(cookies, a) ;
+  }
+
+  void get_cookies_by_attributes(const QMap<QString,QString> &words, const QDBusMessage &message, QList<uint> &res)
+  {
+    log_notice("DBUS::com.nokia.time.get_cookies_by_attributes(...) by %s", PEER) ;
+    timed->am->get_cookies_by_attributes(words, res) ;
+  }
+
   bool cancel(uint cookie, const QDBusMessage &message)
   {
     log_notice("DBUS::com.nokia.time.cancel(cookie=%u) by %s", cookie, PEER) ;

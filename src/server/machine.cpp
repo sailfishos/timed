@@ -586,6 +586,19 @@ void machine_t::get_event_attributes(cookie_t c, QMap<QString,QVariant> &a)
   }
 }
 
+void machine_t::get_attributes_by_cookie(uint cookie, QMap<QString,QString> &a)
+{
+  log_abort("%s not implemented", __PRETTY_FUNCTION__) ;
+}
+void machine_t::get_attributes_by_cookies(const QList<uint> &cookies, QMap<uint, QMap<QString,QString> > &a)
+{
+  log_abort("%s not implemented", __PRETTY_FUNCTION__) ;
+}
+void machine_t::get_cookies_by_attributes(const QMap<QString,QString> &words, QList<uint> &res)
+{
+  log_abort("%s not implemented", __PRETTY_FUNCTION__) ;
+}
+
 bool machine_t::dialog_response(cookie_t c, int value)
 {
   if (events.count(c)==0)
