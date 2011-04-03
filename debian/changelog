@@ -1,8 +1,8 @@
-timed (2.39) unstable; urgency=low
+timed (2.40) unstable; urgency=low
 
   * Fixes: NB#226599 - moving services to the system bus
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Tue, 29 Mar 2011 19:01:08 +0300
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Sun, 03 Apr 2011 18:38:38 +0200
 
 timed (2.38) unstable; urgency=low
 
