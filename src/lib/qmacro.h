@@ -47,7 +47,7 @@ inline QString Maemo::Timed::c2q(const char *c)
   friend QDBusArgument & ::operator<<(QDBusArgument &, const type_name &) ; \
   friend const QDBusArgument & ::operator>>(const QDBusArgument &in, type_name &x) ;
 
-#define qtdbus_print_class_name(type_name)
+#define qtdbus_print_class_name(type_name) if(not true) qDebug() << "register_qtdbus_metatype: " #type_name ;
 
 #define register_qtdbus_metatype(type_name, I) namespace{static struct _reg_t##I{_reg_t##I(){ \
   qtdbus_print_class_name(type_name) qDBusRegisterMetaType<type_name> () ; } } _reg_t_object##I ; }
