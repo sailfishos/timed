@@ -1,8 +1,9 @@
 timed (2.41) unstable; urgency=low
 
   * Fixes: NB#242208 - get_attributes_by_cookie[s], get_cookies_by_attributes
+  * Using init_done and desktop_visible signals
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 04 Apr 2011 12:50:38 +0300
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 04 Apr 2011 21:05:35 +0300
 
 timed (2.40) unstable; urgency=low
 

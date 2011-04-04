@@ -191,6 +191,8 @@ private Q_SLOTS:
   void unix_signal(int signo) ;
   void dsme_mode_reported(const string &mode) ;
   void dsme_mode_is_changing() ;
+  void harmattan_init_done(int runlevel) ;
+  void harmattan_desktop_visible() ;
 public:
 #if 0
   void device_mode_reached(bool act_dead, const std::string &dbus_session) ;

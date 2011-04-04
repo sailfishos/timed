@@ -294,6 +294,15 @@ void Timed::init_device_mode()
   QObject::connect(dsme_mode_handler, SIGNAL(mode_is_changing()), this, SLOT(dsme_mode_is_changing())) ;
   QObject::connect(dsme_mode_handler, SIGNAL(mode_reported(const string &)), this, SLOT(dsme_mode_reported(const string &))) ;
   dsme_mode_handler->init_request() ;
+  const char *startup_path="/com/nokia/startup/signal", *startup_iface="com.nokia.startup.signal" ;
+  const char *desktop_visible_slot = SLOT(harmattan_desktop_visible()) ;
+  const char *init_done_slot = SLOT(harmattan_init_done(int)) ;
+  bool res1 = QDBusConnection::systemBus().connect("", startup_path, startup_iface, "desktop_visible", this, desktop_visible_slot) ;
+  bool res2 = QDBusConnection::systemBus().connect("", startup_path, startup_iface, "init_done", this, init_done_slot) ;
+  if (not res1)
+    log_critical("can't connect to 'desktop_visible' signal") ;
+  if (not res2)
+    log_critical("can't connect to 'init_done' signal") ;
 }
 
 #if 0
@@ -1094,4 +1103,15 @@ void Timed::session_reported(const QString &new_address)
     connect_to_session_bus(session_bus_address) ;
     start_voland_watcher() ;
   }
+}
+
+void Timed::harmattan_desktop_visible()
+{
+  device_mode_reached(true) ; // USER mode
+}
+
+void Timed::harmattan_init_done(int runlevel)
+{
+  if (runlevel==5)
+    device_mode_reached(false) ; // ACT_DEAD mode
 }
