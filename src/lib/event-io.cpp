@@ -22,6 +22,7 @@
 **                                                                        **
 ***************************************************************************/
 #include <timed/qmacro.h>
+#include <timed/interface.h>
 
 #include "event-io.h"
 
@@ -144,3 +145,6 @@ register_qtdbus_metatype(Maemo::Timed::button_io_t, 3) ;
 register_qtdbus_metatype(Maemo::Timed::recurrence_io_t, 4) ;
 register_qtdbus_metatype(Maemo::Timed::event_io_t, 5) ;
 register_qtdbus_metatype(Maemo::Timed::event_list_io_t, 6) ;
+register_qtdbus_metatype(Q_List_uint, 8) ;
+register_qtdbus_metatype(Q_Map_String_String, 9) ;
+register_qtdbus_metatype(Q_Map_uint_String_String, 10) ;
