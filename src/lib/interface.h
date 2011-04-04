@@ -37,7 +37,13 @@
 #include <timed/wallclock>
 #include <timed/qmacro.h>
 
-Q_DECLARE_METATYPE(QList<uint>) ;
+typedef QList<uint> Q_List_uint ;
+typedef QMap<QString,QString> Q_Map_String_String ;
+typedef QMap<uint, QMap<QString,QString> > Q_Map_uint_String_String ;
+
+Q_DECLARE_METATYPE(Q_List_uint) ;
+Q_DECLARE_METATYPE(Q_Map_String_String) ;
+Q_DECLARE_METATYPE(Q_Map_uint_String_String) ;
 
 namespace Maemo
 {
@@ -85,6 +91,9 @@ namespace Maemo
       qtdbus_method(replace_event, (const Maemo::Timed::Event &e, uint32_t cookie), e.dbus_output(__PRETTY_FUNCTION__), cookie) ;
       qtdbus_method(query, (const QMap<QString,QVariant> &attr), QVariant::fromValue(attr)) ;
       qtdbus_method(query_attributes, (uint32_t cookie), cookie) ;
+      qtdbus_method(get_attributes_by_cookie, (uint32_t cookie), cookie) ;
+      qtdbus_method(get_attributes_by_cookies, (const QList<uint> cookies), QVariant::fromValue(cookies)) ;
+      qtdbus_method(get_cookies_by_attributes, (const Q_Map_String_String &a), QVariant::fromValue(a)) ;
       qtdbus_method(enable_alarms, (bool enable), enable) ;
       qtdbus_method(alarms_enabled, (void)) ;
       qtdbus_method(set_default_snooze, (int value), value) ;
