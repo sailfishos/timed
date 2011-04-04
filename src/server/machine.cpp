@@ -588,15 +588,56 @@ void machine_t::get_event_attributes(cookie_t c, QMap<QString,QVariant> &a)
 
 void machine_t::get_attributes_by_cookie(uint cookie, QMap<QString,QString> &a)
 {
-  log_abort("%s not implemented", __PRETTY_FUNCTION__) ;
+  map<cookie_t,event_t*>::iterator it = events.find(cookie_t(cookie)) ;
+  if(it==events.end())
+    return ;
+  event_t *e = it->second ;
+  a.insert("STATE", e->state->name()) ;
+  static QString decimal = "%1" ;
+  a.insert("COOKIE", decimal.arg(cookie)) ;
+  for(attribute_t::const_iterator at=e->attr.txt.begin(); at!=e->attr.txt.end(); at++)
+  {
+    QString key = string_std_to_q(at->first) ;
+    QString val = string_std_to_q(at->second) ;
+    a.insert(key,val) ;
+  }
 }
+
 void machine_t::get_attributes_by_cookies(const QList<uint> &cookies, QMap<uint, QMap<QString,QString> > &a)
 {
-  log_abort("%s not implemented", __PRETTY_FUNCTION__) ;
+  for(QList<uint>::const_iterator it=cookies.begin(); it!=cookies.end(); ++it)
+  {
+    uint cookie = *it ;
+    QMap<QString,QString> empty ;
+    a[cookie] = empty ;
+    get_attributes_by_cookie(cookie, a[cookie]) ;
+  }
 }
+
 void machine_t::get_cookies_by_attributes(const QMap<QString,QString> &words, QList<uint> &res)
 {
-  log_abort("%s not implemented", __PRETTY_FUNCTION__) ;
+  vector<string> keys, values ;
+  for(QMap<QString,QString>::const_iterator it=words.begin(); it!=words.end(); ++it)
+  {
+    keys.push_back(string_q_to_std(it.key())) ;
+    values.push_back(string_q_to_std(it.value())) ;
+  }
+  unsigned N = keys.size() ;
+  for(map<cookie_t, event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
+  {
+    bool text_matches = true ;
+    const map<string,string> &attr = it->second->attr.txt ;
+    for(unsigned i=0; text_matches and i<N; ++i)
+    {
+      map<string,string>::const_iterator F = attr.find(keys[i]) ;
+      if (F==attr.end())
+        text_matches = values[i].empty() ;
+      else
+        text_matches = values[i]==F->second ;
+    }
+    if(text_matches)
+      res.push_back(it->second->cookie.value()) ;
+  }
 }
 
 bool machine_t::dialog_response(cookie_t c, int value)
