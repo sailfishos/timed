@@ -52,6 +52,7 @@ int cancel_event(unsigned cookie) ;
 int send_quit() ;
 int query(int ac, char **av) ;
 int query_attributes(char *cookie) ;
+int queue() ;
 int time_settings(int ac, char **av) ;
 int alarms(int ac, char **av) ;
 int replace(int ac, char **av) ;
@@ -65,6 +66,7 @@ const char *config_example() ;
 
 int main(int ac, char **av)
 {
+  qmlog::enable() ;
   try
   {
     int res = main_try(ac,av) ;
@@ -138,6 +140,10 @@ int main_try(int ac, char **av)
   else if(ac==3 && (string)av[1]=="query") // client query cookie
   {
     return query_attributes(av[2]) ;
+  }
+  else if (ac==2 && (string)av[1]=="queue") // print all the attributes
+  {
+    return queue() ;
   }
   else if(ac>1 && (string)av[1]=="date") // client date [time-settings...]
   {
@@ -673,5 +679,27 @@ int register_voland(string str)
     log_error("can't open file '%s' to write: %m", path) ;
     return 1 ;
   }
+  return 0 ;
+}
+
+int queue()
+{
+  Maemo::Timed::Interface timed ;
+  Q_Map_String_String attr ;
+  QDBusReply< QList<uint> > r1 = timed.get_cookies_by_attributes_sync(attr) ;
+  if (not r1.isValid())
+  {
+    log_error("get_cookies_by_attributes failed: %s", r1.error().message().toStdString().c_str()) ;
+    return 1 ;
+  }
+  QList<uint> cookies = r1.value() ;
+  QDBusReply< QMap< uint,QMap<QString,QString> > > r2 = timed.get_attributes_by_cookies_sync(cookies) ;
+  if (not r2.isValid())
+  {
+    log_error("get_attributes_by_cookies failed: %s", r2.error().message().toStdString().c_str()) ;
+    return 1 ;
+  }
+  QMap< uint,QMap<QString,QString> > attr_res = r2.value() ;
+  qDebug() << "queue:" << attr_res ;
   return 0 ;
 }
