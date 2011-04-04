@@ -1,8 +1,8 @@
 timed (2.41) unstable; urgency=low
 
-  * new version
+  * Fixes: NB#242208 - get_attributes_by_cookie[s], get_cookies_by_attributes
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 04 Apr 2011 00:16:32 +0300
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 04 Apr 2011 12:50:38 +0300
 
 timed (2.40) unstable; urgency=low
 
