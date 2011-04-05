@@ -327,6 +327,14 @@ void tz_oracle_t::set_by_offset(const cellular_offset_t &data)
       found = found or tzdata::filter(r, data.timestamp+day, data.offset, data.dst, result) ;
       log_debug("after try 6: found=%d", found) ;
     }
+    if (not found and data.dst!=-1)
+    {
+      log_debug("no matching zones found, trying to ignore DST=%d flag", data.dst) ;
+      found = found or tzdata::filter(m, data.timestamp, data.offset, -1, result) ;
+      log_debug("after try 7: found=%d", found) ;
+      found = found or tzdata::filter(rm, data.timestamp, data.offset, -1, result) ;
+      log_debug("after try 8: found=%d", found) ;
+    }
     log_notice("%d candidates selected: %s", result.size(), tzdata::set_str(result).c_str()) ;
     olson *zone = NULL ;
     if (result.size()==0)
