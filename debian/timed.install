@@ -17,3 +17,6 @@ usr/share/backup-framework/scripts
 # halt timed and clear cache directory
 /etc/osso-cud-scripts
 /etc/osso-rfs-scripts
+
+# session bus address helper
+usr/bin/timed-aegis-session-helper

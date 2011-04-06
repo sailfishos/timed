@@ -52,7 +52,10 @@ cud.path = $$(DESTDIR)/etc/osso-cud-scripts
 rfs.files = timed-restore-original-settings.sh
 rfs.path = $$(DESTDIR)/etc/osso-rfs-scripts
 
-INSTALLS += target xml backupconf backupscripts cud rfs
+aegishelper.files = timed-aegis-session-helper
+aegishelper.path  = $$(DESTDIR)/usr/bin
+
+INSTALLS += target xml backupconf backupscripts cud rfs aegishelper
 
 CONFIG(MEEGO) \
 {
