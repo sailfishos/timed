@@ -193,6 +193,9 @@ private Q_SLOTS:
   void dsme_mode_is_changing() ;
   void harmattan_init_done(int runlevel) ;
   void harmattan_desktop_visible() ;
+  void harmattan_session_started() ;
+private:
+  string harmattan_get_session_bus_address() ;
 public:
 #if 0
   void device_mode_reached(bool act_dead, const std::string &dbus_session) ;

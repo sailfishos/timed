@@ -571,6 +571,7 @@ void Timed::init_session_bus()
     connect_to_session_bus(session_bus_address = environ) ;
     start_voland_watcher() ;
   }
+#if 0
   const char *slot = SLOT(session_reported(const QString &)) ;
   bool res = QDBusConnection::systemBus().connect("", "/com/nokia/startup/signal", "com.nokia.startup.signal", "session_bus", this, slot) ;
   if (not res)
@@ -578,6 +579,15 @@ void Timed::init_session_bus()
     const string msg = Maemo::Timed::bus().lastError().message().toStdString() ;
     log_error("not connected to 'session_bus' signal, session bus change not available, message: '%s'", msg.c_str()) ;
   }
+#else
+  const char *slot = SLOT(harmattan_session_started()) ;
+  bool res = QDBusConnection::systemBus().connect("", "/com/nokia/startup/signal", "com.nokia.startup.signal", "session_started", this, slot) ;
+  if (not res)
+  {
+    const string msg = Maemo::Timed::bus().lastError().message().toStdString() ;
+    log_error("not connected to 'session_started' signal, session bus change not available, message: '%s'", msg.c_str()) ;
+  }
+#endif
 }
 
 void Timed::init_load_events()
@@ -1091,6 +1101,7 @@ void Timed::device_mode_reached(bool user_mode)
 
 void Timed::session_reported(const QString &new_address)
 {
+#if 0
   session_bus_address = new_address.toStdString() ;
   log_notice("session bus address changed: '%s'", session_bus_address.c_str()) ;
   if (session_bus_address.empty())
@@ -1103,6 +1114,9 @@ void Timed::session_reported(const QString &new_address)
     connect_to_session_bus(session_bus_address) ;
     start_voland_watcher() ;
   }
+#else
+  (void)new_address ;
+#endif
 }
 
 void Timed::harmattan_desktop_visible()
@@ -1114,4 +1128,35 @@ void Timed::harmattan_init_done(int runlevel)
 {
   if (runlevel==5)
     device_mode_reached(false) ; // ACT_DEAD mode
+}
+
+void Timed::harmattan_session_started()
+{
+  log_notice("session start signalled, will get the address now") ;
+  string new_address = harmattan_get_session_bus_address() ;
+  log_notice("session bus address: '%s'", new_address.c_str()) ;
+  if (new_address.empty())
+  {
+    log_critical("unable to read session bus address, will not start serving it") ;
+    return ;
+  }
+  connect_to_session_bus(session_bus_address = new_address) ;
+  start_voland_watcher() ;
+}
+
+string Timed::harmattan_get_session_bus_address()
+{
+  const char *helper = "/usr/bin/timed-aegis-session-helper" ;
+  FILE *fp = popen(helper, "r") ;
+  if (fp==NULL)
+  {
+    log_error("can't execute '%s': %m, session bus address not available", helper) ;
+    return "" ;
+  }
+  int buffer_size = 1024 ;
+  char buffer[buffer_size], *res = fgets(buffer, buffer_size, fp) ;
+  if (res==NULL)
+    log_error("can't read session bus address from helper") ;
+  pclose(fp) ;
+  return res==NULL ? "" : buffer ;
 }
