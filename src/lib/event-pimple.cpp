@@ -515,6 +515,7 @@ Maemo::Timed::event_list_pimple_t::~event_list_pimple_t()
     delete events[i] ;
 }
 
+#if 0
 int Maemo::Timed::Event::check(QString *err, bool exc) const
 {
   try
@@ -524,3 +525,7 @@ int Maemo::Timed::Event::check(QString *err, bool exc) const
   {
   }
 }
+#else
+int Maemo::Timed::Event::check(QString *, bool ) const { return 0 ; }
+// TODO: get rid of it
+#endif

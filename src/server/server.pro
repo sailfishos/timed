@@ -70,3 +70,5 @@ else \
   DEFINES += __HARMATTAN__
   QMAKE_CXXFLAGS  += -Wall -Wno-psabi
 }
+
+QMAKE_CXXFLAGS  += -Wall -Werror

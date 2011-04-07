@@ -16,3 +16,5 @@ QMAKE_CXXFLAGS  += -Wall -Wno-psabi
 
 QMAKE_CXXFLAGS += -fPIC # -fvisibility=hidden -fvisibility-inlines-hidden
 QMAKE_LFLAGS += -pie -rdynamic
+
+QMAKE_CXXFLAGS  += -Wall -Werror

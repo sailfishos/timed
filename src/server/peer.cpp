@@ -134,7 +134,7 @@ void peer_entry_t::reply_slot(QDBusPendingCallWatcher *w)
   else
   {
     uint unix_process_id = reply.value() ;
-    if (unix_process_id==~0)
+    if (unix_process_id==~0u)
       info = str_printf("pid: unknown") ;
     else
     {

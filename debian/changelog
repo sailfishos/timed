@@ -1,3 +1,9 @@
+timed (2.43) unstable; urgency=low
+
+  * Fixes: NB#244569  - get rid of warnings by using -Werror
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 07 Apr 2011 13:40:11 +0300
+
 timed (2.42) unstable; urgency=low
 
   * Fixes: NB#243631 - ignore DST if nothing else helps to find time zone

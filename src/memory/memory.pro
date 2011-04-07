@@ -32,3 +32,5 @@ else \
   CONFIG += cellular-qt
   QMAKE_CXXFLAGS  += -Wall -Wno-psabi
 }
+
+QMAKE_CXXFLAGS  += -Wall -Werror

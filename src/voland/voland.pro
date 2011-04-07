@@ -25,3 +25,4 @@ pc.path = /usr/lib/pkgconfig
 INSTALLS = target devheaders prf pc
 
 QMAKE_CXXFLAGS  += -Wall -Wno-psabi
+QMAKE_CXXFLAGS  += -Wall -Werror

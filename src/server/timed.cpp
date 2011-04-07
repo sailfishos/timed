@@ -195,6 +195,7 @@ void Timed::init_scratchbox_mode()
 //          -1: nobody knows (for example: DSME not running)
 //           0: USER mode
 //           1: ACT_DEAD mode
+#if 0
 static int is_act_dead_by_dsme(string &dsme_mode)
 {
   // QDBusInterface dsme(dsme_service, dsme_req_path, dsme_req_interface, QDBusConnection::systemBus()) ;
@@ -224,12 +225,14 @@ static int is_act_dead_by_dsme(string &dsme_mode)
   else
     return -1 ;
 }
+#endif
 
 // Detecting run mode by /tmp/USER, /tmp/ACT_DEAD, /tmp/STATUS
 // Returns:
 //          -1: nobody knows (files are not in consistent state)
 //           0: USER mode
 //           1: ACT_DEAD mode
+#if 0
 static int is_act_dead_by_status_files()
 {
   bool tmp_act_dead = access("/tmp/ACT_DEAD", F_OK) == 0 ;
@@ -252,8 +255,10 @@ static int is_act_dead_by_status_files()
     return -1 ;
   }
 }
+#endif
 
 // Make two stage detection, return only if successfully detected
+#if 0
 static bool init_act_dead_v2(bool use_status_files)
 {
   string s_dsme_mode ;
@@ -285,6 +290,8 @@ static bool init_act_dead_v2(bool use_status_files)
   sleep(2) ;
   log_abort("aborting") ;
 }
+#endif
+
 #endif
 
 void Timed::init_device_mode()

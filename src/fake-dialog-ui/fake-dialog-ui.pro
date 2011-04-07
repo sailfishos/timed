@@ -20,3 +20,4 @@ INSTALLS += target
 target.path = $$(DESTDIR)/usr/bin
 
 QMAKE_CXXFLAGS  += -Wall -Wno-psabi
+QMAKE_CXXFLAGS  += -Wall -Werror

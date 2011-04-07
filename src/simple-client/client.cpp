@@ -622,7 +622,7 @@ int alarms(int ac, char **av)
   return 0 ;
 }
 
-int replace(int ac, char **av)
+int replace(int /* ac */, char **av)
 {
   int cookie ;
   if(!pcrecpp::RE("([0-9]+)").FullMatch(av[0], &cookie))

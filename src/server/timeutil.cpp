@@ -245,7 +245,7 @@ bool broken_down_t::find_a_good_day(const recurrence_pattern_t *p, int &wday, bo
   log_debug("wday=%d, today_is_ok=%s, max_year=%d", wday, today?"yes":"no", max_year) ;
 #define _next do { today = false ; increment_day() ; if(++wday==7) wday = 0 ; } while(0)
   log_assert(0<=wday && wday<7) ;
-  unsigned y = year ;
+  // unsigned y = year ;
   if(!today)
     _next ;
   while(year<=max_year && is_valid())
