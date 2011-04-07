@@ -1144,6 +1144,17 @@ void Timed::harmattan_session_started()
   start_voland_watcher() ;
 }
 
+static char *chomp(char *s)
+{
+  if (s)
+  {
+    char *p = s + strlen(s) - 1 ;
+    while (*p=='\n' and s<=p)
+      *p-- = '\0' ;
+  }
+  return s ;
+}
+
 string Timed::harmattan_get_session_bus_address()
 {
   const char *helper = "/usr/bin/timed-aegis-session-helper" ;
@@ -1155,8 +1166,13 @@ string Timed::harmattan_get_session_bus_address()
   }
   int buffer_size = 1024 ;
   char buffer[buffer_size], *res = fgets(buffer, buffer_size, fp) ;
-  if (res==NULL)
-    log_error("can't read session bus address from helper") ;
   pclose(fp) ;
+  if (res==NULL)
+  {
+    log_error("can't read session bus address from helper") ;
+    return "" ;
+  }
+  chomp(buffer) ;
+  log_notice("new session bus address read: '%s'", buffer) ;
   return res==NULL ? "" : buffer ;
 }
