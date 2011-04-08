@@ -1,9 +1,9 @@
 timed (2.43) unstable; urgency=low
 
-  * Fixes: NB#244569  - get rid of warnings by using -Werror
+  * Fixes: NB*244569  - get rid of warnings by using -Werror
   * Getting session bus address via aegis-session
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 07 Apr 2011 13:49:05 +0300
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Fri, 08 Apr 2011 09:24:33 +0300
 
 timed (2.42) unstable; urgency=low
 
