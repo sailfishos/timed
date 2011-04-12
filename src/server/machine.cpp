@@ -844,6 +844,7 @@ void machine_t::freeze()
   for(set<abstract_state_t*>::iterator it=states.begin(); it!=states.end(); ++it)
     if(abstract_io_state_t *st=dynamic_cast<abstract_io_state_t*> (*it))
       st->abort_all(state_waiting) ;
+  invoke_process_transition_queue() ;
 }
 
 void machine_t::unfreeze()

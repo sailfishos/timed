@@ -2,8 +2,9 @@ timed (2.44) unstable; urgency=low
 
   * Fixes: NB#246188 - timed <-> dsme communication broken
   * minor scratchbox improvements
+  * fixed missing events due to missing transition queue processing
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Tue, 12 Apr 2011 18:49:25 +0300
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Tue, 12 Apr 2011 22:10:20 +0200
 
 timed (2.43) unstable; urgency=low
 
