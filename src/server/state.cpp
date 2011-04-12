@@ -112,6 +112,16 @@ void abstract_io_state_t::abort_all(abstract_state_t *st)
     st->go_to(*it) ;
 }
 
+void state_tranquil_t::abort_all(abstract_state_t *)
+{
+  return ; // do nothing
+}
+
+void state_epoch_t::abort_all(abstract_state_t *)
+{
+  return ; // do nothing
+}
+
 abstract_gate_state_t::abstract_gate_state_t(const string &state_name, const string &next_state_name, machine_t *owner)
   : abstract_io_state_t(state_name, owner)
 {

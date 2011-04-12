@@ -132,6 +132,7 @@ public:
   static const char *lost() { return "/var/cache/timed/SYSTEM_TIME_LOST" ; }
   state_epoch_t(machine_t *owner) ;
   virtual ~state_epoch_t() { }
+  void abort_all(abstract_state_t *st) ; // not moving all the events to WAITING
 public Q_SLOTS:
   void open() ;
 } ;
@@ -289,6 +290,7 @@ struct state_tranquil_t : public abstract_io_state_t
 {
   state_tranquil_t(machine_t *owner) : abstract_io_state_t("TRANQUIL", owner) { }
   virtual ~state_tranquil_t() { }
+  void abort_all(abstract_state_t *st) ; // not moving all the events to WAITING
 } ;
 
 struct state_removed_t : public abstract_state_t
