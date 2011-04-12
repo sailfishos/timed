@@ -184,6 +184,11 @@ void Timed::init_scratchbox_mode()
   const char *magic_path = "/targets/links/scratchbox.config" ;
   scratchbox_mode = access(magic_path, F_OK)==0 ;
 #endif
+  if (scratchbox_mode)
+  {
+    qmlog::enable() ;
+    qmlog::process_name("timed(sb)") ;
+  }
   log_info("%s" "SCRATCHBOX detected", scratchbox_mode ? "" : "no ") ;
 #else
   scratcbox_mode = false ;
