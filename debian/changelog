@@ -1,3 +1,9 @@
+timed (2.44) unstable; urgency=low
+
+  * Fixes: NB#246188 - timed <-> dsme communication broken
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Tue, 12 Apr 2011 18:03:45 +0300
+
 timed (2.43) unstable; urgency=low
 
   * Fixes: NB*244569  - get rid of warnings by using -Werror

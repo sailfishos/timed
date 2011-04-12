@@ -375,6 +375,11 @@ ticker_t machine_t::calculate_bootup()
 void machine_t::send_bootup_signal()
 {
   log_debug() ;
+  if (is_frozen())
+  {
+    log_debug("skipping send_bootup_signal() because the machine is frozen") ;
+    return ;
+  }
   ticker_t tick = calculate_bootup() ;
   int32_t next_bootup = 0 ;
   if(tick.is_valid())
@@ -845,6 +850,7 @@ void machine_t::unfreeze()
 {
   log_notice("unfreezing event machine") ;
   state_waiting->open() ;
+  send_bootup_signal() ;
 }
 
 bool machine_t::is_frozen()
