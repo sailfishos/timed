@@ -53,6 +53,7 @@ int send_quit() ;
 int query(int ac, char **av) ;
 int query_attributes(char *cookie) ;
 int queue() ;
+int mode(int ac, char **av) ;
 int time_settings(int ac, char **av) ;
 int alarms(int ac, char **av) ;
 int replace(int ac, char **av) ;
@@ -144,6 +145,10 @@ int main_try(int ac, char **av)
   else if (ac==2 && (string)av[1]=="queue") // print all the attributes
   {
     return queue() ;
+  }
+  else if ((ac==2 or ac==3) and (string)av[1]=="mode")
+  {
+    return mode(ac-2, av+2) ;
   }
   else if(ac>1 && (string)av[1]=="date") // client date [time-settings...]
   {
@@ -702,4 +707,70 @@ int queue()
   QMap< uint,QMap<QString,QString> > attr_res = r2.value() ;
   qDebug() << "queue:" << attr_res ;
   return 0 ;
+}
+
+static string to_upper_cleaned(const char *s)
+{
+  string res ;
+  for(const char *p=s; p and *p; ++p)
+  {
+    int ch = *p ;
+    if (not isalpha(ch))
+      continue ;
+    ch = tolower(ch) ;
+    res += ch ;
+  }
+  return res ;
+}
+
+static bool execute(const string &command)
+{
+  const char *cmd = command.c_str() ;
+
+  log_notice("executing '%s'", cmd) ;
+  int res = system(cmd) ;
+
+  if (res == 0)
+  {
+    log_notice("command   '%s' successfully executed", cmd) ;
+    return true ;
+  }
+
+  if(res<0)
+    log_error("execution '%s' failed: %m", cmd) ;
+  else if(WIFSIGNALED(res))
+    log_error("command '%s' killed by signal %d", cmd, WTERMSIG(res)) ;
+  else if(WIFEXITED(res))
+    log_error("command '%s' failed, exit status: %d", cmd, WEXITSTATUS(res)) ;
+  else
+    log_error("command '%s' failed in some weird way, system() call returned %d", cmd, res) ;
+
+  return false ;
+}
+
+int mode(int ac, char **av)
+{
+  if (ac<=0)
+  {
+    log_error("mode reporting not implemented yet") ;
+    return 1 ;
+  }
+  string mode = to_upper_cleaned(av[0]) ;
+  if (mode=="user")
+  {
+    bool res1 = execute ("rm -f /tmp/ACT_DEAD ; touch /tmp/USER ; echo USER > /tmp/STATE") ;
+    bool res2 = execute ("dbus-send --system --dest=com.nokia.time /com/nokia/startup/signal com.nokia.startup.signal.desktop_visible") ;
+    return res1 and res2 ? 0 : 1 ;
+  }
+  else if (mode=="actdead")
+  {
+    bool res1 = execute ("rm -f /tmp/USER ; touch /tmp/ACT_DEAD ; echo ACT_DEAD > /tmp/STATE") ;
+    bool res2 = execute ("dbus-send --system --dest=com.nokia.time /com/nokia/startup/signal com.nokia.startup.signal.init_done int32:5") ;
+    return res1 and res2 ? 0 : 1 ;
+  }
+  else
+  {
+    log_error("unknown mode: %s", av[0]) ;
+    return 1 ;
+  }
 }
