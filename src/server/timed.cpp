@@ -91,13 +91,13 @@ Timed::Timed(int ac, char **av) :
   halted = "" ; // XXX: remove it, as we don't want to halt anymore
   log_debug() ;
 
+  init_scratchbox_mode() ;
+  log_debug() ;
+
   init_unix_signal_handler() ;
   log_debug() ;
 
   init_dbus_peer_info() ;
-  log_debug() ;
-
-  init_scratchbox_mode() ;
   log_debug() ;
 
   // init_act_dead() ;
@@ -177,8 +177,13 @@ void Timed::init_dbus_peer_info()
 void Timed::init_scratchbox_mode()
 {
 #if F_SCRATCHBOX
+#if 0
   const char *path = getenv("PATH") ;
   scratchbox_mode = path && strstr(path, "scratchbox") ; // XXX: more robust sb detection?
+#else
+  const char *magic_path = "/targets/links/scratchbox.config" ;
+  scratchbox_mode = access(magic_path, F_OK)==0 ;
+#endif
   log_info("%s" "SCRATCHBOX detected", scratchbox_mode ? "" : "no ") ;
 #else
   scratcbox_mode = false ;
@@ -232,7 +237,6 @@ static int is_act_dead_by_dsme(string &dsme_mode)
 //          -1: nobody knows (files are not in consistent state)
 //           0: USER mode
 //           1: ACT_DEAD mode
-#if 0
 static int is_act_dead_by_status_files()
 {
   bool tmp_act_dead = access("/tmp/ACT_DEAD", F_OK) == 0 ;
@@ -255,7 +259,6 @@ static int is_act_dead_by_status_files()
     return -1 ;
   }
 }
-#endif
 
 // Make two stage detection, return only if successfully detected
 #if 0
@@ -300,7 +303,16 @@ void Timed::init_device_mode()
   dsme_mode_handler = new dsme_mode_t ;
   QObject::connect(dsme_mode_handler, SIGNAL(mode_is_changing()), this, SLOT(dsme_mode_is_changing())) ;
   QObject::connect(dsme_mode_handler, SIGNAL(mode_reported(const string &)), this, SLOT(dsme_mode_reported(const string &))) ;
-  dsme_mode_handler->init_request() ;
+  if (scratchbox_mode)
+  {
+    int is_act_dead = is_act_dead_by_status_files() ;
+    bool user_mode = is_act_dead==0, mode_known = is_act_dead==0 or is_act_dead==1 ;
+    if (not mode_known)
+      log_abort("can't detect running mode") ;
+    device_mode_reached(user_mode) ;
+  }
+  else
+    dsme_mode_handler->init_request() ;
   const char *startup_path="/com/nokia/startup/signal", *startup_iface="com.nokia.startup.signal" ;
   const char *desktop_visible_slot = SLOT(harmattan_desktop_visible()) ;
   const char *init_done_slot = SLOT(harmattan_init_done(int)) ;
