@@ -4,8 +4,9 @@ timed (2.44) unstable; urgency=low
   * minor scratchbox improvements
   * fixed missing events due to missing transition queue processing
   * not moving not necessary events to 'waiting' state
+  * not updating RTC clock while machine is in frozen state
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Tue, 12 Apr 2011 22:12:09 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 13 Apr 2011 12:28:12 +0200
 
 timed (2.43) unstable; urgency=low
 

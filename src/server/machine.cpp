@@ -322,6 +322,12 @@ void machine_t::process_transition_queue()
 
 void machine_t::update_rtc_alarm()
 {
+  log_debug() ;
+  if (is_frozen())
+  {
+    log_debug("skipping update_rtc_alarm() because the machine is frozen") ;
+    return ;
+  }
   time_t tick = state_queued->next_rtc_bootup().value() ;
   if(tick>0) // valid
   {
