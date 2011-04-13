@@ -93,6 +93,7 @@ struct machine_t : public QObject
   void send_queue_context() ;
   Q_OBJECT ;
 public Q_SLOTS:
+  void online_state_changed(bool connected) ;
 Q_SIGNALS:
   void engine_pause(int dx) ;
   void voland_registered() ;

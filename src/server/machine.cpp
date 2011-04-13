@@ -950,3 +950,12 @@ void request_watcher_t::call_returned(QDBusPendingCallWatcher *w)
   // Don't need the watcher any more
   delete this ;
 }
+
+void machine_t::online_state_changed(bool connected)
+{
+  log_notice("ONLINE state: %s", connected?"connected":"not connected") ;
+  if (connected)
+    state_flt_conn->open() ;
+  else
+    state_flt_conn->close() ;
+}

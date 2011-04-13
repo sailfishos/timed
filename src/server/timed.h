@@ -28,6 +28,7 @@
 #include <QMetaMethod>
 #include <QDBusConnectionInterface>
 #include <QDBusServiceWatcher>
+#include <QNetworkConfigurationManager>
 
 #include <ContextProvider>
 
@@ -101,6 +102,7 @@ private:
   void init_dst_checker() ;
   void init_start_event_machine() ;
   void init_cellular_services() ;
+  void init_network_events() ;
   void init_apply_tz_settings() ;
 
 public:
@@ -207,6 +209,7 @@ private:
 public:
   QDBusConnection session_bus ;
   string session_bus_address ;
+  QNetworkConfigurationManager *network_configuration_manager ;
 #if 0
   void nitz_notification(const cellular_info_t &) ;
   void tz_by_oracle(olson *tz, tz_suggestions_t) ;

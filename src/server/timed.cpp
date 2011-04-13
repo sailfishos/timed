@@ -143,6 +143,9 @@ Timed::Timed(int ac, char **av) :
   init_cellular_services() ;
   log_debug() ;
 
+  init_network_events() ;
+  log_debug() ;
+
   init_dst_checker() ;
 
   log_debug("starting event mahine") ;
@@ -665,6 +668,15 @@ void Timed::init_cellular_services()
   QObject::connect(tz_oracle, SIGNAL(tz_detected(olson *, tz_suggestions_t)), this, SLOT(tz_by_oracle(olson *, tz_suggestions_t))) ;
   QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
 #endif
+}
+
+void Timed::init_network_events()
+{
+  network_configuration_manager = new QNetworkConfigurationManager ;
+  connect(network_configuration_manager, SIGNAL(onlineStateChanged(bool)), am, SLOT(online_state_changed(bool))) ;
+  bool connected_now = network_configuration_manager->isOnline() ;
+  if (connected_now)
+    am->online_state_changed(true) ;
 }
 
 void Timed::init_dst_checker()

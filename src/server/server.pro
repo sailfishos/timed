@@ -1,5 +1,5 @@
 QT -= gui
-QT += dbus
+QT += dbus network
 
 TEMPLATE = app
 TARGET = timed
