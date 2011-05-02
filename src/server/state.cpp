@@ -533,9 +533,6 @@ void state_snoozed_t::enter(event_t *e)
   machine->invoke_process_transition_queue() ;
 }
 
-#define NEW_PATTERN_SCHEDULER 1
-
-#if NEW_PATTERN_SCHEDULER
 static ticker_t recur_irregular_day(const broken_down_t &day, const recurrence_pattern_t *p, time_t threshold)
 {
   broken_down_t d = day ;
@@ -597,7 +594,7 @@ ticker_t state_recurred_t::apply_pattern(const broken_down_t &start, int wday, c
   return ticker_t() ;
 }
 
-#else // here is the old pattern scheduling code
+#if 0 // here is the old pattern scheduling code
 
 ticker_t state_recurred_t::apply_pattern(broken_down_t &t, int wday, const recurrence_pattern_t *p)
 {
