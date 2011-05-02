@@ -1,8 +1,9 @@
 timed (2.45) unstable; urgency=low
 
   * implemented internet connection filtering of events
+  * Fixes: NB#247701 - recurrence pattern matching (autumn dst)
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 13 Apr 2011 18:35:01 +0200
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 02 May 2011 23:10:01 +0300
 
 timed (2.44) unstable; urgency=low
 
