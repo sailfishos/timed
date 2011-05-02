@@ -533,6 +533,72 @@ void state_snoozed_t::enter(event_t *e)
   machine->invoke_process_transition_queue() ;
 }
 
+#define NEW_PATTERN_SCHEDULER 1
+
+#if NEW_PATTERN_SCHEDULER
+static ticker_t recur_irregular_day(const broken_down_t &day, const recurrence_pattern_t *p, time_t threshold)
+{
+  broken_down_t d = day ;
+  d.hour = d.minute = 0 ;
+  set<time_t> found ;
+  for (bool inc_flag = false; d.find_a_good_minute_with_increment(p, inc_flag); inc_flag = true)
+    for (int dst=0; dst<=1; ++dst)
+    {
+      struct tm tm ;
+      d.to_struct_tm(&tm) ;
+      tm.tm_isdst = dst ;
+      time_t t = mktime(&tm) ;
+      if (t<0 or t<=threshold)
+        continue ;
+      if (not d.same_struct_tm(&tm))
+        continue ;
+      found.insert(t) ;
+    }
+  set<time_t>::const_iterator it = found.begin() ;
+  if (it==found.end())
+    return ticker_t() ;
+  else
+    return ticker_t(*it) ;
+}
+
+static ticker_t recur_regular_day(const broken_down_t &day, const recurrence_pattern_t *p, time_t threshold)
+{
+  log_debug("day=%s, p->mins=0x%llx, threshold=%lld", day.str().c_str(), p->mins, (long long)threshold) ;
+  broken_down_t d = day ;
+  for (bool inc_flag = false; d.find_a_good_minute_with_increment(p, inc_flag); inc_flag = true)
+  {
+    struct tm tm ;
+    d.to_struct_tm(&tm) ;
+    time_t t = mktime(&tm) ;
+    if (t<0 or t<=threshold or not d.same_struct_tm(&tm))
+      continue ;
+    log_debug("returning t=%lld", (long long)t) ;
+    return ticker_t(t) ;
+  }
+  log_debug("returning t=null") ;
+  return ticker_t() ;
+}
+
+ticker_t state_recurred_t::apply_pattern(broken_down_t &start, int wday, const recurrence_pattern_t *p)
+{
+  broken_down_t day = start ;
+  unsigned nxt_year = day.year + 1 ;
+  if(broken_down_t::YEARX <= nxt_year)
+    -- nxt_year ;
+  time_t threshold = machine->transition_started().value() ;
+  for(bool today_flag=true;  day.find_a_good_day(p, wday, today_flag, nxt_year) ; today_flag=false)
+  {
+    if (not today_flag)
+      day.hour = day.minute = 0 ;
+    ticker_t t = (day.is_a_regular_day() ? recur_regular_day : recur_irregular_day) (day, p, threshold) ;
+    if (t.is_valid())
+      return t ;
+  }
+  return ticker_t() ;
+}
+
+#else // here is the old pattern scheduling code
+
 ticker_t state_recurred_t::apply_pattern(broken_down_t &t, int wday, const recurrence_pattern_t *p)
 {
   unsigned nxt_year = t.year + 1 ;
@@ -577,11 +643,15 @@ ticker_t state_recurred_t::apply_pattern(broken_down_t &t, int wday, const recur
   log_debug() ;
   return ticker_t(0) ;
 }
+#endif
 
 void state_recurred_t::enter(event_t *e)
 {
   abstract_state_t::enter(e) ;
   switch_timezone x(e->tz) ;
+  // XXX: the variable 'best' is not used
+  // TODO: 1. Get rid of it
+  // TODO: 2. Make the first parameter of apply_pattern() to 'const'
   broken_down_t best, now ;
   int now_wday ;
   now.from_time_t(machine->transition_started(), &now_wday) ;
