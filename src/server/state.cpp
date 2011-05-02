@@ -649,10 +649,8 @@ void state_recurred_t::enter(event_t *e)
 {
   abstract_state_t::enter(e) ;
   switch_timezone x(e->tz) ;
-  // XXX: the variable 'best' is not used
-  // TODO: 1. Get rid of it
   // TODO: 2. Make the first parameter of apply_pattern() to 'const'
-  broken_down_t best, now ;
+  broken_down_t now ;
   int now_wday ;
   now.from_time_t(machine->transition_started(), &now_wday) ;
   ticker_t best_ticker = ticker_t(0) ;
@@ -661,7 +659,7 @@ void state_recurred_t::enter(event_t *e)
     broken_down_t t = now ;
     ticker_t res = apply_pattern(t, now_wday, &e->recrs[i]) ;
     if(res.is_valid() && (!best_ticker.is_valid() || res<best_ticker))
-      best = t, best_ticker = res ;
+      best_ticker = res ;
   }
   abstract_state_t *next_state = machine->state_qentry ;
   if(best_ticker.is_valid())
