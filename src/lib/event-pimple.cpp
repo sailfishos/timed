@@ -388,46 +388,30 @@ namespace Maemo
 {
   namespace Timed
   {
-#define XXX log_debug("mons=0%o, mday=0%o", R->mons, R->mday) ;
     bool Event::Recurrence::isEmpty() const
     {
       const recurrence_io_t *R = p->rio() ;
-      XXX ;
       const uint32_t full_week = 0177 ;
-      XXX ;
       if((R->wday&full_week)==0)
         return true ;
-      XXX ;
       const uint64_t any_mins = (1ull<<60)-1 ;
-      XXX ;
       if((R->mins&any_mins)==0)
         return true ;
-      XXX ;
       const uint32_t any_hour = (1u<<24)-1 ;
-      XXX ;
       if((R->hour&any_hour)==0)
         return true ;
-      XXX ;
       const uint32_t m31 = /* d-o -ay -m- m-j*/ 05325 ;
-      XXX ;
       const uint32_t m30 = /* dno say jma m-j*/ 07775 ;
-      XXX ;
       const uint32_t d30 = 0x7FFFFFFF ; // 0, 1..30
-      XXX ;
       const uint32_t d29 = 0x3FFFFFFF ; // 0, 1..29
-      XXX ;
       if(R->mday==0 || R->mons==0)
         return true ;
-      XXX ;
       if(R->mons&m31) /* at least one long month, any day then */
         return false ;
-      XXX ;
       if((R->mons&m30) && (R->mday&d30)) /* 1..30 in a non-february */
         return false ;
-      XXX ;
       if(R->mday & d29) /* 1..29, any month */
         return false ;
-      XXX ;
       return true ;
     }
     void Event::Recurrence::addMonth(int x)
@@ -454,10 +438,8 @@ namespace Maemo
     }
     void Event::Recurrence::addDayOfWeek(int x)
     {
-      log_debug("IN  x=%d wday=0%o", x, p->rio()->wday) ;
       check_interval(__PRETTY_FUNCTION__, x, 0, 7) ;
       p->rio()->wday |= 1u << (x==7 ? 0 : x) ;
-      log_debug("OUT x=%d wday=0%o", x, p->rio()->wday) ;
     }
     void Event::Recurrence::everyDayOfWeek()
     {
