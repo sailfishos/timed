@@ -252,7 +252,7 @@ struct state_recurred_t : public abstract_state_t
   state_recurred_t(machine_t *owner) : abstract_state_t("RECURRED", owner) { }
   virtual ~state_recurred_t() { }
   void enter(event_t *e) ;
-  ticker_t apply_pattern(broken_down_t &t, int wday, const recurrence_pattern_t *p) ;
+  ticker_t apply_pattern(const broken_down_t &t, int wday, const recurrence_pattern_t *p) ;
 } ;
 
 struct state_armed_t : public abstract_gate_state_t

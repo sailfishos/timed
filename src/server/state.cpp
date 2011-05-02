@@ -579,7 +579,7 @@ static ticker_t recur_regular_day(const broken_down_t &day, const recurrence_pat
   return ticker_t() ;
 }
 
-ticker_t state_recurred_t::apply_pattern(broken_down_t &start, int wday, const recurrence_pattern_t *p)
+ticker_t state_recurred_t::apply_pattern(const broken_down_t &start, int wday, const recurrence_pattern_t *p)
 {
   broken_down_t day = start ;
   unsigned nxt_year = day.year + 1 ;
@@ -649,15 +649,13 @@ void state_recurred_t::enter(event_t *e)
 {
   abstract_state_t::enter(e) ;
   switch_timezone x(e->tz) ;
-  // TODO: 2. Make the first parameter of apply_pattern() to 'const'
   broken_down_t now ;
   int now_wday ;
   now.from_time_t(machine->transition_started(), &now_wday) ;
   ticker_t best_ticker = ticker_t(0) ;
   for(unsigned i=0; i<e->recrs.size(); ++i)
   {
-    broken_down_t t = now ;
-    ticker_t res = apply_pattern(t, now_wday, &e->recrs[i]) ;
+    ticker_t res = apply_pattern(now, now_wday, &e->recrs[i]) ;
     if(res.is_valid() && (!best_ticker.is_valid() || res<best_ticker))
       best_ticker = res ;
   }
