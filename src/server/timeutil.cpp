@@ -286,6 +286,28 @@ void broken_down_t::increment_min(unsigned int amount)
   minute = now % 60 ;
 }
 
+bool broken_down_t::is_a_regular_day() const
+{
+  broken_down_t first = *this, last = *this ;
+  first.hour = first.minute = 0 ;
+  last.hour = 23, last.minute = 59 ;
+  struct tm tm_first, tm_last ;
+  first.to_struct_tm(&tm_first) ;
+  last.to_struct_tm(&tm_last) ;
+  time_t first_time = mktime(&tm_first), last_time = mktime(&tm_last) ;
+  if (first_time < 0 or last_time < 0)
+    return false ;
+  if (last_time - first_time != 60*(23*60+59))
+    return false ;
+  if (tm_first.tm_isdst != tm_last.tm_isdst)
+    return false ;
+  if (tm_first.tm_gmtoff != tm_last.tm_gmtoff)
+    return false ;
+  if (strcmp(tm_first.tm_zone, tm_last.tm_zone)!=0)
+    return false ;
+  return true ;
+}
+
 #define _set(res, mask, shift) res |= ((x&(mask))!=0)<<(shift)
 static inline int log2_64(uint64_t x)
 {
