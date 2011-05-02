@@ -365,6 +365,17 @@ bool broken_down_t::find_a_good_minute(const recurrence_pattern_t *p)
     return false ;
 }
 
+bool broken_down_t::find_a_good_minute_with_increment(const recurrence_pattern_t *p, bool increment_flag)
+{
+  if (increment_flag)
+  {
+    if (hour==23 and minute==59)
+      return false ;
+    increment_min(1) ;
+  }
+  return find_a_good_minute(p) ;
+}
+
 void broken_down_t::from_time_t(const ticker_t &ticker, int *wday)
 {
   time_t time = ticker.value() ;
