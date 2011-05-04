@@ -55,7 +55,13 @@ rfs.path = $$(DESTDIR)/etc/osso-rfs-scripts
 aegishelper.files = timed-aegis-session-helper
 aegishelper.path  = $$(DESTDIR)/usr/bin
 
-INSTALLS += target xml backupconf backupscripts cud rfs aegishelper
+aegisfs.files = timed.aegisfs.conf
+aegisfs.path  = $$(DESTDIR)/etc/aegisfs.d
+
+timedrc.files = timed.rc
+timedrc.path  = $$(DESTDIR)/etc
+
+INSTALLS += target xml backupconf backupscripts cud rfs aegishelper aegisfs timedrc
 
 CONFIG(MEEGO) \
 {
