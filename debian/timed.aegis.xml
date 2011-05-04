@@ -2,6 +2,7 @@
   <provide>
     <credential name="TimeControl"/>
     <credential name="TimeBackup"/>
+    <credential name="TimedEventQueueWrite"/>
     <dbus name="com.nokia.timed.backup" own="SELF" bus="system">
       <node name="/com/nokia/timed/backup">
         <interface name="com.nokia.backupclient">
@@ -38,6 +39,7 @@
     <credential name="CAP::setgid" />
     <credential name="CAP::setuid" />
     <credential name="CAP::sys_time" />
+    <credential name="timed::TimedEventQueueWrite"/>
     <for path="/usr/bin/timed" />
   </request>
 </aegis>
