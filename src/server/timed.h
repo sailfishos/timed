@@ -51,7 +51,7 @@
 struct Timed : public QCoreApplication
 {
 public:
-  inline const char *configuration_path() { return  "/etc/timed.config" ; }
+  inline const char *configuration_path() { return  "/etc/timed.rc" ; }
   // inline const char *configuration_type() { return  "/usr/share/timed/typeinfo/config.type" ; }
 
   inline const char *customization_path() { return  "/usr/share/timed/customization.data" ; } // TODO: make it configurable
