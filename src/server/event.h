@@ -55,12 +55,14 @@ struct recurrence_pattern_t
   uint32_t mday ;
   uint32_t wday ;
   uint32_t mons ;
+  uint32_t flags ;
 
   recurrence_pattern_t()
   {
     mins = hour = mday = wday = mons = 0 ; // XXX: change it
+    flags = 0 ;
   }
-  static iodata::bit_codec *mins_codec, *hour_codec, *mday_codec, *wday_codec, *mons_codec ;
+  static iodata::bit_codec *codec, *mins_codec, *hour_codec, *mday_codec, *wday_codec, *mons_codec ;
 
   uint64_t mins_mask(const string &x) const { return mins_codec->decode(x) ; }
   uint64_t hour_mask(const string &x) const { return hour_codec->decode(x) ; }

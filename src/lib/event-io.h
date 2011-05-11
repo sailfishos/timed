@@ -80,7 +80,8 @@ struct Maemo::Timed::recurrence_io_t
   uint32_t mday ;
   uint32_t wday ;
   uint32_t mons ;
-  recurrence_io_t() { mins = hour = mday = wday = mons = 0 ; }
+  uint32_t flags ;
+  recurrence_io_t() { mins = hour = mday = wday = mons = 0 ; flags = 0 ; }
 } ;
 
 struct Maemo::Timed::event_io_t

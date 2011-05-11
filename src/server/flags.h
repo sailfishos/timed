@@ -120,6 +120,14 @@ namespace WallOpcode
       } ;
     }
 
+    namespace RecurrenceFlags
+    {
+      enum
+      {
+        Fill_Gaps               = 1<<0
+      } ;
+    }
+
     namespace ActionFlags
     {
       enum

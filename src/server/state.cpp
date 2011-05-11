@@ -539,18 +539,34 @@ static ticker_t recur_irregular_day(const broken_down_t &day, const recurrence_p
   d.hour = d.minute = 0 ;
   set<time_t> found ;
   for (bool inc_flag = false; d.find_a_good_minute_with_increment(p, inc_flag); inc_flag = true)
+  {
+    bool time_is_valid = false ;
     for (int dst=0; dst<=1; ++dst)
     {
-      struct tm tm ;
-      d.to_struct_tm(&tm) ;
-      tm.tm_isdst = dst ;
-      time_t t = mktime(&tm) ;
-      if (t<0 or t<=threshold)
-        continue ;
-      if (not d.same_struct_tm(&tm))
-        continue ;
-      found.insert(t) ;
+      time_t t = d.mktime_strict(dst) ;
+      if (t>0)
+        time_is_valid = true ;
+      if (t>threshold)
+        found.insert(t) ;
     }
+    if (time_is_valid)
+      continue ;
+    if (not (p->flags & RecurrenceFlags::Fill_Gaps))
+      continue ;
+    // now flicking the gap (usually caused by entering DST)
+    log_notice("starting search to fill the gap: %s", d.str().c_str()) ;
+    for(unsigned day = d.day; day==d.day; d.increment_min(1))
+    {
+      time_t t = d.mktime_strict() ; // dst is set to -1 here
+      log_info("trying '%s' (t=%lld)", d.str().c_str(), (long long)t) ;
+      if (t<0)
+        continue ;
+      log_notice("found a valid minute while flicking the gap: %s", d.str().c_str()) ;
+      if (t>threshold)
+        found.insert(t) ;
+      break ;
+    }
+  }
   set<time_t>::const_iterator it = found.begin() ;
   if (it==found.end())
     return ticker_t() ;

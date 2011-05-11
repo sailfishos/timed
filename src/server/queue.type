@@ -59,6 +59,7 @@ action_t =
 
 recurrence_pattern_t =
 [
+  { name = "flags", type=$bitmask, value=$0 },
   { name = "mins", type=$bitmask, value=$any_mins },
   { name = "hour", type=$bitmask, value=$any_hour },
   { name = "mday", type=$bitmask, value=$any_mday },

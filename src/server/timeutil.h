@@ -68,6 +68,7 @@ struct broken_down_t
   bool find_a_good_minute_with_increment(const recurrence_pattern_t *p, bool increment_flag) ;
   void increment_min(unsigned int amount) ;
   bool is_a_regular_day() const ;
+  time_t mktime_strict(int dst = -1) const ;
 
   static unsigned int month_length(unsigned year, unsigned month) ;
   string str() const ;

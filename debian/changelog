@@ -1,8 +1,8 @@
 timed (2.47) unstable; urgency=low
 
-  * new version
+  * Fixes: NB#253433 - setFillingGapsFlag() triggers events skipped during forwards jump
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 11 May 2011 14:28:27 +0300
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 11 May 2011 16:51:13 +0300
 
 timed (2.46) unstable; urgency=low
 

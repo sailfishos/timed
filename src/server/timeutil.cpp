@@ -376,6 +376,21 @@ bool broken_down_t::find_a_good_minute_with_increment(const recurrence_pattern_t
   return find_a_good_minute(p) ;
 }
 
+time_t broken_down_t::mktime_strict(int dst /* = -1 */) const
+{
+  struct tm *tm = to_struct_tm() ;
+  if (tm==NULL)
+    return (time_t) -1 ;
+  tm->tm_isdst = dst ;
+  time_t t = mktime(tm) ;
+  if (not same_struct_tm(tm))
+    t = (time_t) -1 ;
+  if (dst != -1 and dst != tm->tm_isdst)
+    t = (time_t) -1 ;
+  delete tm ;
+  return t ;
+}
+
 void broken_down_t::from_time_t(const ticker_t &ticker, int *wday)
 {
   time_t time = ticker.value() ;

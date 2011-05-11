@@ -456,6 +456,10 @@ namespace Maemo
       check_interval(__PRETTY_FUNCTION__, x, 0, 59) ;
       p->rio()->mins |= 1ull << x ;
     }
+    void Event::Recurrence::setFillingGapsFlag()
+    {
+      p->rio()->flags |= RecurrenceFlags::Fill_Gaps ;
+    }
   }
 }
 

@@ -72,6 +72,7 @@ static void copy_recr(const recurrence_io_t &from, recurrence_pattern_t &to)
   to.mday = from.mday ;
   to.wday = from.wday & ((1<< 7)-1) ;
   to.mons = from.mons & ((1<<12)-1) ;
+  to.flags = from.flags ;
 }
 
 bool event_t::check_attributes(string &error_message, const attribute_t &a, bool empty_only)
@@ -230,6 +231,7 @@ event_t *event_t::from_dbus_iface(const event_io_t *eio)
 
 iodata::bit_codec *event_t::codec ;
 iodata::bit_codec *action_t::codec ;
+iodata::bit_codec *recurrence_pattern_t::codec ; // flags
 iodata::bit_codec *recurrence_pattern_t::mins_codec ;
 iodata::bit_codec *recurrence_pattern_t::hour_codec ;
 iodata::bit_codec *recurrence_pattern_t::mday_codec ;
@@ -250,6 +252,7 @@ void event_t::codec_initializer()
   log_debug() ;
   event_t::codec = new iodata::bit_codec ;
   action_t::codec = new iodata::bit_codec ;
+  recurrence_pattern_t::codec = new iodata::bit_codec ;
   recurrence_pattern_t::mins_codec = new iodata::bit_codec ;
   recurrence_pattern_t::hour_codec = new iodata::bit_codec ;
   recurrence_pattern_t::mday_codec = new iodata::bit_codec ;
@@ -294,6 +297,8 @@ void event_t::codec_initializer()
   REG(action_t::codec, ActionFlags, State_Served) ;
   REG(action_t::codec, ActionFlags, State_Aborted) ;
   REG(action_t::codec, ActionFlags, State_Failed) ;
+
+  REG(recurrence_pattern_t::codec, RecurrenceFlags, Fill_Gaps) ;
 #undef REG
   for(unsigned i=0; i<=Maemo::Timed::Number_of_Sys_Buttons; ++i)
     action_t::codec->register_name(ActionFlags::sys_button(i), QString("sys_button_%1").arg(i).toStdString()) ;
@@ -329,6 +334,7 @@ void event_t::codec_destructor()
 {
   delete event_t::codec ;
   delete action_t::codec ;
+  delete recurrence_pattern_t::codec ;
   delete recurrence_pattern_t::mins_codec ;
   delete recurrence_pattern_t::hour_codec ;
   delete recurrence_pattern_t::mday_codec ;
@@ -411,6 +417,7 @@ iodata::record *recurrence_pattern_t::save() const
   r->add("mday", mday, mday_codec) ; // XXX: 1-31, not zero
   r->add("wday", wday, wday_codec) ; // XXX: whole week, not zero
   r->add("mons", mons, mons_codec) ; // XXX: any month, not zero
+  r->add("flags", flags, codec) ;
   return r ;
 }
 
@@ -421,6 +428,7 @@ void recurrence_pattern_t::load(const iodata::record *r)
   mday = r->get("mday")->decode(mday_codec) ;
   wday = r->get("wday")->decode(wday_codec) ;
   mons = r->get("mons")->decode(mons_codec) ;
+  flags = r->get("flags")->decode(codec) ;
 }
 
 const char *action_t::cred_key() const

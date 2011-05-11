@@ -148,6 +148,7 @@ public:
   void everyDayOfWeek() ;
   void addHour(int x) ;
   void addMinute(int x) ;
+  void setFillingGapsFlag() ;
 } ;
 
 class Maemo::Timed::Event::List

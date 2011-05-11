@@ -77,13 +77,13 @@ const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::button_io
 QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::recurrence_io_t &x)
 {
   qdbusargument_structrure_wrapper o(out) ;
-  return out << x.mins << x.hour << x.mday << x.wday << x.mons ;
+  return out << x.mins << x.hour << x.mday << x.wday << x.mons << x.flags ;
 }
 
 const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::recurrence_io_t &x)
 {
   qdbusargument_structrure_wrapper_const i(in) ;
-  return in >> x.mins >> x.hour >> x.mday >> x.wday >> x.mons ;
+  return in >> x.mins >> x.hour >> x.mday >> x.wday >> x.mons >> x.flags ;
 }
 
 QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::event_io_t &x)
