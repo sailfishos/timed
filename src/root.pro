@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS = lib voland doc server simple-client fake-dialog-ui ticker logging-test ntp
+SUBDIRS = lib voland doc server simple-client fake-dialog-ui ticker logging-test ntp tz
 SUBDIRS += memory
 # SUBDIRS += arch
 CONFIG += ordered
