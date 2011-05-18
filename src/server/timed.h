@@ -75,11 +75,13 @@ private:
 
   bool nitz_supported ;
   string tz_by_default ;
+  bool first_boot_date_adjusted;
 
 public:
   bool is_nitz_supported() { return nitz_supported ; }
   const string &default_timezone() { return tz_by_default ; }
   const string &get_settings_path() { return settings_path ; }
+  void init_first_boot_hwclock_time_adjustment_check();
 
 private:
 
