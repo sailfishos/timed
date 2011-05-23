@@ -69,6 +69,7 @@ binary-arch: install
 	# Note: clockd must be started before alarmd
 	dh_compress
 	dh_fixperms
+	dh_installdeb
 	dh_makeshlibs
 # 	dh_pysupport
 	dh_makeshlibs --package=libtimed0 -V 'libtimed0 (>= 2.37)'

@@ -1,0 +1,3 @@
+#!/bin/sh -e
+
+echo skip: aegisfs --install /etc/aegisfs.d/timed.aegisfs.conf
