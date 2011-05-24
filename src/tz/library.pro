@@ -9,14 +9,14 @@ VERSION = 0.$$(TIMED_VERSION)
 CONFIG += qmlog
 
 HEADERS =
-SOURCES =
+SOURCES = api.cpp timezone.cpp
 
 INCLUDEPATH +=
 LIBS +=
 
 target.path = /usr/lib
 
-devheaders.files +=
+devheaders.files += tz api.h
 devheaders.path  = /usr/include/tz
 
 # prf.files = tz.prf
