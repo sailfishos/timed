@@ -514,6 +514,8 @@ int time_settings(int ac, char **av)
     {
       if(value=="auto")
         set.setTimezoneCellular() ;
+      else if (value=="manual")
+        set.setTimezoneManual("") ;
       else
         set.setTimezoneManual(value.c_str()) ;
     }
