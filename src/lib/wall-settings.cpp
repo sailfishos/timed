@@ -138,7 +138,7 @@ QString Maemo::Timed::WallClock::wall_settings_pimple_t::str() const
 {
   QString res ;
   QTextStream os(&res) ;
-  os << "{ opcodes='" ;
+  os << "{opcodes='" ;
   bool first = true ;
   using namespace WallOpcode ;
 #define _x(x) if(opcodes&x){if(!first)os<<"+";first=false;os<<#x;}
@@ -155,11 +155,10 @@ QString Maemo::Timed::WallClock::wall_settings_pimple_t::str() const
   _x(Op_Set_12) ;
 #undef _x
   os << "', " ;
-  os << " time_at_zero=" << time_at_zero.sec() << "," << time_at_zero.nano() ;
-  os << "', " ;
-  os << " offset=" << offset << ", " ;
-  os << " zone='" << zone << "'" ;
-  os << " valid=" << valid << "}" << flush ;
+  os << "time_at_zero=" << time_at_zero.str().c_str() << ", " ;
+  os << "offset=" << offset << ", " ;
+  os << "zone='" << zone << "', " ;
+  os << "valid=" << valid << "}" << flush ;
   return res ;
 }
 
