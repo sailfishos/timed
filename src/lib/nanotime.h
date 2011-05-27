@@ -58,6 +58,8 @@ struct nanotime_t
   bool operator<(int32_t x) const { return sec() < x ; }
   bool operator<(const nanotime_t x) const { return sec()<x.sec() or (sec()==x.sec() and nano()<x.nano()) ; }
   bool operator>(const nanotime_t x) const { return sec()>x.sec() or (sec()==x.sec() and nano()>x.nano()) ; }
+  bool operator<=(const nanotime_t x) const { return not operator > (x) ; }
+  bool operator>=(const nanotime_t x) const { return not operator < (x) ; }
 
   bool is_normalized() const { return NANO > nano() ; }
   void invalidate() { s=~0, ns=~0 ; }
