@@ -29,6 +29,9 @@ HEADERS += tz.h
 SOURCES += backup.cpp
 HEADERS += backup.h
 
+SOURCES += notification.cpp
+HEADERS += notification.h
+
 CONFIG += link_pkgconfig iodata
 PKGCONFIG += contextprovider-1.0 libpcrecpp dsme_dbus_if
 

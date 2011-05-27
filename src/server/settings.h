@@ -206,6 +206,7 @@ struct source_settings : public QObject
   void fix_etc_localtime() ;
   void postload_fix_manual_zone() ;
   void postload_fix_manual_offset() ;
+  void process_kernel_notification(const nanotime_t &jump_forwards) ;
 
 #if 0
   void cellular_information(const cellular_info_t &ci) ;

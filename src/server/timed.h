@@ -47,6 +47,7 @@
 #include "event.h"
 #include "peer.h"
 #include "dsme-mode.h"
+#include "notification.h"
 
 struct Timed : public QCoreApplication
 {
@@ -104,6 +105,7 @@ private:
   void init_cellular_services() ;
   void init_network_events() ;
   void init_apply_tz_settings() ;
+  void init_kernel_notification() ;
 
 public:
   void stop_machine() ;
@@ -183,6 +185,7 @@ private:
 
   QObject *backup_object ;
 public:
+  kernel_notification_t *notificator ;
   void invoke_signal(const nanotime_t &) ;
   void invoke_signal() { nanotime_t zero=0 ; invoke_signal(zero) ; }
   void clear_invokation_flag() { signal_invoked = false ; systime_back.set(0) ; }
@@ -196,6 +199,7 @@ private Q_SLOTS:
   void harmattan_init_done(int runlevel) ;
   void harmattan_desktop_visible() ;
   void harmattan_session_started() ;
+  void kernel_notification(const nanotime_t &jump_forwards) ;
 private:
   string harmattan_get_session_bus_address() ;
 public:

@@ -49,6 +49,7 @@
 #include "tz.h"
 #include "tzdata.h"
 #include "csd.h"
+#include "notification.h"
 
 static void spam()
 {
@@ -154,7 +155,11 @@ Timed::Timed(int ac, char **av) :
   log_debug() ;
 
   log_debug("applying time zone settings") ;
+
   init_apply_tz_settings() ;
+  log_debug() ;
+
+  init_kernel_notification() ;
 
   log_info("daemon is up and running") ;
 }
@@ -897,6 +902,8 @@ void Timed::invoke_signal(const nanotime_t &back)
 void Timed::send_time_settings()
 {
   log_debug() ;
+  log_debug("settings=%p", settings) ;
+  log_debug("settings->cellular_zone=%p", settings->cellular_zone) ;
   log_debug("settings->cellular_zone='%s'", settings->cellular_zone->zone().c_str()) ;
   nanotime_t diff = systime_back ;
   clear_invokation_flag() ;
@@ -1211,4 +1218,17 @@ string Timed::harmattan_get_session_bus_address()
   chomp(buffer) ;
   log_notice("new session bus address read: '%s'", buffer) ;
   return res==NULL ? "" : buffer ;
+}
+
+void Timed::init_kernel_notification()
+{
+  notificator = new kernel_notification_t ;
+  QObject::connect(notificator, SIGNAL(system_time_changed(const nanotime_t &)), this, SLOT(kernel_notification(const nanotime_t &))) ;
+  notificator->start() ;
+}
+
+void Timed::kernel_notification(const nanotime_t &jump_forwards)
+{
+  log_notice("KERNEL: system time changed by %s", jump_forwards.str().c_str()) ;
+  settings->process_kernel_notification(jump_forwards) ;
 }
