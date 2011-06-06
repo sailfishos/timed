@@ -14,7 +14,6 @@ Build-Depends: debhelper (>= 7),
  libcellular-qt-dev,
  libcreds2-dev,
  aegis-builder (>= 1.4),
- aegisfs,
  libsysinfo-dev,
  libdsme0.2.0-dev,
  python (>= 2.5), asciidoc, xsltproc, docbook-xsl, dblatex, graphviz, ttf-bitstream-vera
@@ -31,7 +30,7 @@ Standards-Version: 3.8.0
 Package: timed
 Conflicts: timehd (<< 2.0)
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, tzdata, tzdata-timed
+Depends: ${shlibs:Depends}, ${misc:Depends}, tzdata, tzdata-timed, aegisfs
 Description: time daemon
  The time daemon (timed) managing system time, time
  zone and settings, executing actions at given time and managing the event
