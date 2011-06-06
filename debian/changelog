@@ -1,8 +1,9 @@
 timed (2.48) unstable; urgency=low
 
-  * new version
+  * Fixes: NB#259115 - aegisfs registration
+  * Fixes: NB*255351 - lock screen doesn't show updated date if modified with "date" command
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 12 May 2011 12:33:59 +0300
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Mon, 06 Jun 2011 09:58:55 +0300
 
 timed (2.47) unstable; urgency=low
 
