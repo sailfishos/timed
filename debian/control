@@ -14,6 +14,7 @@ Build-Depends: debhelper (>= 7),
  libcellular-qt-dev,
  libcreds2-dev,
  aegis-builder (>= 1.4),
+ aegisfs,
  libsysinfo-dev,
  libdsme0.2.0-dev,
  python (>= 2.5), asciidoc, xsltproc, docbook-xsl, dblatex, graphviz, ttf-bitstream-vera
