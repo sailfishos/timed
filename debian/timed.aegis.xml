@@ -42,7 +42,7 @@
     <credential name="timed::TimedEventQueueWrite"/>
     <for path="/usr/bin/timed" />
   </request>
-  <!-- request context="INSTALL">
+  <request context="INSTALL">
     <credential name="aegisfs::AegisFSMountAdd" />
-  </request -->
+  </request>
 </aegis>
