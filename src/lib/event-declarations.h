@@ -66,6 +66,7 @@ public:
   Recurrence &addRecurrence() ;
   void setAlarmFlag() ;
   void setTriggerIfMissedFlag() ;
+  void setTriggerWhenAdjustingFlag() ;
   void setUserModeFlag() ;
   void setAlignedSnoozeFlag() ;
   void setReminderFlag() ;

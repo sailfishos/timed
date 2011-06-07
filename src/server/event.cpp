@@ -601,6 +601,9 @@ void event_t::run_actions(const vector<unsigned> &acts, unsigned begin, unsigned
       if (a.flags & ActionFlags::Send_Cookie)
         param["COOKIE"] = QString("%1").arg(cookie.value()) ;
 
+      if (flags & EventFlags::Trigger_When_Adjusting)
+        param["ADJUSTMENT"] = QString::fromStdString(state->machine->transition_time_adjustment.str()) ;
+
       if (a.flags & ActionFlags::Send_Event_Attributes)
         add_strings(param, attr.txt) ;
 
@@ -687,6 +690,15 @@ void event_t::run_actions(const vector<unsigned> &acts, unsigned begin, unsigned
     decimal << cookie.value() ;
     exp.GlobalReplace(decimal.str(), &cmd);
     log_debug("cmd='%s', COOKIE replaced", cmd.c_str()) ;
+  }
+  if (flags & EventFlags::Trigger_When_Adjusting)
+  {
+    string adj = state->machine->transition_time_adjustment.str() ;
+    log_debug("cmd='%s', ADJUSTMENT to be replaced by '%s'", cmd.c_str(), adj.c_str()) ;
+    using namespace pcrecpp ;
+    static RE exp("(<ADJUSTMENT>)|\\b(ADJUSTMENT)\\b", UTF8()) ;
+    exp.GlobalReplace(adj, &cmd);
+    log_debug("cmd='%s', ADJUSTMENT replaced", cmd.c_str()) ;
   }
   log_info("execuing command line action %u[%d]: '%s'", cookie.value(), exec_action_i, cmd.c_str());
   execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL) ;

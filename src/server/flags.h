@@ -97,8 +97,9 @@ namespace WallOpcode
         Keep_Alive              = 1<<11,
         Single_Shot             = 1<<12,
         Backup                  = 1<<13,
+        Trigger_When_Adjusting  = 1<<14,
 
-        Last_Client_Flag        = 1<<13,
+        Last_Client_Flag        = 1<<14,
         Client_Mask             = (Last_Client_Flag<<1)-1,
 
         Snoozing                = Last_Client_Flag << 1,

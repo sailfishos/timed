@@ -58,6 +58,7 @@ struct machine_t : public QObject
   std::map<uint32_t, abstract_cluster_t*> clusters ;
   std::deque <pair <event_t*, abstract_state_t*> > transition_queue ;
   ticker_t transition_start_time ;
+  nanotime_t transition_time_adjustment ;
   bool context_changed ;
   int dialog_discard_threshold ;
   int32_t signalled_bootup ;

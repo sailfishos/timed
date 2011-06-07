@@ -144,6 +144,11 @@ void Maemo::Timed::Event::setTriggerIfMissedFlag()
   p->eio.flags |= EventFlags::Trigger_If_Missed ;
 }
 
+void Maemo::Timed::Event::setTriggerWhenAdjustingFlag()
+{
+  p->eio.flags |= EventFlags::Trigger_When_Adjusting ;
+}
+
 void Maemo::Timed::Event::setUserModeFlag()
 {
   p->eio.flags |= EventFlags::User_Mode ;

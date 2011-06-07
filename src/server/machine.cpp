@@ -187,6 +187,7 @@ machine_t::machine_t(const Timed *daemon) : timed(daemon)
   log_debug() ;
 
   transition_start_time = ticker_t(0) ;
+  transition_time_adjustment.set(0) ;
   log_debug() ;
   next_cookie = 1 ;
   log_debug() ;
@@ -313,6 +314,7 @@ void machine_t::process_transition_queue()
   // log_debug("processing done,  states: %s tqueue: %s" , s_states().c_str(), s_transition_queue().c_str()) ;
   update_rtc_alarm() ;
   transition_start_time = ticker_t(0) ;
+  transition_time_adjustment.set(0) ;
   if(queue_changed)
     emit queue_to_be_saved() ;
   if(context_changed)
@@ -413,6 +415,8 @@ void machine_t::reshuffle_queue(const nanotime_t &back)
       event_t *e = *it ;
       bool snoozing = e->flags & EventFlags::Snoozing ;
       bool system_time_changing = not back.is_zero() ;
+      bool queued = state == state_queued ;
+      bool trigger_when_ajusting = e->flags & EventFlags::Trigger_When_Adjusting ;
 
       if (snoozing and system_time_changing)
       {
@@ -422,6 +426,13 @@ void machine_t::reshuffle_queue(const nanotime_t &back)
 
       if (snoozing)
         continue ;
+
+      if (queued and system_time_changing and trigger_when_ajusting)
+      {
+        state_armed->go_to(e) ;
+        transition_time_adjustment = back ;
+        continue ;
+      }
 
       if (e->has_ticker() and not system_time_changing)
         continue ;

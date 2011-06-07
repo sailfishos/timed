@@ -498,6 +498,7 @@ void state_due_t::enter(event_t *e)
 
   e->flags &= ~ EventFlags::Missed ; // this flag will be set in MISSED state
   e->flags &= ~ EventFlags::Snoozing ;
+  e->flags &= ~ EventFlags::Trigger_When_Adjusting ; // A due event will be discarded soon
   e->last_triggered = machine->transition_started() ;
 
   abstract_state_t *next_state = machine->state_armed ;
@@ -768,6 +769,8 @@ void state_served_t::enter(event_t *e)
 
   if (e->has_recurrence())
     machine->state_recurred->go_to(e) ;
+  else if (e->flags & EventFlags::Trigger_When_Adjusting)
+    machine->state_scheduler->go_to(e) ;
   else if (e->to_be_keeped())
     machine->state_tranquil->go_to(e) ;
   else
