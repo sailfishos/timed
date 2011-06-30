@@ -1,8 +1,8 @@
 timed (2.50) unstable; urgency=low
 
-  * new version
+  * dependency on tzdata-libicu
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 29 Jun 2011 21:16:41 +0300
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 30 Jun 2011 05:21:33 +0300
 
 timed (2.49) unstable; urgency=low
 
