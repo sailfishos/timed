@@ -67,6 +67,7 @@ public:
   void setAlarmFlag() ;
   void setTriggerIfMissedFlag() ;
   void setTriggerWhenAdjustingFlag() ;
+  void setTriggerWhenSettingsChangedFlag() ;
   void setUserModeFlag() ;
   void setAlignedSnoozeFlag() ;
   void setReminderFlag() ;

@@ -417,6 +417,7 @@ void machine_t::reshuffle_queue(const nanotime_t &back)
       bool system_time_changing = not back.is_zero() ;
       bool queued = state == state_queued ;
       bool trigger_when_ajusting = e->flags & EventFlags::Trigger_When_Adjusting ;
+      bool trigger_when_settings_changed = e->flags & EventFlags::Trigger_When_Settings_Changed ;
 
       if (snoozing and system_time_changing)
       {
@@ -431,6 +432,12 @@ void machine_t::reshuffle_queue(const nanotime_t &back)
       {
         state_armed->go_to(e) ;
         transition_time_adjustment = back ;
+        continue ;
+      }
+
+      if (queued and trigger_when_settings_changed)
+      {
+        state_armed->go_to(e) ;
         continue ;
       }
 
