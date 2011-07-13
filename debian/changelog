@@ -1,8 +1,8 @@
 timed (2.52) unstable; urgency=low
 
-  * disabling logging for negative log level
+  * Fixes: NB#272492 - disabling logging for negative log level
 
- -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 13 Jul 2011 11:25:48 +0300
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 13 Jul 2011 12:55:08 +0300
 
 timed (2.51) unstable; urgency=low
 
