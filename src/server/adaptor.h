@@ -306,6 +306,7 @@ public slots:
   {
     log_notice("DBUS::com.nokia.time.set_log_level(%d) by %s", n, PEER) ;
     qmlog::log_level(n) ;
+    qmlog::enable(0<=n) ;
     log_notice("New log level: %d", qmlog::log_level()) ;
   }
 } ;
