@@ -78,6 +78,7 @@ tz_oracle_t::tz_oracle_t()
 
   timer = new QTimer ;
   timer->setSingleShot(true) ;
+  connect(timer, SIGNAL(timeout()), this, SLOT(waiting_for_nitz_timeout())) ;
 }
 
 tz_oracle_t::~tz_oracle_t()

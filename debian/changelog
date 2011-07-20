@@ -1,3 +1,9 @@
+timed (2.53) unstable; urgency=low
+
+  * Fixes: NB#273463 - setting timezone by MCC in large countries
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Wed, 20 Jul 2011 13:45:03 +0300
+
 timed (2.52) unstable; urgency=low
 
   * Fixes: NB#272492 - disabling logging for negative log level
