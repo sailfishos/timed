@@ -41,8 +41,8 @@ int main(int ac, char **av)
 
   // fprintf(stderr, "getcwd returned '%s'", p?cwd:"(null)") ;
 
-  int syslog_level = qmlog::Full ;
-  int varlog_level = qmlog::Full ;
+  int syslog_level = qmlog::Warning ;
+  int varlog_level = qmlog::Warning ;
 
   bool enable_qmlog = true ;
 
