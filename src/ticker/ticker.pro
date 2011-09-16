@@ -31,4 +31,4 @@ else \
   QMAKE_CXXFLAGS  += -Wall -Wno-psabi
 }
 
-QMAKE_CXXFLAGS  += -Wall -Werror
+QMAKE_CXXFLAGS  += -Wall
