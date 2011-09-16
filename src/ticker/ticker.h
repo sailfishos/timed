@@ -160,6 +160,7 @@ public:
     else
       log_critical("not connected to D-Bus signal, no time change signal will be delivered!") ;
 
+#if HAVE_DSME
     QDBusConnection dsme_bus = QDBusConnection::systemBus() ;
     QString path = Maemo::Timed::objpath() ;
     QString iface = Maemo::Timed::interface() ;
@@ -169,6 +170,7 @@ public:
       log_notice("connected to system bus signal '%s'", signal.toStdString().c_str()) ;
     else
       log_critical("not connected to system bus signal '%s'",signal.toStdString().c_str()) ;
+#endif
 
 #if USE_CELLULAR_QT
     cellular_time = new Cellular::NetworkTime ;
@@ -243,6 +245,7 @@ public slots:
     cout << endl ;
     log_notice("Settings change signalled (system time %schanged), new settings: %s", time ? "" : "not ", info.str().toStdString().c_str()) ;
   }
+#if HAVE_DSME
   void dsme(int value)
   {
     ostringstream os ;
@@ -255,6 +258,7 @@ public slots:
     cout << endl ;
     log_notice("%s", os.str().c_str()) ;
   }
+#endif
 #if NEW_CELLULAR
 
 #if NEW_CELLULAR_BROKEN_SIGNAL

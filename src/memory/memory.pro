@@ -4,7 +4,10 @@ QT += dbus
 CONFIG += qmlog
 CONFIG += link_pkgconfig
 
-PKGCONFIG += contextprovider-1.0 libpcrecpp dsme_dbus_if
+PKGCONFIG += contextprovider-1.0 libpcrecpp
+CONFIG(dsme_dbus_if) {
+    PKGCONFIG += dsme_dbus_if
+}
 
 TEMPLATE = app
 TARGET = memory

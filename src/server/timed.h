@@ -46,7 +46,9 @@
 #include "csd.h"
 #include "event.h"
 #include "peer.h"
+#if HAVE_DSME
 #include "dsme-mode.h"
+#endif
 #include "notification.h"
 
 struct Timed : public QCoreApplication
@@ -165,7 +167,9 @@ private:
   unsigned ping_period, ping_max_num ;
   string events_path, settings_path ;
   int default_gmt_offset ;
+#if HAVE_DSME
   dsme_mode_t *dsme_mode_handler ;
+#endif
   std::string current_mode ;
   void load_rc() ;
   void load_settings() ;
@@ -196,8 +200,10 @@ public Q_SLOTS:
 private Q_SLOTS:
   void queue_threshold_timeout() ;
   void unix_signal(int signo) ;
+#if HAVE_DSME
   void dsme_mode_reported(const string &mode) ;
   void dsme_mode_is_changing() ;
+#endif
   void harmattan_init_done(int runlevel) ;
   void harmattan_desktop_visible() ;
   void harmattan_session_started() ;

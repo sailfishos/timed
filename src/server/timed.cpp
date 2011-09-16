@@ -41,7 +41,9 @@
 #include "customization.type.h"
 #include "settings.type.h"
 
+#if HAVE_DSME
 #include "interfaces.h"
+#endif
 #include "adaptor.h"
 #include "backup.h"
 #include "timed.h"
@@ -329,9 +331,11 @@ static bool init_act_dead_v2(bool use_status_files)
 void Timed::init_device_mode()
 {
   current_mode = "(unknown)" ;
+#if HAVE_DSME
   dsme_mode_handler = new dsme_mode_t ;
   QObject::connect(dsme_mode_handler, SIGNAL(mode_is_changing()), this, SLOT(dsme_mode_is_changing())) ;
   QObject::connect(dsme_mode_handler, SIGNAL(mode_reported(const string &)), this, SLOT(dsme_mode_reported(const string &))) ;
+#if F_ACTING_DEAD
   if (scratchbox_mode)
   {
     int is_act_dead = is_act_dead_by_status_files() ;
@@ -341,7 +345,11 @@ void Timed::init_device_mode()
     device_mode_reached(user_mode) ;
   }
   else
+#endif
+  {
     dsme_mode_handler->init_request() ;
+  }
+#endif
   const char *startup_path="/com/nokia/startup/signal", *startup_iface="com.nokia.startup.signal" ;
   const char *desktop_visible_slot = SLOT(harmattan_desktop_visible()) ;
   const char *init_done_slot = SLOT(harmattan_init_done(int)) ;
@@ -829,6 +837,7 @@ void Timed::system_owner_changed(const QString &name, const QString &oldowner, c
 
 void Timed::send_next_bootup_event(int value)
 {
+#if HAVE_DSME
   QDBusConnection dsme = QDBusConnection::systemBus() ;
   QString path = Maemo::Timed::objpath() ;
   QString iface = Maemo::Timed::interface() ;
@@ -839,6 +848,7 @@ void Timed::send_next_bootup_event(int value)
     log_info("signal %s(%d) sent", string_q_to_std(signal).c_str(), value) ;
   else
     log_error("Failed to send the signal %s(%d) on system bus: %s", string_q_to_std(signal).c_str(), value, dsme.lastError().message().toStdString().c_str()) ;
+#endif
 }
 
 void Timed::event_queue_changed()
@@ -1092,6 +1102,7 @@ void Timed::open_epoch()
   time_operational_p->setValue(true) ;
 }
 
+#if HAVE_DSME
 void Timed::dsme_mode_is_changing()
 {
   log_notice("mode is changing, freezeng machine") ;
@@ -1123,6 +1134,7 @@ void Timed::dsme_mode_reported(const string &mode)
   start_voland_watcher() ;
 #endif
 }
+#endif
 
 void Timed::connect_to_session_bus(const string &session_bus_address)
 {
