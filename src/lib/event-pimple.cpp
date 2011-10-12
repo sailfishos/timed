@@ -389,10 +389,21 @@ void Maemo::Timed::Event::Button::setSnoozeDefault()
   p->bio()->snooze = +1 ;
 }
 
+int Maemo::Timed::Event::Button::snooze() const
+{
+  return p->bio()->snooze ;
+}
+
 void Maemo::Timed::Event::Button::setAttribute(const QString &key, const QString &value)
 {
   set_attribute(__PRETTY_FUNCTION__, p->bio()->attr, key, value) ;
 }
+
+const QMap<QString, QString>& Maemo::Timed::Event::Button::attributes() const
+{
+  return p->bio()->attr.txt ;
+}
+
 #include <QDebug>
 namespace Maemo
 {

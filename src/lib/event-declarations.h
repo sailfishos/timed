@@ -131,7 +131,9 @@ class Maemo::Timed::Event::Button
   friend class Event ;
 public:
   void setAttribute(const QString &key, const QString &value) ;
+  const QMap<QString, QString>& attributes() const ;
   void setSnooze(int sec) ;
+  int snooze() const ;
   void setSnoozeDefault() ;
 } ;
 
