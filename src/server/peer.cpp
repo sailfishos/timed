@@ -79,29 +79,23 @@ string peer::info_by_dbus_message(const QDBusMessage &message)
 }
 #endif
 
-peer_t::peer_t(bool mode)
+peer_t::peer_t(bool mode, QObject *parent) :
+  QObject(parent)
 {
   enabled = mode ;
 }
 
 peer_t::~peer_t()
 {
-  for (map<string, peer_entry_t*>::const_iterator it=entries.begin(); it!=entries.end(); ++it)
-    delete it->second ;
 }
 
 string peer_t::info(const string &name)
 {
-  const peer_entry_t *entry = NULL ;
   if (enabled)
   {
-    map<string, peer_entry_t*>::const_iterator it = entries.find(name) ;
-    if (it!=entries.end())
-      entry = it->second ;
-    else
-      entry = entries[name] = new peer_entry_t(name) ;
+      new peer_entry_t(name, this) ;
   }
-  return str_printf("PEER::%s %s", name.c_str(), entry ? entry->get_info().c_str() : "DISABLED") ;
+  return str_printf("PEER::%s %s", name.c_str(), enabled ? "info requested" : "DISABLED") ;
 }
 
 peer_entry_t::peer_entry_t(const string &new_name, QObject *parent) :
@@ -121,6 +115,8 @@ peer_entry_t::peer_entry_t(const string &new_name, QObject *parent) :
 
 void peer_entry_t::reply_slot(QDBusPendingCallWatcher *w)
 {
+  std::string info ;
+
   if (w!=watcher)
     log_critical("QDBusPendingCallWatcher mismatch: w=%p, watcher=%p", w, watcher) ;
   QDBusPendingReply<uint> reply = *w ;
@@ -144,12 +140,12 @@ void peer_entry_t::reply_slot(QDBusPendingCallWatcher *w)
       info = str_printf("pid=%d, cmdline='%s', creds=%s", pid, cmd_line.c_str(), cred.str().c_str()) ;
     }
   }
-  delete watcher ;
-  watcher = NULL ;
   log_notice("PEER::%s %s", name.c_str(), info.c_str()) ;
+  delete this;
 }
 
 peer_entry_t::~peer_entry_t()
 {
   delete watcher ;
+  watcher = NULL ;
 }

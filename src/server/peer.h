@@ -31,24 +31,21 @@
 struct peer_t ;
 struct peer_entry_t ;
 
-struct peer_t
+struct peer_t : public QObject
 {
-  peer_t(bool mode) ;
+  peer_t(bool mode, QObject *parent=NULL) ;
   ~peer_t() ;
   std::string info(const std::string &) ;
 private:
   bool enabled ;
-  std::map<std::string, peer_entry_t*> entries ;
 } ;
 
 struct peer_entry_t : public QObject
 {
   peer_entry_t(const std::string &new_name, QObject *parent=NULL) ;
   virtual ~peer_entry_t() ;
-  bool is_pending() const { return watcher != NULL ; }
-  std::string get_info() const { return info ; }
 
-  std::string name, info ;
+  std::string name ;
   QDBusPendingCallWatcher *watcher ;
 
   Q_OBJECT ;
