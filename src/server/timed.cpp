@@ -84,6 +84,7 @@ static void spam()
 
 Timed::Timed(int ac, char **av) :
   QCoreApplication(ac, av),
+  peer(NULL),
 //  session_bus_name("timed_not_connected"),
   session_bus("*** not available ***")
 //  session_bus_address("invalid_address")
@@ -98,8 +99,10 @@ Timed::Timed(int ac, char **av) :
   init_unix_signal_handler() ;
   log_debug() ;
 
-  init_dbus_peer_info() ;
-  log_debug() ;
+  QMLOG_IF
+    init_dbus_peer_info() ;
+    log_debug() ;
+  QMLOG_ENDIF ;
 
   // init_act_dead() ;
   // init_dsme_mode() ;
@@ -177,7 +180,6 @@ void Timed::init_unix_signal_handler()
 // * Enable questioning of Dbus peers
 void Timed::init_dbus_peer_info()
 {
-  // TODO: make it depening on qmlog::enabled() ?
   peer =  new peer_t(true) ;
 }
 

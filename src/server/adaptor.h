@@ -49,7 +49,7 @@
 #define SQC str().toStdString().c_str()
 #define QC toStdString().c_str()
 #define CC c_str()
-#define PEER timed->peer->info(message.service().toStdString()).c_str()
+#define PEER timed->peer ? timed->peer->info(message.service().toStdString()).c_str() : qPrintable(message.service())
 
 static QDateTime time_t_to_qdatetime(time_t t)
 {
