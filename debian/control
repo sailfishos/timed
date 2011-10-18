@@ -1,7 +1,7 @@
 Source: timed
 Section: misc
 Priority: optional
-Maintainer: Ilya Dogolazky <ilya.dogolazky@nokia.com>
+Maintainer: Victor Portnov <victor.portnov@teleca.com>
 Uploaders: Philippe De Swert <philippe.de-swert@nokia.com>
 Build-Depends: debhelper (>= 7),
  libqt4-dev (>= 4.7),

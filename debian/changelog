@@ -1,3 +1,9 @@
+timed (2.54) unstable; urgency=low
+
+  * Fixes: NB#270501 - peer caching is removed
+
+ -- Victor Portnov <victor.portnov@teleca.com>  Tue, 18 Oct 2011 17:08:06 +0400
+
 timed (2.53) unstable; urgency=low
 
   * Fixes: NB#273463 - setting timezone by MCC in large countries
