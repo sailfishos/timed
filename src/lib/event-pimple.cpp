@@ -435,6 +435,10 @@ namespace Maemo
         return false ;
       return true ;
     }
+    int Event::Recurrence::months() const
+    {
+      return p->rio()->mons ;
+    }
     void Event::Recurrence::addMonth(int x)
     {
       check_interval(__PRETTY_FUNCTION__, x, 1, 12) ;
@@ -443,6 +447,10 @@ namespace Maemo
     void Event::Recurrence::everyMonth()
     {
       p->rio()->mons = 07777 ;
+    }
+    int Event::Recurrence::daysOfMonth() const
+    {
+      return p->rio()->mday ;
     }
     void Event::Recurrence::addDayOfMonth(int x)
     {
@@ -457,6 +465,10 @@ namespace Maemo
     {
       p->rio()->mday = 0xFFFFFFFF ;
     }
+    int Event::Recurrence::daysOfWeek() const
+    {
+      return p->rio()->wday ;
+    }
     void Event::Recurrence::addDayOfWeek(int x)
     {
       check_interval(__PRETTY_FUNCTION__, x, 0, 7) ;
@@ -467,15 +479,27 @@ namespace Maemo
       const uint32_t full_week = 0177 ;
       p->rio()->wday = full_week ;
     }
+    int Event::Recurrence::hours() const
+    {
+      return p->rio()->hour ;
+    }
     void Event::Recurrence::addHour(int x)
     {
       check_interval(__PRETTY_FUNCTION__, x, 0, 23) ;
       p->rio()->hour |= 1u << x ;
     }
+    quint64 Event::Recurrence::minutes() const
+    {
+      return p->rio()->mins ;
+    }
     void Event::Recurrence::addMinute(int x)
     {
       check_interval(__PRETTY_FUNCTION__, x, 0, 59) ;
       p->rio()->mins |= 1ull << x ;
+    }
+    bool Event::Recurrence::fillingGapsFlag() const
+    {
+      return p->rio()->flags & RecurrenceFlags::Fill_Gaps ;
     }
     void Event::Recurrence::setFillingGapsFlag()
     {

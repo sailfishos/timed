@@ -143,15 +143,21 @@ class Maemo::Timed::Event::Recurrence
   friend class Event ;
 public:
   bool isEmpty() const ;
+  int months() const ;
   void addMonth(int x) ;
   void everyMonth() ;
+  int daysOfMonth() const ;
   void addDayOfMonth(int x) ;
   void addLastDayOfMonth() ;
   void everyDayOfMonth() ;
+  int daysOfWeek() const ;
   void addDayOfWeek(int x) ;
   void everyDayOfWeek() ;
+  int hours() const ;
   void addHour(int x) ;
+  quint64 minutes() const ;
   void addMinute(int x) ;
+  bool fillingGapsFlag() const ;
   void setFillingGapsFlag() ;
 } ;
 
