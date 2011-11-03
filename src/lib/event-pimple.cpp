@@ -117,17 +117,56 @@ const QString& Maemo::Timed::Event::timezone() const
   return p->eio.t_zone ;
 }
 
+Maemo::Timed::Event::Action* Maemo::Timed::Event::getAction(event_action_pimple_t *pa) const
+{
+  if(pa == NULL)
+    throw Exception(__PRETTY_FUNCTION__, "invalid argument") ;
+
+  Maemo::Timed::Event::Action *ea = pa->ptr.get() ;
+  
+  if(ea == NULL)
+  {
+    ea = new Maemo::Timed::Event::Action ;
+    ea->p = pa ;
+    pa->ptr = std::auto_ptr<Action> (ea) ;
+  }
+  return ea ;
+}
+
 Maemo::Timed::Event::Action & Maemo::Timed::Event::addAction()
 {
-  Maemo::Timed::Event::Action *ea = new Maemo::Timed::Event::Action ;
   Maemo::Timed::event_action_pimple_t *pa = new Maemo::Timed::event_action_pimple_t ;
-  ea->p = pa ;
   pa->action_no = p->a.size() ;
-  pa->ptr = std::auto_ptr<Action> (ea) ;
   pa->eio = & p->eio ;
   p->a.push_back(pa) ;
   p->eio.actions.resize(pa->action_no+1) ;
-  return *ea ;
+  return *getAction(pa) ;
+}
+
+int Maemo::Timed::Event::actionsCount() const
+{
+  return p->a.size() ;
+}
+
+Maemo::Timed::Event::Action & Maemo::Timed::Event::action(int index)
+{
+  return *getAction(p->a.at(index)) ;
+}
+
+Maemo::Timed::Event::Button* Maemo::Timed::Event::getButton(event_button_pimple_t *pb) const
+{
+  if(pb == NULL)
+    throw Exception(__PRETTY_FUNCTION__, "invalid argument") ;
+
+  Maemo::Timed::Event::Button *eb = pb->ptr.get() ;
+  
+  if(eb == NULL)
+  {
+    eb = new Maemo::Timed::Event::Button ;
+    eb->p = pb ;
+    pb->ptr = std::auto_ptr<Button> (eb) ;
+  }
+  return eb ;
 }
 
 Maemo::Timed::Event::Button & Maemo::Timed::Event::addButton()
@@ -135,15 +174,21 @@ Maemo::Timed::Event::Button & Maemo::Timed::Event::addButton()
   setReminderFlag() ;
   if(p->b.size() >= Max_Number_of_App_Buttons)
     throw Exception(__PRETTY_FUNCTION__, "too many application buttons") ;
-  Maemo::Timed::Event::Button *eb = new Maemo::Timed::Event::Button ;
   Maemo::Timed::event_button_pimple_t *pb = new Maemo::Timed::event_button_pimple_t ;
-  eb->p = pb ;
   pb->button_no = p->b.size() ;
-  pb->ptr = std::auto_ptr<Button> (eb) ;
   pb->eio = & p->eio ;
   p->b.push_back(pb) ;
   p->eio.buttons.resize(pb->button_no+1) ;
-  return *eb ;
+  return *getButton(pb) ;
+}
+int Maemo::Timed::Event::buttonsCount() const
+{
+  return p->b.size() ;
+}
+
+Maemo::Timed::Event::Button & Maemo::Timed::Event::button(int index)
+{
+  return *getButton(p->b.at(index)) ;
 }
 
 unsigned Maemo::Timed::Event::getMaximalButtonAmount()
@@ -156,17 +201,40 @@ unsigned Maemo::Timed::Event::getSysButtonAmount()
   return Maemo::Timed::Number_of_Sys_Buttons ;
 }
 
+Maemo::Timed::Event::Recurrence* Maemo::Timed::Event::getRecurrence(event_recurrence_pimple_t *pr) const
+{
+  if(pr == NULL)
+    throw Exception(__PRETTY_FUNCTION__, "invalid argument") ;
+
+  Maemo::Timed::Event::Recurrence *er = pr->ptr.get() ;
+
+  if(er == NULL)
+  {
+    er = new Maemo::Timed::Event::Recurrence ;
+    er->p = pr ;
+    pr->ptr = std::auto_ptr<Recurrence> (er) ;
+  }
+  return er ;
+}
+
 Maemo::Timed::Event::Recurrence & Maemo::Timed::Event::addRecurrence()
 {
-  Maemo::Timed::Event::Recurrence *er = new Maemo::Timed::Event::Recurrence ;
   Maemo::Timed::event_recurrence_pimple_t *pr = new Maemo::Timed::event_recurrence_pimple_t ;
-  er->p = pr ;
   pr->recurrence_no = p->r.size() ;
-  pr->ptr = std::auto_ptr<Recurrence> (er) ;
   pr->eio = & p->eio ;
   p->r.push_back(pr) ;
   p->eio.recrs.resize(pr->recurrence_no+1) ;
-  return *er ;
+  return *getRecurrence(pr) ;
+}
+
+int Maemo::Timed::Event::recurrencesCount() const
+{
+  return p->r.size() ;
+}
+
+Maemo::Timed::Event::Recurrence & Maemo::Timed::Event::recurrence(int index)
+{
+  return *getRecurrence(p->r.at(index)) ;
 }
 
 void Maemo::Timed::Event::setAlarmFlag()

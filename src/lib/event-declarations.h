@@ -67,10 +67,16 @@ public:
   void setTimezone(const QString &timezone) ;
   const QString& timezone() const ;
   Action &addAction() ;
+  int actionsCount() const ;
+  Action &action(int index) ;
   Button &addButton() ;
+  int buttonsCount() const ;
+  Button &button(int index) ;
   static unsigned getMaximalButtonAmount() ;
   static unsigned getSysButtonAmount() ;
   Recurrence &addRecurrence() ;
+  int recurrencesCount() const ;
+  Recurrence &recurrence(int index) ;
   void setAlarmFlag() ;
   bool alarmFlag() const ;
   void setTriggerIfMissedFlag() ;
@@ -116,6 +122,9 @@ private:
   friend class Interface ;
   friend class List ;
   QVariant dbus_output(const char *) const ;
+  Action* getAction(event_action_pimple_t *pa) const ;
+  Button* getButton(event_button_pimple_t *pb) const ;
+  Recurrence* getRecurrence(event_recurrence_pimple_t *pr) const ;
 } ;
 
 class Maemo::Timed::Event::Action
