@@ -65,7 +65,7 @@ public:
   unsigned hour() const ;
   unsigned minute() const ;
   void setTimezone(const QString &timezone) ;
-  const QString& timezone() const ;
+  const QString &timezone() const ;
   Action &addAction() ;
   int actionsCount() const ;
   Action &action(int index) ;
@@ -111,7 +111,7 @@ public:
   void setTimeoutSnooze(int tsz_length) ;
   int timeoutSnoozeLenght() const ;
   void setAttribute(const QString &key, const QString &value) ;
-  const QMap<QString, QString>& attributes() const ;
+  const QMap<QString, QString> &attributes() const ;
   void credentialDrop(const QString &token) ;
   QStringList droppedCredentials() const ;
   void credentialAccrue(const QString &token) ;
@@ -122,9 +122,9 @@ private:
   friend class Interface ;
   friend class List ;
   QVariant dbus_output(const char *) const ;
-  Action* getAction(event_action_pimple_t *pa) const ;
-  Button* getButton(event_button_pimple_t *pb) const ;
-  Recurrence* getRecurrence(event_recurrence_pimple_t *pr) const ;
+  Action * getAction(event_action_pimple_t *pa) const ;
+  Button * getButton(event_button_pimple_t *pb) const ;
+  Recurrence * getRecurrence(event_recurrence_pimple_t *pr) const ;
 } ;
 
 class Maemo::Timed::Event::Action
@@ -132,7 +132,7 @@ class Maemo::Timed::Event::Action
   friend class Event ;
   struct event_action_pimple_t *p ;
 public:
-  const QMap<QString, QString>& attributes() const ;
+  const QMap<QString, QString> &attributes() const ;
   void setAttribute(const QString &key, const QString &value) ;
   void runCommand() ;
   void runCommand(const QString &cmd) ;
@@ -197,7 +197,7 @@ class Maemo::Timed::Event::Button
   friend class Event ;
 public:
   void setAttribute(const QString &key, const QString &value) ;
-  const QMap<QString, QString>& attributes() const ;
+  const QMap<QString, QString> &attributes() const ;
   void setSnooze(int sec) ;
   int snooze() const ;
   void setSnoozeDefault() ;

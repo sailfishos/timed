@@ -112,12 +112,12 @@ void Maemo::Timed::Event::setTimezone(const QString &timezone)
   p->eio.t_zone = timezone ;
 }
 
-const QString& Maemo::Timed::Event::timezone() const
+const QString & Maemo::Timed::Event::timezone() const
 {
   return p->eio.t_zone ;
 }
 
-Maemo::Timed::Event::Action* Maemo::Timed::Event::getAction(event_action_pimple_t *pa) const
+Maemo::Timed::Event::Action * Maemo::Timed::Event::getAction(event_action_pimple_t *pa) const
 {
   if(pa == NULL)
     throw Exception(__PRETTY_FUNCTION__, "invalid argument") ;
@@ -153,7 +153,7 @@ Maemo::Timed::Event::Action & Maemo::Timed::Event::action(int index)
   return *getAction(p->a.at(index)) ;
 }
 
-Maemo::Timed::Event::Button* Maemo::Timed::Event::getButton(event_button_pimple_t *pb) const
+Maemo::Timed::Event::Button * Maemo::Timed::Event::getButton(event_button_pimple_t *pb) const
 {
   if(pb == NULL)
     throw Exception(__PRETTY_FUNCTION__, "invalid argument") ;
@@ -201,7 +201,7 @@ unsigned Maemo::Timed::Event::getSysButtonAmount()
   return Maemo::Timed::Number_of_Sys_Buttons ;
 }
 
-Maemo::Timed::Event::Recurrence* Maemo::Timed::Event::getRecurrence(event_recurrence_pimple_t *pr) const
+Maemo::Timed::Event::Recurrence * Maemo::Timed::Event::getRecurrence(event_recurrence_pimple_t *pr) const
 {
   if(pr == NULL)
     throw Exception(__PRETTY_FUNCTION__, "invalid argument") ;
@@ -410,7 +410,7 @@ void Maemo::Timed::Event::setAttribute(const QString &key, const QString &value)
   set_attribute(__PRETTY_FUNCTION__, p->eio.attr, key, value) ;
 }
 
-const QMap<QString, QString>& Maemo::Timed::Event::attributes() const
+const QMap<QString, QString> & Maemo::Timed::Event::attributes() const
 {
   return p->eio.attr.txt ;
 }
@@ -471,7 +471,7 @@ void Maemo::Timed::Event::Action::setAttribute(const QString &key, const QString
 {
   set_attribute(__PRETTY_FUNCTION__, p->aio()->attr, key, value) ;
 }
-const QMap<QString, QString>& Maemo::Timed::Event::Action::attributes() const
+const QMap<QString, QString> & Maemo::Timed::Event::Action::attributes() const
 {
   return p->aio()->attr.txt ;
 }
@@ -751,7 +751,7 @@ void Maemo::Timed::Event::Button::setAttribute(const QString &key, const QString
   set_attribute(__PRETTY_FUNCTION__, p->bio()->attr, key, value) ;
 }
 
-const QMap<QString, QString>& Maemo::Timed::Event::Button::attributes() const
+const QMap<QString, QString> & Maemo::Timed::Event::Button::attributes() const
 {
   return p->bio()->attr.txt ;
 }
