@@ -36,6 +36,8 @@ struct Maemo::Timed::event_pimple_t
 {
  ~event_pimple_t() ;
   struct event_io_t eio ;
+  event_pimple_t() {} ;
+  event_pimple_t(const event_io_t &e_io) ;
   std::vector<event_action_pimple_t*> a ;
   std::vector<event_button_pimple_t*> b ;
   std::vector<event_recurrence_pimple_t*> r ;

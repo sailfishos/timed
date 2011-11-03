@@ -22,6 +22,60 @@
 **                                                                        **
 ***************************************************************************/
 #include "interface.h"
+#include "event-io.h"
+#include "event-declarations.h"
+#include "exception.h"
+
+Maemo::Timed::EventDBusReply::EventDBusReply(const QDBusMessage &reply)
+  : eio_reply(NULL)
+  , event_p(NULL)
+{
+  eio_reply = new QDBusReply<event_io_t>(reply) ;
+  if(eio_reply->isValid())
+    event_p =  new Event(eio_reply->value()) ;
+}
+
+Maemo::Timed::EventDBusReply::EventDBusReply(const EventDBusReply &reply)
+  : eio_reply(NULL)
+  , event_p(NULL)
+{
+  eio_reply = new QDBusReply<event_io_t>(*reply.eio_reply) ;
+  if(eio_reply->isValid())
+    event_p =  new Event(eio_reply->value()) ;
+}
+
+Maemo::Timed::EventDBusReply::~EventDBusReply()
+{
+  delete event_p ;
+  delete eio_reply ;
+}
+
+bool Maemo::Timed::EventDBusReply::isValid () const
+{
+  return eio_reply->isValid() ;
+}
+
+const QDBusError & Maemo::Timed::EventDBusReply::error()
+{
+  return eio_reply->error() ;
+}
+
+Maemo::Timed::Event & Maemo::Timed::EventDBusReply::value()
+{
+  return (Maemo::Timed::Event &)(*this) ;
+}
+
+const Maemo::Timed::Event & Maemo::Timed::EventDBusReply::value() const
+{
+  return (Maemo::Timed::Event &)(*this) ;
+}
+
+Maemo::Timed::EventDBusReply::operator Maemo::Timed::Event & ()
+{
+  if(!isValid())
+    throw Exception(__PRETTY_FUNCTION__, "invalid EventDBusReply") ;
+  return *event_p ;
+}
 
 bool Maemo::Timed::Interface::settings_changed_connect(QObject *object, const char *slot)
 {
@@ -44,6 +98,11 @@ bool Maemo::Timed::Interface::settings_changed_disconnect(QObject *object, const
   static const char *o = Maemo::Timed::objpath() ;
   static const char *i = Maemo::Timed::interface() ;
   return Maemo::Timed::bus().disconnect(s,o,i,"settings_changed",object,slot) ;
+}
+
+Maemo::Timed::EventDBusReply Maemo::Timed::Interface::get_event_sync (uint32_t cookie)
+{
+  return call("get_event", cookie) ;
 }
 
 Maemo::Timed::Interface::Interface(QObject *parent)

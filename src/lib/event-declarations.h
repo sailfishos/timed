@@ -43,6 +43,7 @@ namespace Maemo
     struct event_button_pimple_t ;
     struct event_recurrence_pimple_t ;
     struct event_list_pimple_t ;
+    struct event_io_t ;
   }
 } ;
 
@@ -120,7 +121,9 @@ public:
  ~Event() ;
 private:
   friend class Interface ;
+  friend class EventDBusReply ;
   friend class List ;
+  Event(const event_io_t& eio) ;
   QVariant dbus_output(const char *) const ;
   Action * getAction(event_action_pimple_t *pa) const ;
   Button * getButton(event_button_pimple_t *pb) const ;

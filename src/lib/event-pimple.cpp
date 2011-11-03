@@ -48,9 +48,47 @@ static void check_interval(const char *pretty, int value, int min, int max)
     throw Maemo::Timed::Exception(pretty, "value out of range") ;
 }
 
+Maemo::Timed::event_pimple_t::event_pimple_t(const event_io_t &e_io)
+  : eio(e_io)
+{
+  for(int ai = 0; ai < eio.actions.count(); ++ai)
+  {
+    Maemo::Timed::event_action_pimple_t *pa = new Maemo::Timed::event_action_pimple_t ;
+    pa->action_no = ai ;
+    pa->eio = & eio ;
+    a.push_back(pa) ;
+  }
+
+  for(int bi = 0; bi < eio.buttons.count(); ++bi)
+  {
+    Maemo::Timed::event_button_pimple_t *pb = new Maemo::Timed::event_button_pimple_t ;
+    pb->button_no = bi ;
+    pb->eio = & eio ;
+    b.push_back(pb) ;
+  }
+
+  for(int ri = 0; ri < eio.recrs.count(); ++ri)
+  {
+    Maemo::Timed::event_recurrence_pimple_t *pr = new Maemo::Timed::event_recurrence_pimple_t ;
+    pr->recurrence_no = ri ;
+    pr->eio = & eio ;
+    r.push_back(pr) ;
+  }
+}
+
 Maemo::Timed::Event::Event()
 {
   p = new event_pimple_t ;
+}
+
+Maemo::Timed::Event::Event(const event_io_t &eio)
+{
+  p = new event_pimple_t(eio) ;
+
+  if(p->b.size() > Max_Number_of_App_Buttons)
+    throw Exception(__PRETTY_FUNCTION__, "too many application buttons") ;
+  if(p->b.size() > 0)
+    setReminderFlag() ;
 }
 
 Maemo::Timed::Event::~Event()
