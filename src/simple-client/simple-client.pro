@@ -17,6 +17,7 @@ CONFIG += link_pkgconfig
 PKGCONFIG += libpcrecpp
 
 SOURCES = client.cpp
+SOURCES += pretty-print.cpp
 
 INSTALLS += target
 target.path = $$(DESTDIR)/usr/bin
