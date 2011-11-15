@@ -140,6 +140,16 @@ public slots:
     timed->add_events(lst, res, message) ;
   }
 
+  void get_event(uint cookie, const QDBusMessage &message, Maemo::Timed::event_io_t &res)
+  {
+    log_notice("DBUS::com.nokia.time.get_event(cookie=%u) by %s", cookie, PEER) ;
+    if(!timed->get_event(cookie_t(cookie), res))
+    {
+      QDBusMessage errorReply = message.createErrorReply(QDBusError::InvalidArgs, "Cookie is invalid or not found") ;
+      Maemo::Timed::bus().send(errorReply) ;
+    }
+  }
+
   uint replace_event(const Maemo::Timed::event_io_t &x, uint old, const QDBusMessage &message)
   {
     log_notice("DBUS::com.nokia.time.replace_event(APP='%s', cookie=%u) by %s", x.attr.txt["APPLICATION"].QC, old, PEER) ;

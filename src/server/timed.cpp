@@ -789,6 +789,25 @@ void Timed::add_events(const Maemo::Timed::event_list_io_t &events, QList<QVaria
   am->add_events(events, res, message) ;
 }
 
+bool Timed::get_event(cookie_t c, Maemo::Timed::event_io_t &res)
+{
+  if (!c.is_valid())
+  {
+    log_error("[%d]: cookie is invalid", c.value()) ;
+    return false;
+  }
+
+  event_t *event = am->find_event(c) ;
+  if(event == NULL)
+  {
+    log_error("[%d]: cookie is not found", c.value()) ;
+    return false;
+  }
+
+  event_t::to_dbus_iface(*event, res);
+  return true ;
+}
+
 bool Timed::dialog_response(cookie_t c, int value)
 {
   log_debug("Responded: %d(value=%d)", c.value(), value) ;
