@@ -102,7 +102,7 @@ struct Maemo::Timed::event_io_t
   // 6. Additional parameters
   int32_t tsz_max, tsz_length ;
   QVector<cred_modifier_io_t> cred_modifiers ;
-  event_io_t() { ticker = t_year = t_month = t_day = t_hour = t_minute = flags = tsz_max = tsz_length = 0 ; }
+  event_io_t() { ticker = t_year = t_month = t_day = t_hour = t_minute = flags = tsz_max = 0 ; tsz_length = +1 ; }
 } ;
 
 struct Maemo::Timed::event_list_io_t
