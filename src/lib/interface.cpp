@@ -77,6 +77,74 @@ Maemo::Timed::EventDBusReply::operator Maemo::Timed::Event & ()
   return *event_p ;
 }
 
+
+
+
+Maemo::Timed::EventDBusPendingReply::EventDBusPendingReply(const QDBusPendingCall &call)
+  : eio_reply(NULL)
+  , event_p(NULL)
+{
+  eio_reply = new QDBusPendingReply<event_io_t>(call) ;
+  if(eio_reply->isValid())
+    event_p =  new Event(eio_reply->value()) ;
+}
+
+Maemo::Timed::EventDBusPendingReply::~EventDBusPendingReply()
+{
+  delete event_p ;
+  delete eio_reply ;
+}
+
+bool Maemo::Timed::EventDBusPendingReply::isValid () const
+{
+  return eio_reply->isValid() ;
+}
+
+bool Maemo::Timed::EventDBusPendingReply::isError () const
+{
+  return eio_reply->isError() ;
+}
+
+bool Maemo::Timed::EventDBusPendingReply::isFinished () const
+{
+  return eio_reply->isFinished() ;
+}
+
+QDBusError Maemo::Timed::EventDBusPendingReply::error() const
+{
+  return eio_reply->error() ;
+}
+
+Maemo::Timed::Event & Maemo::Timed::EventDBusPendingReply::value()
+{
+  return (Maemo::Timed::Event &)(*this) ;
+}
+
+const Maemo::Timed::Event & Maemo::Timed::EventDBusPendingReply::value() const
+{
+  return (Maemo::Timed::Event &)(*this) ;
+}
+
+void Maemo::Timed::EventDBusPendingReply::waitForFinished()
+{
+  if(!isFinished())
+  {
+    eio_reply->waitForFinished() ;
+    if(eio_reply->isValid())
+      event_p =  new Event(eio_reply->value()) ;
+  }
+}
+
+Maemo::Timed::EventDBusPendingReply::operator Maemo::Timed::Event & ()
+{
+  waitForFinished() ;
+  if(!isValid())
+    throw Exception(__PRETTY_FUNCTION__, "invalid EventDBusReply") ;
+  return *event_p ;
+}
+
+
+
 bool Maemo::Timed::Interface::settings_changed_connect(QObject *object, const char *slot)
 {
   static const char *s = Maemo::Timed::service() ;
@@ -103,6 +171,11 @@ bool Maemo::Timed::Interface::settings_changed_disconnect(QObject *object, const
 Maemo::Timed::EventDBusReply Maemo::Timed::Interface::get_event_sync (uint32_t cookie)
 {
   return call("get_event", cookie) ;
+}
+
+QDBusPendingCall Maemo::Timed::Interface::get_event_async (uint32_t cookie)
+{
+  return asyncCall("get_event", cookie) ;
 }
 
 Maemo::Timed::Interface::Interface(QObject *parent)

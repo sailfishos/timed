@@ -82,6 +82,23 @@ namespace Maemo
       QDBusReply<event_io_t> *eio_reply ;
       Maemo::Timed::Event *event_p ;
     } ;
+    class EventDBusPendingReply
+    {
+    public:
+      EventDBusPendingReply(const QDBusPendingCall &call) ;
+      ~EventDBusPendingReply() ;
+      bool isValid () const ;
+      bool isError () const ;
+      bool isFinished () const ;
+      QDBusError error() const ;
+      Event &value() ;
+      const Event &value() const ;
+      void waitForFinished() ;
+      operator Event & () ;
+    private:
+      QDBusPendingReply<event_io_t> *eio_reply ;
+      Maemo::Timed::Event *event_p ;
+    } ;
     // struct signal_receiver ;
     class Interface : public QDBusAbstractInterface
     {
@@ -103,6 +120,7 @@ namespace Maemo
       qtdbus_method(add_event, (const Maemo::Timed::Event &e), e.dbus_output(__PRETTY_FUNCTION__)) ;
       qtdbus_method(add_events, (const Maemo::Timed::Event::List &ee), ee.dbus_output()) ;
       Maemo::Timed::EventDBusReply get_event_sync (uint32_t cookie) ;
+      QDBusPendingCall get_event_async (uint32_t cookie) ;
       qtdbus_method(cancel, (uint32_t cookie), cookie) ;
       qtdbus_method(cancel_events, (const QList<uint> &cookies), QVariant::fromValue(cookies)) ;
       qtdbus_method(replace_event, (const Maemo::Timed::Event &e, uint32_t cookie), e.dbus_output(__PRETTY_FUNCTION__), cookie) ;

@@ -122,6 +122,7 @@ public:
 private:
   friend class Interface ;
   friend class EventDBusReply ;
+  friend class EventDBusPendingReply ;
   friend class List ;
   Event(const event_io_t& eio) ;
   QVariant dbus_output(const char *) const ;
