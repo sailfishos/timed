@@ -789,6 +789,16 @@ void Maemo::Timed::Event::Button::setAttribute(const QString &key, const QString
   set_attribute(__PRETTY_FUNCTION__, p->bio()->attr, key, value) ;
 }
 
+void Maemo::Timed::Event::Button::removeAttribute(const QString &key)
+{
+  p->bio()->attr.txt.remove(key) ;
+}
+
+void Maemo::Timed::Event::Button::clearAttributes()
+{
+  p->bio()->attr.txt.clear() ;
+}
+
 const QMap<QString, QString> & Maemo::Timed::Event::Button::attributes() const
 {
   return p->bio()->attr.txt ;
