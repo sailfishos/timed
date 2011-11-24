@@ -26,6 +26,11 @@
 
 #include "event-io.h"
 
+bool Maemo::Timed::cred_modifier_io_t::operator==(const Maemo::Timed::cred_modifier_io_t &crio) const
+{
+  return token == crio.token && accrue == crio.accrue ;
+}
+
 QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::attribute_io_t &x)
 {
   qdbusargument_structrure_wrapper o(out) ;

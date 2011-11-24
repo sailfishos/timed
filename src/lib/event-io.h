@@ -56,6 +56,7 @@ struct Maemo::Timed::cred_modifier_io_t
   QString token ;
   bool accrue ;
   cred_modifier_io_t() : accrue(false) { }
+  bool operator==(const cred_modifier_io_t &crio) const ;
 } ;
 
 struct Maemo::Timed::action_io_t

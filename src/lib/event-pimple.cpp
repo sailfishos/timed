@@ -461,6 +461,17 @@ static void add_cred_modifier(QVector<Maemo::Timed::cred_modifier_io_t> &x, cons
   x[i].accrue = accrue ;
 }
 
+static void remove_cred_modifier(QVector<Maemo::Timed::cred_modifier_io_t> &x, const QString &token, bool accrue)
+{
+  Maemo::Timed::cred_modifier_io_t lookFor ;
+  lookFor.token = token ;
+  lookFor.accrue = accrue ;
+  for(int i = x.indexOf(lookFor); i != -1; i = x.indexOf(lookFor))
+  {
+    x.remove(i) ;
+  }
+}
+
 static QStringList filterCredTokens(QVector<Maemo::Timed::cred_modifier_io_t> &cred_modifiers, bool accrue)
 {
   QStringList ret ;
@@ -509,6 +520,14 @@ void Maemo::Timed::Event::Action::setAttribute(const QString &key, const QString
 {
   set_attribute(__PRETTY_FUNCTION__, p->aio()->attr, key, value) ;
 }
+void Maemo::Timed::Event::Action::removeAttribute(const QString &key)
+{
+  p->aio()->attr.txt.remove(key) ;
+}
+void Maemo::Timed::Event::Action::clearAttributes()
+{
+  p->aio()->attr.txt.clear() ;
+}
 const QMap<QString, QString> & Maemo::Timed::Event::Action::attributes() const
 {
   return p->aio()->attr.txt ;
@@ -538,6 +557,12 @@ void Maemo::Timed::Event::Action::runCommand(const QString &cmd, const QString &
 const QString Maemo::Timed::Event::Action::runCommandUser() const
 {
   return p->aio()->attr.txt.value("USER") ;
+}
+void Maemo::Timed::Event::Action::removeCommand()
+{
+  p->aio()->flags &= ~ActionFlags::Run_Command ;
+  removeAttribute("COMMAND") ;
+  removeAttribute("USER") ;
 }
 void Maemo::Timed::Event::Action::dbusMethodCall()
 {
@@ -572,6 +597,14 @@ const QString Maemo::Timed::Event::Action::dbusMethodCallInterface() const
 {
   return dbusMethodCallFlag() ? p->aio()->attr.txt.value("DBUS_INTERFACE") : QString() ;
 }
+void Maemo::Timed::Event::Action::removeDbusMethodCall()
+{
+  p->aio()->flags &= ~ActionFlags::DBus_Method ;
+  removeAttribute("DBUS_SERVICE") ;
+  removeAttribute("DBUS_METHOD") ;
+  removeAttribute("DBUS_PATH") ;
+  removeAttribute("DBUS_INTERFACE") ;
+}
 void Maemo::Timed::Event::Action::dbusSignal()
 {
   p->aio()->flags |= ActionFlags::DBus_Signal ;
@@ -601,6 +634,13 @@ const QString Maemo::Timed::Event::Action::dbusSignalInterface() const
 {
   return dbusSignalFlag() ? p->aio()->attr.txt.value("DBUS_INTERFACE") : QString() ;
 }
+void Maemo::Timed::Event::Action::removeDbusSignal()
+{
+  p->aio()->flags &= ~ActionFlags::DBus_Signal ;
+  removeAttribute("DBUS_PATH") ;
+  removeAttribute("DBUS_SIGNAL") ;
+  removeAttribute("DBUS_INTERFACE") ;
+}
 void Maemo::Timed::Event::Action::setSendCookieFlag()
 {
   p->aio()->flags |= ActionFlags::Send_Cookie ;
@@ -608,6 +648,10 @@ void Maemo::Timed::Event::Action::setSendCookieFlag()
 bool Maemo::Timed::Event::Action::sendCookieFlag() const
 {
   return p->aio()->flags & ActionFlags::Send_Cookie ;
+}
+void Maemo::Timed::Event::Action::clearSendCookieFlag()
+{
+  p->aio()->flags &= ~ActionFlags::Send_Cookie ;
 }
 void Maemo::Timed::Event::Action::setSendAttributesFlag()
 {
@@ -617,6 +661,10 @@ bool Maemo::Timed::Event::Action::sendAttributesFlag() const
 {
   return p->aio()->flags & ActionFlags::Send_Action_Attributes ;
 }
+void Maemo::Timed::Event::Action::clearSendAttributesFlag()
+{
+  p->aio()->flags &= ~ActionFlags::Send_Action_Attributes ;
+}
 void Maemo::Timed::Event::Action::setSendEventAttributesFlag()
 {
   p->aio()->flags |= ActionFlags::Send_Event_Attributes ;
@@ -624,6 +672,10 @@ void Maemo::Timed::Event::Action::setSendEventAttributesFlag()
 bool Maemo::Timed::Event::Action::sendEventAttributesFlag() const
 {
   return p->aio()->flags & ActionFlags::Send_Event_Attributes ;
+}
+void Maemo::Timed::Event::Action::clearSendEventAttributesFlag()
+{
+  p->aio()->flags &= ~ActionFlags::Send_Event_Attributes ;
 }
 void Maemo::Timed::Event::Action::setUseSystemBusFlag()
 {
@@ -633,6 +685,10 @@ bool Maemo::Timed::Event::Action::useSystemBusFlag() const
 {
   return p->aio()->flags & ActionFlags::Use_System_Bus ;
 }
+void Maemo::Timed::Event::Action::clearUseSystemBusFlag()
+{
+  p->aio()->flags &= ~ActionFlags::Use_System_Bus ;
+}
 void Maemo::Timed::Event::Action::whenQueued()
 {
   p->aio()->flags |= ActionFlags::State_Queued ;
@@ -640,6 +696,10 @@ void Maemo::Timed::Event::Action::whenQueued()
 bool Maemo::Timed::Event::Action::whenQueuedFlag() const
 {
   return p->aio()->flags & ActionFlags::State_Queued ;
+}
+void Maemo::Timed::Event::Action::clearWhenQueuedFlag()
+{
+  p->aio()->flags &= ~ActionFlags::State_Queued ;
 }
 void Maemo::Timed::Event::Action::whenDue()
 {
@@ -649,6 +709,10 @@ bool Maemo::Timed::Event::Action::whenDueFlag() const
 {
   return p->aio()->flags & ActionFlags::State_Due ;
 }
+void Maemo::Timed::Event::Action::clearWhenDueFlag()
+{
+  p->aio()->flags &= ~ActionFlags::State_Due ;
+}
 void Maemo::Timed::Event::Action::whenMissed()
 {
   p->aio()->flags |= ActionFlags::State_Missed ;
@@ -656,6 +720,10 @@ void Maemo::Timed::Event::Action::whenMissed()
 bool Maemo::Timed::Event::Action::whenMissedFlag() const
 {
   return p->aio()->flags & ActionFlags::State_Missed ;
+}
+void Maemo::Timed::Event::Action::clearWhenMissedFlag()
+{
+  p->aio()->flags &= ~ActionFlags::State_Missed ;
 }
 void Maemo::Timed::Event::Action::whenTriggered()
 {
@@ -665,6 +733,10 @@ bool Maemo::Timed::Event::Action::whenTriggeredFlag() const
 {
   return p->aio()->flags & ActionFlags::State_Triggered ;
 }
+void Maemo::Timed::Event::Action::clearWhenTriggeredFlag()
+{
+  p->aio()->flags &= ~ActionFlags::State_Triggered ;
+}
 void Maemo::Timed::Event::Action::whenSnoozed()
 {
   p->aio()->flags |= ActionFlags::State_Snoozed ;
@@ -672,6 +744,10 @@ void Maemo::Timed::Event::Action::whenSnoozed()
 bool Maemo::Timed::Event::Action::whenSnoozedFlag() const
 {
   return p->aio()->flags & ActionFlags::State_Snoozed ;
+}
+void Maemo::Timed::Event::Action::clearWhenSnoozedFlag()
+{
+  p->aio()->flags &= ~ActionFlags::State_Snoozed ;
 }
 void Maemo::Timed::Event::Action::whenServed()
 {
@@ -681,6 +757,10 @@ bool Maemo::Timed::Event::Action::whenServedFlag() const
 {
   return p->aio()->flags & ActionFlags::State_Served ;
 }
+void Maemo::Timed::Event::Action::clearWhenServedFlag()
+{
+  p->aio()->flags &= ~ActionFlags::State_Served ;
+}
 void Maemo::Timed::Event::Action::whenAborted()
 {
   p->aio()->flags |= ActionFlags::State_Aborted ;
@@ -688,6 +768,10 @@ void Maemo::Timed::Event::Action::whenAborted()
 bool Maemo::Timed::Event::Action::whenAbortedFlag() const
 {
   return p->aio()->flags & ActionFlags::State_Aborted ;
+}
+void Maemo::Timed::Event::Action::clearWhenAbortedFlag()
+{
+  p->aio()->flags &= ~ActionFlags::State_Aborted ;
 }
 void Maemo::Timed::Event::Action::whenFailed()
 {
@@ -697,6 +781,10 @@ bool Maemo::Timed::Event::Action::whenFailedFlag() const
 {
   return p->aio()->flags & ActionFlags::State_Failed ;
 }
+void Maemo::Timed::Event::Action::clearWhenFailedFlag()
+{
+  p->aio()->flags &= ~ActionFlags::State_Failed ;
+}
 void Maemo::Timed::Event::Action::whenFinalized()
 {
   p->aio()->flags |= ActionFlags::State_Finalized ;
@@ -705,6 +793,10 @@ bool Maemo::Timed::Event::Action::whenFinalizedFlag() const
 {
   return p->aio()->flags & ActionFlags::State_Finalized ;
 }
+void Maemo::Timed::Event::Action::clearWhenFinalizedFlag()
+{
+  p->aio()->flags &= ~ActionFlags::State_Finalized ;
+}
 void Maemo::Timed::Event::Action::whenTranquil()
 {
   p->aio()->flags |= ActionFlags::State_Tranquil ;
@@ -712,6 +804,10 @@ void Maemo::Timed::Event::Action::whenTranquil()
 bool Maemo::Timed::Event::Action::whenTranquilFlag() const
 {
   return p->aio()->flags & ActionFlags::State_Tranquil ;
+}
+void Maemo::Timed::Event::Action::clearWhenTranquilFlag()
+{
+  p->aio()->flags &= ~ActionFlags::State_Tranquil ;
 }
 void Maemo::Timed::Event::Action::whenButton(const Event::Button &x)
 {
@@ -732,6 +828,13 @@ QVector<int> Maemo::Timed::Event::Action::whenButtons() const
   }
   return ret;
 }
+void Maemo::Timed::Event::Action::clearWhenButton(const Event::Button &x)
+{
+  if(p->eio != x.p->eio)
+    throw Exception(__PRETTY_FUNCTION__, "invalid argument") ;
+  int xn = x.p->button_no ;
+  p->aio()->flags &= ~(ActionFlags::State_App_Button_1 << xn) ;
+}
 void Maemo::Timed::Event::Action::whenSysButton(int x)
 {
   if(x<0 || x>Maemo::Timed::Number_of_Sys_Buttons)
@@ -750,6 +853,12 @@ QVector<int> Maemo::Timed::Event::Action::whenSysButtons() const
   }
   return ret ;
 }
+void Maemo::Timed::Event::Action::clearWhenSysButton(int x)
+{
+  if(x<0 || x>Maemo::Timed::Number_of_Sys_Buttons)
+    throw Exception(__PRETTY_FUNCTION__, "invalid argument") ;
+  p->aio()->flags &= ~(ActionFlags::State_Sys_Button_0 << x) ;
+}
 void Maemo::Timed::Event::Action::credentialDrop(const QString &token)
 {
   add_cred_modifier(p->aio()->cred_modifiers, token, false) ;
@@ -758,6 +867,10 @@ QStringList Maemo::Timed::Event::Action::droppedCredentials() const
 {
   return filterCredTokens(p->aio()->cred_modifiers, false) ;
 }
+void Maemo::Timed::Event::Action::removeCredentialDrop(const QString &token)
+{
+  remove_cred_modifier(p->aio()->cred_modifiers, token, false) ;
+}
 void Maemo::Timed::Event::Action::credentialAccrue(const QString &token)
 {
   add_cred_modifier(p->aio()->cred_modifiers, token, true) ;
@@ -765,6 +878,14 @@ void Maemo::Timed::Event::Action::credentialAccrue(const QString &token)
 QStringList Maemo::Timed::Event::Action::accruedCredentials() const
 {
   return filterCredTokens(p->aio()->cred_modifiers, true) ;
+}
+void Maemo::Timed::Event::Action::removeCredentialAccrue(const QString &token)
+{
+  remove_cred_modifier(p->aio()->cred_modifiers, token, true) ;
+}
+void Maemo::Timed::Event::Action::clearCredentialModifiers()
+{
+  p->aio()->cred_modifiers.clear() ;
 }
 
 void Maemo::Timed::Event::Button::setSnooze(int value)
