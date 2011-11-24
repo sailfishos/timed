@@ -218,19 +218,31 @@ public:
   int months() const ;
   void addMonth(int x) ;
   void everyMonth() ;
+  void removeMonth(int x) ;
+  void removeEveryMonth() ;
   int daysOfMonth() const ;
   void addDayOfMonth(int x) ;
   void addLastDayOfMonth() ;
   void everyDayOfMonth() ;
+  void removeDayOfMonth(int x) ;
+  void removeLastDayOfMonth() ;
+  void removeEveryDayOfMonth() ;
   int daysOfWeek() const ;
   void addDayOfWeek(int x) ;
   void everyDayOfWeek() ;
+  void removeDayOfWeek(int x) ;
+  void removeEveryDayOfWeek() ;
   int hours() const ;
   void addHour(int x) ;
+  void removeHour(int x) ;
+  void removeEveryHour() ;
   quint64 minutes() const ;
   void addMinute(int x) ;
+  void removeMinute(int x) ;
+  void removeEveryMinute() ;
   bool fillingGapsFlag() const ;
   void setFillingGapsFlag() ;
+  void clearFillingGapsFlag() ;
 } ;
 
 class Maemo::Timed::Event::List

@@ -848,6 +848,15 @@ namespace Maemo
     {
       p->rio()->mons = 07777 ;
     }
+    void Event::Recurrence::removeMonth(int x)
+    {
+      check_interval(__PRETTY_FUNCTION__, x, 1, 12) ;
+      p->rio()->mons &= ~(1u << (x-1)) ;
+    }
+    void Event::Recurrence::removeEveryMonth()
+    {
+      p->rio()->mons = 0 ;
+    }
     int Event::Recurrence::daysOfMonth() const
     {
       return p->rio()->mday ;
@@ -865,6 +874,19 @@ namespace Maemo
     {
       p->rio()->mday = 0xFFFFFFFF ;
     }
+    void Event::Recurrence::removeDayOfMonth(int x)
+    {
+      check_interval(__PRETTY_FUNCTION__, x, 1, 31) ;
+      p->rio()->mday &= ~(1u << x) ;
+    }
+    void Event::Recurrence::removeLastDayOfMonth()
+    {
+      p->rio()->mday &= ~(1 << 0) ;
+    }
+    void Event::Recurrence::removeEveryDayOfMonth()
+    {
+      p->rio()->mday = 0 ;
+    }
     int Event::Recurrence::daysOfWeek() const
     {
       return p->rio()->wday ;
@@ -879,6 +901,15 @@ namespace Maemo
       const uint32_t full_week = 0177 ;
       p->rio()->wday = full_week ;
     }
+    void Event::Recurrence::removeDayOfWeek(int x)
+    {
+      check_interval(__PRETTY_FUNCTION__, x, 0, 7) ;
+      p->rio()->wday &= ~(1u << (x==7 ? 0 : x)) ;
+    }
+    void Event::Recurrence::removeEveryDayOfWeek()
+    {
+      p->rio()->wday = 0 ;
+    }
     int Event::Recurrence::hours() const
     {
       return p->rio()->hour ;
@@ -887,6 +918,15 @@ namespace Maemo
     {
       check_interval(__PRETTY_FUNCTION__, x, 0, 23) ;
       p->rio()->hour |= 1u << x ;
+    }
+    void Event::Recurrence::removeHour(int x)
+    {
+      check_interval(__PRETTY_FUNCTION__, x, 0, 23) ;
+      p->rio()->hour &= ~(1u << x) ;
+    }
+    void Event::Recurrence::removeEveryHour()
+    {
+      p->rio()->hour = 0 ;
     }
     quint64 Event::Recurrence::minutes() const
     {
@@ -897,6 +937,15 @@ namespace Maemo
       check_interval(__PRETTY_FUNCTION__, x, 0, 59) ;
       p->rio()->mins |= 1ull << x ;
     }
+    void Event::Recurrence::removeMinute(int x)
+    {
+      check_interval(__PRETTY_FUNCTION__, x, 0, 59) ;
+      p->rio()->mins &= ~(1ull << x) ;
+    }
+    void Event::Recurrence::removeEveryMinute()
+    {
+      p->rio()->mins = 0ull ;
+    }
     bool Event::Recurrence::fillingGapsFlag() const
     {
       return p->rio()->flags & RecurrenceFlags::Fill_Gaps ;
@@ -904,6 +953,10 @@ namespace Maemo
     void Event::Recurrence::setFillingGapsFlag()
     {
       p->rio()->flags |= RecurrenceFlags::Fill_Gaps ;
+    }
+    void Event::Recurrence::clearFillingGapsFlag()
+    {
+      p->rio()->flags &= ~RecurrenceFlags::Fill_Gaps ;
     }
   }
 }
