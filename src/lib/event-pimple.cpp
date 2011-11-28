@@ -191,6 +191,26 @@ Maemo::Timed::Event::Action & Maemo::Timed::Event::action(int index)
   return *getAction(p->a.at(index)) ;
 }
 
+void Maemo::Timed::Event::removeAction(int index)
+{
+  p->eio.actions.remove(index) ;
+
+  delete p->a[index] ;
+  p->a.erase(p->a.begin() + index) ;
+  for(unsigned i = index; i < p->a.size(); ++i)
+  {
+    p->a[i]->action_no = i ;
+  }
+}
+
+void Maemo::Timed::Event::clearActions()
+{
+  p->eio.actions.clear() ;
+  for(unsigned i=0; i<p->a.size(); ++i)
+    delete p->a[i] ;
+  p->a.clear() ;
+}
+
 Maemo::Timed::Event::Button * Maemo::Timed::Event::getButton(event_button_pimple_t *pb) const
 {
   if(pb == NULL)
@@ -222,6 +242,44 @@ Maemo::Timed::Event::Button & Maemo::Timed::Event::addButton()
 int Maemo::Timed::Event::buttonsCount() const
 {
   return p->b.size() ;
+}
+
+void Maemo::Timed::Event::removeButton(int index)
+{
+  vector<event_action_pimple_t*>::iterator a_it;
+  for(a_it = p->a.begin(); a_it != p->a.end(); ++a_it)
+  {
+    Maemo::Timed::Event::Action *ea = getAction(*a_it) ;
+    ea->clearWhenButton(*getButton(p->b[index])) ;
+  }
+
+  p->eio.buttons.remove(index) ;
+
+  delete p->b[index] ;
+  p->b.erase(p->b.begin() + index) ;
+  for(unsigned i = index; i < p->b.size(); ++i)
+  {
+    p->b[i]->button_no = i ;
+  }
+}
+
+void Maemo::Timed::Event::clearButtons()
+{
+  vector<event_action_pimple_t*>::iterator a_it;
+  vector<event_button_pimple_t*>::iterator b_it;
+  for(a_it = p->a.begin(); a_it != p->a.end(); ++a_it)
+  {
+    Maemo::Timed::Event::Action *ea = getAction(*a_it) ;
+    for(b_it = p->b.begin(); b_it != p->b.end(); ++b_it)
+    {
+      ea->clearWhenButton(*getButton(*b_it)) ;
+    }
+  }
+  p->eio.buttons.clear() ;
+  for(unsigned i=0; i<p->b.size(); ++i)
+    delete p->b[i] ;
+  p->b.clear() ;
+  clearReminderFlag() ;
 }
 
 Maemo::Timed::Event::Button & Maemo::Timed::Event::button(int index)
@@ -270,6 +328,29 @@ int Maemo::Timed::Event::recurrencesCount() const
   return p->r.size() ;
 }
 
+void Maemo::Timed::Event::removeRecurrence(int index)
+{
+  p->eio.recrs.remove(index) ;
+
+  delete p->r[index] ;
+  p->r.erase(p->r.begin() + index) ;
+  for(unsigned i = index; i < p->r.size(); ++i)
+  {
+    p->r[i]->recurrence_no = i ;
+  }
+}
+
+void Maemo::Timed::Event::clearRecurrences()
+{
+  p->eio.recrs.clear() ;
+
+  for(unsigned i = 0; i < p->r.size(); ++i)
+  {
+    delete p->r[i] ;
+  }
+  p->r.clear() ;
+}
+
 Maemo::Timed::Event::Recurrence & Maemo::Timed::Event::recurrence(int index)
 {
   return *getRecurrence(p->r.at(index)) ;
@@ -285,6 +366,11 @@ bool Maemo::Timed::Event::alarmFlag() const
   return p->eio.flags & EventFlags::Alarm ;
 }
 
+void Maemo::Timed::Event::clearAlarmFlag()
+{
+  p->eio.flags &= ~EventFlags::Alarm ;
+}
+
 void Maemo::Timed::Event::setTriggerIfMissedFlag()
 {
   p->eio.flags |= EventFlags::Trigger_If_Missed ;
@@ -293,6 +379,11 @@ void Maemo::Timed::Event::setTriggerIfMissedFlag()
 bool Maemo::Timed::Event::triggerIfMissedFlag() const
 {
   return p->eio.flags & EventFlags::Trigger_If_Missed ;
+}
+
+void Maemo::Timed::Event::clearTriggerIfMissedFlag()
+{
+  p->eio.flags &= ~EventFlags::Trigger_If_Missed ;
 }
 
 void Maemo::Timed::Event::setTriggerWhenAdjustingFlag()
@@ -305,6 +396,11 @@ bool Maemo::Timed::Event::triggerWhenAdjustingFlag() const
   return p->eio.flags & EventFlags::Trigger_When_Adjusting ;
 }
 
+void Maemo::Timed::Event::clearTriggerWhenAdjustingFlag()
+{
+  p->eio.flags &= ~EventFlags::Trigger_When_Adjusting ;
+}
+
 void Maemo::Timed::Event::setTriggerWhenSettingsChangedFlag()
 {
   p->eio.flags |= EventFlags::Trigger_When_Settings_Changed ;
@@ -313,6 +409,11 @@ void Maemo::Timed::Event::setTriggerWhenSettingsChangedFlag()
 bool Maemo::Timed::Event::triggerWhenSettingsChangedFlag() const
 {
   return p->eio.flags & EventFlags::Trigger_When_Settings_Changed ;
+}
+
+void Maemo::Timed::Event::clearTriggerWhenSettingsChangedFlag()
+{
+  p->eio.flags &= ~EventFlags::Trigger_When_Settings_Changed ;
 }
 
 void Maemo::Timed::Event::setUserModeFlag()
@@ -325,6 +426,11 @@ bool Maemo::Timed::Event::userModeFlag() const
   return p->eio.flags & EventFlags::User_Mode ;
 }
 
+void Maemo::Timed::Event::clearUserModeFlag()
+{
+  p->eio.flags &= ~EventFlags::User_Mode ;
+}
+
 void Maemo::Timed::Event::setAlignedSnoozeFlag()
 {
   p->eio.flags |= EventFlags::Aligned_Snooze ;
@@ -333,6 +439,11 @@ void Maemo::Timed::Event::setAlignedSnoozeFlag()
 bool Maemo::Timed::Event::alignedSnoozeFlag() const
 {
   return p->eio.flags & EventFlags::Aligned_Snooze ;
+}
+
+void Maemo::Timed::Event::clearAlignedSnoozeFlag()
+{
+  p->eio.flags &= ~EventFlags::Aligned_Snooze ;
 }
 
 void Maemo::Timed::Event::setReminderFlag()
@@ -345,6 +456,11 @@ bool Maemo::Timed::Event::reminderFlag() const
   return p->eio.flags & EventFlags::Reminder ;
 }
 
+void Maemo::Timed::Event::clearReminderFlag()
+{
+  p->eio.flags &= ~EventFlags::Reminder ;
+}
+
 void Maemo::Timed::Event::setBootFlag()
 {
   p->eio.flags |= EventFlags::Boot ;
@@ -353,6 +469,11 @@ void Maemo::Timed::Event::setBootFlag()
 bool Maemo::Timed::Event::bootFlag() const
 {
   return p->eio.flags & EventFlags::Boot ;
+}
+
+void Maemo::Timed::Event::clearBootFlag()
+{
+  p->eio.flags &= ~EventFlags::Boot ;
 }
 
 void Maemo::Timed::Event::setKeepAliveFlag()
@@ -365,6 +486,11 @@ bool Maemo::Timed::Event::keepAliveFlag() const
   return p->eio.flags & EventFlags::Keep_Alive ;
 }
 
+void Maemo::Timed::Event::clearKeepAliveFlag()
+{
+  p->eio.flags &= ~EventFlags::Keep_Alive ;
+}
+
 void Maemo::Timed::Event::setSingleShotFlag()
 {
   p->eio.flags |= EventFlags::Single_Shot ;
@@ -375,6 +501,11 @@ bool Maemo::Timed::Event::singleShotFlag() const
   return p->eio.flags & EventFlags::Single_Shot ;
 }
 
+void Maemo::Timed::Event::clearSingleShotFlag()
+{
+  p->eio.flags &= ~EventFlags::Single_Shot ;
+}
+
 void Maemo::Timed::Event::setBackupFlag()
 {
   p->eio.flags |= EventFlags::Backup ;
@@ -383,6 +514,11 @@ void Maemo::Timed::Event::setBackupFlag()
 bool Maemo::Timed::Event::backupFlag() const
 {
   return p->eio.flags & EventFlags::Backup ;
+}
+
+void Maemo::Timed::Event::clearBackupFlag()
+{
+  p->eio.flags &= ~EventFlags::Backup ;
 }
 
 void Maemo::Timed::Event::setFakeFlag()
@@ -401,6 +537,11 @@ bool Maemo::Timed::Event::doSuppressTimeoutSnooze() const
   return p->eio.flags & EventFlags::Suppress0 ;
 }
 
+void Maemo::Timed::Event::allowTimeoutSnooze()
+{
+  p->eio.flags &= ~EventFlags::Suppress0 ;
+}
+
 void Maemo::Timed::Event::hideSnoozeButton1()
 {
   p->eio.flags |= EventFlags::Hide1 ;
@@ -411,6 +552,11 @@ bool Maemo::Timed::Event::doHideSnoozeButton1() const
   return p->eio.flags & EventFlags::Hide1 ;
 }
 
+void Maemo::Timed::Event::showSnoozeButton1()
+{
+  p->eio.flags &= ~EventFlags::Hide1 ;
+}
+
 void Maemo::Timed::Event::hideCancelButton2()
 {
   p->eio.flags |= EventFlags::Hide2 ;
@@ -419,6 +565,11 @@ void Maemo::Timed::Event::hideCancelButton2()
 bool Maemo::Timed::Event::doHideCancelButton2() const
 {
   return p->eio.flags & EventFlags::Hide2 ;
+}
+
+void Maemo::Timed::Event::showCancelButton2()
+{
+  p->eio.flags &= ~EventFlags::Hide2 ;
 }
 
 void Maemo::Timed::Event::setMaximalTimeoutSnoozeCounter(int tsz_max_counter)
@@ -446,6 +597,16 @@ int Maemo::Timed::Event::timeoutSnoozeLenght() const
 void Maemo::Timed::Event::setAttribute(const QString &key, const QString &value)
 {
   set_attribute(__PRETTY_FUNCTION__, p->eio.attr, key, value) ;
+}
+
+void Maemo::Timed::Event::removeAttribute(const QString &key)
+{
+  p->eio.attr.txt.remove(key) ;
+}
+
+void Maemo::Timed::Event::clearAttributes()
+{
+  p->eio.attr.txt.clear() ;
 }
 
 const QMap<QString, QString> & Maemo::Timed::Event::attributes() const
@@ -496,6 +657,11 @@ QStringList Maemo::Timed::Event::droppedCredentials() const
   return filterCredTokens(p->eio.cred_modifiers, false) ;
 }
 
+void Maemo::Timed::Event::removeCredentialDrop(const QString &token)
+{
+  remove_cred_modifier(p->eio.cred_modifiers, token, false) ;
+}
+
 void Maemo::Timed::Event::credentialAccrue(const QString &token)
 {
   add_cred_modifier(p->eio.cred_modifiers, token, true) ;
@@ -504,6 +670,16 @@ void Maemo::Timed::Event::credentialAccrue(const QString &token)
 QStringList Maemo::Timed::Event::accruedCredentials() const
 {
   return filterCredTokens(p->eio.cred_modifiers, true) ;
+}
+
+void Maemo::Timed::Event::removeCredentialAccrue(const QString &token)
+{
+  remove_cred_modifier(p->eio.cred_modifiers, token, true) ;
+}
+
+void Maemo::Timed::Event::clearCredentialModifiers()
+{
+  p->eio.cred_modifiers.clear() ;
 }
 
 Maemo::Timed::event_pimple_t::~event_pimple_t()
