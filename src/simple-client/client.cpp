@@ -213,7 +213,7 @@ int get_event(unsigned cookie)
     qDebug() << "not valid interface:" << iface.lastError() ;
     return 1 ;
   }
-  Maemo::Timed::EventDBusReply res = iface.get_event_sync(cookie) ;
+  Maemo::Timed::Event::DBusReply res = iface.get_event_sync(cookie) ;
 
   if(!res.isValid())
   {

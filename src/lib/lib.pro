@@ -11,7 +11,7 @@ CONFIG += qmlog
 HEADERS = interface.h
 SOURCES = interface.cpp event-io.cpp event-pimple.cpp exception.cpp nanotime.cpp log.cpp imagetype.cpp aliases.cpp
 
-SOURCES += wall-settings.cpp wall-info.cpp
+SOURCES += wall-settings.cpp wall-info.cpp qmacro.cpp
 
 INCLUDEPATH += ../h
 LIBS += -lrt

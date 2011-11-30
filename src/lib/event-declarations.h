@@ -55,6 +55,8 @@ public:
   class Button ;
   class Recurrence ;
   class List ;
+  typedef qdbus_reply_wrapper<Maemo::Timed::Event, event_io_t> DBusReply ;
+  typedef qdbus_pending_reply_wrapper<Maemo::Timed::Event, event_io_t> DBusPendingReply ;
 
   Event() ;
   void setTicker(time_t ticker) ;
@@ -146,8 +148,8 @@ public:
  ~Event() ;
 private:
   friend class Interface ;
-  friend class EventDBusReply ;
-  friend class EventDBusPendingReply ;
+  friend class qdbus_reply_wrapper<Event, event_io_t> ;
+  friend class qdbus_pending_reply_wrapper<Event, event_io_t> ;
   friend class List ;
   Event(const event_io_t& eio) ;
   QVariant dbus_output(const char *) const ;
