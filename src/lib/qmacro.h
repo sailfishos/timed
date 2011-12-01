@@ -71,12 +71,11 @@ struct qdbusargument_structrure_wrapper_const
  ~qdbusargument_structrure_wrapper_const() {i.endStructure();}
 } ;
 
-template <class T, class IO>
+template <class T>
 class qdbus_reply_wrapper
 {
 public:
   qdbus_reply_wrapper(const QDBusMessage &reply) ;
-  qdbus_reply_wrapper(const qdbus_reply_wrapper<T, IO> &reply) ;
   ~qdbus_reply_wrapper() ;
   bool isValid () const ;
   const QDBusError &error() ;
@@ -85,11 +84,11 @@ public:
   operator T & () ;
 
 private:
-  QDBusReply<IO> *io_reply ;
+  QDBusReply<typename T::IO> *io_reply ;
   T *p ;
 } ;
 
-template <class T, class IO>
+template <class T>
 class qdbus_pending_reply_wrapper
 {
 public:
@@ -105,7 +104,7 @@ public:
   operator T & ()  ;
 
 private:
-  QDBusPendingReply<IO> *io_reply ;
+  QDBusPendingReply<typename T::IO> *io_reply ;
   T *p ;
 } ;
 

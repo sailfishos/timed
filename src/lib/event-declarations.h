@@ -56,8 +56,9 @@ public:
   class Button ;
   class Recurrence ;
   class List ;
-  typedef qdbus_reply_wrapper<Maemo::Timed::Event, event_io_t> DBusReply ;
-  typedef qdbus_pending_reply_wrapper<Maemo::Timed::Event, event_io_t> DBusPendingReply ;
+  typedef event_io_t IO ;
+  typedef qdbus_reply_wrapper<Maemo::Timed::Event> DBusReply ;
+  typedef qdbus_pending_reply_wrapper<Maemo::Timed::Event> DBusPendingReply ;
 
   Event() ;
   void setTicker(time_t ticker) ;
@@ -149,8 +150,8 @@ public:
  ~Event() ;
 private:
   friend class Interface ;
-  friend class qdbus_reply_wrapper<Event, event_io_t> ;
-  friend class qdbus_pending_reply_wrapper<Event, event_io_t> ;
+  friend class qdbus_reply_wrapper<Maemo::Timed::Event> ;
+  friend class qdbus_pending_reply_wrapper<Maemo::Timed::Event> ;
   friend class List ;
   Event(const event_io_t& eio) ;
   QVariant dbus_output(const char *) const ;
@@ -300,8 +301,9 @@ public:
 class Maemo::Timed::Event::List
 {
 public:
-  typedef qdbus_reply_wrapper<Maemo::Timed::Event::List, event_list_io_t> DBusReply ;
-  typedef qdbus_pending_reply_wrapper<Maemo::Timed::Event::List, event_list_io_t> DBusPendingReply ;
+  typedef event_list_io_t IO ;
+  typedef qdbus_reply_wrapper<Maemo::Timed::Event::List> DBusReply ;
+  typedef qdbus_pending_reply_wrapper<Maemo::Timed::Event::List> DBusPendingReply ;
 
   List() ;
  ~List() ;
@@ -311,8 +313,8 @@ public:
 private:
   event_list_pimple_t *p ;
   friend class Interface ;
-  friend class qdbus_reply_wrapper<List, event_list_io_t> ;
-  friend class qdbus_pending_reply_wrapper<List, event_list_io_t> ;
+  friend class qdbus_reply_wrapper<Maemo::Timed::Event::List> ;
+  friend class qdbus_pending_reply_wrapper<Maemo::Timed::Event::List> ;
   List(const event_list_io_t &eeio) ;
   QVariant dbus_output() const ;
 } ;

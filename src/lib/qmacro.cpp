@@ -27,120 +27,110 @@
 #include "event-declarations.h"
 #include "event-io.h"
 
-template <class T, class IO>
-qdbus_reply_wrapper<T, IO>::qdbus_reply_wrapper(const QDBusMessage &reply)
+template <class T>
+qdbus_reply_wrapper<T>::qdbus_reply_wrapper(const QDBusMessage &reply)
   : io_reply(NULL)
   , p(NULL)
 {
-  io_reply = new QDBusReply<IO>(reply) ;
+  io_reply = new QDBusReply<typename T::IO>(reply) ;
   if(io_reply->isValid())
     p =  new T(io_reply->value()) ;
 }
 
-template <class T, class IO>
-qdbus_reply_wrapper<T, IO>::qdbus_reply_wrapper(const qdbus_reply_wrapper<T, IO> &reply)
-  : io_reply(NULL)
-  , p(NULL)
-{
-  io_reply = new QDBusReply<IO>(*reply.io_reply) ;
-  if(io_reply->isValid())
-    p =  new T(io_reply->value()) ;
-}
-
-template <class T, class IO>
-qdbus_reply_wrapper<T, IO>::~qdbus_reply_wrapper()
+template <class T>
+qdbus_reply_wrapper<T>::~qdbus_reply_wrapper()
 {
   delete p ;
   delete io_reply ;
 }
 
-template <class T, class IO>
-bool qdbus_reply_wrapper<T, IO>::isValid () const
+template <class T>
+bool qdbus_reply_wrapper<T>::isValid () const
 {
   return io_reply->isValid() ;
 }
 
-template <class T, class IO>
-const QDBusError & qdbus_reply_wrapper<T, IO>::error()
+template <class T>
+const QDBusError & qdbus_reply_wrapper<T>::error()
 {
   return io_reply->error() ;
 }
 
-template <class T, class IO>
-T & qdbus_reply_wrapper<T, IO>::value()
+template <class T>
+T & qdbus_reply_wrapper<T>::value()
 {
   return (T &)(*this) ;
 }
 
-template <class T, class IO>
-const T & qdbus_reply_wrapper<T, IO>::value() const
+template <class T>
+const T & qdbus_reply_wrapper<T>::value() const
 {
   return (T &)(*this) ;
 }
 
-template <class T, class IO>
-qdbus_reply_wrapper<T, IO>::operator T & ()
+template <class T>
+qdbus_reply_wrapper<T>::operator T & ()
 {
   if(!isValid())
     throw Maemo::Timed::Exception(__PRETTY_FUNCTION__, "invalid io_reply") ;
   return *p ;
 }
 
-template <class T, class IO>
-qdbus_pending_reply_wrapper<T, IO>::qdbus_pending_reply_wrapper(const QDBusPendingCall &call)
+template <class T>
+qdbus_pending_reply_wrapper<T>::qdbus_pending_reply_wrapper(const QDBusPendingCall &call)
   : io_reply(NULL)
   , p(NULL)
 {
-  io_reply = new QDBusPendingReply<IO>(call) ;
+  io_reply = new QDBusPendingReply<typename T::IO>(call) ;
   if(io_reply->isValid())
     p =  new T(io_reply->value()) ;
 }
 
-template <class T, class IO>
-qdbus_pending_reply_wrapper<T, IO>::~qdbus_pending_reply_wrapper()
+template <class T>
+qdbus_pending_reply_wrapper<T>::~qdbus_pending_reply_wrapper()
 {
   delete p ;
   delete io_reply ;
 }
 
-template <class T, class IO>
-bool qdbus_pending_reply_wrapper<T, IO>::isValid () const
+template <class T>
+bool qdbus_pending_reply_wrapper<T>::isValid () const
 {
   return io_reply->isValid() ;
 }
 
-template <class T, class IO>
-bool qdbus_pending_reply_wrapper<T, IO>::isError () const
+template <class T>
+bool qdbus_pending_reply_wrapper<T>::isError () const
 {
   return io_reply->isError() ;
 }
 
-template <class T, class IO>
-bool qdbus_pending_reply_wrapper<T, IO>::isFinished () const
+template <class T>
+bool qdbus_pending_reply_wrapper<T>::isFinished () const
 {
   return io_reply->isFinished() ;
 }
 
-template <class T, class IO>
-QDBusError qdbus_pending_reply_wrapper<T, IO>::error() const
+template <class T>
+QDBusError qdbus_pending_reply_wrapper<T>::error() const
 {
   return io_reply->error() ;
 }
 
-template <class T, class IO>
-T & qdbus_pending_reply_wrapper<T, IO>::value()
+template <class T>
+T & qdbus_pending_reply_wrapper<T>::value()
 {
   return (T &)(*this) ;
 }
 
-template <class T, class IO>
-const T & qdbus_pending_reply_wrapper<T, IO>::value() const
+template <class T>
+const T & qdbus_pending_reply_wrapper<T>::value() const
 {
   return (T &)(*this) ;
 }
 
-template <class T, class IO>
-void qdbus_pending_reply_wrapper<T, IO>::waitForFinished()
+template <class T>
+void qdbus_pending_reply_wrapper<T>::waitForFinished()
 {
   if(!isFinished())
   {
@@ -150,8 +140,8 @@ void qdbus_pending_reply_wrapper<T, IO>::waitForFinished()
   }
 }
 
-template <class T, class IO>
-qdbus_pending_reply_wrapper<T, IO>::operator T & () 
+template <class T>
+qdbus_pending_reply_wrapper<T>::operator T & () 
 {
   waitForFinished() ;
   if(!isValid())
@@ -159,7 +149,7 @@ qdbus_pending_reply_wrapper<T, IO>::operator T & ()
   return *p ;
 }
 
-template class qdbus_reply_wrapper<Maemo::Timed::Event, Maemo::Timed::event_io_t> ;
-template class qdbus_pending_reply_wrapper<Maemo::Timed::Event, Maemo::Timed::event_io_t> ;
-template class qdbus_reply_wrapper<Maemo::Timed::Event::List, Maemo::Timed::event_list_io_t> ;
-template class qdbus_pending_reply_wrapper<Maemo::Timed::Event::List, Maemo::Timed::event_list_io_t> ;
+template class qdbus_reply_wrapper<Maemo::Timed::Event> ;
+template class qdbus_pending_reply_wrapper<Maemo::Timed::Event> ;
+template class qdbus_reply_wrapper<Maemo::Timed::Event::List> ;
+template class qdbus_pending_reply_wrapper<Maemo::Timed::Event::List> ;
