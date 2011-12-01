@@ -161,3 +161,5 @@ qdbus_pending_reply_wrapper<T, IO>::operator T & ()
 
 template class qdbus_reply_wrapper<Maemo::Timed::Event, Maemo::Timed::event_io_t> ;
 template class qdbus_pending_reply_wrapper<Maemo::Timed::Event, Maemo::Timed::event_io_t> ;
+template class qdbus_reply_wrapper<Maemo::Timed::Event::List, Maemo::Timed::event_list_io_t> ;
+template class qdbus_pending_reply_wrapper<Maemo::Timed::Event::List, Maemo::Timed::event_list_io_t> ;

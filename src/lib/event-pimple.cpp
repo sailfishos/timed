@@ -1280,6 +1280,16 @@ Maemo::Timed::Event & Maemo::Timed::Event::List::append()
   return *e ;
 }
 
+int Maemo::Timed::Event::List::count() const
+{
+  return p->events.size() ;
+}
+
+Maemo::Timed::Event & Maemo::Timed::Event::List::event(int index)
+{
+  return *(p->events.at(index)) ;
+}
+
 QVariant Maemo::Timed::Event::List::dbus_output() const
 {
   event_list_io_t eeio ;
@@ -1294,6 +1304,17 @@ Maemo::Timed::event_list_pimple_t::~event_list_pimple_t()
 {
   for(unsigned i=0; i<events.size(); ++i)
     delete events[i] ;
+}
+
+Maemo::Timed::Event::List::List(const event_list_io_t &eeio)
+{
+  p = new event_list_pimple_t ;
+  QVector<event_io_t>::const_iterator it ;
+  for(it = eeio.ee.begin(); it != eeio.ee.end(); ++it)
+  {
+    Event *e = new Event(*it) ;
+    p->events.push_back(e) ;
+  }
 }
 
 #if 0

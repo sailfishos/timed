@@ -44,6 +44,7 @@ namespace Maemo
     struct event_recurrence_pimple_t ;
     struct event_list_pimple_t ;
     struct event_io_t ;
+    struct event_list_io_t ;
   }
 } ;
 
@@ -299,12 +300,20 @@ public:
 class Maemo::Timed::Event::List
 {
 public:
+  typedef qdbus_reply_wrapper<Maemo::Timed::Event::List, event_list_io_t> DBusReply ;
+  typedef qdbus_pending_reply_wrapper<Maemo::Timed::Event::List, event_list_io_t> DBusPendingReply ;
+
   List() ;
  ~List() ;
   Event & append() ;
+  int count() const ;
+  Event & event(int index) ;
 private:
   event_list_pimple_t *p ;
   friend class Interface ;
+  friend class qdbus_reply_wrapper<List, event_list_io_t> ;
+  friend class qdbus_pending_reply_wrapper<List, event_list_io_t> ;
+  List(const event_list_io_t &eeio) ;
   QVariant dbus_output() const ;
 } ;
 
