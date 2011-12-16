@@ -43,6 +43,23 @@ D-Bus Methods: ::
   with the given cookie was known to the database, this method returns true as
   well.
   +
+  *get_event* - get the given event from the event database.
+  +
+  Input: *UINT32* cookie - the event identificator.
+  +
+  Output: *struct Maemo::Timed::Event* of signature 'XXX' (todo: put here the
+  signature) describing the new event, see 'libtimed(3)' for
+  the meaning of its fields.
+  +
+  *get_events* - get the given event from the event database.
+  +
+  Input: *ARRAY OF UINT32* - possibly empty list of all event satisfying
+  conditions.
+  +
+  Output: *ARRAY OF struct Maemo::Timed::Event* of signature 'XXX' (todo: put here the
+  signature) describing the new event, see 'libtimed(3)' for
+  the meaning of its fields.
+  +
   *replace_event* - add a new event and cancel an another event, the whole
   operation it atomic. This method is to be used to change settings of an
   alarm event.

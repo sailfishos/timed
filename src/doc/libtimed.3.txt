@@ -31,6 +31,13 @@ SYNOPSIS
 *class Maemo::Timed::Event::Action ;*
 *class Maemo::Timed::Event::Button ;*
 *class Maemo::Timed::Event::Recurrence ;*
+*class Maemo::Timed::Event::List ;*
+
+[verse]
+*class Maemo::Timed::Event::DBusReply ;*
+*class Maemo::Timed::Event::DBusPendingReply ;*
+*class Maemo::Timed::Event::List::DBusReply ;*
+*class Maemo::Timed::Event::List::DBusPendingReply ;*
 
 [verse]
 *#include <timed/exception>*
@@ -91,10 +98,20 @@ DAEMON INTERFACE
   *QDBusReply<output_params>*,
   where 'output_params' is the list representing the output
   parameter types of the given D-Bus call.
+  There is special case for get_event_sync and get_events_sync. The return for
+  these methods can be retrieved by casting the returned message value to
+  *Maemo::Timed::Event::DBusReply* and to
+  *Maemo::Timed::Event::List::DBusReply* respectively. These are adapters
+  above *QDBusReply* and behave very similar (see examples).
   +
   The latter function is starting an asynchronous D-Bus call and returning a Qt
   object needed to watch the call execution and to retrieve the return
   value (see the Qt documentation for class QDBusPendingCall for details).
+  There is special case for get_event_async and get_events_async. The return for
+  these methods can be retrieved by casting the returned pending call value to
+  *Maemo::Timed::Event::DBusPendingReply* and to
+  *Maemo::Timed::Event::List::DBusPendingReply* respectively. These are adapters
+  above *QDBusPendingReply* and behave very similar (see examples).
   +
   For the detailed description of time daemon D-Bus interface methods and their parameters
   see the section DBUS in 'timed(8)' manual page.
@@ -113,6 +130,10 @@ DAEMON INTERFACE
   <uint> 'add_event_sync'(Maemo::Timed::Event) ;
   +
   <bool> 'cancel_sync'(uint) ;
+  +
+  <Maemo::Timed::Event&> 'get_event_sync'(uint) ;
+  +
+  <Maemo::Timed::Event::List&> 'get_events_sync'(const QList<uint>&) ;
   +
   <uint> 'replace_event_sync'(Maemo::Timed::Event, uint) ;
   +
@@ -429,6 +450,11 @@ EVENT HANDLING
   the event, the timezone information will be only used for the recurrencies
   calculation.
   +
+  time_t *ticker()* const - gets the trigger time counted in seconds
+  after the beginning of the year 1970 AD (UTC). Even if a timezone is given for
+  the event, the timezone information will be only used for the recurrencies
+  calculation.
+  +
   void *setTime(unsigned year, unsigned month, unsigned day, unsigned hour,
   unsigned minute)* - sets the trigger time in the broken down representation.
   The calculation of the trigger time is performed according to the timezone set
@@ -439,13 +465,41 @@ EVENT HANDLING
   satisfy 1971<=year<=2037, month<=12, day<=31, hour<24, minute<60 and it's
   not allowed to specify non-existing dates like April, 31 or 1973-02-29.
   +
+  unsigned *year()* const - gets year, set by *setTime* (see *setTime* for
+  details).
+  +
+  unsigned *month()* const - gets month, set by *setTime* (see *setTime* for
+  details).
+  +
+  unsigned *day()* const - gets day, set by *setTime* (see *setTime* for
+  details).
+  +
+  unsigned *hour()* const - gets hour, set by *setTime* (see *setTime* for
+  details).
+  +
+  unsigned *minute()* const - gets minute, set by *setTime* (see *setTime* for
+  details).
+  +
+  unsigned *year()* const - gets year, set by *setTime* (see *setTime* for
+  details).
+  +
   void *setTimezone(QString tz)* - sets the timezone for the event. The timezone
   info is used first for the calculation of the trigger time (if the trigger
   time was given in the broken down representation). Then it's used for the
   calculation of the recurrencies.
   +
+  const QString & *timezone()* const -gets the timezone for the event.
+  +
   Maemo::Timed::Event::Action &amp; *addAction*() - adds a new action for the
   event and returns a reference to the action object.
+  +
+  int *actionsCount()* const - gets count of actions attached to the event.
+  +
+  Action & *action(int index)* - gets the requested action attached to the event.
+  +
+  void *removeAction(int index)* - removes the requested action.
+  +
+  void *clearActions()* - removes all actions attached to the event.
   +
   Maemo::Timed::Event::Button &amp; *addButton*() - adds a new application
   specific button to the
@@ -458,8 +512,27 @@ EVENT HANDLING
   whatever). This value
   can be changed in the future, use the method 'getMaximalButtonAmount()' to retrieve it.
   +
+  int *buttonsCount()* const - gets count of buttons attached to the event.
+  +
+  Button & *button(int index)* - gets the requested button attached to the
+  event.
+  +
+  void *removeButton(int index)* - removes the requested button.
+  +
+  void *clearButtons()* - removes all buttons attached to the event.
+  +
   Maemo::Timed::Event::Recurrence &amp; *addRecurrence*() - adds a new recurrence
   rule for the event and returns a reference to the recurrence rule object.
+  +
+  int *recurrencesCount()* const - gets count of recurrences attached to the
+  event.
+  +
+  Recurrence & *recurrence(int index)* - gets the requested recurrence attached to
+  the event.
+  +
+  void *removeRecurrence(int index)* - removes the requested recurrence.
+  +
+  void *clearRecurrences()* - removes all recurrences attached to the event.
   +
   static unsigned *getMaximalButtonAmount*() - returns the maximal
   possible amount of application specific buttons in the reminder dialog.
@@ -474,12 +547,42 @@ EVENT HANDLING
   for the user defined wake up alarms; an alarm symbol should be shown to the human
   end user if there are any events with this flag queued.
   +
+  bool *alarmFlag()* const - gets the 'alarm' flag (see *setAlarmFlag* for
+  details).
+  +
+  void *clearAlarmFlag()* - clears the 'alarm' flag (see *setAlarmFlag* for
+  details).
+  +
   void *setTriggerIfMissedFlag()* - sets the flag enabling the triggering of
   the event even if its triiger time was missed by more than 59 seconds.
   Ususally such an event is not triggered.
   +
+  bool *triggerIfMissedFlag()* const - gets the 'trigger if missed' flag (see
+  *setTriggerIfMissedFlag* for details).
+  +
+  void *clearTriggerIfMissedFlag()* - clears the 'trigger if missed' flag (see
+  *setTriggerIfMissedFlag* for details).
+  +
+  bool *triggerWhenAdjustingFlag()* const - gets the 'trigger when adjusting' flag
+  (see *setTriggerWhenAdjustingFlag* for details).
+  +
+  void *clearTriggerWhenAdjustingFlag()* - clears the 'trigger when adjusting' flag
+  (see *setTriggerWhenAdjustingFlag* for details).
+  +
+  bool *triggerWhenSettingsChangedFlag()* const - gets the 'trigger when
+  settings changed' flag (see *setTriggerWhenSettingsChangedFlag* for details).
+  +
+  void *clearTriggerWhenSettingsChangedFlag()* - clears the 'trigger when
+  settings changed' flag (see *setTriggerWhenSettingsChangedFlag* for details).
+  +
   void *setUserModeFlag()* - disables the triggering of the event in the
   acting dead mode of the device.
+  +
+  bool *userModeFlag()* const - gets the 'user mode' flag (see *setUserModeFlag*
+  for details).
+  +
+  void *clearUserModeFlag()* - clears the 'user mode' flag (see *setUserModeFlag*
+  for details).
   +
   void *setAlignedSnoozeFlag()* - usually an event snoozed by human end user
   for 'N' seconds
@@ -487,42 +590,102 @@ EVENT HANDLING
   this flag set the difference between the new trigger time and the snoozed
   trigger time has to be a multiply of snoozing time period 'N'.
   +
+  bool *alignedSnoozeFlag()* const - gets the 'aligned snooze' flag (see
+  *setAlignedSnoozeFlag* for details).
+  +
+  void *clearAlignedSnoozeFlag()* - clears the 'aligned snooze' flag (see
+  *setAlignedSnoozeFlag* for details).
+  +
   void *setReminderFlag()* - the event requires an end user notification
   provided by the notification service. This function is called by addButton()
   function, thus it's only has to be called explicitly for the default
   notification dialog.
   +
+  bool *reminderFlag()* const - gets the 'reminder' flag (see *setReminderFlag*
+  for details).
+  +
+  void *clearReminderFlag()* - clear the 'reminder' flag (see *setReminderFlag*
+  for details).
+  +
   void *setBootFlag()* - the event requires the device to be powered on and
   booted into the acting dead state 60 seconds before the trigger time, if the
   device is powered off before that.
+  +
+  bool *bootFlag()* const - gets the 'boot' flag (see *setBootFlag* for
+  details).
+  +
+  void *clearBootFlag()* - clears the 'boot' flag (see (setBootFlag* for
+  details).
   +
   void *setKeepAliveFlag*() - the event will not be removed until explicit
   requested by the application. It's possible to have an event with this flag without
   any triggering information (like broken down trigger time, ticker, timezone or
   recurrence patterns).
   +
+  bool *keepAliveFlag()* const - gets the 'keep alive' flag (see
+  *setKeepAliveFlag* for details).
+  +
+  void *clearKeepAliveFlag()* - clears the 'keep alive' flag (see
+  *setKeepAliveFlag* for details).
+  +
   void *setFakeFlag()* - alias for 'setKeepAliveFlag', never use this method.
   +
   void *setSingleShotFlag*() - any recurrence information will be removed after the
   first trigger.
   +
+  bool *singleShotFlag()* const - gets the 'single shot' flag (see
+  *setSingleShotFlag* for details).
+  +
+  void *clearSingleShotFlag()* - clears the 'single shot' flag (see
+  *setSingleShotFlag* for details).
+  +
+  bool *backupFlag()* const - gets the 'backup' flag (see *setBackupFlag* for
+  details).
+  +
+  void *clearBackupFlag()* - clears the 'backup' flag (see *setBackupFlag* for
+  details).
+  +
   void *suppressTimeoutSnooze()* - the notification dialog will not be snoozed
-  by default after a minute.
+  after a minute.
+  +
+  bool *doSuppressTimeoutSnooze()* const - gets if the notification dialog will
+  not be snoozed after a minute or not.
+  +
+  void *allowTimeoutSnooze()* - the notification dialog will be snoozed
+  after a minute (set by default).
   +
   void *hideSnoozeButton1()* - do not include the default snooze button into
   the reminder dialog.
   +
+  bool *doHideSnoozeButton1()* const - gets if the default snooze button is
+  included into the reminder dialog.
+  +
+  void *showSnoozeButton1()* - include the default snooze button into the
+  reminder dialog (set by default).
+  +
   void *hideCancelButton2()* - do not include the default cancel button into
   the reminder dialog.
+  +
+  bool *doHideCancelButton2()* const - gets if the default cancel button is
+  included into the reminder dialog.
+  +
+  void *showCancelButton2()* - include the default cancel button into the
+  reminder dialog (set by default).
   +
   void *setMaximalTimeoutSnoozeCounter(int tsz_max_counter)* - restricts snoozing
   by user's inactivity in the notification dialog to given repeat amount. The event
   will be marked as served in case of one more inactivity. The counter will be
   reset by any manual snoooze.
   +
+  int *maximalTimeoutSnoozeCounter()* const - gets maximal timeout snoooze
+  counter (see *setMaximalTimeoutSnoozeCounter* for details).
+  +
   void *setTimeoutSnooze(int tsz_length)* - set the length of snooze caused by
   user inactivity in the notification dialog to givem length in seconds,
   instead of system wide default value. The length must be a least 10 seconds.
+  +
+  int *timeoutSnoozeLenght()* const - gets timeout snooze length (see
+  *setTimeoutSnooze* for details). *1* means "the default length of snooze".
   +
   void *setAttribute(QString key, QString value)* - sets the text attribute
   with given key/value pair. Both the key and the value can be neither empty
@@ -548,6 +711,28 @@ EVENT HANDLING
   The value of the TEST attribute (if given) is printed by the daemon together with the
   event cookie after the event is inserted into the event queue, it could be used
   for debugging.
+  +
+  const QMap<QString, QString> & *attributes()* const - gets attributes (see
+  *setAttribute* for details).
+  +
+  void *removeAttribute(const QString &key)* - removes the attribut with
+  the given key.
+  +
+  void *clearAttributes()* - removes all attributes.
+  +
+  QStringList *droppedCredentials()* const - gets the list of the dropped
+  credentials.
+  +
+  void *removeCredentialDrop(const QString &token)* - removes the dropped
+  credential with geven token.
+  +
+  QStringList *accruedCredentials()* const - gets the list of the accrued
+  credentials.
+  +
+  void *removeCredentialAccrue(const QString &token)* - removes the accrued
+  credential with geven token.
+  +
+  void *clearCredentialModifiers()* - clear all credential modifications.
   +
   int *check(QString *s=NULL, bool exc=true)* - performes simple sanity checks for the event. This
   method does not throw an exception, unless requested. The return value is zero if the event
@@ -605,6 +790,12 @@ EVENT HANDLING
   +
   void *everyMonth()* - makes the pattern match every month.
   +
+  int *months()* const- gets month bit mask (Jan is 0 bit, Feb is 1 bit ...
+  Dec is 11 bit).
+  void *removeMonth(int x)* - removes the month 'x' from the pattern.
+  +
+  void *removeEveryMonth()* - resets the month bit mask.
+  +
   void *addDayOfMonth(int x)* - makes the pattern match the given day, 'x' is
   counted from 1.
   +
@@ -612,16 +803,51 @@ EVENT HANDLING
   +
   void *everyDayOfMonth()* - makes the pattern match every day of month.
   +
+  int daysOfMonth() const - gets the day of month bit mask (the last day of
+  month is 0 bit, 1st - 1 bit, 2nd - 2 bit ... 31st is 31 bit).
+  +
+  void *removeDayOfMonth(int x)* - removes the given day 'x' from the pattern.
+  +
+  void *removeLastDayOfMonth()* - removes the last day of month from the
+  pattern.
+  +
+  void *removeEveryDayOfMonth()* - resets the day of month bit mask.
+  +
   void *addDayOfWeek(int x)* - makes the pattern match the given week day, the
   days are encoded as follows: 0=Su, 1=Mo, 2=Tu, 3=We, 4=Th, 5=Fr, 6=Sa, 7=Su.
   +
   void *everyDayOfWeek()* - makes the pattern match the whole week.
   +
+  int *daysOfWeek()* const - gets the day of week bit mask (Su is 0 bit, Mo is 1
+  bit ... Sa is 6 bit).
+  +
+  void *removeDayOfWeek(int x)* - removes the given week day 'x' from the
+  pattern.
+  +
+  void *removeEveryDayOfWeek()* - resets the day of week bit mask.
+  +
   void *addHour(int x)* - makes the pattern match the given hour, counted from 0 to
   23.
   +
+  int *hours()* const - gets the hour bit mask (0 is 0 bit ... 23 is 23 bit).
+  +
+  void *removeHour(int x)* - removes the given hour 'x' from the pattern.
+  +
+  void *removeEveryHour()* - resets the hour bit mask.
+  +
   void *addMinute(int x)* - makes the pattern match the given minute, counted from
   0 to 59.
+  +
+  quint64 *minutes()* const - gets the minute bit mask (0 is 0 bit ... 59 is
+  59 bit).
+  +
+  void *removeMinute(int x)* - removes the given minute 'x' from the pattern.
+  +
+  void *removeEveryMinute()* - resets the minute bit mask.
+  +
+  bool *fillingGapsFlag()* const - gets the 'filling gaps' flag.
+  +
+  void *clearFillingGapsFlag()* - clears the 'filling gaps' flag.
 
     Example, an event triggering every Monday at five pm: ::
 
@@ -692,12 +918,23 @@ class *Maemo::Timed::Event::Button*::
   +
   void *setAttribute(QString key, QString value)* - sets a button attribute.
   +
+  const QMap<QString, QString> & *attributes()* const - gets attributes (see
+  *setAttribute* for details).
+  +
+  void *removeAttribute(const QString &key)* - removes the attribut with
+  the given key.
+  +
+  void *clearAttributes()* - removes all attributes.
+  +
   void *setSnooze(int secs)* - sets the length of snooze caused by human
   selecting the given button. If the snooze value is not set, no snooze will
   be performed. The parameter can't be less than 10 seconds.
   +
   void *setSnoozeDefault()* - marks the button as having the system wide default
   snooze value. This value can be changed anytime by a D-Bus method call.
+  +
+  int *snooze()* const - gets the length of snooze caused by human selecting
+  the given button. *1* means "the default length of snooze".
 
 class *Maemo::Timed::Event::Action*::
   The class represents an action executed due to the processing of an event.
@@ -716,6 +953,14 @@ class *Maemo::Timed::Event::Action*::
   If an attribute is not found, the daemon will look for it in the event
   attributes, set by the method of the class Maemo::Timed::Event.
   +
+  const QMap<QString, QString> & *attributes()* const - gets attributes (see
+  *setAttribute* for details).
+  +
+  void removeAttribute(const QString &key) - removes the attribut with
+  the given key.
+  +
+  void clearAttributes() - removes all attributes.
+  +
   void *runCommand()* - the time daemon will execute an external command,
   given in COMMAND attribute. Before that the user will be change to
   the user ID given in the USER attribute (if no
@@ -730,6 +975,18 @@ class *Maemo::Timed::Event::Action*::
   +
   void *runCommand(QString cmd, QString user)* - is equivalent to
   setAttribute("USER",user) ; runCommand(cmd) ;
+  +
+  bool *runCommandFlag()* const - gets the 'run command' flag.
+  +
+  const QString *runCommandLine()* const - gets an external command from
+  COMMAND attribute. Returns an empty QString if the attribute or the 'run command'
+  flag are not set.
+  +
+  const QString *runCommandUser()* const - gets the user from USER attribute.
+  Returns an empty QString if the attribute or the 'run command' flag are not set.
+  +
+  void *removeCommand()* - clears the 'run command' flag and removes COMMAND and
+  USER attributes.
   +
   void *dbusMethodCall()* - the time daemon will start an asynchronous method
   call on the session bus (unless the flag useSystemBus described below is set).
@@ -752,6 +1009,27 @@ class *Maemo::Timed::Event::Action*::
   parameters 'srv', 'mtd', 'obj'. Sets the DBUS_INTERFACE attribute only if
   the last parameter is a non-empty string.
   +
+  bool *dbusMethodCallFlag()* const - gets the 'dbus method call' flag.
+  +
+  const QString *dbusMethodCallService()* const - gets the dbus method call
+  service from DBUS_SERVICE attribute. Returns an empty QString if the attribute
+  or the 'dbus method call' flag are not set.
+  +
+  const QString *dbusMethodCallMethod()* const - gets the dbus method call
+  method from DBUS_METHOD attribute. Returns an empty QString if the attribute or
+  the 'dbus method call' flag are not set.
+  +
+  const QString *dbusMethodCallPath()* const - gets the dbus method call path
+  from DBUS_PATH attribute. Returns an empty QString if the attribute or 'dbus
+  method call' flag are not set.
+  +
+  const QString *dbusMethodCallInterface()* const - gets the dbus method call
+  interface from DBUS_INTERFACE attribute. Returns an empty QString if the attribute
+  or the 'dbus method call' flag are not set.
+  +
+  void *removeDbusMethodCall()* - clears the 'dbus method call' flag and removes
+  DBUS_SERVICE, DBUS_METHOD, DBUS_PATH and DBUS_INTERFACE attributes.
+  +
   void *dbusSignal()* - the time daemon will send a D-Bus signal. The D-Bus
   connection, object path, interface and message parameters are the same as for
   'dbusMethodCall' above. The interface parameter is obligatory. The signal name
@@ -763,6 +1041,23 @@ class *Maemo::Timed::Event::Action*::
   setAttribute("DBUS_SIGNAL", sig) ;
   setAttribute("DBUS_INTERFACE", ifc) ;
   +
+  bool *dbusSignalFlag()* const - gets the 'dbus signal' flag.
+  +
+  const QString *dbusSignalPath()* const - gets the dbus signal path from
+  DBUS_PATH attribute. Returns an empty QString if the attribute or 'dbus signal'
+  flag are not set.
+  +
+  const QString *dbusSignalName()* const - gets the dbus signal from
+  DBUS_SIGNAL attribute. Returns an empty QString if the attribute or 'dbus
+  signal' flag are not set.
+  +
+  const QString *dbusSignalInterface()* const gets the dbus signal interface
+  from DBUS_INTERFACE attribute. Returns an empty QString if the attribute or
+  the 'dbus signal' flag are not set.
+  +
+  void *removeDbusSignal()* - clears the 'dbus signal' flag and removes DBUS_PATH,
+  DBUS_SIGNAL and DBUS_INTERFACE attributes.
+  +
   void *setSendCookieFlag()* - set the flag causing
   the daemon to send the
   event cookie during execution of the action.
@@ -772,14 +1067,38 @@ class *Maemo::Timed::Event::Action*::
   The parameter list of the D-Bus call will include the string "COOKIE" followed
   by the string containing the decimal representation of the cookie.
   +
+  bool *sendCookieFlag()* const - gets the 'send cookie' flag (see
+  *setSendCookieFlag* for details).
+  +
+  void *clearSendCookieFlag()* - clears the 'send cookie' flag (see
+  *setSendCookieFlag* for details).
+  +
   void *setSendAttributesFlag()* - causes the action attributes to be sent via
   dbus as described above.
+  +
+  bool *sendAttributesFlag()* const - gets the 'send attributes' flag (see
+  *setSendAttributesFlag* for details).
+  +
+  void *clearSendAttributesFlag()* - clears the 'send attributes' flag (see
+  *setSendAttributesFlag* for details).
   +
   void *setSendEventAttributesFlag()* - causes the event attributes to be sent via
   dbus as described above.
   +
+  bool *sendEventAttributesFlag()* const - gets the 'send event attributes' flag (see
+  *setSendEventAttributesFlag* for details).
+  +
+  void *clearSendEventAttributesFlag()* - clears the 'send event attributes' flag
+  (see *setSendEventAttributesFlag* for details).
+  +
   void *setUseSystemBusFlag()* - causes time daemon to use the connection to the
   system bus (instead of session bus) for execution of the D-Bus action.
+  +
+  bool *useSystemBusFlag()* const - gets the 'use system bus' flag (see
+  *setUseSystemBusFlag* for details).
+  +
+  void *clearUseSystemBusFlag()* - clears the 'use system bus' flag (see
+  *setUseSystemBusFlag* for details).
   +
   The following methods are connecting the action to one one more internal
   states the event is going through during its lifetime. An event can go to
@@ -789,34 +1108,101 @@ class *Maemo::Timed::Event::Action*::
   event ever achieves this state, for example events needing the device's User
   Mode, are waiting indifinetely if the device is in any oher mode.
   +
+  bool *whenQueuedFlag()* const - gets the 'when queued' flag (see
+  *whenQueued* for details).
+  +
+  void *clearWhenQueuedFlag()* - clears the 'when queued' flag (see *whenQueued*
+  for details).
+  +
   void *whenDue()* - the trigger time of the queued event is reached.
+  +
+  bool *whenDueFlag()* const - gets the 'when due' flag (see *whenDue* for
+  details).
+  +
+  void *clearWhenDueFlag()* - clear the 'when due' flag (see *whenDue* for
+  details).
   +
   void *whenMissed()* - if the trigger time of the event lies more than 59
   seconds back, the event is said to be 'missed'. It still can be triggered,
   but only if the triggerIfMissedFlag is set.
   +
+  bool *whenMissedFlag()* const - gets the 'when missed' flag (see
+  *whenMissed* for details).
+  +
+  void *clearWhenMissedFlag()* - clears the 'when missed' flag (see
+  *whenMissed* for details).
+  +
   void *whenTriggered()* - the event is to be triggered
   +
+  bool *whenTriggeredFlag()* const - gets the 'when triggered' flag (see
+  *whenTriggered* for details).
+  +
+  void *clearWhenTriggeredFlag()* - clears the 'when triggered' flag (see
+  *whenTriggered* for details).
+  +
   void *whenSnoozed()* - the user has decided to snooze the event
+  +
+  bool *whenSnoozedFlag()* const - gets the 'when snoozed' flag (see
+  *whenSnoozed* for details).
+  +
+  void *clearWhenSnoozedFlag()* - clears the 'when snoozed' flag (see
+  *whenSnoozed* for details).
   +
   void *whenServed()* - the event was either triggered or missed, and the
   whole trigger loop (if any) was completed.
   +
+  bool *whenServedFlag()* const - gets the 'when served' flag (see
+  *whenServed* for details).
+  +
+  void *clearWhenServedFlag()* - clears the 'when served' flag (see
+  *whenServed* for details).
+  +
   void *whenAborted()* - the event is cancelled by the application
+  +
+  bool *whenAbortedFlag()* const - gets the 'when aborted' flag (see
+  *whenAborted* for details).
+  +
+  void *clearWhenAbortedFlag()* - clears the 'when aborted' flag (see
+  *whenAborted* for details).
   +
   void *whenTranquil()* - the event reaches the 'tranqiol' state, which means
   it will be never triggered and just keeped there to be queried until
   the client application decides to remove it.
   +
+  bool *whenTranquilFlag()* const - gets the 'when tranquil' flag (see
+  *whenTranquil* for details).
+  +
+  void *clearWhenTranquilFlag()* - clears the 'when tranquil' flag (see
+  *whenTranquil* for details).
+  +
   void *whenFailed()* - the daemon was not able to schedule the event, usually
     it happens because of the data given by the application.
+  +
+  bool *whenFailedFlag()* const - gets the 'when failed' flag (see
+  *whenFailed* for details).
+  +
+  void *clearWhenFailedFlag()* - clears the 'when failed' flag (see
+  *whenFailed* for details).
   +
   void *whenFinalized()* - that is the last state for the event, before it's
   beeng discarded
   +
+  bool *whenFinalizedFlag()* const - gets the 'when finalized' flag (see
+  *whenFinalized* for details).
+  +
+  void *clearWhenFinalizedFlag()* - clears the 'when finalized' flag (see
+  *whenFinalized* for details).
+  +
   void *whenButton(const Maemo::Timed::Event::Button &amp; x)* - the user
   has selected the application specific
   button introduced by the call to Event::addButton() method.
+  +
+  QVector<int> *whenButtons()* const - gets the numbers of the user specific
+  buttons which trigger the action. The button number can be passed as index
+  into *button* function of the event to get the reference to the button.
+  +
+  void *clearWhenButton(const Event::Button &x)* - the user specific button
+  won't trigger the action anymore.
   +
   void *whenSysButton(int x)* - the user has selected the x-th platform wide
   notification dialog button. The value of 'x' is a non-negative integer
@@ -824,6 +1210,25 @@ class *Maemo::Timed::Event::Action*::
   (which is the amount of the platform wide
   buttons, currently it's 2, but it can change later). The value 'x=0' is a special value for the
   out-of-screen user actions.
+  +
+  QVector<int> *whenSysButtons()* const - gets the numbers of the platform
+  wide notification dialog buttons which trigger the action (see
+  *whenSysButton* for details).
+  +
+  void *clearWhenSysButton(int x)* - the paltform wide notification dialog
+  buttons won't trigger the action anymore.
+  +
+  QStringList *droppedCredentials()* const - gets the list of the dropped
+  credentials.
+  +
+  void *removeCredentialDrop(const QString &token)* - removes the dropped
+  credential with geven token.
+  +
+  QStringList *accruedCredentials()* const - gets the list of the accrued
+  credentials.
+  +
+  void *removeCredentialAccrue(const QString &token)* - removes the accrued
+  credential with geven token.
 
 EXCEPTIONS
 ----------
@@ -837,6 +1242,81 @@ class *Maemo::Timed::Exception*::
   const char * *what()*- returns a human readable message
   describing the problem and function caused the exception.
 
+DBUS REPLY WRAPPERS
+-------------------
+Due to timed internal implementation, QDBus reply classes are not work as
+expected. One of dbus reply wrapper shall be used to extract data returned by
+*get_event_sync*, *get_event_async*, *get_events_sync* and *get_events_async*.
+
+class *Maemo::Timed::Event::DBusReply*::
+class *Maemo::Timed::Event::List::DBusReply*::
+  These classes are almost equal to *QDBusReply<T>* with
+  T=*Maemo::Timed::Event* and T=*Maemo::Timed::Event::List* respectively
+  except several things:
+  1. Objects of these classes can be constructed from *QDBusMessage* object only;
+  2. No *operator=* defined;
+  3. *operator T ()* is non-const function and provides a reference to the
+  object of type T inside;
+  4. There are const and non-const *value()* functions which returns a reference
+  to the object of type T inside;
+  5. *operator T ()* and both *value()* functions throw
+  *Maemo::Timed::Exception* if the reply is not valid.
+  +
+  The rest functions *isValid()* and *error()* are equal to *QDBusReply<T>*.
+  +
+  It is expected that these classes will be used in the same manner as
+  *QDBusReply<T>* for *get_event_sync* and *get_events_sync* (see Qt Reference
+  Documentation for details).
+
+    Example: ::
+-----------------------
+Maemo::Timed::Interface ifc ;
+Maemo::Timed::Event::DBusReply reply = ifc.get_event_sync(15) ;
+assert(reply.isValid()) ;
+Maemo::Timed::Event &event = reply.value() ;
+//event can be used to examine or to modify the returned event
+//ifc.replace_event_sync can be used after this to update the event on server
+//side
+-----------------------
+
+class *Maemo::Timed::Event::DBusPendingReply*::
+class *Maemo::Timed::Event::List::DBusPendingReply*::
+  These classes are almost equal to *QDBusPendingReply<T>* with
+  T=*Maemo::Timed::Event* and T=*Maemo::Timed::Event::List* respectively
+  except several things:
+  1. Objects of these classes can be constructed from *QDBusPendingCall* object
+  only;
+  2. No *operator=* defined;
+  3. *operator T ()* is non-const function and provides a reference to the
+  object of type T inside;
+  4. There are const and non-const *value()* functions which returns a
+  reference to the object of type T inside;
+  5. *operator T ()* and both *value()* functions throw
+  *Maemo::Timed::Exception* if the reply is not valid;
+  6. No *argumentAt*, *count()*, *reply()* functions.
+  +
+  The rest functions *isValid()*, *isError()*, *isFinished()*,
+  *waitForFinished()* and *error()* are equal to *QDBusPendingReply<T>*.
+  +
+  It is expected that these classes will be used in the same manner as
+  *QDBusPendingReply<T>* for *get_event_async* and *get_events_async* (see Qt
+  Reference Documentation for details).
+
+    Example: ::
+-----------------------
+Maemo::Timed::Interface ifc ;
+Maemo::Timed::Event::DBusPendingReply reply = ifc.get_event_async(15) ;
+reply.waitForFinished() ;
+assert(reply.isValid()) ;
+Maemo::Timed::Event &event = reply.value() ;
+//event can be used to examine or to modify the returned event
+//ifc.replace_event_sync can be used after this to update the event on server
+//side
+//Also note that more common case is to create QDBusPendingCallWatcher from
+//QDBusPendingCall, to connect finished signal to some slot and to use
+//DBusPendingReply inside the solt to extract a returned event or list.
+//It can be done in the same manner as with QDBusPendingReply<T> usage.
+-----------------------
 
 SEE ALSO
 --------
