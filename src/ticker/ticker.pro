@@ -9,7 +9,7 @@ VERSION = $$(TIMED_VERSION)
 INCLUDEPATH += ../h
 
 QMAKE_LIBDIR_FLAGS += -L../lib
-LIBS += -ltimed
+LIBS += -ltimed -lqmlog
 
 SOURCES = ticker.cpp
 HEADERS = ticker.h

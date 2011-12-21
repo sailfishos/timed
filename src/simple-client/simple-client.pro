@@ -9,7 +9,7 @@ VERSION = $$(TIMED_VERSION)
 INCLUDEPATH += ../h
 
 QMAKE_LIBDIR_FLAGS += -L../lib -L../voland
-LIBS += -ltimed -ltimed-voland
+LIBS += -ltimed -ltimed-voland -lqmlog
 
 CONFIG += iodata
 
