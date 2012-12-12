@@ -74,7 +74,10 @@ timedrc.path  = $$(DESTDIR)/etc
 dbusconf.files = timed.conf
 dbusconf.path  = $$(DESTDIR)/etc/dbus-1/system.d
 
-INSTALLS += target xml backupconf backupscripts cud rfs aegishelper aegisfs timedrc dbusconf
+systemd.files = timed.service
+systemd.path = $$(DESTDIR)/lib/systemd/system
+
+INSTALLS += target xml backupconf backupscripts cud rfs aegishelper aegisfs timedrc dbusconf systemd
 
 CONFIG(MEEGO) \
 {
