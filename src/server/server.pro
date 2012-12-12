@@ -17,6 +17,7 @@ IODATA_TYPES = queue.type config.type settings.type customization.type tzdata.ty
 CONFIG(dsme_dbus_if) {
     SOURCES += dsme-mode.cpp
     HEADERS += dsme-mode.h interfaces.h
+    DEFINES += HAVE_DSME
 }
 
 HEADERS += peer.h settings.h csd.h adaptor.h timed.h state.h cluster.h machine.h singleshot.h pinguin.h unix-signal.h onitz.h

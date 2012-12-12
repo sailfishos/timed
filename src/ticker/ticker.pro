@@ -31,4 +31,8 @@ else \
   QMAKE_CXXFLAGS  += -Wall -Wno-psabi
 }
 
+CONFIG(dsme_dbus_if) {
+    DEFINES += HAVE_DSME
+}
+
 QMAKE_CXXFLAGS  += -Wall
