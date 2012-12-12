@@ -71,7 +71,10 @@ aegisfs.path  = $$(DESTDIR)/etc/aegisfs.d
 timedrc.files = timed.rc
 timedrc.path  = $$(DESTDIR)/etc
 
-INSTALLS += target xml backupconf backupscripts cud rfs aegishelper aegisfs timedrc
+dbusconf.files = timed.conf
+dbusconf.path  = $$(DESTDIR)/etc/dbus-1/system.d
+
+INSTALLS += target xml backupconf backupscripts cud rfs aegishelper aegisfs timedrc dbusconf
 
 CONFIG(MEEGO) \
 {
