@@ -27,6 +27,7 @@
 #if __MEEGO__
 #  define F_CREDS_UID 1
 //#  define F_CREDS_NOBODY 1
+#  define F_FORCE_DEBUG_PATH "/var/cache/timed/DEBUG"
 #endif
 
 #if __HARMATTAN__

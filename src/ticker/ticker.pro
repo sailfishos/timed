@@ -9,7 +9,7 @@ VERSION = $$(TIMED_VERSION)
 INCLUDEPATH += ../h
 
 QMAKE_LIBDIR_FLAGS += -L../lib
-LIBS += -ltimed
+LIBS += -ltimed -lqmlog
 
 SOURCES = ticker.cpp
 HEADERS = ticker.h
@@ -31,4 +31,8 @@ else \
   QMAKE_CXXFLAGS  += -Wall -Wno-psabi
 }
 
-QMAKE_CXXFLAGS  += -Wall -Werror
+CONFIG(dsme_dbus_if) {
+    DEFINES += HAVE_DSME
+}
+
+QMAKE_CXXFLAGS  += -Wall

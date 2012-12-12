@@ -54,7 +54,7 @@ namespace Maemo
       }
       inline QDBusConnection bus()
       {
-        return QDBusConnection::sessionBus() ;
+        return QDBusConnection::systemBus() ;
       }
       class Interface : public QDBusAbstractInterface
       {

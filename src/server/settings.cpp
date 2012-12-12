@@ -186,6 +186,8 @@ Maemo::Timed::WallClock::wall_info_pimple_t *source_settings::get_wall_clock_inf
   p->flag_auto_dst = auto_dst ;
   p->flag_format_24 = format_24 ;
 
+  // check whether we need to "bring old time" to more present
+  o->init_first_boot_hwclock_time_adjustment_check();
   log_assert(Maemo::Timed::WallClock::TimezoneManual==0) ;
   p->zones.push_back(string_std_to_q(manual_zone->zone())) ;
   log_assert(Maemo::Timed::WallClock::TimezoneCellular==1) ;

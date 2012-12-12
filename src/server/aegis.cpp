@@ -40,7 +40,7 @@
 #if F_CREDS_AEGIS_LIBCREDS
 credentials_t Aegis::credentials_from_creds_t(creds_t aegis_creds)
 {
-  credentials_t creds ; // uid/gid is set to nobody/nogroup by default
+  credentials_t creds ; // uid/gid is set to nobody/nobody by default
 
   // using a buffer directly on stack, if not enough -> use heap
   static const size_t buf_stack_len = 1024 ;

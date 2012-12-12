@@ -41,7 +41,9 @@
 #include "customization.type.h"
 #include "settings.type.h"
 
+#if HAVE_DSME
 #include "interfaces.h"
+#endif
 #include "adaptor.h"
 #include "backup.h"
 #include "timed.h"
@@ -50,6 +52,13 @@
 #include "tzdata.h"
 #include "csd.h"
 #include "notification.h"
+#include "time.h"
+
+#include <string>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
 
 static void spam()
 {
@@ -91,6 +100,7 @@ Timed::Timed(int ac, char **av) :
 {
   spam() ;
   halted = "" ; // XXX: remove it, as we don't want to halt anymore
+  first_boot_date_adjusted = false;
   log_debug() ;
 
   init_scratchbox_mode() ;
@@ -141,10 +151,16 @@ Timed::Timed(int ac, char **av) :
   init_session_bus() ;
   log_debug() ;
 
+  init_first_boot_hwclock_time_adjustment_check();
+  log_debug() ;
+
   init_load_events() ;
   log_debug() ;
 
+#if F_CSD
   init_cellular_services() ;
+#endif // F_CSD
+
   log_debug() ;
 
   init_network_events() ;
@@ -201,7 +217,7 @@ void Timed::init_scratchbox_mode()
   }
   log_info("%s" "SCRATCHBOX detected", scratchbox_mode ? "" : "no ") ;
 #else
-  scratcbox_mode = false ;
+  scratchbox_mode = false ;
 #endif
 }
 
@@ -315,9 +331,11 @@ static bool init_act_dead_v2(bool use_status_files)
 void Timed::init_device_mode()
 {
   current_mode = "(unknown)" ;
+#if HAVE_DSME
   dsme_mode_handler = new dsme_mode_t ;
   QObject::connect(dsme_mode_handler, SIGNAL(mode_is_changing()), this, SLOT(dsme_mode_is_changing())) ;
   QObject::connect(dsme_mode_handler, SIGNAL(mode_reported(const string &)), this, SLOT(dsme_mode_reported(const string &))) ;
+#if F_ACTING_DEAD
   if (scratchbox_mode)
   {
     int is_act_dead = is_act_dead_by_status_files() ;
@@ -327,7 +345,11 @@ void Timed::init_device_mode()
     device_mode_reached(user_mode) ;
   }
   else
+#endif
+  {
     dsme_mode_handler->init_request() ;
+  }
+#endif
   const char *startup_path="/com/nokia/startup/signal", *startup_iface="com.nokia.startup.signal" ;
   const char *desktop_visible_slot = SLOT(harmattan_desktop_visible()) ;
   const char *init_done_slot = SLOT(harmattan_init_done(int)) ;
@@ -650,6 +672,7 @@ void Timed::init_start_event_machine()
   am->start() ;
 }
 
+#if F_CSD
 void Timed::init_cellular_services()
 {
 #if 0
@@ -676,6 +699,7 @@ void Timed::init_cellular_services()
   QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
 #endif
 }
+#endif // F_CSD
 
 void Timed::init_network_events()
 {
@@ -813,6 +837,7 @@ void Timed::system_owner_changed(const QString &name, const QString &oldowner, c
 
 void Timed::send_next_bootup_event(int value)
 {
+#if HAVE_DSME
   QDBusConnection dsme = QDBusConnection::systemBus() ;
   QString path = Maemo::Timed::objpath() ;
   QString iface = Maemo::Timed::interface() ;
@@ -823,6 +848,7 @@ void Timed::send_next_bootup_event(int value)
     log_info("signal %s(%d) sent", string_q_to_std(signal).c_str(), value) ;
   else
     log_error("Failed to send the signal %s(%d) on system bus: %s", string_q_to_std(signal).c_str(), value, dsme.lastError().message().toStdString().c_str()) ;
+#endif
 }
 
 void Timed::event_queue_changed()
@@ -1076,6 +1102,7 @@ void Timed::open_epoch()
   time_operational_p->setValue(true) ;
 }
 
+#if HAVE_DSME
 void Timed::dsme_mode_is_changing()
 {
   log_notice("mode is changing, freezeng machine") ;
@@ -1107,6 +1134,7 @@ void Timed::dsme_mode_reported(const string &mode)
   start_voland_watcher() ;
 #endif
 }
+#endif
 
 void Timed::connect_to_session_bus(const string &session_bus_address)
 {
@@ -1233,4 +1261,100 @@ void Timed::kernel_notification(const nanotime_t &jump_forwards)
 {
   log_notice("KERNEL: system time changed by %s", jump_forwards.str().c_str()) ;
   settings->process_kernel_notification(jump_forwards) ;
+}
+
+#define CONST_FIRST_BOOT_DATE_FILE        "/var/cache/timed/first-boot-hwclock.dat"
+
+template <class NumberDataType>
+static bool convert_str_to_number(NumberDataType& res, const string& str, ios_base& (*fmt)(ios_base&))
+{
+        istringstream instream(str);
+	return !(instream >> fmt >> res).fail();
+}
+
+static int parse_year_from_date_str(string dataline, int *err_flg_param) {
+        stringstream	ss(dataline);
+        string		item;
+        int             ii;
+        int             val;
+        int             err_flg;
+        int             ret_val;
+
+        ii      = 0;
+        ret_val = -1;
+        *err_flg_param = -1;
+        while(getline(ss, item, ' ')) {
+		if (ii == 3) {
+			// parse year
+			err_flg	= convert_str_to_number<int>(val, item, dec);
+			if (err_flg != 0) {
+				ret_val = val;
+                                *err_flg_param = 0;
+                                break;
+			}
+		}
+		ii++;
+	}
+        return ret_val;
+}
+
+static int parse_year_from_date_file(const char *date_fname, int *err_flg) {
+        ifstream	in;
+        string		line;
+        int             ret_val;
+
+        ret_val = -1;
+        *err_flg = -1;
+        in.open(date_fname);
+        if (in.is_open() == true) {
+                getline(in, line);
+		if (line.empty() == false) {
+                        ret_val = parse_year_from_date_str(line, err_flg);
+                }
+        }
+        return ret_val;
+}
+
+void Timed::init_first_boot_hwclock_time_adjustment_check() {
+        int     err_flg;
+        int     old_year;
+
+        //time_t  tt;
+        //time(&tt);
+        //log_info("time at timed boottime: %ld", tt);
+        if (first_boot_date_adjusted == false) {
+                if (access(CONST_FIRST_BOOT_DATE_FILE, R_OK) != 0) {
+                        /* first boot date file not found, try to create one...
+                           Check that we can execute this succesfully before putting output to file:
+                           (wont neccessarily work at boot time if /dev/rtc0 is not yet populated by udev
+                        */
+                        err_flg = system("hwclock -r");
+                        if (err_flg == 0) {
+                                err_flg = system("hwclock -r -u > /var/cache/timed/first-boot-hwclock.dat");
+                                if (err_flg == 0) {
+                                        old_year    = parse_year_from_date_file(CONST_FIRST_BOOT_DATE_FILE, &err_flg);
+                                        if (err_flg == 0) {
+                                                if (old_year < 2011) {
+                                                        // lets udpdate year because it's first boot and old year older than 2011
+                                                        settings->set_system_time(1304244403);
+                                                        log_info("first boot, old date from year %d updated to 05/01/2011", old_year);
+                                                        first_boot_date_adjusted        = true;
+                                                }
+                                        }
+                                        else {
+                                                log_error("Failed to read current year from %s", CONST_FIRST_BOOT_DATE_FILE);
+                                        }
+                                }
+                                else {
+                                        log_error("Failed to execute: hwclock -r -u > %s", CONST_FIRST_BOOT_DATE_FILE);
+                                }
+                        }
+                        else {
+                                log_error("Failed to execute: 'hwclock -r', maybe /dev/rtc0 is not yet available.");
+                        }
+                }
+                else {
+                        first_boot_date_adjusted        = true;
+                }
+        }
 }

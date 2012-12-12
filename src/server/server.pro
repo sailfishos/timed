@@ -14,10 +14,13 @@ CONFIG += qmlog
 
 IODATA_TYPES = queue.type config.type settings.type customization.type tzdata.type
 
-SOURCES += dsme-mode.cpp
-HEADERS += dsme-mode.h
+CONFIG(dsme_dbus_if) {
+    SOURCES += dsme-mode.cpp
+    HEADERS += dsme-mode.h interfaces.h
+    DEFINES += HAVE_DSME
+}
 
-HEADERS += peer.h settings.h csd.h interfaces.h adaptor.h timed.h state.h cluster.h machine.h singleshot.h pinguin.h unix-signal.h onitz.h
+HEADERS += peer.h settings.h csd.h adaptor.h timed.h state.h cluster.h machine.h singleshot.h pinguin.h unix-signal.h onitz.h
 SOURCES += peer.cpp tzdata.cpp cellular.cpp csd.cpp cluster.cpp machine.cpp state.cpp main.cpp timed.cpp timeutil.cpp event.cpp misc.cpp settings.cpp pinguin.cpp unix-signal.cpp onitz.cpp
 
 SOURCES += credentials.cpp aegis.cpp
@@ -33,7 +36,11 @@ SOURCES += notification.cpp
 HEADERS += notification.h
 
 CONFIG += link_pkgconfig iodata
-PKGCONFIG += contextprovider-1.0 libpcrecpp dsme_dbus_if
+PKGCONFIG += contextprovider-1.0 libpcrecpp
+
+CONFIG(dsme_dbus_if) {
+    PKGCONFIG += dsme_dbus_if
+}
 
 target.path = $$(DESTDIR)/usr/bin
 
@@ -80,4 +87,4 @@ else \
   QMAKE_CXXFLAGS  += -Wall -Wno-psabi
 }
 
-QMAKE_CXXFLAGS  += -Wall -Werror
+QMAKE_CXXFLAGS  += -Wall
