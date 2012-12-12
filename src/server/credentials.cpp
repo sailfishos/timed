@@ -125,7 +125,7 @@ string gidToName(gid_t g)
   if (info)
     return info->gr_name ;
   // couldn't get name for gid
-  return "nogroup" ;
+  return "nobody" ;
 }
 
 bool credentials_t::apply() const
@@ -244,7 +244,7 @@ credentials_t credentials_t::from_current_process()
 //       setting this UID and the caller's default GID as only available credentials
 //
 // TODO: F_CREDS_NOBODY
-//       implement the same function setting nobody/nogroup as credentials
+//       implement the same function setting nobody/nobody as credentials
 //
 // TODO: F_CREDS_AEGIS_LIBCREDS --- make this function #ifdef'ed
 
