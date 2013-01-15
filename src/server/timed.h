@@ -123,7 +123,7 @@ public:
   pinguin_t *ping ;
   source_settings *settings ;
   cellular_handler *nitz_object ;
-#if F_CSD
+#if OFONO
   csd_t *csd ;
 #endif
   peer_t *peer ;

@@ -246,7 +246,7 @@ public slots:
     timed->halt(string_q_to_std(what)) ;
   }
 
-#if F_CSD
+#if OFONO
   bool fake_csd_time_signal(const QString &mcc, const QString &mnc, int offset, int time, int dst, int seconds, int nano_seconds)
   {
     log_notice("(fake_csd_time_signal) mcc='%s' mnc='%s' offset=%d time=%d dst=%d seconds=%d nano_seconds=%d", mcc.toStdString().c_str(), mnc.toStdString().c_str(), offset, time, dst, seconds, nano_seconds) ;
@@ -256,7 +256,7 @@ public slots:
       log_error("invalid time=%d parameter in in fake_csd_time_signal()", time) ;
       return false ;
     }
-    Cellular::NetworkTimeInfo nti(qdt, dst, offset, seconds, nano_seconds, mnc, mcc) ;
+    NetworkTimeInfo nti(qdt, dst, offset, seconds, nano_seconds, mnc, mcc);
     log_notice("FAKE_CSD::csd_time_s %s", csd_t::csd_network_time_info_to_string(nti).c_str()) ;
     timed->csd->process_csd_network_time_info(nti) ;
     return true ;
@@ -284,7 +284,7 @@ public slots:
     }
     nanotime_t now = nanotime_t::monotonic_now() ;
     QString mcc_s = str_printf("%d", mcc).c_str() ;
-    Cellular::NetworkTimeInfo nti(qdt, dst, offset, now.sec(), now.nano(), "mnc", mcc_s) ;
+    NetworkTimeInfo nti(qdt, dst, offset, now.sec(), now.nano(), "mnc", mcc_s);
     log_notice("FAKE_CSD::csd_time_s %s", csd_t::csd_network_time_info_to_string(nti).c_str()) ;
     timed->csd->process_csd_network_time_info(nti) ;
     return true ;
@@ -296,7 +296,7 @@ public slots:
     timed->csd->process_csd_network_operator(mcc, mnc) ;
     return true ;
   }
-#endif // F_CSD
+#endif // OFONO
 
   int get_log_level(const QDBusMessage &message)
   {

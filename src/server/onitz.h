@@ -35,10 +35,10 @@ using namespace std ;
 
 #include <qmlog>
 
-#if F_CSD
-#  include <NetworkTime>
-#  include <NetworkOperator>
-using Cellular::NetworkTimeInfo ;
+#if OFONO
+# include "networktime.h"
+# include "networkoperator.h"
+# include "networktimeinfo.h"
 #endif
 
 
@@ -102,9 +102,9 @@ private:
   static cellular_handler *static_object ;
   virtual ~cellular_handler() ;
 #if 0
-#if F_CSD
-  Cellular::NetworkTime *cnt ;
-  Cellular::NetworkOperator *cop ;
+#if OFONO
+  NetworkTime *cnt;
+  NetworkOperator *cop;
 #endif
 #endif
   cellular_handler() ;
@@ -123,7 +123,7 @@ public:
   void fake_nitz_signal(int mcc, int offset, int time, int dst) ;
 public slots:
 #if 0
-#if F_CSD
+#if OFONO
   void new_nitz_signal(const NetworkTimeInfo &) ; // { log_assert(false, "to be implemented") ; }
 #endif
   void new_operator(const QString &mnc, const QString &mcc) ;

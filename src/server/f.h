@@ -28,11 +28,12 @@
 #  define F_CREDS_UID 1
 //#  define F_CREDS_NOBODY 1
 #  define F_FORCE_DEBUG_PATH "/var/cache/timed/DEBUG"
+#  define OFONO 1
 #endif
 
 #if __HARMATTAN__
 #  define F_CREDS_AEGIS_LIBCREDS 1
-#  define F_CSD 1
+#  define OFONO 1
 #  define F_SCRATCHBOX 1
 #  define F_ACTING_DEAD 1
 #  define F_IMAGE_TYPE 1
