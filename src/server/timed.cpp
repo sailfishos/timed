@@ -151,6 +151,8 @@ Timed::Timed(int ac, char **av) :
   init_session_bus() ;
   log_debug() ;
 
+  init_kernel_notification();
+
   init_first_boot_hwclock_time_adjustment_check();
   log_debug() ;
 
@@ -177,8 +179,6 @@ Timed::Timed(int ac, char **av) :
 
   init_apply_tz_settings() ;
   log_debug() ;
-
-  init_kernel_notification() ;
 
   log_info("daemon is up and running") ;
 }
