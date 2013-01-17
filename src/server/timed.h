@@ -102,7 +102,6 @@ private:
   void init_main_interface_object() ;
   void init_backup_dbus_name() ;
   void init_main_interface_dbus_name() ;
-  void init_session_bus() ;
   void init_load_events() ;
   void init_dst_checker() ;
   void init_start_event_machine() ;
@@ -206,21 +205,12 @@ private Q_SLOTS:
 #endif
   void harmattan_init_done(int runlevel) ;
   void harmattan_desktop_visible() ;
-  void harmattan_session_started() ;
   void kernel_notification(const nanotime_t &jump_forwards) ;
-private:
-  string harmattan_get_session_bus_address() ;
 public:
 #if 0
   void device_mode_reached(bool act_dead, const std::string &dbus_session) ;
 #endif
   void device_mode_reached(bool user_mode) ;
-private:
-  void connect_to_session_bus(const string &session_bus_address) ;
-  string session_bus_name ;
-public:
-  QDBusConnection session_bus ;
-  string session_bus_address ;
   QNetworkConfigurationManager *network_configuration_manager ;
 #if 0
   void nitz_notification(const cellular_info_t &) ;

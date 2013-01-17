@@ -1,5 +1,7 @@
+#include <timed-voland/interface>
+#include <qmlog>
+
 #include "pinguin.h"
-#include "timed.h"
 
 void pinguin_t::timeout()
 {
@@ -28,8 +30,8 @@ void pinguin_t::voland_registered()
   counter = 0 ;
 }
 
-pinguin_t::pinguin_t(unsigned p, unsigned n, Timed *timed) :
-  QObject(timed), owner(timed), max_num(n), counter(0)
+pinguin_t::pinguin_t(unsigned p, unsigned n, QObject *parent) :
+  QObject(parent), max_num(n), counter(0)
 {
   timer = new simple_timer(p) ;
   needed = false ;
@@ -49,10 +51,9 @@ void pinguin_t::ping()
   const char *ifac = Maemo::Timed::Voland::/*activation_*/interface() ;
   const char *meth = "pid" ;
   QDBusMessage mess = QDBusMessage::createMethodCall(serv, path, ifac, meth) ;
-  QDBusConnection conn = owner->session_bus ;
-  if(conn.send(mess))
+  if(QDBusConnection::systemBus().send(mess))
     log_info("the 'pid' request sent asyncronosly") ;
   else
-    log_error("Can't send the 'pid' request: %s", conn.lastError().message().toStdString().c_str()) ;
+    log_error("Can't send the 'pid' request: %s", QDBusConnection::systemBus().lastError().message().toStdString().c_str()) ;
 }
 

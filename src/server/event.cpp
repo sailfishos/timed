@@ -631,10 +631,8 @@ void event_t::run_actions(const vector<unsigned> &acts, unsigned begin, unsigned
           QString addr = "" ; // not valid address
           if(const char *a = getenv("DBUS_SESSION_BUS_ADDRESS"))
             addr = (QString) a ;
-#else
-          QString addr = state->machine->timed->session_bus_address.c_str() ;
 #endif
-          c = new QDBusConnection(QDBusConnection::connectToBus(addr, cname)) ;
+          c = new QDBusConnection(QDBusConnection::systemBus());
         }
 #endif
       }

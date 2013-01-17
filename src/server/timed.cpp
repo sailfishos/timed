@@ -34,6 +34,7 @@
 #include <ContextProvider>
 
 #include <timed/interface>
+#include <timed-voland/interface>
 #include <qmlog>
 
 #include "queue.type.h"
@@ -93,9 +94,8 @@ static void spam()
 
 Timed::Timed(int ac, char **av) :
   QCoreApplication(ac, av),
-  peer(NULL),
+  peer(NULL)
 //  session_bus_name("timed_not_connected"),
-  session_bus("*** not available ***")
 //  session_bus_address("invalid_address")
 {
   spam() ;
@@ -148,7 +148,7 @@ Timed::Timed(int ac, char **av) :
   init_main_interface_dbus_name() ;
   log_debug() ;
 
-  init_session_bus() ;
+  start_voland_watcher();
   log_debug() ;
 
   init_first_boot_hwclock_time_adjustment_check();
@@ -522,10 +522,11 @@ void Timed::start_voland_watcher()
 {
   stop_voland_watcher() ;
 
-  voland_watcher = new QDBusServiceWatcher((QString)Maemo::Timed::Voland::service(), session_bus) ;
+  voland_watcher = new QDBusServiceWatcher((QString)Maemo::Timed::Voland::service(),
+                                           QDBusConnection::systemBus());
   QObject::connect(voland_watcher, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
 
-  QDBusConnectionInterface *bus_ifc = session_bus.interface() ;
+  QDBusConnectionInterface *bus_ifc = QDBusConnection::systemBus().interface();
   bool voland_present = bus_ifc and bus_ifc->isServiceRegistered(Maemo::Timed::Voland::service()) ;
 
   if(voland_present)
@@ -618,32 +619,6 @@ void Timed::init_main_interface_dbus_name()
     log_critical("aborting") ;
     ::exit(1) ;
   }
-}
-
-void Timed::init_session_bus()
-{
-  if (const char *environ = getenv("DBUS_SESSION_BUS_ADDRESS"))
-  {
-    connect_to_session_bus(session_bus_address = environ) ;
-    start_voland_watcher() ;
-  }
-#if 0
-  const char *slot = SLOT(session_reported(const QString &)) ;
-  bool res = QDBusConnection::systemBus().connect("", "/com/nokia/startup/signal", "com.nokia.startup.signal", "session_bus", this, slot) ;
-  if (not res)
-  {
-    const string msg = Maemo::Timed::bus().lastError().message().toStdString() ;
-    log_error("not connected to 'session_bus' signal, session bus change not available, message: '%s'", msg.c_str()) ;
-  }
-#else
-  const char *slot = SLOT(harmattan_session_started()) ;
-  bool res = QDBusConnection::systemBus().connect("", "/com/nokia/startup/signal", "com.nokia.startup.signal", "session_started", this, slot) ;
-  if (not res)
-  {
-    const string msg = Maemo::Timed::bus().lastError().message().toStdString() ;
-    log_error("not connected to 'session_started' signal, session bus change not available, message: '%s'", msg.c_str()) ;
-  }
-#endif
 }
 
 void Timed::init_load_events()
@@ -747,7 +722,6 @@ void Timed::stop_dbus()
   delete backup_object ;
   Maemo::Timed::bus().unregisterService(Maemo::Timed::service()) ;
   Maemo::Timed::bus().unregisterService("com.nokia.timed.backup") ;
-  QDBusConnection::disconnectFromBus(session_bus_name.c_str()) ;
   QDBusConnection::disconnectFromBus(QDBusConnection::systemBus().name()) ;
 }
 void Timed::stop_stuff()
@@ -1136,15 +1110,6 @@ void Timed::dsme_mode_reported(const string &mode)
 }
 #endif
 
-void Timed::connect_to_session_bus(const string &session_bus_address)
-{
-  static int counter = 0 ;
-  session_bus_name = str_printf("timed_session_bus_%d", ++counter) ;
-  session_bus = QDBusConnection::connectToBus(QString::fromStdString(session_bus_address), session_bus_name.c_str()) ;
-  if (not session_bus.isConnected())
-    log_error("can't connect to session bus '%s': %s", session_bus_address.c_str(), session_bus.lastError().message().toStdString().c_str()) ;
-}
-
 #if 0
 void Timed::device_mode_reached(bool act_dead, const string &new_address)
 {
@@ -1184,7 +1149,6 @@ void Timed::session_reported(const QString &new_address)
   }
   else
   {
-    connect_to_session_bus(session_bus_address) ;
     start_voland_watcher() ;
   }
 #else
@@ -1203,20 +1167,6 @@ void Timed::harmattan_init_done(int runlevel)
     device_mode_reached(false) ; // ACT_DEAD mode
 }
 
-void Timed::harmattan_session_started()
-{
-  log_notice("session start signalled, will get the address now") ;
-  string new_address = harmattan_get_session_bus_address() ;
-  log_notice("session bus address: '%s'", new_address.c_str()) ;
-  if (new_address.empty())
-  {
-    log_critical("unable to read session bus address, will not start serving it") ;
-    return ;
-  }
-  connect_to_session_bus(session_bus_address = new_address) ;
-  start_voland_watcher() ;
-}
-
 static char *chomp(char *s)
 {
   if (s)
@@ -1226,28 +1176,6 @@ static char *chomp(char *s)
       *p-- = '\0' ;
   }
   return s ;
-}
-
-string Timed::harmattan_get_session_bus_address()
-{
-  const char *helper = "/usr/bin/timed-aegis-session-helper" ;
-  FILE *fp = popen(helper, "r") ;
-  if (fp==NULL)
-  {
-    log_error("can't execute '%s': %m, session bus address not available", helper) ;
-    return "" ;
-  }
-  int buffer_size = 1024 ;
-  char buffer[buffer_size], *res = fgets(buffer, buffer_size, fp) ;
-  pclose(fp) ;
-  if (res==NULL)
-  {
-    log_error("can't read session bus address from helper") ;
-    return "" ;
-  }
-  chomp(buffer) ;
-  log_notice("new session bus address read: '%s'", buffer) ;
-  return res==NULL ? "" : buffer ;
 }
 
 void Timed::init_kernel_notification()
