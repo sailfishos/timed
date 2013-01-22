@@ -28,9 +28,9 @@
 
 #include "f.h"
 
-#if F_CSD
-#include <NetworkTime>
-#include <NetworkOperator>
+#if OFONO
+#include "networktime.h"
+#include "networkoperator.h"
 #endif
 
 #include "timed/nanotime.h"
@@ -42,9 +42,9 @@ struct cellular_operator_t
   // int mcc_value ; // =0, if mcc="", -1, else if mcc is not a number
   cellular_operator_t() ;
   cellular_operator_t(const std::string &mcc_s, const std::string &mnc_s) ;
-#if F_CSD
+#if OFONO
   cellular_operator_t(const QString &mcc_s, const QString &mnc_s) ;
-  cellular_operator_t(const Cellular::NetworkTimeInfo &cnti) ;
+  cellular_operator_t(const NetworkTimeInfo &cnti);
 #endif
   bool operator==(const cellular_operator_t &x) const ; // same mcc & mnc
   bool operator!=(const cellular_operator_t &x) const ; // mcc or mnc differ
@@ -62,8 +62,8 @@ struct cellular_time_t
   time_t value ;
   nanotime_t ts ;
   cellular_time_t() ;
-#if F_CSD
-  cellular_time_t(const Cellular::NetworkTimeInfo &cnti) ;
+#if OFONO
+  cellular_time_t(const NetworkTimeInfo &cnti);
 #endif
   bool is_valid() const { return (bool)value ; }
   std::string str() const ;
@@ -77,8 +77,8 @@ struct cellular_offset_t
   time_t timestamp ;
   bool sender_time ; // is timestamp received in the same NITZ package as UTC time
   cellular_offset_t() ;
-#if F_CSD
-  cellular_offset_t(const Cellular::NetworkTimeInfo &cnti) ;
+#if OFONO
+  cellular_offset_t(const NetworkTimeInfo &cnti);
 #endif
   std::string str() const ;
   bool is_valid() const { return (bool)timestamp ; }

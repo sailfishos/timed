@@ -159,9 +159,9 @@ Timed::Timed(int ac, char **av) :
   init_load_events() ;
   log_debug() ;
 
-#if F_CSD
+#if OFONO
   init_cellular_services() ;
-#endif // F_CSD
+#endif // OFONO
 
   log_debug() ;
 
@@ -647,7 +647,7 @@ void Timed::init_start_event_machine()
   am->start() ;
 }
 
-#if F_CSD
+#if OFONO
 void Timed::init_cellular_services()
 {
 #if 0
@@ -674,7 +674,7 @@ void Timed::init_cellular_services()
   QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
 #endif
 }
-#endif // F_CSD
+#endif // OFONO
 
 void Timed::init_network_events()
 {

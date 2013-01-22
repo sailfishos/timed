@@ -26,15 +26,15 @@
 
 #include "f.h"
 
-#if F_CSD
+#if OFONO
 
 #include <string>
 
 #include <QTimer>
 
-#include <NetworkTime>
-#include <NetworkOperator>
-using Cellular::NetworkTimeInfo ;
+#include "networktime.h"
+#include "networkoperator.h"
+#include "networktimeinfo.h"
 
 #include "timed/nanotime.h"
 
@@ -48,8 +48,8 @@ struct csd_t : public QObject
   static const nanotime_t old_nitz_threshold ;
   static const int operator_wait_ms = 1000 ;
   Timed *timed ;
-  Cellular::NetworkTime *nt ;
-  Cellular::NetworkOperator *op ;
+  NetworkTime *nt ;
+  NetworkOperator *op ;
   Q_INVOKABLE void csd_operator_q() ;
   QTimer *timer ;
   cellular_time_t *time ;
@@ -78,6 +78,6 @@ public:
   virtual ~csd_t() ;
 } ;
 
-#endif//F_CSD
+#endif//OFONO
 
 #endif//MAEMO_TIMED_CSD_H

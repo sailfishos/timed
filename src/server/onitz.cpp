@@ -35,9 +35,9 @@
 cellular_handler::cellular_handler()
 {
 #if 0
-#if F_CSD
-  cnt = new Cellular::NetworkTime ;
-  cop = new Cellular::NetworkOperator ;
+#if OFONO
+  cnt = new NetworkTime;
+  cop = new NetworkOperator;
   const char *signal1 = SIGNAL(timeInfoChanged(const NetworkTimeInfo &)) ;
   const char *signal2 = SIGNAL(timeInfoQueryCompleted(const NetworkTimeInfo &)) ;
   const char *my_slot = SLOT(new_nitz_signal(const NetworkTimeInfo &)) ;
@@ -65,7 +65,7 @@ cellular_handler::cellular_handler()
 #if 0
 void cellular_handler::emulate_operator_signal()
 {
-#if F_CSD
+#if OFONO
   log_debug() ;
   new_operator(cop->mnc(), cop->mcc()) ;
   log_debug() ;
@@ -128,7 +128,7 @@ void cellular_handler::fake_nitz_signal(int mcc, int offset, int time, int dst)
 #endif
 
 #if 0
-#if F_CSD
+#if OFONO
 void cellular_handler::new_nitz_signal(const NetworkTimeInfo &cnti)
 {
   log_debug() ;

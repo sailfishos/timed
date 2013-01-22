@@ -20,8 +20,51 @@ CONFIG(dsme_dbus_if) {
     DEFINES += HAVE_DSME
 }
 
-HEADERS += peer.h settings.h csd.h adaptor.h timed.h state.h cluster.h machine.h singleshot.h pinguin.h unix-signal.h onitz.h
-SOURCES += peer.cpp tzdata.cpp cellular.cpp csd.cpp cluster.cpp machine.cpp state.cpp main.cpp timed.cpp timeutil.cpp event.cpp misc.cpp settings.cpp pinguin.cpp unix-signal.cpp onitz.cpp
+HEADERS += peer.h \
+    settings.h \
+    csd.h \
+    adaptor.h \
+    timed.h \
+    state.h \
+    cluster.h \
+    machine.h \
+    singleshot.h \
+    pinguin.h \
+    unix-signal.h \
+    onitz.h \
+    networktime.h \
+    networktimewatcher.h \
+    networkoperator.h \
+    networkregistrationwatcher.h \
+    networktimeinfo.h \
+    ofonomodemmanager.h \
+    modemwatcher.h \
+    ofonoconstants.h
+
+SOURCES += peer.cpp \
+    tzdata.cpp \
+    cellular.cpp \
+    csd.cpp \
+    cluster.cpp \
+    machine.cpp \
+    state.cpp \
+    main.cpp \
+    timed.cpp \
+    timeutil.cpp \
+    event.cpp \
+    misc.cpp \
+    settings.cpp \
+    pinguin.cpp \
+    unix-signal.cpp \
+    onitz.cpp \
+    networktime.cpp \
+    networktimewatcher.cpp \
+    networkoperator.cpp \
+    networkregistrationwatcher.cpp \
+    networktimeinfo.cpp \
+    ofonomodemmanager.cpp \
+    modemwatcher.cpp \
+    ofonoconstants.cpp
 
 SOURCES += credentials.cpp aegis.cpp
 HEADERS += credentials.h

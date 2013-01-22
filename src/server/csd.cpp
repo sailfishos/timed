@@ -27,16 +27,13 @@
 
 #include "csd.h"
 
-#if F_CSD
-
-#include <NetworkTime>
-#include <NetworkOperator>
+#if OFONO
 
 csd_t::csd_t(Timed *owner)
 {
   timed = owner ;
-  nt = new Cellular::NetworkTime ;
-  op = new Cellular::NetworkOperator ;
+  nt = new NetworkTime;
+  op = new NetworkOperator;
   static const char *time_signal1 = SIGNAL(timeInfoChanged(const NetworkTimeInfo &)) ;
   static const char *time_signal2 = SIGNAL(timeInfoQueryCompleted(const NetworkTimeInfo &)) ;
   static const char *time_slot1 = SLOT(csd_time_s(const NetworkTimeInfo &)) ;
@@ -90,19 +87,19 @@ void csd_t::csd_operator_s(const QString &mnc, const QString &mcc)
   process_csd_network_operator(mcc, mnc) ;
 }
 
-void csd_t::csd_time_q(const Cellular::NetworkTimeInfo &nti)
+void csd_t::csd_time_q(const NetworkTimeInfo &nti)
 {
   log_notice("CSD::csd_time_q %s", csd_network_time_info_to_string(nti).c_str()) ;
   process_csd_network_time_info(nti) ;
 }
 
-void csd_t::csd_time_s(const Cellular::NetworkTimeInfo &nti)
+void csd_t::csd_time_s(const NetworkTimeInfo &nti)
 {
   log_notice("CSD::csd_time_s %s", csd_network_time_info_to_string(nti).c_str()) ;
   process_csd_network_time_info(nti) ;
 }
 
-void csd_t::input_csd_network_time_info(const Cellular::NetworkTimeInfo &nti)
+void csd_t::input_csd_network_time_info(const NetworkTimeInfo &nti)
 {
   timer->stop() ;
   cellular_time_t new_time(nti) ;
@@ -136,7 +133,7 @@ void csd_t::output_csd_network_time_info()
 
 const nanotime_t csd_t::old_nitz_threshold(2,0) ;
 
-void csd_t::process_csd_network_time_info(const Cellular::NetworkTimeInfo &nti)
+void csd_t::process_csd_network_time_info(const NetworkTimeInfo &nti)
 {
   if (not nti.isValid())
   {
@@ -178,7 +175,7 @@ void csd_t::wait_for_operator_timeout() // timer slot
   output_csd_network_time_info() ; // probably needed
 }
 
-string csd_t::csd_network_time_info_to_string(const Cellular::NetworkTimeInfo &nti)
+string csd_t::csd_network_time_info_to_string(const NetworkTimeInfo &nti)
 {
   if (not nti.isValid())
     return "{invalid}" ;
@@ -207,4 +204,4 @@ string csd_t::csd_network_time_info_to_string(const Cellular::NetworkTimeInfo &n
 
   return os.str() ;
 }
-#endif//F_CSD
+#endif//OFONO

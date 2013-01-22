@@ -43,7 +43,7 @@ using namespace std ;
 #if USE_CELLULAR_QT
 #define NEW_CELLULAR 1
 #define NEW_CELLULAR_BROKEN_SIGNAL 1
-#include <NetworkTime>
+#include "networktime.h"
 #endif
 
 #include <qmlog>
@@ -52,7 +52,7 @@ using namespace std ;
 #include "timed/wallclock"
 
 #if NEW_CELLULAR && NEW_CELLULAR_BROKEN_SIGNAL
-using Cellular::NetworkTimeInfo ;
+#include "networktimeinfo.h"
 #endif
 
 static string str_printf(const char *format, ...)
@@ -92,7 +92,7 @@ static string str_printf(const char *format, ...)
   return formatted ;
 }
 #if USE_CELLULAR_QT
-static string csd_network_time_info_to_string(const Cellular::NetworkTimeInfo &nti)
+static string csd_network_time_info_to_string(const NetworkTimeInfo &nti)
 {
   if (not nti.isValid())
     return "{invalid}" ;
@@ -130,7 +130,7 @@ class ticker : public QCoreApplication
   QString abbreviation ;
   QTimer *ticker_timer ;
 #if USE_CELLULAR_QT
-  Cellular::NetworkTime *cellular_time ;
+  NetworkTime *cellular_time;
 #endif
 public:
   ticker(int ac, char **av) : QCoreApplication(ac,av), abbreviation("[N/A]")
@@ -173,15 +173,15 @@ public:
 #endif
 
 #if USE_CELLULAR_QT
-    cellular_time = new Cellular::NetworkTime ;
+    cellular_time = new NetworkTime;
 #  if NEW_CELLULAR
 
 #    if NEW_CELLULAR_BROKEN_SIGNAL
+    int cel1 = QObject::connect(cellular_time, SIGNAL(timeInfoChanged(const NetworkTimeInfo &)), this, SLOT(cellular_changed(const NetworkTimeInfo &)));
+    int cel2 = QObject::connect(cellular_time, SIGNAL(timeInfoQueryCompleted(const NetworkTimeInfo &)), this, SLOT(cellular_queried(const NetworkTimeInfo &)));
+#    else
     int cel1 = QObject::connect(cellular_time, SIGNAL(timeInfoChanged(const NetworkTimeInfo &)), this, SLOT(cellular_changed(const NetworkTimeInfo &))) ;
     int cel2 = QObject::connect(cellular_time, SIGNAL(timeInfoQueryCompleted(const NetworkTimeInfo &)), this, SLOT(cellular_queried(const NetworkTimeInfo &))) ;
-#    else
-    int cel1 = QObject::connect(cellular_time, SIGNAL(timeInfoChanged(const Cellular::NetworkTimeInfo &)), this, SLOT(cellular_changed(const Cellular::NetworkTimeInfo &))) ;
-    int cel2 = QObject::connect(cellular_time, SIGNAL(timeInfoQueryCompleted(const Cellular::NetworkTimeInfo &)), this, SLOT(cellular_queried(const Cellular::NetworkTimeInfo &))) ;
 #    endif
 
     if (cel1)
@@ -207,7 +207,7 @@ public:
     ticker_timer->start(1000) ;
   }
 #if NEW_CELLULAR
-  void print_cellular_info(const char *signal, const Cellular::NetworkTimeInfo &nti)
+  void print_cellular_info(const char *signal, const NetworkTimeInfo &nti)
   {
     cout << endl ;
     log_notice("Signal '%s' received: %s", signal, csd_network_time_info_to_string(nti).c_str()) ;
@@ -264,7 +264,7 @@ public slots:
 #if NEW_CELLULAR_BROKEN_SIGNAL
   void cellular_changed(const NetworkTimeInfo &nti)
 #else
-  void cellular_changed(const Cellular::NetworkTimeInfo &nti)
+  void cellular_changed(const NetworkTimeInfo &nti)
 #endif
   {
     print_cellular_info("timeInfoChanged", nti) ;
@@ -272,7 +272,7 @@ public slots:
 #if NEW_CELLULAR_BROKEN_SIGNAL
   void cellular_queried(const NetworkTimeInfo &nti)
 #else
-  void cellular_queried(const Cellular::NetworkTimeInfo &nti)
+  void cellular_queried(const NetworkTimeInfo &nti)
 #endif
   {
     print_cellular_info("timeInfoQueryCompleted", nti) ;

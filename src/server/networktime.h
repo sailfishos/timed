@@ -1,10 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2011 Nokia Corporation.                           **
-**                                                                        **
-**   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
-**   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
-**   Author: Victor Portnov <ext-victor.portnov@nokia.com>                **
+**  Copyright (C) 2013 Jolla Ltd.                                         **
+**  Contact: Petri M. Gerdt <petri.gerdt@jollamobile.com>                 **
 **                                                                        **
 **     This file is part of Timed                                         **
 **                                                                        **
@@ -21,42 +18,45 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#ifndef TIMED_F_H
-#define TIMED_F_H
 
-#if __MEEGO__
-#  define F_CREDS_UID 1
-//#  define F_CREDS_NOBODY 1
-#  define F_FORCE_DEBUG_PATH "/var/cache/timed/DEBUG"
-#  define OFONO 1
-#endif
+#ifndef NETWORKTIME_H
+#define NETWORKTIME_H
 
-#if __HARMATTAN__
-#  define F_CREDS_AEGIS_LIBCREDS 1
-#  define OFONO 1
-#  define F_SCRATCHBOX 1
-#  define F_ACTING_DEAD 1
-#  define F_IMAGE_TYPE 1
-#  define F_HOME_LOG 1
-#  define F_FORCE_DEBUG_PATH "/var/cache/timed/DEBUG"
-#  define F_FORCE_HOME_LOG_PATH "/var/cache/timed/HOME_LOG"
-#endif
+#include <QMap>
+#include <QObject>
+#include <QVariant>
 
-#if F_CREDS_AEGIS_LIBCREDS
-#  define F_TOKENS_AS_CREDENTIALS 1
-#endif
+#include "networktimeinfo.h"
+#include "ofonomodemmanager.h"
 
-#if F_CREDS_AEGIS_LIBCREDS || F_CREDS_UID
-#  define F_UID_AS_CREDENTIALS 1
-#  define F_DBUS_INFO_AS_CREDENTIALS 1
-#endif
+class QDBusPendingCallWatcher;
+class NetworkTimeWatcher;
 
-#if __MEEGO__ && __HARMATTAN__
-#  warning The Meego and Harmattan feature sets are mutualy exclusive
-#endif
+// See http://harmattan-dev.nokia.com/docs/platform-api-reference/xml/daily-docs/libcellular-qt/classCellular_1_1NetworkTime.html
+class NetworkTime : public QObject
+{
+    Q_OBJECT
 
-#if F_CREDS_AEGIS_LIBCREDS + F_CREDS_UID + F_CREDS_NOBODY != 1
-#  warning 'aegis_libcreds', 'uid' and 'nobody' credential features are mutualy exclusive
-#endif
+public:
+    explicit NetworkTime (QObject *parent=0);
+    NetworkTimeInfo timeInfo() const;
+    void queryTimeInfo();
+    bool isValid() const;
 
-#endif//TIMED_F_H
+signals:
+    void timeInfoChanged(const NetworkTimeInfo &timeInfo);
+    void timeInfoQueryCompleted(const NetworkTimeInfo &timeInfo);
+
+private:
+    NetworkTimeInfo m_networkTimeInfo;
+    QMap<QString, NetworkTimeWatcher*> m_watcherMap;
+    NetworkTimeInfo parseNetworkTimeInfoFromMap(QVariantMap map);
+    OfonoModemManager m_modemManager;
+
+private slots:
+    void onModemAdded(QString objectPath);
+    void onModemRemoved(QString objectPath);
+    void networkTimeChanged(QVariantMap map);
+    void networkTimeQueryCompletedSlot(QVariantMap map);
+};
+#endif // NETWORKTIME_H

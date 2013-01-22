@@ -1,10 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2011 Nokia Corporation.                           **
-**                                                                        **
-**   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
-**   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
-**   Author: Victor Portnov <ext-victor.portnov@nokia.com>                **
+**  Copyright (C) 2013 Jolla Ltd.                                         **
+**  Contact: Petri M. Gerdt <petri.gerdt@jollamobile.com>                 **
 **                                                                        **
 **     This file is part of Timed                                         **
 **                                                                        **
@@ -21,42 +18,41 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#ifndef TIMED_F_H
-#define TIMED_F_H
 
-#if __MEEGO__
-#  define F_CREDS_UID 1
-//#  define F_CREDS_NOBODY 1
-#  define F_FORCE_DEBUG_PATH "/var/cache/timed/DEBUG"
-#  define OFONO 1
-#endif
+#ifndef NETWORKTIMEINFO_H
+#define NETWORKTIMEINFO_H
 
-#if __HARMATTAN__
-#  define F_CREDS_AEGIS_LIBCREDS 1
-#  define OFONO 1
-#  define F_SCRATCHBOX 1
-#  define F_ACTING_DEAD 1
-#  define F_IMAGE_TYPE 1
-#  define F_HOME_LOG 1
-#  define F_FORCE_DEBUG_PATH "/var/cache/timed/DEBUG"
-#  define F_FORCE_HOME_LOG_PATH "/var/cache/timed/HOME_LOG"
-#endif
+#include <QDateTime>
+#include <QString>
+#include <time.h>
 
-#if F_CREDS_AEGIS_LIBCREDS
-#  define F_TOKENS_AS_CREDENTIALS 1
-#endif
+// See http://harmattan-dev.nokia.com/docs/platform-api-reference/xml/daily-docs/libcellular-qt/classCellular_1_1NetworkTimeInfo.html
+class NetworkTimeInfo
+{
+public:
+    NetworkTimeInfo(const QDateTime &dateTime, const int daylightAdjustment,
+                    const int offsetFromUtc, const qlonglong timestampSeconds,
+                    const qlonglong timestampNanoSeconds, const QString &mnc, const QString &mcc);
+    NetworkTimeInfo(const NetworkTimeInfo &other);
+    NetworkTimeInfo();
+    ~NetworkTimeInfo();
 
-#if F_CREDS_AEGIS_LIBCREDS || F_CREDS_UID
-#  define F_UID_AS_CREDENTIALS 1
-#  define F_DBUS_INFO_AS_CREDENTIALS 1
-#endif
+    QDateTime dateTime() const;
+    int offsetFromUtc() const;
+    int daylightAdjustment() const;
+    struct timespec* timestamp() const;
+    QString mnc() const;
+    QString mcc() const;
+    bool isValid() const;
+    QString toString() const;
 
-#if __MEEGO__ && __HARMATTAN__
-#  warning The Meego and Harmattan feature sets are mutualy exclusive
-#endif
-
-#if F_CREDS_AEGIS_LIBCREDS + F_CREDS_UID + F_CREDS_NOBODY != 1
-#  warning 'aegis_libcreds', 'uid' and 'nobody' credential features are mutualy exclusive
-#endif
-
-#endif//TIMED_F_H
+private:
+    QDateTime m_dateTime;
+    int m_daylightAdjustment;
+    int m_offsetFromUtc;
+    qlonglong m_timestampSeconds;
+    qlonglong m_timestampNanoSeconds;
+    QString m_mnc;
+    QString m_mcc;
+};
+#endif // NETWORKTIMEINFO_H

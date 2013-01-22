@@ -1,10 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2011 Nokia Corporation.                           **
-**                                                                        **
-**   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
-**   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
-**   Author: Victor Portnov <ext-victor.portnov@nokia.com>                **
+**  Copyright (C) 2013 Jolla Ltd.                                         **
+**  Contact: Petri M. Gerdt <petri.gerdt@jollamobile.com>                 **
 **                                                                        **
 **     This file is part of Timed                                         **
 **                                                                        **
@@ -21,42 +18,46 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#ifndef TIMED_F_H
-#define TIMED_F_H
 
-#if __MEEGO__
-#  define F_CREDS_UID 1
-//#  define F_CREDS_NOBODY 1
-#  define F_FORCE_DEBUG_PATH "/var/cache/timed/DEBUG"
-#  define OFONO 1
-#endif
+#ifndef NETWORKOPERATOR_H
+#define NETWORKOPERATOR_H
 
-#if __HARMATTAN__
-#  define F_CREDS_AEGIS_LIBCREDS 1
-#  define OFONO 1
-#  define F_SCRATCHBOX 1
-#  define F_ACTING_DEAD 1
-#  define F_IMAGE_TYPE 1
-#  define F_HOME_LOG 1
-#  define F_FORCE_DEBUG_PATH "/var/cache/timed/DEBUG"
-#  define F_FORCE_HOME_LOG_PATH "/var/cache/timed/HOME_LOG"
-#endif
+#include <QObject>
+#include <QMap>
+#include <QVariant>
 
-#if F_CREDS_AEGIS_LIBCREDS
-#  define F_TOKENS_AS_CREDENTIALS 1
-#endif
+#include "ofonomodemmanager.h"
 
-#if F_CREDS_AEGIS_LIBCREDS || F_CREDS_UID
-#  define F_UID_AS_CREDENTIALS 1
-#  define F_DBUS_INFO_AS_CREDENTIALS 1
-#endif
+class NetworkRegistrationWatcher;
 
-#if __MEEGO__ && __HARMATTAN__
-#  warning The Meego and Harmattan feature sets are mutualy exclusive
-#endif
+// See http://harmattan-dev.nokia.com/docs/platform-api-reference/xml/daily-docs/libcellular-qt/classCellular_1_1NetworkOperator.html
+class NetworkOperator : public QObject
+{
+    Q_OBJECT
 
-#if F_CREDS_AEGIS_LIBCREDS + F_CREDS_UID + F_CREDS_NOBODY != 1
-#  warning 'aegis_libcreds', 'uid' and 'nobody' credential features are mutualy exclusive
-#endif
+public:
+    explicit NetworkOperator(QObject *parent = 0);
+    QString mnc() const;
+    QString mcc() const;
+    bool isValid() const;
 
-#endif//TIMED_F_H
+signals:
+    void operatorChanged(const QString &mnc, const QString &mcc);
+    
+private:
+    QString m_mnc;
+    QString m_mcc;
+    bool m_mccUpdated;
+    bool m_mncUpdated;
+    bool m_valid;
+    QString m_currentObjectPath;
+    OfonoModemManager m_modemManager;
+    QMap<QString, NetworkRegistrationWatcher*> m_watcherMap;
+
+private slots:
+    void onModemAdded(QString objectPath);
+    void onModemRemoved(QString objectPath);
+    void onWatcherPropertyChanged(QString objectPath, QString name, QVariant value);
+};
+
+#endif // NETWORKOPERATOR_H

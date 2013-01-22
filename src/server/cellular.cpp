@@ -28,17 +28,12 @@ using namespace std;
 #include <pcrecpp.h>
 #include <qmlog>
 
-#if F_CSD
-#include <NetworkTime>
-#include <NetworkOperator>
-#endif
-
 #include "f.h"
 #include "cellular.h"
 #include "misc.h"
 #include "tzdata.h"
 
-#if F_CSD
+#if OFONO
 #include "csd.h"
 #endif
 
@@ -52,14 +47,14 @@ cellular_operator_t::cellular_operator_t(const string &mcc_s, const string &mnc_
   init() ;
 }
 
-#if F_CSD
+#if OFONO
 cellular_operator_t::cellular_operator_t(const QString &mcc_s, const QString &mnc_s)
 {
   mcc = mcc_s.toStdString(), mnc = mnc_s.toStdString() ;
   init() ;
 }
 
-cellular_operator_t::cellular_operator_t(const Cellular::NetworkTimeInfo &cnti)
+cellular_operator_t::cellular_operator_t(const NetworkTimeInfo &cnti)
 {
   if (cnti.isValid())
   {
@@ -128,8 +123,8 @@ cellular_time_t::cellular_time_t() :
   log_debug("constructed %s by default", str().c_str()) ;
 }
 
-#if F_CSD
-cellular_time_t::cellular_time_t(const Cellular::NetworkTimeInfo &cnti) :
+#if OFONO
+cellular_time_t::cellular_time_t(const NetworkTimeInfo &cnti) :
   value(0), ts(0)
 {
   if (cnti.isValid() and cnti.dateTime().isValid())
@@ -160,8 +155,8 @@ cellular_offset_t::cellular_offset_t() :
   log_debug("constructed %s by default", str().c_str()) ;
 }
 
-#if F_CSD
-cellular_offset_t::cellular_offset_t(const Cellular::NetworkTimeInfo &cnti) :
+#if OFONO
+cellular_offset_t::cellular_offset_t(const NetworkTimeInfo &cnti) :
   oper(cnti),
   offset(0), dst(-1), timestamp(0), sender_time(false)
 {
