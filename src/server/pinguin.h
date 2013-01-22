@@ -24,18 +24,13 @@
 #ifndef PINGUIN_H
 #define PINGUIN_H
 
-#include <qmlog>
-
-#include <timed-voland/interface>
+#include <QObject>
 
 #include "singleshot.h"
-
-class Timed ;
 
 class pinguin_t : public QObject
 {
   Q_OBJECT ;
-  Timed *owner ;
   unsigned max_num ;
   unsigned counter ;
   bool needed ;
@@ -45,7 +40,7 @@ private Q_SLOTS:
   void voland_needed() ;
   void voland_registered() ;
 public:
-  pinguin_t(unsigned p, unsigned n, Timed *timed) ;
+  pinguin_t(unsigned p, unsigned n, QObject *parent);
  ~pinguin_t() ;
   void ping() ;
 } ;
