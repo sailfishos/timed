@@ -1,0 +1,74 @@
+/* -*- mode: c -*- */
+
+/* ------------------------------------------------------------------------- *
+ * Copyright (C) 2012-2013 Jolla Ltd.
+ * Contact: Simo Piiroinen <simo.piiroinen@jollamobile.com>
+ * License: LGPLv2
+ * ------------------------------------------------------------------------- */
+
+digraph foo
+{
+  // DEFAULTS
+  node[width=0.001];
+  node[height=0.001];
+  node[fontsize=8];
+  node[style=filled];
+  edge[fontsize=7];
+  edge[arrowsize=.5];
+
+  // PROCESSES
+  node[shape=oval];
+  node[fillcolor=yellow];
+  TIMED      [label="timed"];
+  ALARM_UI   [label="\"voland\""];
+  DIALOG_UI  [label="Dialog\nhandler\n"];
+  CLOCK      [label="Clock App"];
+  MCE        [label="mce"];
+  DSME       [label="dsme"];
+  USER       [label="user"];
+
+  // INTERFACES
+  node[shape=box];
+  node[fillcolor=wheat];
+  DBUS_VOLAND [label="com.nokia.voland"];
+  DBUS_TIMED  [label="com.nokia.timed"];
+  DBUS_MCE    [label="com.nokia.mce"];
+  SCREEN      [label="display"];
+
+  // DATASTORES
+  node[fillcolor=snow];
+  ALARM_STACK      [label="stack"];
+  ALARM_DIALOG     [label="dialog"];
+  ALARM_QUEUE      [label="queue"];
+  STATE_DISPLAY    [label="display state"];
+  STATE_TKLOCK     [label="tklock state"];
+  STATE_MODECHANGE [label="mode change\npolicy\n"];
+
+  // make implicit nodes appear in some nasty color
+  node[fillcolor=pink];
+
+  // DATAFLOWS
+  TIMED -> ALARM_QUEUE [dir=both]
+  ALARM_UI -> ALARM_STACK [dir=both, label="add/rem"];
+  ALARM_UI -> DIALOG_UI [style=dotted, label="rethink"];
+  DIALOG_UI -> ALARM_UI [style=dotted, label="button"];
+  ALARM_STACK -> DIALOG_UI [label="top"];
+  DIALOG_UI -> ALARM_DIALOG;
+  DIALOG_UI -> SCREEN [dir=both];
+  USER -> SCREEN [style=dotted, label="touch"];
+  DBUS_VOLAND -> ALARM_UI [style=bold];
+  DBUS_TIMED -> TIMED [style=bold];
+  DBUS_MCE -> MCE [style=bold];
+  ALARM_UI -> DBUS_TIMED [label="answer"]
+  CLOCK -> DBUS_TIMED[label="add_event"];
+  TIMED -> DBUS_VOLAND [label="open/close"];
+  DBUS_VOLAND -> TIMED [style=dotted, label="Name\nOwner\nChanged\n"];
+  DBUS_TIMED -> ALARM_UI[style=dotted, label="Name\nOwner\nChanged\n"];
+  DIALOG_UI -> DBUS_MCE [label="tklock"];
+  DBUS_TIMED -> MCE [style=dotted, label="alarm\nstate\n"];
+  DBUS_TIMED -> DSME [style=dotted, label="alarm\nstate\n"];
+  MCE -> STATE_DISPLAY;
+  MCE -> STATE_TKLOCK;
+  MCE -> SCREEN [label="on/off"];
+  DSME -> STATE_MODECHANGE [dir=both];
+}
