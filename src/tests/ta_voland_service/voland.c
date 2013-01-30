@@ -260,6 +260,7 @@ voland_timed_runstate_cb(bool running)
  *
  * @return attr_t object, or NULL in case of errors
  */
+static
 attr_t *
 rx_attr(xdbusrx_t *rx)
 {
@@ -287,6 +288,7 @@ rx_attr(xdbusrx_t *rx)
  *
  * @return true on success, false on failure
  */
+static
 bool
 rx_stab(xdbusrx_t *rx, stab_t *stab)
 {
@@ -313,6 +315,7 @@ cleanup:
  *
  * @return true on success, false on failure
  */
+static
 bool
 rx_button(xdbusrx_t *rx, button_t *btn)
 {
@@ -331,6 +334,7 @@ rx_button(xdbusrx_t *rx, button_t *btn)
  *
  * @return true on success, false on failure
  */
+static
 bool
 rx_event_buttons(xdbusrx_t *rx, event_t *eve)
 {
@@ -360,6 +364,7 @@ rx_event_buttons(xdbusrx_t *rx, event_t *eve)
  *
  * @return true on success, false on failure
  */
+static
 bool
 rx_event(xdbusrx_t *rx, event_t *eve)
 {
