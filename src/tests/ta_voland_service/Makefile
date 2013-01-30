@@ -30,6 +30,7 @@ DBUSDIR  := $(_SYSCONFDIR)/dbus-1
 # ----------------------------------------------------------------------------
 
 TARGETS += ta_voland_service
+TARGETS += alarms_unfreeze
 
 #TARGETS += systembus.so
 #TARGETS += alarmui.png
@@ -123,6 +124,9 @@ LDLIBS   += $(PKG_LDLIBS)
 %.proto : %.c
 	cproto $(CPPFLAGS) $<
 
+% : %.sh
+	cp $< $@
+
 # ----------------------------------------------------------------------------
 # Explicit dependencies
 # ----------------------------------------------------------------------------
@@ -141,9 +145,10 @@ ta_voland_service : ta_voland_service.o\
 
 systembus.so : LDLIBS += -ldl
 
-install:: ta_voland_service
+install:: ta_voland_service alarms_unfreeze
 	install -d -m755 $(DESTDIR)$(BINDIR)/
 	install -m755 ta_voland_service $(DESTDIR)$(BINDIR)/
+	install -m755 alarms_unfreeze $(DESTDIR)$(BINDIR)/
 
 	install -d -m755 $(DESTDIR)$(DBUSDIR)/system.d/
 	install -m755 com.nokia.voland.conf $(DESTDIR)$(DBUSDIR)/system.d/
@@ -156,7 +161,9 @@ install:: ta_voland_service
 .PHONY: normalize
 normalize::
 	normalize_whitespace -M Makefile
-	normalize_whitespace -a $(wildcard *.[ch] *.cc *.cpp *.conf *.py *.dot)
+	normalize_whitespace -a $(wildcard *.[ch] *.cc *.cpp)
+	normalize_whitespace -a $(wildcard *.conf *.py *.dot)
+	normalize_whitespace -a $(wildcard *.sh README)
 
 # ----------------------------------------------------------------------------
 # Update ctags
