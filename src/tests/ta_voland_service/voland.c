@@ -27,12 +27,6 @@
 static void voland_stack_rethink(void);
 static void voland_remove_from_stack(unsigned cookie);
 
-/* ========================================================================= *
- *
- * DIALOG STACK MANAGEMENT
- *
- * ========================================================================= */
-
 /** Is the com.nokia.ta_voland interface in control */
 static bool voland_ta_mode = false;
 
@@ -43,7 +37,13 @@ static arr_t *event_stack = 0; // get(i) -> event_t *
 static unsigned dialog_cookie = 0;
 
 /** Timer id for the "simulate button push in N seconds" */
-static guint  timer_id = 0;
+static guint autoreply_timer_id = 0;
+
+/* ========================================================================= *
+ *
+ * TIMER BASED DIALOG "BUTTON PRESSING"
+ *
+ * ========================================================================= */
 
 /** Simulate button press after timer is triggered
  *
@@ -53,14 +53,14 @@ static guint  timer_id = 0;
  */
 static
 gboolean
-voland_stack_timer_cb(gpointer user_data)
+voland_autoreply_timer_cb(gpointer user_data)
 {
   int      button = 0;
   unsigned cookie = GPOINTER_TO_INT(user_data);
 
-  if( timer_id )
+  if( autoreply_timer_id )
   {
-    timer_id = 0;
+    autoreply_timer_id = 0;
 
     printf("SIMULATE button=%d, cookie=%u\n", button, cookie);
     xtimed_dialog_response(cookie, button);
@@ -75,21 +75,27 @@ voland_stack_timer_cb(gpointer user_data)
  */
 static
 void
-voland_stack_retring_timeout(void)
+voland_autoreply_rethink(void)
 {
-  if( timer_id )
+  if( autoreply_timer_id )
   {
     printf("cancel timeout\n");
-    g_source_remove(timer_id), timer_id = 0;
+    g_source_remove(autoreply_timer_id), autoreply_timer_id = 0;
   }
 
   if( !voland_ta_mode && dialog_cookie )
   {
     printf("program timeout\n");
-    timer_id = g_timeout_add_seconds(15, voland_stack_timer_cb,
+    autoreply_timer_id = g_timeout_add_seconds(15, voland_autoreply_timer_cb,
                                      GINT_TO_POINTER(dialog_cookie));
   }
 }
+
+/* ========================================================================= *
+ *
+ * DIALOG STACK MANAGEMENT
+ *
+ * ========================================================================= */
 
 /** Check if current alarm dialog represents the top of alarm stack
  */
@@ -123,7 +129,7 @@ voland_stack_rethink(void)
       printf("change dialog %u -> %u\n", dialog_cookie, now);
     }
     dialog_cookie = now;
-    voland_stack_retring_timeout();
+    voland_autoreply_rethink();
   }
 }
 
