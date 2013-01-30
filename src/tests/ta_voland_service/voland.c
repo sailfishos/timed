@@ -256,13 +256,15 @@ voland_timed_runstate_cb(bool running)
 
 /** Parse timed attribute from dbus message
  *
- * @param rx parse state
+ * D-Bus format: TIMED_ATTRIBUTE := DICT(STRING key, STRING value)
+ *
+ * @param rx dbus message parser state
  *
  * @return attr_t object, or NULL in case of errors
  */
 static
 attr_t *
-rx_attr(xdbusrx_t *rx)
+voland_parse_attr(xdbusrx_t *rx)
 {
   attr_t *res = 0;
   const char *key = 0;
@@ -284,13 +286,15 @@ rx_attr(xdbusrx_t *rx)
 
 /** Augment stab_t object with array of timed attributes from dbus message
  *
- * @param rx parse state
+ * D-Bus format: TIMED_ATTRIBUTES := ARRAY(TIMED_ATTRIBUTE)
+ *
+ * @param rx dbus message parser state
  *
  * @return true on success, false on failure
  */
 static
 bool
-rx_stab(xdbusrx_t *rx, stab_t *stab)
+voland_parse_stab(xdbusrx_t *rx, stab_t *stab)
 {
   bool res = false;
   int  cnt = 0;
@@ -299,7 +303,7 @@ rx_stab(xdbusrx_t *rx, stab_t *stab)
   {
     for( int i = 0; i < cnt; ++i )
     {
-      attr_t *attr = rx_attr(rx);
+      attr_t *attr = voland_parse_attr(rx);
       if( !attr ) goto cleanup;
       stab_add(stab, attr);
     }
@@ -311,18 +315,20 @@ cleanup:
 
 /** Augment button_t object with data from dbus message
  *
- * @param rx parse state
+ * D-Bus format: TIMED_BUTTON := STRUCT(TIMED_ATTRIBUTES attr)
+ *
+ * @param rx dbus message parser state
  *
  * @return true on success, false on failure
  */
 static
 bool
-rx_button(xdbusrx_t *rx, button_t *btn)
+voland_parse_button(xdbusrx_t *rx, button_t *btn)
 {
   bool res = false;
   if( xdbusrx_enter_struct(rx) )
   {
-    rx_stab(rx, btn->stab);
+    voland_parse_stab(rx, btn->stab);
     res = xdbusrx_leave_container(rx);
   }
   return res;
@@ -330,13 +336,15 @@ rx_button(xdbusrx_t *rx, button_t *btn)
 
 /** Augment event_t object with button data from dbus message
  *
- * @param rx parse state
+ * D-Bus format: TIMED_BUTTONS := ARRAY(TIMED_BUTTON)
+ *
+ * @param rx dbus message parser state
  *
  * @return true on success, false on failure
  */
 static
 bool
-rx_event_buttons(xdbusrx_t *rx, event_t *eve)
+voland_parse_event_buttons(xdbusrx_t *rx, event_t *eve)
 {
   bool res = false;
   int  cnt = 0;
@@ -347,7 +355,7 @@ rx_event_buttons(xdbusrx_t *rx, event_t *eve)
       button_t *btn = button_create();
       arr_push(eve->buttons, btn);
 
-      if( !rx_button(rx, btn) )
+      if( !voland_parse_button(rx, btn) )
       {
         break;
       }
@@ -360,13 +368,18 @@ rx_event_buttons(xdbusrx_t *rx, event_t *eve)
 
 /** Augment event_t object with data from dbus message
  *
- * @param rx parse state
+ * D-Bus format: TIMED_EVENT := STRUCT(UINT32 cookie,
+ *                                     UINT32 tick,
+ *                                     TIMED_ATTRIBUTES attrs,
+ *                                     TIMED_BUTTONS buttons)
+ *
+ * @param rx dbus message parser state
  *
  * @return true on success, false on failure
  */
 static
 bool
-rx_event(xdbusrx_t *rx, event_t *eve)
+voland_parse_event(xdbusrx_t *rx, event_t *eve)
 {
   bool res = false;
 
@@ -377,8 +390,8 @@ rx_event(xdbusrx_t *rx, event_t *eve)
       xdbusrx_read_uint32(rx, &eve->cookie);
       xdbusrx_read_uint32(rx, &eve->tick);
 
-      rx_stab(rx, eve->stab);
-      rx_event_buttons(rx, eve);
+      voland_parse_stab(rx, eve->stab);
+      voland_parse_event_buttons(rx, eve);
 
       xdbusrx_leave_container(rx);
     }
@@ -413,7 +426,7 @@ static DBusMessage *voland_open_cb(DBusMessage *msg)
     {
       event_t *eve = event_create();
 
-      if( rx_event(rx, eve) )
+      if( voland_parse_event(rx, eve) )
       {
         voland_stack_push_event(eve), eve = 0;
       }
