@@ -25,7 +25,7 @@
 #include "event.h"
 
 static void voland_stack_rethink(void);
-static void voland_remove_from_stack(unsigned cookie);
+static void voland_stack_remove_event(unsigned cookie);
 
 /** Is the com.nokia.ta_voland interface in control */
 static bool voland_ta_mode = false;
@@ -64,7 +64,7 @@ voland_autoreply_timer_cb(gpointer user_data)
 
     printf("SIMULATE button=%d, cookie=%u\n", button, cookie);
     xtimed_dialog_response(cookie, button);
-    voland_remove_from_stack(cookie);
+    voland_stack_remove_event(cookie);
     voland_stack_rethink();
   }
 
@@ -137,7 +137,7 @@ voland_stack_rethink(void)
  */
 static
 void
-voland_clear_stack(void)
+voland_stack_clear(void)
 {
   arr_clear(event_stack);
 }
@@ -148,7 +148,7 @@ voland_clear_stack(void)
  */
 static
 void
-voland_push_to_stack(event_t *eve)
+voland_stack_push_event(event_t *eve)
 {
   printf("@%s(%u)\n", __FUNCTION__, eve->cookie);
 
@@ -178,7 +178,7 @@ voland_push_to_stack(event_t *eve)
  */
 static
 void
-voland_remove_from_stack(unsigned cookie)
+voland_stack_remove_event(unsigned cookie)
 {
   printf("@%s(%u)\n", __FUNCTION__, cookie);
 
@@ -217,7 +217,7 @@ static
 void
 voland_stack_quit(void)
 {
-  voland_clear_stack();
+  voland_stack_clear();
   voland_stack_rethink();
 
   arr_delete(event_stack), event_stack = 0;
@@ -244,7 +244,7 @@ void
 voland_timed_runstate_cb(bool running)
 {
   printf("%s(%s)\n", __FUNCTION__, running ? "true" : "false");
-  voland_clear_stack();
+  voland_stack_clear();
   voland_stack_rethink();
 }
 
@@ -410,7 +410,7 @@ static DBusMessage *voland_open_cb(DBusMessage *msg)
 
       if( rx_event(rx, eve) )
       {
-        voland_push_to_stack(eve), eve = 0;
+        voland_stack_push_event(eve), eve = 0;
       }
       event_delete(eve);
     }
@@ -452,7 +452,7 @@ static DBusMessage *voland_close_cb(DBusMessage *msg)
     goto cleanup;
   }
 
-  voland_remove_from_stack(cookie);
+  voland_stack_remove_event(cookie);
   voland_stack_rethink();
 
   ack = TRUE;
@@ -583,7 +583,7 @@ voland_answer(unsigned cookie, int button)
   {
     ack = xtimed_dialog_response(cookie, button);
 
-    voland_remove_from_stack(cookie);
+    voland_stack_remove_event(cookie);
     voland_stack_rethink();
   }
 
