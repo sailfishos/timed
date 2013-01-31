@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testdefinition version="1.0">
+  <suite name="timed-tests" domain="middleware">
+    <set name="unit-tests" feature="timed">
+      <case name="Setup environment">
+        <step>export DISPLAY=:0</step>
+      </case>
+      <case name="Automatic time update unit tests">
+        <step expected_result="0">/opt/tests/timed-tests/ut_networktime test_networktimeinfo</step>
+        <step expected_result="0">/opt/tests/timed-tests/ut_networktime test_networktime</step>
+        <step expected_result="0">/opt/tests/timed-tests/ut_networktime test_networkoperator</step>
+      </case>
+    </set>
+  </suite>
+</testdefinition>
+
