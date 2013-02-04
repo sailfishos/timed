@@ -11,6 +11,18 @@
         <step expected_result="0">/opt/tests/timed-tests/ut_networktime test_networkoperator</step>
       </case>
     </set>
+    <set name="system-tests" feature="timed">
+      <case name="Setup environment">
+        <step>export DISPLAY=:0</step>
+      </case>
+      <case name="Add and cancel events">
+        <step>dbus-send --system --dest=com.nokia.time \
+              /com/nokia/startup/signal \
+              com.nokia.startup.signal.desktop_visible</step>
+        <step expected_result="0">/opt/tests/timed-tests/tst_events test_addEvent</step>
+        <step expected_result="0">/opt/tests/timed-tests/tst_events test_cancelEvent</step>
+      </case>
+    </set>
   </suite>
 </testdefinition>
 
