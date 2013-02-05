@@ -1,0 +1,170 @@
+arr.o:\
+	arr.c\
+	arr.h\
+
+arr.pic.o:\
+	arr.c\
+	arr.h\
+
+attr.o:\
+	attr.c\
+	attr.h\
+
+attr.pic.o:\
+	attr.c\
+	attr.h\
+
+button.o:\
+	button.c\
+	attr.h\
+	button.h\
+	stab.h\
+
+button.pic.o:\
+	button.c\
+	attr.h\
+	button.h\
+	stab.h\
+
+event.o:\
+	event.c\
+	arr.h\
+	attr.h\
+	button.h\
+	event.h\
+	stab.h\
+
+event.pic.o:\
+	event.c\
+	arr.h\
+	attr.h\
+	button.h\
+	event.h\
+	stab.h\
+
+mainloop.o:\
+	mainloop.c\
+
+mainloop.pic.o:\
+	mainloop.c\
+
+stab.o:\
+	stab.c\
+	arr.h\
+	attr.h\
+	stab.h\
+
+stab.pic.o:\
+	stab.c\
+	arr.h\
+	attr.h\
+	stab.h\
+
+systembus.o:\
+	systembus.c\
+
+systembus.pic.o:\
+	systembus.c\
+
+ta_voland.o:\
+	ta_voland.c\
+	arr.h\
+	attr.h\
+	button.h\
+	event.h\
+	mainloop.h\
+	stab.h\
+	ta_voland.h\
+	ta_voland_dbus.h\
+	voland.h\
+	voland_dbus.h\
+	xdbus.h\
+	xtimed.h\
+	xtimed_dbus.h\
+
+ta_voland.pic.o:\
+	ta_voland.c\
+	arr.h\
+	attr.h\
+	button.h\
+	event.h\
+	mainloop.h\
+	stab.h\
+	ta_voland.h\
+	ta_voland_dbus.h\
+	voland.h\
+	voland_dbus.h\
+	xdbus.h\
+	xtimed.h\
+	xtimed_dbus.h\
+
+ta_voland_service.o:\
+	ta_voland_service.c\
+	mainloop.h\
+	ta_voland.h\
+	ta_voland_dbus.h\
+	voland.h\
+	voland_dbus.h\
+	xtimed.h\
+	xtimed_dbus.h\
+
+ta_voland_service.pic.o:\
+	ta_voland_service.c\
+	mainloop.h\
+	ta_voland.h\
+	ta_voland_dbus.h\
+	voland.h\
+	voland_dbus.h\
+	xtimed.h\
+	xtimed_dbus.h\
+
+voland.o:\
+	voland.c\
+	arr.h\
+	attr.h\
+	button.h\
+	event.h\
+	stab.h\
+	voland.h\
+	voland_dbus.h\
+	xdbus.h\
+	xtimed.h\
+	xtimed_dbus.h\
+
+voland.pic.o:\
+	voland.c\
+	arr.h\
+	attr.h\
+	button.h\
+	event.h\
+	stab.h\
+	voland.h\
+	voland_dbus.h\
+	xdbus.h\
+	xtimed.h\
+	xtimed_dbus.h\
+
+xdbus.o:\
+	xdbus.c\
+	xdbus.h\
+
+xdbus.pic.o:\
+	xdbus.c\
+	xdbus.h\
+
+xtimed.o:\
+	xtimed.c\
+	voland.h\
+	voland_dbus.h\
+	xdbus.h\
+	xtimed.h\
+	xtimed_dbus.h\
+
+xtimed.pic.o:\
+	xtimed.c\
+	voland.h\
+	voland_dbus.h\
+	xdbus.h\
+	xtimed.h\
+	xtimed_dbus.h\
+

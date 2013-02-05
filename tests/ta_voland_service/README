@@ -1,0 +1,135 @@
+ _                     _                 _                       _
+| |_ __ _  __   _____ | | __ _ _ __   __| |  ___  ___ _ ____   _(_) ___ ___
+| __/ _` | \ \ / / _ \| |/ _` | '_ \ / _` | / __|/ _ \ '__\ \ / / |/ __/ _ \
+| || (_| |  \ V / (_) | | (_| | | | | (_| | \__ \  __/ |   \ V /| | (_|  __/
+ \__\__,_|   \_/ \___/|_|\__,_|_| |_|\__,_| |___/\___|_|    \_/ |_|\___\___|
+
+The files in this directory implement skeleton "alarm ui" component that
+can be used for automated timed testing.
+
+The binary that gets build is called "ta_voland_service".
+
+D-BUS
+=====
+
+The "ta_voland_service" binary implements the following dbus services and
+makes them available on system bus.
+
+D-BUS INTERFACE: TIMED -> ALARM UI
+
+DBUS_NAME       com.nokia.voland
+DBUS_INTERFACE  com.nokia.voland
+DBUS_OBJECT     /com/nokia/voland
+
+BOOLEAN ack = open(TIMED_EVENTS events)
+BOOLEAN ack = close(UINT32 cookie)
+
+More details can be found from "voland_dbus.h"
+
+D-BUS INTERFACE: TEST AUTOMATION -> ALARM UI ALARM UI
+
+DBUS_NAME       com.nokia.ta_voland
+DBUS_INTERFACE  com.nokia.ta_voland
+DBUS_OBJECT     /com/nokia/ta_voland
+
+INT32   pid = pid()
+BOOLEAN ack = answer(UINT32 cookie, INT32 button)
+UINT32 cookie = top()
+VOID quit()
+
+More details can be found from "ta_voland_dbus.h"
+
+Additionally "ta_voland_service" use the following dbus interfaces to
+communicate with other parties:
+
+D-BUS INTERFACE: ALARM UI -> TIMED
+
+DBUS_NAME       com.nokia.time
+DBUS_INTERFACE  com.nokia.time
+DBUS_OBJECT     /com/nokia/time
+
+BOOLEAN ack = dialog_response(UINT32 cookie, INT32 button)
+
+More details can be found from "xtimed_dbus.h"
+
+Whos and hows of dbus name ownership and ipc to voland interfaces is
+specified in dbus configuration files:
+* com.nokia.ta_voland.conf (must be installed)
+* com.nokia.voland.conf (might come from the real alarm ui)
+
+NOTES
+=====
+
+Timed blocks alarms until device startup is finished. Currently timed
+expects to see Harmattan/N9 style signaling when this occurs. Before the
+legacy code gets fixes, we must explicitly tell timed to unfreeze alarms.
+This can be done by using the "alarms_unfreeze.sh" shell script.
+
+IPC OVERVIEW
+============
+
+Overview of how IPC between various components is detailed in
+"alarmui.dot". If graphviz package is installed, it can be made into rt-sa
+data flow diagram via "make alarmui.png".
+
+SOURCE CODE
+===========
+
+The source code files can be split into groups of
+
+1) Main binary:
+
+ta_voland_service.c
+* main() function
+
+2) Feature modules
+
+mainloop.c
+mainloop.h
+* glib mainloop
+
+ta_voland.c
+ta_voland.h
+ta_voland_dbus.h
+* implements com.nokia.ta_voland service
+
+voland.c
+voland.h
+voland_dbus.h
+* implements com.nokia.voland service
+
+xtimed.c
+xtimed.h
+xtimed_dbus.h
+* (synchronous) dbus wrappers for communicating with timed
+
+3) Utility functions / classes
+
+event.c
+event.h
+* timed dbus api compatible event data class
+
+button.c
+button.h
+* timed dbus api compatible button data class
+
+stab.c
+stab.h
+* timed dbus api compatible string-string map class
+
+attr.c
+attr.h
+* timed dbus api compatible key-value attribute class
+
+xdbus.c
+xdbus.h
+* helpers for dealing with deeply nested dbus containers
+
+arr.c
+arr.h
+* generic array container class
+
+4) Other
+
+systembus.c
+* LD_PRELOAD hack that forces existing binaries to use system bus
