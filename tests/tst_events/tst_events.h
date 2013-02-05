@@ -26,6 +26,12 @@
 
 class SimpleVolandAdaptor;
 
+namespace Maemo {
+    namespace Timed {
+        class Event;
+    }
+}
+
 class tst_Events : public QObject
 {
     Q_OBJECT
@@ -35,6 +41,7 @@ public:
 private slots:
     void initTestCase();
     void test_addEvent();
+    void test_replaceEvent();
     void test_cancelEvent();
     void cleanupTestCase();
     void init();
@@ -42,7 +49,9 @@ private slots:
 
 private:
     QByteArray readFile(const QString path);
+    Maemo::Timed::Event createEvent(const qint64 timestamp, const int dueInSeconds);
     bool addEventWithAction(const qint64 timestamp, const int dueInSeconds, uint &cookie);
+    bool replaceEvent(const uint oldCookie, const qint64 timestamp, const int dueInSeconds, uint &cookie);
     bool verifyVolandDialog(const qint64 timestamp, const QList<QVariant> arguments, const uint cookie);
     bool dismissEvent(const uint cookie);
     bool cancelEvent(const uint cookie);
