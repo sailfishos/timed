@@ -102,7 +102,7 @@ Maemo::Timed::Event tst_Events::createEvent(const qint64 timestamp, const int du
     return event;
 }
 
-bool tst_Events::addEventWithAction(const qint64 timestamp, const int dueInSeconds, uint &cookie)
+bool tst_Events::addEvent(const qint64 timestamp, const int dueInSeconds, uint &cookie)
 {
     Maemo::Timed::Event event = createEvent(timestamp, dueInSeconds);
 
@@ -225,7 +225,7 @@ void tst_Events::test_addEvent()
     qint64 timestamp = QDateTime::currentDateTime().toMSecsSinceEpoch();
     QSignalSpy spy(m_simpleVolandAdaptor, SIGNAL(openAlarmDialog(uint, QString, QString)));
     uint cookie = 0;
-    QVERIFY2(addEventWithAction(timestamp, 2, cookie),
+    QVERIFY2(addEvent(timestamp, 2, cookie),
              "Adding event failed, DBus error");
     QVERIFY2(cookie != 0, "Adding event failed, cookie is 0");
 
@@ -234,7 +234,7 @@ void tst_Events::test_addEvent()
             && cookieList.contains(cookie));
 
     // The event should be triggered while waiting
-    QTest::qWait(2200);
+    WAITFOR(spy.count() >= 1, 2200);
 
     // check action output, the action should have been triggered when event got triggered
     QByteArray byteArray = readFile(PATH);
@@ -262,9 +262,9 @@ void tst_Events::test_replaceEvent()
 
     QSignalSpy spy(m_simpleVolandAdaptor, SIGNAL(openAlarmDialog(uint, QString, QString)));
 
-    QVERIFY2(addEventWithAction(timestamp, 1, cookie), "Adding event failed, DBus error");
-    QVERIFY2(addEventWithAction(timestamp2, 2, cookie2), "Adding event failed, DBus error");
-    QVERIFY2(addEventWithAction(timestamp3, 3, cookie3), "Adding event failed, DBus error");
+    QVERIFY2(addEvent(timestamp, 1, cookie), "Adding event failed, DBus error");
+    QVERIFY2(addEvent(timestamp2, 2, cookie2), "Adding event failed, DBus error");
+    QVERIFY2(addEvent(timestamp3, 3, cookie3), "Adding event failed, DBus error");
     QVERIFY2(cookie != 0, "Adding event failed, cookie is 0");
     QVERIFY2(cookie2 != 0, "Adding event failed, cookie is 0");
     QVERIFY2(cookie3 != 0, "Adding event failed, cookie is 0");
@@ -335,9 +335,9 @@ void tst_Events::test_cancelEvent()
 
     QSignalSpy spy(m_simpleVolandAdaptor, SIGNAL(openAlarmDialog(uint, QString, QString)));
 
-    QVERIFY2(addEventWithAction(timestamp, 1, cookie), "Adding event failed, DBus error");
-    QVERIFY2(addEventWithAction(timestamp2, 2, cookie2), "Adding event failed, DBus error");
-    QVERIFY2(addEventWithAction(timestamp3, 3, cookie3), "Adding event failed, DBus error");
+    QVERIFY2(addEvent(timestamp, 1, cookie), "Adding event failed, DBus error");
+    QVERIFY2(addEvent(timestamp2, 2, cookie2), "Adding event failed, DBus error");
+    QVERIFY2(addEvent(timestamp3, 3, cookie3), "Adding event failed, DBus error");
     QVERIFY2(cookie != 0, "Adding event failed, cookie is 0");
     QVERIFY2(cookie2 != 0, "Adding event failed, cookie is 0");
     QVERIFY2(cookie3 != 0, "Adding event failed, cookie is 0");
@@ -359,14 +359,14 @@ void tst_Events::test_cancelEvent()
 
     QVERIFY(spy.count() == 0); // make sure that the events have not been triggered yet
 
-    QTest::qWait(1200); // let the first event trigger
+    WAITFOR(spy.count() >= 1, 1200); // let the first event trigger
 
     QVERIFY(spy.count() == 1);
     QVERIFY(verifyVolandDialog(timestamp, spy.at(0), cookie));
     QByteArray byteArray = readFile(PATH);
     QVERIFY(byteArray == QString(ACTIONSTRING).arg(timestamp).arg(cookie));
 
-    QTest::qWait(2200); // wait for the remaining event
+    WAITFOR(spy.count() >= 2, 2200); // wait for the remaining event
 
     QVERIFY(spy.count() == 2);
     QVERIFY(verifyVolandDialog(timestamp, spy.at(0), cookie));
