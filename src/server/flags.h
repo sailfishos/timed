@@ -177,8 +177,7 @@ namespace RenameMeNameSpace
     enum
     {
       Missing_Threshold = 59,
-      Bootup_Length = 60,
-      Dsme_Poweroff_Threshold = 120
+      Bootup_Length = 60
     } ;
 }
 

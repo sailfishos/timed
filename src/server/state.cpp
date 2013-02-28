@@ -424,27 +424,6 @@ ticker_t state_queued_t::next_bootup()
     return ticker_t() ;
 }
 
-ticker_t state_queued_t::next_rtc_bootup()
-{
-  ticker_t current_time = machine->transition_start_time ;
-  if(!current_time.is_valid()) // not in transition
-    current_time = now() ;
-
-  ticker_t threshold = current_time + RenameMeNameSpace::Dsme_Poweroff_Threshold ;
-
-  ticker_t tick ; // default value: invalid
-  typedef set<event_pair>::const_iterator iterator ;
-  for(iterator it = bootup.begin(); it != bootup.end(); ++it)
-  {
-    if(it->first <= threshold)
-      continue ;
-    tick = it->first ;
-    break ;
-  }
-
-  return tick ;
-}
-
 void state_queued_t::filter_closed(abstract_filter_state_t *f_st)
 {
   log_assert(!f_st->is_open) ;

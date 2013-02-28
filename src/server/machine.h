@@ -82,7 +82,6 @@ struct machine_t : public QObject
   void alarm_gate(bool open) ;
   bool dialog_response(cookie_t c, int value) ;
   Q_INVOKABLE void process_transition_queue() ;
-  void update_rtc_alarm() ;
   ticker_t calculate_bootup() ;
   void send_bootup_signal() ;
   void invoke_process_transition_queue() ;

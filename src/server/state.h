@@ -179,7 +179,6 @@ struct state_queued_t : public abstract_io_state_t
   QTimer *alarm_timer ;
   typedef std::pair<ticker_t, event_t *> event_pair ;
   ticker_t next_bootup() ;
-  ticker_t next_rtc_bootup() ;
   std::set<event_pair> queue ;
   std::set<event_pair> bootup ;
   uint32_t cluster_bits() { return EventFlags::Cluster_Queue ; }
