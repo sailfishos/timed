@@ -665,10 +665,6 @@ void source_settings::set_system_time(const nanotime_t &t)
   if(res<0)
     log_critical("can't set system time: %m") ;
 
-  // TODO: do it without 'hwclock'
-  res = system("hwclock -w") ;
-  if(res!=0)
-    log_critical("hwclock -w failed: %m") ;
 // #warning  TODO: reshuffle event queue... it's done, isn't it?
   nanotime_t new_time = nanotime_t::systime_at_zero() ;
   log << "new_time=" << new_time.str() << " " ;
