@@ -550,7 +550,7 @@ void Timed::init_context_objects()
   ContextProvider::Property("/com/nokia/time/time_zone/oracle") ;
   time_operational_p = new ContextProvider::Property("/com/nokia/time/system_time/operational") ;
   time_operational_p->setValue(am->is_epoch_open()) ;
-  QObject::connect(am, SIGNAL(next_bootup_event(int,int)), this, SLOT(send_next_bootup_event(int,int)));
+  QObject::connect(am, SIGNAL(next_bootup_event(int,int)), this, SIGNAL(next_bootup_event(int,int)));
 }
 
 
@@ -809,24 +809,6 @@ void Timed::system_owner_changed(const QString &name, const QString &oldowner, c
   else
     log_error("expecing notification about '%s' got about '%s'", Maemo::Timed::Voland::service(), name.toStdString().c_str()) ;
 #undef __qstr
-}
-
-void Timed::send_next_bootup_event(int next_boot_event, int next_non_boot_event)
-{
-#if HAVE_DSME
-  QDBusConnection dsme = QDBusConnection::systemBus() ;
-  QString path = Maemo::Timed::objpath() ;
-  QString iface = Maemo::Timed::interface() ;
-  QString signal = "next_bootup_event" ;
-  QDBusMessage m = QDBusMessage::createSignal(path, iface, signal) ;
-  m << next_boot_event;
-  m << next_non_boot_event;
-  if(dsme.send(m))
-    log_info("signal %s(%d,%d) sent", string_q_to_std(signal).c_str(), next_boot_event, next_non_boot_event);
-  else
-    log_error("Failed to send the signal %s(%d,%d) on system bus: %s",
-              string_q_to_std(signal).c_str(), next_boot_event, next_non_boot_event, dsme.lastError().message().toStdString().c_str());
-#endif
 }
 
 void Timed::event_queue_changed()
