@@ -144,7 +144,7 @@ public:
 
 public Q_SLOTS:
   void system_owner_changed(const QString &name, const QString &oldowner, const QString &newowner) ;
-  void send_next_bootup_event(int value) ;
+  void send_next_bootup_event(int next_boot_event, int next_non_boot_event);
   void register_child(unsigned cookie, int pid) { children[pid] = cookie ; }
   void session_reported(const QString &address) ;
 Q_SIGNALS:

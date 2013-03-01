@@ -424,6 +424,22 @@ ticker_t state_queued_t::next_bootup()
     return ticker_t() ;
 }
 
+ticker_t state_queued_t::next_event_without_bootflag()
+{
+  // No events, return invalid ticker_t
+  if (queue.empty())
+    return ticker_t();
+
+  // Search for the first event that does not have the EventFlags::Boot
+  for(set<event_pair>::iterator it = queue.begin(); it != queue.end(); ++it) {
+    if (!(it->second->flags & EventFlags::Boot))
+      return it->first;
+  }
+
+  // No events without EventFlags::Boot, return invalid ticker_t
+  return ticker_t();
+}
+
 void state_queued_t::filter_closed(abstract_filter_state_t *f_st)
 {
   log_assert(!f_st->is_open) ;

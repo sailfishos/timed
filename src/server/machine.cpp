@@ -179,6 +179,7 @@ machine_t::machine_t(const Timed *daemon) : timed(daemon)
   clusters[cluster_dialog->bit] = cluster_dialog ;
   log_debug() ;
   signalled_bootup = -1 ; // no signal sent yet
+  signalled_non_boot_event = -1;
   log_debug() ;
 
   log_debug("machine->settings->alarms_are_enabled=%d", timed->settings->alarms_are_enabled) ;
@@ -340,9 +341,18 @@ void machine_t::send_bootup_signal()
   int32_t next_bootup = 0 ;
   if(tick.is_valid())
     next_bootup = tick.value() ;
+
+  int32_t next_non_boot_event = 0;
+  tick = state_queued->next_event_without_bootflag();
+  if (tick.is_valid())
+    next_non_boot_event = tick.value();
+
   log_debug("signalled_bootup=%d, next_bootup=%d", signalled_bootup, next_bootup) ;
-  if(signalled_bootup<0 || signalled_bootup!=next_bootup)
-    emit next_bootup_event(signalled_bootup=next_bootup) ;
+  log_debug("signalled_event=%d, next_event=%d", signalled_non_boot_event, next_non_boot_event);
+  if((signalled_bootup < 0 || signalled_bootup != next_bootup)
+     || (signalled_non_boot_event < 0 || signalled_non_boot_event != next_non_boot_event)) {
+    emit next_bootup_event(signalled_bootup = next_bootup, signalled_non_boot_event = next_non_boot_event);
+  }
   log_debug() ;
 }
 

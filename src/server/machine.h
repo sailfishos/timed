@@ -62,6 +62,7 @@ struct machine_t : public QObject
   bool context_changed ;
   int dialog_discard_threshold ;
   int32_t signalled_bootup ;
+  int32_t signalled_non_boot_event;
 
   bool transition_in_progress() { return transition_start_time.is_valid() ; }
   ticker_t transition_started() { return transition_start_time ; }
@@ -100,7 +101,7 @@ Q_SIGNALS:
   void voland_unregistered() ;
   void queue_to_be_saved() ;
   void voland_needed() ;
-  void next_bootup_event(int) ;
+  void next_bootup_event(int, int);
   void child_created(unsigned, int) ;
 public:
   void emit_child_created(unsigned cookie, int pid) { emit child_created(cookie, pid) ; }
