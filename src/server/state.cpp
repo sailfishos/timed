@@ -424,25 +424,20 @@ ticker_t state_queued_t::next_bootup()
     return ticker_t() ;
 }
 
-ticker_t state_queued_t::next_rtc_bootup()
+ticker_t state_queued_t::next_event_without_bootflag()
 {
-  ticker_t current_time = machine->transition_start_time ;
-  if(!current_time.is_valid()) // not in transition
-    current_time = now() ;
+  // No events, return invalid ticker_t
+  if (queue.empty())
+    return ticker_t();
 
-  ticker_t threshold = current_time + RenameMeNameSpace::Dsme_Poweroff_Threshold ;
-
-  ticker_t tick ; // default value: invalid
-  typedef set<event_pair>::const_iterator iterator ;
-  for(iterator it = bootup.begin(); it != bootup.end(); ++it)
-  {
-    if(it->first <= threshold)
-      continue ;
-    tick = it->first ;
-    break ;
+  // Search for the first event that does not have the EventFlags::Boot
+  for(set<event_pair>::iterator it = queue.begin(); it != queue.end(); ++it) {
+    if (!(it->second->flags & EventFlags::Boot))
+      return it->first;
   }
 
-  return tick ;
+  // No events without EventFlags::Boot, return invalid ticker_t
+  return ticker_t();
 }
 
 void state_queued_t::filter_closed(abstract_filter_state_t *f_st)

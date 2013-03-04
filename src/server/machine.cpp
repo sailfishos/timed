@@ -179,6 +179,7 @@ machine_t::machine_t(const Timed *daemon) : timed(daemon)
   clusters[cluster_dialog->bit] = cluster_dialog ;
   log_debug() ;
   signalled_bootup = -1 ; // no signal sent yet
+  signalled_non_boot_event = -1;
   log_debug() ;
 
   log_debug("machine->settings->alarms_are_enabled=%d", timed->settings->alarms_are_enabled) ;
@@ -312,7 +313,6 @@ void machine_t::process_transition_queue()
     }
   }
   // log_debug("processing done,  states: %s tqueue: %s" , s_states().c_str(), s_transition_queue().c_str()) ;
-  update_rtc_alarm() ;
   transition_start_time = ticker_t(0) ;
   transition_time_adjustment.set(0) ;
   if(queue_changed)
@@ -320,57 +320,6 @@ void machine_t::process_transition_queue()
   if(context_changed)
     send_queue_context() ;
   send_bootup_signal() ;
-}
-
-void machine_t::update_rtc_alarm()
-{
-  log_debug() ;
-  if (is_frozen())
-  {
-    log_debug("skipping update_rtc_alarm() because the machine is frozen") ;
-    return ;
-  }
-  time_t tick = state_queued->next_rtc_bootup().value() ;
-  if(tick>0) // valid
-  {
-    tick -= RenameMeNameSpace::Bootup_Length ;
-    if(tick < transition_start_time.value())
-      tick = -1 ;
-  }
-  struct rtc_wkalrm rtc ;
-  memset(&rtc, 0, sizeof(struct rtc_wkalrm)) ;
-
-  if(tick>0) // still valid
-    rtc.enabled = 1 ;
-  else
-  {
-    rtc.enabled = 0 ;
-    tick = transition_start_time.value() ; // need a valid timestamp
-  }
-
-  log_debug("rtc.enabled=%d", rtc.enabled) ;
-  struct tm tm ;
-  gmtime_r(&tick, &tm) ;
-  memset(&rtc.time, -1, sizeof rtc.time) ;
-#define cp(name) rtc.time.tm_##name = tm.tm_##name
-  cp(sec), cp(min), cp(hour), cp(mday), cp(mon), cp(year) ;
-#undef cp
-
-  int fd = open("/dev/rtc0", O_RDONLY) ;
-  if(fd<0)
-  {
-    log_error("Can't open real time clock: %s", strerror(errno)) ;
-    return ;
-  }
-  int res = ioctl(fd, RTC_WKALM_SET, &rtc) ;
-  if(res<0)
-    log_error("Can't set real time clock alarm: %s", strerror(errno)) ;
-  else
-    log_info("Real time clock alarm: %s", !rtc.enabled ? "OFF"
-      : str_printf("ON (%04d-%02d-%02d %02d:%02d:%02d)",
-        rtc.time.tm_year+1900, rtc.time.tm_mon+1, rtc.time.tm_mday,
-        rtc.time.tm_hour, rtc.time.tm_min, rtc.time.tm_sec).c_str()) ;
-  close(fd) ;
 }
 
 ticker_t machine_t::calculate_bootup()
@@ -392,9 +341,18 @@ void machine_t::send_bootup_signal()
   int32_t next_bootup = 0 ;
   if(tick.is_valid())
     next_bootup = tick.value() ;
+
+  int32_t next_non_boot_event = 0;
+  tick = state_queued->next_event_without_bootflag();
+  if (tick.is_valid())
+    next_non_boot_event = tick.value();
+
   log_debug("signalled_bootup=%d, next_bootup=%d", signalled_bootup, next_bootup) ;
-  if(signalled_bootup<0 || signalled_bootup!=next_bootup)
-    emit next_bootup_event(signalled_bootup=next_bootup) ;
+  log_debug("signalled_event=%d, next_event=%d", signalled_non_boot_event, next_non_boot_event);
+  if((signalled_bootup < 0 || signalled_bootup != next_bootup)
+     || (signalled_non_boot_event < 0 || signalled_non_boot_event != next_non_boot_event)) {
+    emit next_bootup_event(signalled_bootup = next_bootup, signalled_non_boot_event = next_non_boot_event);
+  }
   log_debug() ;
 }
 

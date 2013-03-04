@@ -144,13 +144,13 @@ public:
 
 public Q_SLOTS:
   void system_owner_changed(const QString &name, const QString &oldowner, const QString &newowner) ;
-  void send_next_bootup_event(int value) ;
   void register_child(unsigned cookie, int pid) { children[pid] = cookie ; }
   void session_reported(const QString &address) ;
 Q_SIGNALS:
   void voland_registered() ;
   void voland_unregistered() ;
   void settings_changed(const Maemo::Timed::WallClock::Info &, bool system_time) ;
+  void next_bootup_event(int next_boot_event, int next_non_boot_event);
   // void settings_changed_1(bool system_time) ;
 public:
   Timed(int ac, char **av) ;
