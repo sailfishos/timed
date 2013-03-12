@@ -45,10 +45,12 @@ using namespace std ;
 #include <timed-voland/ta_interface>
 
 #include "timed/exception.h"
+#include "pretty-print.h"
 
 int add_event(const char *title) ;
 int response_generic(unsigned cookie, int value) ;
 int cancel_event(unsigned cookie) ;
+int get_event(unsigned cookie) ;
 int send_quit() ;
 int query(int ac, char **av) ;
 int query_attributes(char *cookie) ;
@@ -118,6 +120,10 @@ int main_try(int ac, char **av)
   {
     return cancel_event(atoi(av[2])) ;
   }
+  else if(ac==3 && (string)av[1]=="g")
+  {
+    return get_event(atoi(av[2])) ;
+  }
   else if(ac==2 && (string)av[1]=="qn") // client qn: stop notification service
   {
     return send_quit() ;
@@ -172,7 +178,7 @@ int main_try(int ac, char **av)
   }
   else
   {
-    qDebug() << "Usage:" << av[0] << "[a [TITLE]] | [r [COOKIE [VALUE]]] | c COOKIE | qn | query [key value]* | pid" ;
+    qDebug() << "Usage:" << av[0] << "[a [TITLE]] | [r [COOKIE [VALUE]]] | c COOKIE | g COOKIE | qn | query [key value]* | pid" ;
     return 1 ;
   }
 
@@ -197,6 +203,28 @@ int cancel_event(unsigned cookie)
   bool res_value = res.value() ;
 
   return res_value ? 0 : 1 ;
+}
+
+int get_event(unsigned cookie)
+{
+  Maemo::Timed::Interface iface ;
+  if(!iface.isValid())
+  {
+    qDebug() << "not valid interface:" << iface.lastError() ;
+    return 1 ;
+  }
+  Maemo::Timed::Event::DBusReply res = iface.get_event_sync(cookie) ;
+
+  if(!res.isValid())
+  {
+    qDebug() << "dbus call failed:" << res.error() ;
+    return 1 ;
+  }
+
+  qDebug() << "Valid reply received:" ;
+  qDebug() << res.value() ;
+
+  return 0 ;
 }
 
 int response_generic(unsigned cookie, int value)

@@ -92,6 +92,7 @@ struct cred_modifier_t
   map<string, bool> tokens ;
 
   set<string> tokens_by_value(bool accrue) const ;
+  QVector<Maemo::Timed::cred_modifier_io_t> to_q_vector() const ;
 
   iodata::array *save() const ;
   cred_modifier_t(const iodata::array *a) ; // load
@@ -141,6 +142,8 @@ struct event_t
   static event_t *from_dbus_iface(const Maemo::Timed::event_io_t *) ;
   static event_t *from_queue_file(iodata::record *r) ;
   static event_t *from_event_file(iodata::record *r) ;
+
+  static void to_dbus_iface(const event_t &, Maemo::Timed::event_io_t &) ;
 
   static bool check_attributes(string &error_message, const attribute_t &a, bool empty_only) ;
 

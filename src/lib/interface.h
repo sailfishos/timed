@@ -86,6 +86,8 @@ namespace Maemo
       qtdbus_method(wall_clock_settings, (const Maemo::Timed::WallClock::Settings &s), s.dbus_output(__PRETTY_FUNCTION__)) ;
       qtdbus_method(add_event, (const Maemo::Timed::Event &e), e.dbus_output(__PRETTY_FUNCTION__)) ;
       qtdbus_method(add_events, (const Maemo::Timed::Event::List &ee), ee.dbus_output()) ;
+      qtdbus_method(get_event, (uint32_t cookie), cookie) ;
+      qtdbus_method(get_events, (const QList<uint> &cookies), QVariant::fromValue(cookies)) ;
       qtdbus_method(cancel, (uint32_t cookie), cookie) ;
       qtdbus_method(cancel_events, (const QList<uint> &cookies), QVariant::fromValue(cookies)) ;
       qtdbus_method(replace_event, (const Maemo::Timed::Event &e, uint32_t cookie), e.dbus_output(__PRETTY_FUNCTION__), cookie) ;

@@ -30,6 +30,7 @@
 #include <QDBusArgument>
 #include <QDBusMessage>
 #include <QDBusPendingCall>
+#include <QDBusReply>
 
 namespace Maemo { namespace Timed { inline QString c2q(const char *c) ; } }
 
@@ -68,6 +69,43 @@ struct qdbusargument_structrure_wrapper_const
   const QDBusArgument &i ;
   qdbusargument_structrure_wrapper_const(const QDBusArgument &in) : i(in) {i.beginStructure();}
  ~qdbusargument_structrure_wrapper_const() {i.endStructure();}
+} ;
+
+template <class T>
+class qdbus_reply_wrapper
+{
+public:
+  qdbus_reply_wrapper(const QDBusMessage &reply) ;
+  ~qdbus_reply_wrapper() ;
+  bool isValid () const ;
+  const QDBusError &error() ;
+  T &value() ;
+  const T &value() const ;
+  operator T & () ;
+
+private:
+  QDBusReply<typename T::IO> *io_reply ;
+  T *p ;
+} ;
+
+template <class T>
+class qdbus_pending_reply_wrapper
+{
+public:
+  qdbus_pending_reply_wrapper(const QDBusPendingCall &call) ;
+  ~qdbus_pending_reply_wrapper() ;
+  bool isValid () const ;
+  bool isError () const ;
+  bool isFinished () const ;
+  QDBusError error() const ;
+  T &value() ;
+  const T &value() const ;
+  void waitForFinished() ;
+  operator T & ()  ;
+
+private:
+  QDBusPendingReply<typename T::IO> *io_reply ;
+  T *p ;
 } ;
 
 #endif

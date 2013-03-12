@@ -21,56 +21,39 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#ifndef EVENT_PIMPLE_H
-#define EVENT_PIMPLE_H
+#ifndef PRETTY_PRINT_H
+#define PRETTY_PRINT_H
 
-#include <memory>
-#include <vector>
+#include <QtDebug>
 
-#include <timed/event>
-
-#include "event-io.h"
-#include "daemon/flags.h"
-
-struct Maemo::Timed::event_pimple_t
+namespace Maemo
 {
- ~event_pimple_t() ;
-  struct event_io_t eio ;
-  event_pimple_t() {} ;
-  event_pimple_t(const event_io_t &e_io) ;
-  std::vector<event_action_pimple_t*> a ;
-  std::vector<event_button_pimple_t*> b ;
-  std::vector<event_recurrence_pimple_t*> r ;
+  namespace Timed
+  {
+    class Event ;
+  } ;
 } ;
 
-struct Maemo::Timed::event_action_pimple_t
-{
-  unsigned action_no ;
-  std::auto_ptr<Event::Action> ptr ;
-  event_io_t *eio ;
-  action_io_t *aio() { return & eio->actions[action_no] ; }
-} ;
+QDebug operator<<(QDebug dbg, const Maemo::Timed::Event &event) ;
 
-struct Maemo::Timed::event_button_pimple_t
+class Indent
 {
-  unsigned button_no ;
-  std::auto_ptr<Event::Button> ptr ;
-  event_io_t *eio ;
-  button_io_t *bio() { return & eio->buttons[button_no] ; }
-} ;
-
-struct Maemo::Timed::event_recurrence_pimple_t
-{
-  unsigned recurrence_no ;
-  std::auto_ptr<Event::Recurrence> ptr ;
-  event_io_t *eio ;
-  recurrence_io_t *rio() { return & eio->recrs[recurrence_no] ; }
-} ;
-
-struct Maemo::Timed::event_list_pimple_t
-{
- ~event_list_pimple_t() ;
- std::vector<Event *> events ;
+public:
+  static void setStep(int s) ;
+public:
+  Indent() ;
+  ~Indent() ;
+  Indent & operator++() ;
+  Indent & operator--() ;
+private:
+  Indent(int l, int s) ;
+  static Indent &global() ;
+private:
+  static QList<Indent*> stack ;
+  static int step ;
+private:
+  int local ;
+  friend QDebug operator<<(QDebug dbg, const Indent &ind) ;
 } ;
 
 #endif

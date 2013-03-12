@@ -229,6 +229,58 @@ event_t *event_t::from_dbus_iface(const event_io_t *eio)
   }
 }
 
+void event_t::to_dbus_iface(const event_t &event, Maemo::Timed::event_io_t &res)
+{
+  res.ticker = event.ticker.value() ;
+  res.t_year = event.t.year ;
+  res.t_month = event.t.month ;
+  res.t_day = event.t.day ;
+  res.t_hour = event.t.hour ;
+  res.t_minute = event.t.minute ;
+  map_std_to_q(event.attr.txt, res.attr.txt) ;
+  res.flags = event.flags & EventFlags::Client_Mask ;
+  res.tsz_max = event.tsz_max ;
+  res.tsz_length = event.snooze[0] ;
+  if(event.cred_modifier)
+  {
+    res.cred_modifiers = event.cred_modifier->to_q_vector() ;
+  }
+  int A = event.actions.size() ;
+  for(int i = 0; i < A; ++i)
+  {
+    Maemo::Timed::action_io_t aio;
+    const action_t &action = event.actions[i] ;
+    map_std_to_q(action.attr.txt, aio.attr.txt) ;
+    aio.flags = action.flags ;
+    if(action.cred_modifier)
+    {
+      aio.cred_modifiers = action.cred_modifier->to_q_vector() ;
+    }
+    res.actions << aio ;
+  }
+  int B = event.b_attr.size() ;
+  for(int i = 0; i < B; ++i)
+  {
+    Maemo::Timed::button_io_t bio;
+    map_std_to_q(event.b_attr[i].txt, bio.attr.txt) ;
+    bio.snooze = event.snooze[i+1] ;
+    res.buttons << bio ;
+  }
+  int R = event.recrs.size() ;
+  for(int i = 0; i < R; ++i)
+  {
+    Maemo::Timed::recurrence_io_t rio;
+    const recurrence_pattern_t &recurrence = event.recrs[i] ;
+    rio.mons = recurrence.mons ;
+    rio.mday = recurrence.mday ;
+    rio.wday = recurrence.wday ;
+    rio.hour = recurrence.hour ;
+    rio.mins = recurrence.mins ;
+    rio.flags = recurrence.flags ;
+    res.recrs << rio ;
+  }
+}
+
 iodata::bit_codec *event_t::codec ;
 iodata::bit_codec *action_t::codec ;
 iodata::bit_codec *recurrence_pattern_t::codec ; // flags
@@ -372,6 +424,20 @@ set<string> cred_modifier_t::tokens_by_value(bool value) const
   for (map<string,bool>::const_iterator it=tokens.begin(); it!=tokens.end(); ++it)
     if (it->second==value)
       res.insert(it->first) ;
+  return res ;
+}
+
+QVector<Maemo::Timed::cred_modifier_io_t> cred_modifier_t::to_q_vector() const
+{
+  QVector<Maemo::Timed::cred_modifier_io_t> res ;
+  map<string, bool>::const_iterator it;
+  for(it = tokens.begin(); it != tokens.end(); ++it)
+  {
+    cred_modifier_io_t crio ;
+    crio.token = it->first.c_str() ;
+    crio.accrue = it->second ;
+    res << crio ;
+  }
   return res ;
 }
 

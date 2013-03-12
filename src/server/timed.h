@@ -133,6 +133,8 @@ public:
   void stop_voland_watcher() ;
   cookie_t add_event(cookie_t remove, const Maemo::Timed::event_io_t &event, const QDBusMessage &message) ;
   void add_events(const Maemo::Timed::event_list_io_t &events, QList<QVariant> &res, const QDBusMessage &message) ;
+  bool get_event(cookie_t c, Maemo::Timed::event_io_t &res) ;
+  bool get_events(const QList<uint> &cookies, Maemo::Timed::event_list_io_t &res) ;
   bool dialog_response(cookie_t c, int value) ;
   bool cancel(cookie_t c) { return am->cancel_by_cookie(c) ; }
   void cancel_events(const QList<uint> &cookies, QList<uint> &failed) { am->cancel_events(cookies, failed) ;}
