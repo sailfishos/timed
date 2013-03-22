@@ -31,6 +31,13 @@
 
 #define numof(a) (sizeof(a)/sizeof*(a))
 
+
+#if 0
+# define debugf(FMT,ARGS...) printf("DEBUG: "FMT, ## ARGS)
+#else
+# define debugf(FMT,ARGS...) do { } while(0)
+#endif
+
 /* ------------------------------------------------------------------------- *
  * String helpers
  * ------------------------------------------------------------------------- */
@@ -188,7 +195,7 @@ static Maemo::Timed::Interface &timed_dbus_init()
 
     if( !timed_dbus_ptr->isValid() )
     {
-      qDebug() << "invalid dbus interface:" << timed_dbus_ptr->lastError();
+      qWarning() << "invalid dbus interface:" << timed_dbus_ptr->lastError();
       exit(EXIT_FAILURE);
     }
   }
@@ -887,7 +894,7 @@ static void cookie_cancel(uint cookie)
 
   if(!res.isValid())
   {
-    qDebug() << "'cancel' call failed:" << timed_dbus.lastError();
+    qWarning() << "'cancel' call failed:" << timed_dbus.lastError();
   }
   else
   {
@@ -904,7 +911,7 @@ static void cookie_emit_info(uint cookie)
 
   if( !res.isValid() )
   {
-    qDebug() << "'get_event' call failed:" << res.error() ;
+    qWarning() << "'get_event' call failed:" << res.error() ;
   }
   else
   {
@@ -921,7 +928,7 @@ static void cookie_emit_details(uint cookie)
 
   if( !res.isValid() )
   {
-    qDebug() << "'get_event' call failed:" << res.error() ;
+    qWarning() << "'get_event' call failed:" << res.error() ;
   }
   else
   {
@@ -939,7 +946,7 @@ static QList<uint> cookies_get(void)
 
   if( !reply.isValid() )
   {
-    qDebug() << "'query' call failed:" << timed_dbus.lastError();
+    qWarning() << "'query' call failed:" << timed_dbus.lastError();
     goto cleanup;
   }
 
@@ -949,7 +956,7 @@ static QList<uint> cookies_get(void)
     uint cookie = var.toUInt(&ok);
     if( !ok )
     {
-      qDebug() << var << " is not a valid cookie";
+      qWarning() << var << " is not a valid cookie";
       continue;
     }
     res.append(cookie);
@@ -999,7 +1006,7 @@ static void do_ping_all(void)
   QDBusReply<QString> reply = timed_dbus.ping_sync();
   if(!reply.isValid())
   {
-    qDebug() << "'ping' call failed" << timed_dbus.lastError();
+    qWarning() << "'ping' call failed" << timed_dbus.lastError();
   }
   else
   {
@@ -1020,7 +1027,7 @@ static void do_get_pid(void)
   QDBusReply<int> reply = timed_dbus.pid_sync();
   if( !reply.isValid() )
   {
-    qDebug() << "'pid' call failed" << timed_dbus.lastError();
+    qWarning() << "'pid' call failed" << timed_dbus.lastError();
   }
   else
   {
@@ -1036,7 +1043,7 @@ static void do_set_snooze(char *args)
 
   if(! reply.isValid() )
   {
-    qDebug() << "'set_default_snooze' call failed" << timed_dbus.lastError();
+    qWarning() << "'set_default_snooze' call failed" << timed_dbus.lastError();
   }
   else
   {
@@ -1050,7 +1057,7 @@ static void do_get_snooze(void)
   QDBusReply<int> reply = timed_dbus.get_default_snooze_sync();
   if( !reply.isValid() )
   {
-    qDebug() << "'get_default_snooze' call failed" << timed_dbus.lastError();
+    qWarning() << "'get_default_snooze' call failed" << timed_dbus.lastError();
   }
   else
   {
@@ -1064,7 +1071,7 @@ static void do_get_enabled(void)
   QDBusReply<bool> reply = timed_dbus.alarms_enabled_sync();
   if( !reply.isValid() )
   {
-    qDebug() << "'alarms_enabled' call failed" << timed_dbus.lastError();
+    qWarning() << "'alarms_enabled' call failed" << timed_dbus.lastError();
   }
   else
   {
@@ -1080,7 +1087,7 @@ static void do_set_enabled(char *args)
 
   if(! reply.isValid() )
   {
-    qDebug() << "'enable_alarms' call failed" << timed_dbus.lastError();
+    qWarning() << "'enable_alarms' call failed" << timed_dbus.lastError();
   }
   else
   {
@@ -1114,7 +1121,7 @@ static void do_add_button(char *args)
     char *key = slice(arg, &arg, '=');
     char *val = slice(arg, &arg, 0);
 
-    //printf("%s: '%s' = '%s'\n", __PRETTY_FUNCTION__, key, val);
+    debugf("%s: '%s' = '%s'\n", __PRETTY_FUNCTION__, key, val);
 
     if( *key == 0 )
     {
@@ -1154,7 +1161,7 @@ static void do_add_action(char *args)
     char *key = slice(arg, &arg, '=');
     char *val = slice(arg, &arg, 0);
 
-    //printf("%s: '%s' = '%s'\n", __PRETTY_FUNCTION__, key, val);
+    debugf("%s: '%s' = '%s'\n", __PRETTY_FUNCTION__, key, val);
 
     if( *key == 0 )
     {
@@ -1241,7 +1248,7 @@ static void do_add_recurrence(char *args)
     char *key = slice(arg, &arg, '=');
     char *val = slice(arg, &arg, 0);
 
-    //printf("%s: '%s' = '%s'\n", __PRETTY_FUNCTION__, key, val);
+    debugf("%s: '%s' = '%s'\n", __PRETTY_FUNCTION__, key, val);
 
     if( *key == 0 )
     {
@@ -1287,12 +1294,12 @@ static void do_add_recurrence(char *args)
     }
     else
     {
-      qDebug() << "unknown recurrence setting:" << key << "=" << val;
+      qWarning() << "unknown recurrence setting:" << key << "=" << val;
     }
   }
   if( rec.isEmpty() )
   {
-    qDebug() << "incomplete recurrence setting";
+    qWarning() << "incomplete recurrence setting";
   }
 }
 
@@ -1305,7 +1312,7 @@ static void do_add_event(char *args)
     char *key = slice(arg, &arg, '=');
     char *val = slice(arg, &arg, 0);
 
-    //printf("%s: '%s' = '%s'\n", __PRETTY_FUNCTION__, key, val);
+    debugf("%s: '%s' = '%s'\n", __PRETTY_FUNCTION__, key, val);
 
     if( *key == 0 )
     {
@@ -1338,12 +1345,12 @@ static void do_add_event(char *args)
         int h = tm.tm_hour;
         int m = tm.tm_min;
 
-        //qDebug() << "Setting time:" << Y << M << D << h << m;
+	debugf("Setting time: %04d-%02d-%02d %02d:%02d\n", Y,M,D, h,m);
         cur_eve.setTime(Y,M,D, h,m);
       }
       else
       {
-        qDebug() << "could not parse date + time";
+        qWarning() << "could not parse date + time";
       }
     }
     else if( !strcmp(key, "timezone") )
@@ -1359,7 +1366,7 @@ static void do_add_event(char *args)
   QDBusReply<uint> res = timed_dbus.add_event_sync(cur_eve);
   if(!res.isValid())
   {
-    qDebug() << "'add_event' call failed:" << res.error().message();
+    qWarning() << "'add_event' call failed:" << res.error().message();
   }
   else
   {
