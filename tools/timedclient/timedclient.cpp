@@ -98,7 +98,7 @@ static bool parse_bool(const char *str)
   return strtol(str, 0, 0) != 0;
 }
 
-/** String to struct tm compating month number helper */
+/** String to month number helper, compatible with struct tm indexing */
 static int parse_month(const char *str)
 {
   for( size_t i = 0; i < numof(month_name); ++i )
@@ -111,7 +111,7 @@ static int parse_month(const char *str)
   return (parse_int(str) + 11) % 12;
 }
 
-/** String to struct tm compating week day number helper */
+/** String to week day number helper, compatible with struct tm indexing */
 static int parse_weekday(const char *str)
 {
   for( size_t i = 0; i < numof(weekday_name); ++i )
