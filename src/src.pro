@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS = lib voland server simple-client
+SUBDIRS = lib voland server
 CONFIG += ordered
