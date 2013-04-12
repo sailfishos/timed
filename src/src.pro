@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS = lib voland server simple-client fake-dialog-ui
+SUBDIRS = lib voland server simple-client
 CONFIG += ordered
