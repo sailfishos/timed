@@ -24,7 +24,7 @@
 #include <QDBusPendingReply>
 
 
-#include <qmlog>
+#include "../common/log.h"
 
 #include <timed/interface>
 #include "credentials.h"

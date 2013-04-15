@@ -28,7 +28,7 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include <qmlog>
+#include "../common/log.h"
 
 #include "state.h"
 #include "event.h"

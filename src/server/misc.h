@@ -30,6 +30,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <set>
 
 #include <QMap>
 #include <QString>

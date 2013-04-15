@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <stdint.h>
 
-#include <qmlog>
+#include "../common/log.h"
 
 #include "timed/nanotime.h"
 #include "notification.h"

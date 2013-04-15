@@ -33,13 +33,15 @@ using namespace std ;
 #include <QDBusPendingCallWatcher>
 
 #include <iodata/iodata.h>
-#include <qmlog>
 
 #include <timed/event>
 
 #include "timed/event-pimple.h"
 #include "timed/event-io.h"
 
+#include "../lib/event-declarations.h"
+#include "../lib/event-pimple.h"
+#include "../lib/event-io.h"
 #include "wrappers.h"
 #include "timeutil.h"
 #include "flags.h"

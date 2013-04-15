@@ -21,7 +21,7 @@
 
 #include <QStringList>
 
-#include <qmlog>
+#include "../common/log.h"
 
 #include "networkoperator.h"
 #include "networkregistrationwatcher.h"

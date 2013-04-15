@@ -30,7 +30,7 @@
 #include <map>
 using namespace std ;
 
-#include <qmlog>
+#include "../common/log.h"
 
 #include "olson.h"
 #include "misc.h"

@@ -26,12 +26,12 @@
 using namespace std;
 
 #include <pcrecpp.h>
-#include <qmlog>
 
 #include "f.h"
 #include "cellular.h"
 #include "misc.h"
 #include "tzdata.h"
+#include "../common/log.h"
 
 #if OFONO
 #include "csd.h"

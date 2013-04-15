@@ -29,10 +29,11 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <cstring>
 
 using namespace std ;
 
-#include "log.h"
+#include "../common/log.h"
 #include "aliases.h"
 
 #define ZONE_ALIAS "/usr/share/tzdata-timed/zone.alias"

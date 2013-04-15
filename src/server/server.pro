@@ -10,7 +10,6 @@ INCLUDEPATH += ../h
 
 QMAKE_LIBDIR_FLAGS += -L../lib -L../voland
 LIBS += -ltimed -ltimed-voland
-CONFIG += qmlog
 
 IODATA_TYPES = queue.type config.type settings.type customization.type tzdata.type
 

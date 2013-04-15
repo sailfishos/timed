@@ -26,7 +26,7 @@
 #include <QDBusReply>
 #include <QList>
 
-#include <qmlog>
+#include "../common/log.h"
 
 #include "ofonomodemmanager.h"
 #include "ofonoconstants.h"

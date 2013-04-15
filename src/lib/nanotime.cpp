@@ -26,10 +26,8 @@
 #include <stdint.h>
 #include <errno.h>
 
-#include <timed/qmacro.h>
-
 #include "nanotime.h"
-#include "log.h"
+#include "../common/log.h"
 
 nanotime_t nanotime_t::div2() const
 {

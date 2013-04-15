@@ -21,9 +21,9 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
+#include "../common/log.h"
 #include "event.h"
 #include "machine.h"
-
 #include "cluster.h"
 
 void cluster_queue_t::enter(event_t *e)

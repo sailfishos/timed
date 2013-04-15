@@ -31,7 +31,7 @@ SOURCES += ut_networktime.cpp \
            fakeofono/modeminterface.cpp \
            fakeofono/networktimeinterface.cpp
 
-INCLUDEPATH += ../../src/server fakeofono
+INCLUDEPATH += ../../src/server fakeofono ../../src/common
 
 OTHER_FILES += fakeofono/org.fakeofono.conf
 

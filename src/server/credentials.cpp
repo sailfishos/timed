@@ -30,7 +30,7 @@
 
 #include <QDBusReply>
 
-#include <qmlog>
+#include "../common/log.h"
 
 #if F_CREDS_UID
 #include <pwd.h>

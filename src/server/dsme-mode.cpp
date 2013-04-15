@@ -5,7 +5,7 @@ using namespace std ;
 #include <QTimer>
 
 #include <dsme/dsme_dbus_if.h>
-#include <qmlog>
+#include "../common/log.h"
 
 #include "dsme-mode.h"
 #include "interfaces.h"

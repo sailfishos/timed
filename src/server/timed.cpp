@@ -37,7 +37,6 @@
 
 #include <timed/interface>
 #include <timed-voland/interface>
-#include <qmlog>
 
 #include "queue.type.h"
 #include "config.type.h"
@@ -56,6 +55,7 @@
 #include "csd.h"
 #include "notification.h"
 #include "time.h"
+#include "../common/log.h"
 
 #include <string>
 #include <fstream>
@@ -111,10 +111,10 @@ Timed::Timed(int ac, char **av) :
   init_unix_signal_handler() ;
   log_debug() ;
 
-  QMLOG_IF
-    init_dbus_peer_info() ;
-    log_debug() ;
-  QMLOG_ENDIF ;
+ // QMLOG_IF
+ //   init_dbus_peer_info() ;
+ //   log_debug() ;
+ // QMLOG_ENDIF ;
 
   // init_act_dead() ;
   // init_dsme_mode() ;
@@ -212,11 +212,6 @@ void Timed::init_scratchbox_mode()
   const char *magic_path = "/targets/links/scratchbox.config" ;
   scratchbox_mode = access(magic_path, F_OK)==0 ;
 #endif
-  if (scratchbox_mode)
-  {
-    qmlog::enable() ;
-    qmlog::process_name("timed(sb)") ;
-  }
   log_info("%s" "SCRATCHBOX detected", scratchbox_mode ? "" : "no ") ;
 #else
   scratchbox_mode = false ;

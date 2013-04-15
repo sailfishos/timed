@@ -28,7 +28,7 @@ using namespace std ;
 #include <fcntl.h>
 #include <signal.h>
 
-#include <qmlog>
+#include "../common/log.h"
 
 #include "unix-signal.h"
 

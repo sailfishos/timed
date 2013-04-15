@@ -21,7 +21,7 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#include "log.h"
+#include "../common/log.h"
 
 #include "daemon/flags.h"
 

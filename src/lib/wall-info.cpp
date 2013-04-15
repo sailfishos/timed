@@ -24,9 +24,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include <timed/wallclock>
-
-#include "log.h"
+#include "../common/log.h"
 #include "wall-info.h"
 
 register_qtdbus_metatype(Maemo::Timed::WallClock::Info, 0) ;

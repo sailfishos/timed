@@ -25,30 +25,27 @@
 #include "timed.h"
 #include "event.h"
 
-#include "timed/imagetype.h"
-#include "timed/log.h"
+#include "../common/log.h"
 
 #include "f.h"
-
-#include <qmlog>
 
 #include <QMetaType>
 int main(int ac, char **av)
 {
   const size_t cwd_len = 16 ;
   char cwd[cwd_len], *p = getcwd(cwd, cwd_len) ;
-  bool cwd_is_root = p!=NULL && strcmp(cwd, "/")==0 ;
+  //bool cwd_is_root = p!=NULL && strcmp(cwd, "/")==0 ;
 
   // fprintf(stderr, "getcwd returned '%s'", p?cwd:"(null)") ;
 
-  int syslog_level = qmlog::Warning ;
-  int varlog_level = qmlog::Warning ;
+//  int syslog_level = qmlog::Warning ;
+ // int varlog_level = qmlog::Warning ;
 
-  bool enable_qmlog = true ;
+  //bool enable_qmlog = true ;
 
-  bool debug_flag_timed = access(F_FORCE_DEBUG_PATH, F_OK) == 0 ;
-  bool debug_flag_qmlog = access(QMLOG_ENABLER1, F_OK) == 0 ;
-
+//  bool debug_flag_timed = access(F_FORCE_DEBUG_PATH, F_OK) == 0 ;
+//  bool debug_flag_qmlog = access(QMLOG_ENABLER1, F_OK) == 0 ;
+/*
 #if F_IMAGE_TYPE
   string image_type = imagetype() ;
   bool debug_flag = debug_flag_timed or debug_flag_qmlog ;
@@ -65,13 +62,14 @@ int main(int ac, char **av)
       syslog_level = qmlog::Info ;
   }
 #endif
+*/
+  //qmlog::syslog()->reduce_max_level(syslog_level) ;
 
-  qmlog::syslog()->reduce_max_level(syslog_level) ;
+  //const char *log_file = cwd_is_root ? "/var/log/timed.log" : "timed.log" ;
+  //qmlog::log_file *varlog = new qmlog::log_file(log_file, varlog_level) ;
+  //varlog->enable_fields(qmlog::Monotonic_Milli | qmlog::Time_Milli) ;
 
-  const char *log_file = cwd_is_root ? "/var/log/timed.log" : "timed.log" ;
-  qmlog::log_file *varlog = new qmlog::log_file(log_file, varlog_level) ;
-  varlog->enable_fields(qmlog::Monotonic_Milli | qmlog::Time_Milli) ;
-
+  /*
 #if F_HOME_LOG
   bool log_file_at_home = access(F_FORCE_HOME_LOG_PATH, F_OK) == 0 ;
   if (log_file_at_home)
@@ -81,21 +79,9 @@ int main(int ac, char **av)
     home->enable_fields(qmlog::Monotonic_Milli | qmlog::Time_Milli | qmlog::Close_After_Write | qmlog::Cache_If_Cant_Open | qmlog::Dont_Create_File | qmlog::Retry_If_Failed) ;
   }
 #endif
-
-  bool isatty_2 = isatty(2) ;
-
-  if (not isatty_2 or cwd_is_root) // stderr is not a terminal or started by upstart -> no stderr logging
-    delete qmlog::stderr() ;
-  else
-    enable_qmlog = true ; // even on PR type image, if stderr needed
-
-  if (enable_qmlog)
-    qmlog::enable() ;
-
-  LIBTIMED_LOGGING_DISPATCHER->set_proxy(qmlog::dispatcher()) ;
-
-  log_notice("time daemon started; debug_flags: timed=%d, qmlog=%d; syslog-level: %d /var/log-level: %d isatty(2)=%d",
-          debug_flag_timed, debug_flag_qmlog, qmlog::syslog()->log_level(), varlog->log_level(), isatty_2) ;
+*/
+//  log_notice("time daemon started; debug_flags: timed=%d, qmlog=%d; syslog-level: %d /var/log-level: %d isatty(2)=%d",
+  //        debug_flag_timed, debug_flag_qmlog, qmlog::syslog()->log_level(), varlog->log_level(), isatty_2) ;
 
 #if F_IMAGE_TYPE
   log_notice("image_type='%s'", image_type.c_str()) ;
