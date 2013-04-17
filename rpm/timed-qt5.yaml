@@ -1,0 +1,51 @@
+Name: timed-qt5
+Summary: Time daemon
+Version: 2.59
+Release: 1
+Group: System/System Control
+License: LGPLv2
+URL: https://github.com/nemomobile/timed
+Sources:
+    - "%{name}-%{version}.tar.bz2"
+Description: |
+    The time daemon (%{name}) managing system time, time zone and settings,
+    executing actions at given time and managing the event queue.
+
+Requires:
+    - tzdata
+    - tzdata-timed
+PkgBR:
+    - libiodata-qt5-devel
+    - libxslt
+PkgConfigBR:
+    - libpcrecpp
+    - Qt5Core
+    - Qt5DBus
+    - Qt5Network
+    - Qt5Test
+    - dsme_dbus_if
+Configure: none
+Builder: qmake
+QMakeOptions:
+    - -recursive "CONFIG += MEEGO dsme_dbus_if"
+SubPackages:
+    - Name: tests
+      Summary: Test cases for %{name}
+      Group: Development/System
+      Description: Simple automated test cases, to be executed in cita.
+      Requires:
+          - testrunner-lite
+
+    - Name: tools
+      Summary: Command line tools for communication with the time daemon
+      Group: Development/Tools
+      Description: |
+          timedclient - add, modify, remove, and query alarms.
+
+    - Name: devel
+      Summary: Development package for %{name}
+      Group: Development/Libraries
+      Description: Header files and shared lib symlink for %{name}.
+      Requires:
+          - pkgconfig(Qt5Core)
+
