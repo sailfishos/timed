@@ -21,8 +21,8 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#include <timed/qmacro.h>
-#include <timed/interface.h>
+
+#include "interface.h"
 
 #include "event-io.h"
 

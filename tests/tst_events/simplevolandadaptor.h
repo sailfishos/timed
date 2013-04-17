@@ -22,7 +22,7 @@
 #ifndef SIMPLEVOLANDADAPTOR_H
 #define SIMPLEVOLANDADAPTOR_H
 
-#include <timed-voland/interface>
+#include "../../src/voland/interface.h"
 
 /** Minimalistic Voland service
   *

@@ -30,9 +30,9 @@
 
 #include "onitz.h"
 
-#include "timed/nanotime.h"
-#include "timed/wall-declarations.h"
-#include "timed/wall-info.h"
+#include "../lib/nanotime.h"
+#include "../lib/wall-declarations.h"
+#include "../lib/wall-info.h"
 
 #include "tz.h"
 

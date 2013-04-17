@@ -32,7 +32,7 @@
 
 #include <QTextStream>
 
-#include <timed/qmacro.h>
+#include "qmacro.h"
 
 struct nanotime_t
 {

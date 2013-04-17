@@ -23,13 +23,12 @@
 ***************************************************************************/
 #include "../common/log.h"
 
-#include "daemon/flags.h"
-
+#include "../server/flags.h"
 #include "exception.h"
 #include "qmacro.h"
 
 #include "event-pimple.h"
-#include "daemon/timeutil.h"
+#include "../server/timeutil.h"
 
 static void set_attribute(const char *pretty, Maemo::Timed::attribute_io_t &attr, const QString &key, const QString &value)
 {

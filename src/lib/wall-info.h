@@ -28,9 +28,7 @@
 #include <QString>
 #include <QVector>
 
-#include <timed/wallclock>
-#include <timed/qmacro.h>
-
+#include "../lib/wall-declarations.h"
 #include "nanotime.h"
 
 struct Maemo::Timed::WallClock::wall_info_pimple_t

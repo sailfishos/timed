@@ -34,9 +34,9 @@
 #include <QDBusAbstractAdaptor>
 #include <QDBusMessage>
 
-#include "timed/event-io.h"
-#include "timed/wall-info.h"
-#include "timed/wall-settings.h"
+#include "../lib/event-io.h"
+#include "../lib/wall-info.h"
+#include "../lib/wall-settings.h"
 
 #include "timed.h"
 #include "misc.h"
@@ -44,7 +44,7 @@
 #include "credentials.h"
 #include "peer.h"
 
-#include <timed/interface> // TODO: is Maemo::Timed::bus() the correct way?
+#include "../lib/interface.h" // TODO: is Maemo::Timed::bus() the correct way?
 
 #define SQC str().toStdString().c_str()
 #define QC toStdString().c_str()

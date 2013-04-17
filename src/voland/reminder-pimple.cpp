@@ -21,9 +21,9 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#include <timed-voland/reminder>
+#include "reminder.h"
 
-#include "daemon/flags.h"
+#include "../server/flags.h"
 #include "reminder-pimple.h"
 
 

@@ -35,8 +35,7 @@
 
 #include <ContextProvider>
 
-#include <timed/interface>
-#include <timed-voland/interface>
+#include "../voland/interface.h"
 
 #include "queue.type.h"
 #include "config.type.h"

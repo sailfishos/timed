@@ -30,10 +30,8 @@
 #include <QString>
 #include <QVector>
 
-#include <timed/qmacro.h>
-
-#include <timed-voland/reminder>
-#include <timed-voland/interface>
+#include "../lib/qmacro.h"
+#include "interface.h"
 
 namespace Maemo
 {

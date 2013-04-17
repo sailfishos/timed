@@ -42,7 +42,7 @@ using namespace std ;
 #endif
 
 
-#include "timed/nanotime.h"
+#include "../lib/nanotime.h"
 
 #include "misc.h"
 

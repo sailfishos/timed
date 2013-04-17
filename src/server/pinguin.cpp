@@ -1,4 +1,4 @@
-#include <timed-voland/interface>
+#include "../voland/interface.h"
 #include "../common/log.h"
 
 #include "pinguin.h"

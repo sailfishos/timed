@@ -33,9 +33,9 @@
 #include <QDBusPendingCall>
 #include <QDBusAbstractInterface>
 
-#include <timed/event>
-#include <timed/wallclock>
-#include <timed/qmacro.h>
+#include "event-declarations.h"
+#include "wall-declarations.h"
+#include "qmacro.h"
 
 typedef QList<uint> Q_List_uint ;
 typedef QMap<QString,QString> Q_Map_String_String ;

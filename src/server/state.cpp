@@ -21,13 +21,13 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#include "timed/event-io.h"
-#include "timed/nanotime.h"
-#include "timed/aliases.h"
+#include "../lib/event-io.h"
+#include "../lib/nanotime.h"
+#include "../lib/aliases.h"
 
-#include "timed-voland/reminder"
-#include "timed-voland/interface"
-#include "timed-voland/reminder-pimple.h"
+#include "../voland/reminder.h"
+#include "../voland/interface.h"
+#include "../voland/reminder-pimple.h"
 
 #include "machine.h"
 #include "event.h"

@@ -8,7 +8,6 @@
 
 #include "../common/log.h"
 
-#include "timed/nanotime.h"
 #include "notification.h"
 
 static const time_t timestamp = 2147483645 ; // three seconds before apocalypse

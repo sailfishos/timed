@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QSocketNotifier>
 
-#include "timed/nanotime.h"
+#include "../lib/nanotime.h"
 
 struct kernel_notification_t : public QObject
 {

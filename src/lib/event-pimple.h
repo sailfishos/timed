@@ -27,10 +27,8 @@
 #include <memory>
 #include <vector>
 
-#include <timed/event>
-
+#include "../server/event.h"
 #include "event-io.h"
-#include "daemon/flags.h"
 
 struct Maemo::Timed::event_pimple_t
 {

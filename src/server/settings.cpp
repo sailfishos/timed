@@ -31,10 +31,10 @@
 #include <QCryptographicHash>
 #include <QFile>
 
-#include "daemon/flags.h"
-#include "timed/wall-settings.h"
-#include "timed/aliases.h"
+#include "../lib/wall-settings.h"
+#include "../lib/aliases.h"
 
+#include "flags.h"
 #include "timed.h"
 #include "settings.h"
 #include "misc.h"

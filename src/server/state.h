@@ -35,7 +35,7 @@
 
 #include "timeutil.h"
 #include "wrappers.h"
-#include "../common/flags.h"
+#include "flags.h"
 
 struct machine_t ;
 struct event_t ;

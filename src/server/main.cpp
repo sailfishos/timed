@@ -25,6 +25,7 @@
 #include "timed.h"
 #include "event.h"
 
+#include "../lib/imagetype.h"
 #include "../common/log.h"
 
 #include "f.h"

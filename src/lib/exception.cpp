@@ -23,7 +23,7 @@
 ***************************************************************************/
 #include <sstream>
 
-#include <timed/exception.h>
+#include "exception.h"
 
 Maemo::Timed::Exception::Exception(const char *function, const char *message) throw ()
 {

@@ -11,7 +11,6 @@ SOURCES = interface.cpp event-io.cpp event-pimple.cpp exception.cpp nanotime.cpp
 
 SOURCES += wall-settings.cpp wall-info.cpp qmacro.cpp
 
-INCLUDEPATH += ../h
 LIBS += -lrt
 
 target.path = /usr/lib

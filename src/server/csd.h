@@ -36,7 +36,7 @@
 #include "networkoperator.h"
 #include "networktimeinfo.h"
 
-#include "timed/nanotime.h"
+#include "../lib/nanotime.h"
 
 #include "cellular.h"
 

@@ -32,7 +32,7 @@
 #include "../common/log.h"
 #include <iodata/iodata>
 
-#include "timed/interface"
+#include "../lib/interface.h"
 #include "credentials.h"
 
 #include "aegis.h"
