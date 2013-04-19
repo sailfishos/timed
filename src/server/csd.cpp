@@ -48,7 +48,7 @@ csd_t::csd_t(Timed *owner)
 
   static const char *operator_signal = SIGNAL(operatorChanged(const QString &, const QString &)) ;
   static const char *operator_slot = SLOT(csd_operator_s(const QString &, const QString &)) ;
-  int res_op = QObject::connect(op, operator_signal, this, operator_slot) ;
+  bool res_op = QObject::connect(op, operator_signal, this, operator_slot);
   if(res_op)
     log_info("succesfully connected to csd network operator signal") ;
   else

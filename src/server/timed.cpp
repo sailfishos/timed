@@ -540,7 +540,7 @@ void Timed::start_voland_watcher()
 void Timed::init_context_objects()
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-// TODO: add Qt5 replacement for ContextProvider
+  // TODO: add Qt5 replacement for ContextProvider
 #else
   context_service = new ContextProvider::Service(Maemo::Timed::bus()) ;
   context_service -> setAsDefault() ;
@@ -662,10 +662,10 @@ void Timed::init_cellular_services()
   csd = new csd_t(this) ;
   tz_oracle = new tz_oracle_t ;
 
-  int res1 = QObject::connect(csd, SIGNAL(csd_cellular_time(const cellular_time_t &)), settings, SLOT(cellular_time_slot(const cellular_time_t &))) ;
-  int res2 = QObject::connect(csd, SIGNAL(csd_cellular_offset(const cellular_offset_t &)), tz_oracle, SLOT(cellular_offset(const cellular_offset_t &))) ;
-  int res3 = QObject::connect(csd, SIGNAL(csd_cellular_operator(const cellular_operator_t &)), tz_oracle, SLOT(cellular_operator(const cellular_operator_t &))) ;
-  int res4 = QObject::connect(tz_oracle, SIGNAL(cellular_zone_detected(olson *, suggestion_t, bool)), settings, SLOT(cellular_zone_slot(olson *, suggestion_t, bool))) ;
+  bool res1 = QObject::connect(csd, SIGNAL(csd_cellular_time(const cellular_time_t &)), settings, SLOT(cellular_time_slot(const cellular_time_t &)));
+  bool res2 = QObject::connect(csd, SIGNAL(csd_cellular_offset(const cellular_offset_t &)), tz_oracle, SLOT(cellular_offset(const cellular_offset_t &)));
+  bool res3 = QObject::connect(csd, SIGNAL(csd_cellular_operator(const cellular_operator_t &)), tz_oracle, SLOT(cellular_operator(const cellular_operator_t &)));
+  bool res4 = QObject::connect(tz_oracle, SIGNAL(cellular_zone_detected(olson *, suggestion_t, bool)), settings, SLOT(cellular_zone_slot(olson *, suggestion_t, bool)));
 
   log_assert(res1) ;
   log_assert(res2) ;
