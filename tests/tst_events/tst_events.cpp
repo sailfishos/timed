@@ -23,6 +23,7 @@
 #include <QDBusReply>
 #include <QDBusError>
 #include <QDateTime>
+#include <QFile>
 #include <QMap>
 #include <QSignalSpy>
 

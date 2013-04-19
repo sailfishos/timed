@@ -2,6 +2,7 @@ TEMPLATE = app
 TARGET = ut_networktime
 
 QT += testlib dbus
+QT -= gui
 
 HEADERS += ut_networktime.h \
            ../../src/server/networktimeinfo.h \
@@ -35,7 +36,8 @@ INCLUDEPATH += ../../src/server fakeofono ../../src/common
 
 OTHER_FILES += fakeofono/org.fakeofono.conf
 
-target.path = $$(DESTDIR)/opt/tests/timed-tests
+equals(QT_MAJOR_VERSION, 4): target.path = $$(DESTDIR)/opt/tests/timed-tests
+equals(QT_MAJOR_VERSION, 5): target.path = $$(DESTDIR)/opt/tests/timed-qt5-tests
 dbusconf.files = fakeofono/org.fakeofono.conf
 dbusconf.path  = $$(DESTDIR)/etc/dbus-1/system.d
 
