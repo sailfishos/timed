@@ -30,7 +30,11 @@
 #include <QDBusServiceWatcher>
 #include <QNetworkConfigurationManager>
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+// TODO: add Qt5 replacement for ContextProvider
+#else
 #include <ContextProvider>
+#endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <iodata-qt5/validator>
@@ -193,8 +197,12 @@ private:
   std::string sent_signature ;
   tz_oracle_t *tz_oracle ;
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+  // TODO: add Qt5 replacement for ContextProvider
+#else
   ContextProvider::Property *time_operational_p ;
   ContextProvider::Service *context_service ;
+#endif
 
   QObject *backup_object ;
 public:

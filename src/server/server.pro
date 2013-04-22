@@ -81,9 +81,10 @@ SOURCES += notification.cpp
 HEADERS += notification.h
 
 CONFIG += link_pkgconfig
-PKGCONFIG += contextprovider-1.0 libpcrecpp
+PKGCONFIG += libpcrecpp
 equals(QT_MAJOR_VERSION, 4) {
     CONFIG += iodata
+    PKGCONFIG += contextprovider-1.0
 }
 equals(QT_MAJOR_VERSION, 5) {
     CONFIG += iodata-qt5

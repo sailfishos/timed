@@ -33,7 +33,11 @@
 #include <QFile>
 #include <QDateTime>
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+// TODO: add Qt5 replacement for ContextProvider
+#else
 #include <ContextProvider>
+#endif
 
 #include "../voland/interface.h"
 
@@ -532,21 +536,24 @@ void Timed::start_voland_watcher()
   }
 }
 
+
 void Timed::init_context_objects()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+// TODO: add Qt5 replacement for ContextProvider
+#else
   context_service = new ContextProvider::Service(Maemo::Timed::bus()) ;
   context_service -> setAsDefault() ;
 
   log_debug("(new ContextProvider::Service(Maemo::Timed::bus()))->setAsDefault()") ;
-
   ContextProvider::Property("Alarm.Trigger") ;
   ContextProvider::Property("Alarm.Present") ;
   ContextProvider::Property("/com/nokia/time/time_zone/oracle") ;
   time_operational_p = new ContextProvider::Property("/com/nokia/time/system_time/operational") ;
   time_operational_p->setValue(am->is_epoch_open()) ;
   QObject::connect(am, SIGNAL(next_bootup_event(int,int)), this, SIGNAL(next_bootup_event(int,int)));
+#endif
 }
-
 
 void Timed::init_backup_object()
 {
@@ -710,8 +717,12 @@ void Timed::stop_machine()
 }
 void Timed::stop_context()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+// TODO: add Qt5 replacement for ContextProvider
+#else
   delete context_service ;
   delete time_operational_p ;
+#endif
 }
 void Timed::stop_dbus()
 {
@@ -1093,7 +1104,11 @@ void Timed::update_oracle_context(bool s)
 void Timed::open_epoch()
 {
   am->open_epoch() ;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+  // TODO: add Qt5 replacement for ContextProvider
+#else
   time_operational_p->setValue(true) ;
+#endif
 }
 
 #if HAVE_DSME
