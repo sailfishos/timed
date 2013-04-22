@@ -1,0 +1,2 @@
+LIBS += -ltimed-qt5
+QT += dbus

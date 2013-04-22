@@ -3,7 +3,9 @@ TEMPLATE = lib
 QT += dbus
 QT -= gui
 
-TARGET = timed
+equals(QT_MAJOR_VERSION, 4): TARGET = timed
+equals(QT_MAJOR_VERSION, 5): TARGET = timed-qt5
+
 VERSION = 0.$$(TIMED_VERSION)
 
 HEADERS = interface.h
@@ -19,15 +21,26 @@ devheaders.files += hidden/exception exception.h qmacro.h
 devheaders.files += interface interface.h
 devheaders.files += event event-declarations.h
 devheaders.files += wallclock wall-declarations.h
-devheaders.path  = /usr/include/timed
+equals(QT_MAJOR_VERSION, 4): devheaders.path = /usr/include/timed
+equals(QT_MAJOR_VERSION, 5): devheaders.path = /usr/include/timed-qt5
+devheaders.path  = /usr/include/$$TARGET
 
-prf.files = timed.prf
-prf.path = /usr/share/qt4/mkspecs/features
 
-pc.files = timed.pc
 pc.path = /usr/lib/pkgconfig
+equals(QT_MAJOR_VERSION, 4) {
+    pc.files = timed.pc
+    prf.files = timed.prf
+    prf.path = /usr/share/qt4/mkspecs/features
+}
+equals(QT_MAJOR_VERSION, 5) {
+    pc.files = timed-qt5.pc
+    prf.files = timed-qt5.prf
+    prf.path = /usr/share/qt5/mkspecs/features
+}
 
 INSTALLS = target devheaders prf pc
+
+OTHER_FILES += *.pc *.prf
 
 CONFIG(MEEGO) \
 {
