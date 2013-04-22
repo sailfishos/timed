@@ -24,10 +24,15 @@
 #ifndef TIMEUTIL_H
 #define TIMEUTIL_H
 
+#include <QObject>
 #include <string>
 using namespace std ;
 
-#include <iodata/iodata.h>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+# include <iodata-qt5/iodata>
+#else
+# include <iodata/iodata>
+#endif
 
 struct recurrence_pattern_t ;
 

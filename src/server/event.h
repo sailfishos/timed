@@ -32,7 +32,11 @@ using namespace std ;
 
 #include <QDBusPendingCallWatcher>
 
-#include <iodata/iodata.h>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <iodata-qt5/iodata>
+#else
+#include <iodata/iodata>
+#endif
 
 #include "../lib/event-declarations.h"
 #include "../lib/event-pimple.h"

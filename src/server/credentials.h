@@ -36,7 +36,11 @@ using namespace std ;
 #include <QDBusMessage>
 #include <QDBusConnection>
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <iodata-qt5/iodata>
+#else
 #include <iodata/iodata>
+#endif
 
 uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString &name) ;
 
