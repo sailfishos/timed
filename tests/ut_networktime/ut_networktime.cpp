@@ -25,10 +25,10 @@
 #include <time.h>
 
 #include "ut_networktime.h"
-#include "networktime.h"
-#include "networkoperator.h"
-#include "ofonoconstants.h"
-#include "fakeofono.h"
+#include "../../src/server/networktime.h"
+#include "../../src/server/networkoperator.h"
+#include "../../src/server/ofonoconstants.h"
+#include "fakeofono/fakeofono.h"
 
 const char *OfonoConstants::OFONO_SERVICE = "org.fakeofono";
 const char *OfonoConstants::OFONO_MANAGER_INTERFACE = "org.fakeofono.Manager";

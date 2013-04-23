@@ -32,8 +32,6 @@ SOURCES += ut_networktime.cpp \
            fakeofono/modeminterface.cpp \
            fakeofono/networktimeinterface.cpp
 
-INCLUDEPATH += ../../src/server fakeofono ../../src/common
-
 OTHER_FILES += fakeofono/org.fakeofono.conf
 
 equals(QT_MAJOR_VERSION, 4): target.path = $$(DESTDIR)/opt/tests/timed-tests

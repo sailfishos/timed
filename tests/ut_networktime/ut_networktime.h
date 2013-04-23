@@ -24,7 +24,7 @@
 
 #include <QObject>
 
-#include "networktimeinfo.h"
+#include "../../src/server/networktimeinfo.h"
 
 class ut_networktime : public QObject
 {
