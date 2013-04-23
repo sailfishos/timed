@@ -25,7 +25,7 @@ PkgConfigBR:
     - Qt5Test
     - dsme_dbus_if
 Configure: none
-Builder: qmake
+Builder: qmake5
 QMakeOptions:
     - -recursive "CONFIG += MEEGO dsme_dbus_if"
 SubPackages:
