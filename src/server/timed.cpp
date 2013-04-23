@@ -114,11 +114,6 @@ Timed::Timed(int ac, char **av) :
   init_unix_signal_handler() ;
   log_debug() ;
 
- // QMLOG_IF
- //   init_dbus_peer_info() ;
- //   log_debug() ;
- // QMLOG_ENDIF ;
-
   // init_act_dead() ;
   // init_dsme_mode() ;
   log_debug() ;
