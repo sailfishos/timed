@@ -1,0 +1,5 @@
+Name: libtimed-voland-qt5
+Description: timed-voland communication library
+Version: 2.31
+Libs: -ltimed-voland-qt5
+

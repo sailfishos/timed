@@ -32,18 +32,19 @@ using namespace std ;
 
 #include <QDBusPendingCallWatcher>
 
-#include <iodata/iodata.h>
-#include <qmlog>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <iodata-qt5/iodata>
+#else
+#include <iodata/iodata>
+#endif
 
-#include <timed/event>
-
-#include "timed/event-pimple.h"
-#include "timed/event-io.h"
-
+#include "../lib/event-declarations.h"
+#include "../lib/event-pimple.h"
+#include "../lib/event-io.h"
 #include "wrappers.h"
 #include "timeutil.h"
-#include "flags.h"
 #include "credentials.h"
+#include "flags.h"
 
 struct request_watcher_t ;
 struct abstract_state_t ;

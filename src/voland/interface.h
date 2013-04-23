@@ -30,9 +30,11 @@
 #include <QVector>
 #include <QDBusAbstractInterface>
 #include <QDBusAbstractAdaptor>
+#include <QDBusConnection>
 
 #include <timed/qmacro.h>
-#include <timed-voland/reminder.h>
+
+#include "reminder.h"
 
 namespace Maemo
 {

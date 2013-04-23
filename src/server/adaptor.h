@@ -34,9 +34,9 @@
 #include <QDBusAbstractAdaptor>
 #include <QDBusMessage>
 
-#include "timed/event-io.h"
-#include "timed/wall-info.h"
-#include "timed/wall-settings.h"
+#include "../lib/event-io.h"
+#include "../lib/wall-info.h"
+#include "../lib/wall-settings.h"
 
 #include "timed.h"
 #include "misc.h"
@@ -44,7 +44,7 @@
 #include "credentials.h"
 #include "peer.h"
 
-#include <timed/interface> // TODO: is Maemo::Timed::bus() the correct way?
+#include "../lib/interface.h" // TODO: is Maemo::Timed::bus() the correct way?
 
 #define SQC str().toStdString().c_str()
 #define QC toStdString().c_str()
@@ -318,20 +318,6 @@ public slots:
     return true ;
   }
 #endif // OFONO
-
-  int get_log_level(const QDBusMessage &message)
-  {
-    log_notice("DBUS::com.nokia.time.get_log_level(return=%d) by %s", qmlog::log_level(), PEER) ;
-    return qmlog::log_level() ;
-  }
-
-  void set_log_level(int n, const QDBusMessage &message)
-  {
-    log_notice("DBUS::com.nokia.time.set_log_level(%d) by %s", n, PEER) ;
-    qmlog::log_level(n) ;
-    qmlog::enable(0<=n) ;
-    log_notice("New log level: %d", qmlog::log_level()) ;
-  }
 } ;
 
 #endif

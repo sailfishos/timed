@@ -33,9 +33,9 @@
 #include <QDBusPendingCall>
 #include <QDBusAbstractInterface>
 
-#include <timed/event>
-#include <timed/wallclock>
-#include <timed/qmacro.h>
+#include "event-declarations.h"
+#include "wall-declarations.h"
+#include "qmacro.h"
 
 typedef QList<uint> Q_List_uint ;
 typedef QMap<QString,QString> Q_Map_String_String ;
@@ -113,8 +113,6 @@ namespace Maemo
       qtdbus_method(fake_csd_time_signal, (const QString &mcc, const QString &mnc, int offset, int time, int dst, int seconds, int nano_seconds), mcc, mnc, offset, time, dst, seconds, nano_seconds) ;
       qtdbus_method(fake_csd_time_signal_now, (const QString &mcc, const QString &mnc, int offset, int time, int dst), mcc, mnc, offset, time, dst) ;
 #endif // __HARMATTAN__
-      qtdbus_method(get_log_level, (void)) ;
-      qtdbus_method(set_log_level, (int n), n) ;
     } ;
   }
 }

@@ -1,5 +1,5 @@
-#include <timed-voland/interface>
-#include <qmlog>
+#include "../voland/interface.h"
+#include "../common/log.h"
 
 #include "pinguin.h"
 

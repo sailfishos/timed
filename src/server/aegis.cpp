@@ -29,10 +29,15 @@
 #include <sys/creds.h> // move it to creds.h or credentials.h
 #endif
 
-#include <qmlog>
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <iodata-qt5/iodata>
+#else
 #include <iodata/iodata>
+#endif
 
-#include "timed/interface"
+#include "../common/log.h"
+#include "../lib/interface.h"
 #include "credentials.h"
 
 #include "aegis.h"

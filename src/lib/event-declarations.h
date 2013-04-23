@@ -30,7 +30,7 @@
 #include <QMap>
 #include <QDBusMetaType>
 
-#include <timed/qmacro.h>
+#include "qmacro.h"
 
 namespace Maemo
 {

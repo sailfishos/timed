@@ -25,20 +25,12 @@
 
 #include <pcrecpp.h>
 
-#include <qmlog>
-
-#include <timed/event>
-
-#include "timed/event-pimple.h"
-#include "timed/event-io.h"
-#include "timed/aliases.h"
-
+#include "../common/log.h"
+#include "../lib/aliases.h"
 #include "misc.h"
 #include "machine.h"
 #include "timed.h"
-
 #include "event.h"
-
 #include "f.h"
 
 using namespace Maemo::Timed ;

@@ -23,11 +23,12 @@
 #include <QDBusReply>
 #include <QDBusError>
 #include <QDateTime>
+#include <QFile>
 #include <QMap>
 #include <QSignalSpy>
 
-#include <timed/interface>
-#include <timed/event>
+#include "../../src/lib/interface.h"
+#include "../../src/lib/event-declarations.h"
 
 #include "tst_events.h"
 #include "simplevolandadaptor.h"

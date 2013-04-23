@@ -22,7 +22,7 @@
 #include <QList>
 #include <QStringList>
 
-#include <qmlog>
+#include "../common/log.h"
 
 #include "networktime.h"
 #include "networktimewatcher.h"

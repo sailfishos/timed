@@ -29,7 +29,7 @@
 #include <QString>
 #include <QVariant>
 
-#include <timed/qmacro.h>
+#include "qmacro.h"
 
 namespace Maemo
 {

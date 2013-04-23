@@ -23,7 +23,7 @@
 #include <QDBusPendingCallWatcher>
 #include <QDBusPendingReply>
 
-#include <qmlog>
+#include "../common/log.h"
 
 #include "ofonoconstants.h"
 #include "networktimewatcher.h"

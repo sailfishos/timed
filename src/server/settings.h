@@ -26,13 +26,18 @@
 
 #include <string>
 
-#include <iodata/iodata.h>
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <iodata-qt5/iodata>
+#else
+#include <iodata/iodata>
+#endif
 
 #include "onitz.h"
 
-#include "timed/nanotime.h"
-#include "timed/wall-declarations.h"
-#include "timed/wall-info.h"
+#include "../lib/nanotime.h"
+#include "../lib/wall-declarations.h"
+#include "../lib/wall-info.h"
 
 #include "tz.h"
 

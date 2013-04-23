@@ -26,8 +26,8 @@
 
 #include <stdint.h>
 
-#include <timed/wallclock>
-#include <timed/qmacro.h>
+#include "wall-declarations.h"
+#include "qmacro.h"
 
 #include "nanotime.h"
 

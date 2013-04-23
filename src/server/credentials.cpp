@@ -30,12 +30,12 @@
 
 #include <QDBusReply>
 
-#include <qmlog>
+#include "../common/log.h"
 
 #if F_CREDS_UID
 #include <pwd.h>
 #include <grp.h>
-#include "timed/interface"
+#include "../lib/interface.h"
 #endif // F_CREDS_UID
 
 #include "credentials.h"

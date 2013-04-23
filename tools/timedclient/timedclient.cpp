@@ -16,8 +16,8 @@
 #include <QMap>
 #include <QString>
 
-#include <timed/interface>
-#include <timed/event>
+#include "../../src/lib/interface.h"
+#include "../../src/lib/event-declarations.h"
 
 #if 0
 // we should be able to use const references, but ...

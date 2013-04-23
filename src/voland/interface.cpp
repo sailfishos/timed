@@ -21,8 +21,8 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#include <timed-voland/interface>
-#include <timed-voland/ta_interface>
+
+#include "interface.h"
 
 Maemo::Timed::Voland::Interface::Interface(QObject *parent)
   : QDBusAbstractInterface

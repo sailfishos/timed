@@ -33,7 +33,7 @@ using namespace std ;
 #include <QObject>
 #include <QDateTime>
 
-#include <qmlog>
+#include "../common/log.h"
 
 #if OFONO
 # include "networktime.h"
@@ -42,7 +42,7 @@ using namespace std ;
 #endif
 
 
-#include "timed/nanotime.h"
+#include "../lib/nanotime.h"
 
 #include "misc.h"
 

@@ -26,7 +26,7 @@
 #include <QDBusObjectPath>
 #include <QVariant>
 
-#include "ofonoconstants.h"
+#include "../../../src/server/ofonoconstants.h"
 
 class QDBusInterface;
 struct OfonoModemProperties;

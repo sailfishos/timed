@@ -21,16 +21,10 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#include <timed/qmacro.h>
-#include <timed/wallclock>
-#include "timed/exception.h"
 
-#include "daemon/flags.h"
-
+#include "../server/flags.h"
+#include "exception.h"
 #include "wall-settings.h"
-
-#include "nanotime.h"
-
 
 Maemo::Timed::WallClock::Settings::Settings()
 {

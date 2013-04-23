@@ -2,15 +2,17 @@ QT -= gui
 QT += dbus network
 
 TEMPLATE = app
-TARGET = timed
+
+equals(QT_MAJOR_VERSION, 4): TARGET = timed
+equals(QT_MAJOR_VERSION, 5): TARGET = timed-qt5
 
 VERSION = $$(TIMED_VERSION)
 
 INCLUDEPATH += ../h
 
 QMAKE_LIBDIR_FLAGS += -L../lib -L../voland
-LIBS += -ltimed -ltimed-voland
-CONFIG += qmlog
+equals(QT_MAJOR_VERSION, 4): LIBS += -ltimed -ltimed-voland
+equals(QT_MAJOR_VERSION, 5): LIBS += -ltimed-qt5 -ltimed-voland-qt5
 
 IODATA_TYPES = queue.type config.type settings.type customization.type tzdata.type
 
@@ -78,8 +80,16 @@ HEADERS += backup.h
 SOURCES += notification.cpp
 HEADERS += notification.h
 
-CONFIG += link_pkgconfig iodata
-PKGCONFIG += contextprovider-1.0 libpcrecpp
+CONFIG += link_pkgconfig
+PKGCONFIG += libpcrecpp
+equals(QT_MAJOR_VERSION, 4) {
+    CONFIG += iodata
+    PKGCONFIG += contextprovider-1.0
+}
+equals(QT_MAJOR_VERSION, 5) {
+    CONFIG += iodata-qt5
+}
+
 
 CONFIG(dsme_dbus_if) {
     PKGCONFIG += dsme_dbus_if
@@ -111,13 +121,18 @@ aegishelper.path  = $$(DESTDIR)/usr/bin
 aegisfs.files = timed.aegisfs.conf
 aegisfs.path  = $$(DESTDIR)/etc/aegisfs.d
 
-timedrc.files = timed.rc
+equals(QT_MAJOR_VERSION, 4) {
+    timedrc.files = timed.rc
+    dbusconf.files = timed.conf
+    systemd.files = timed.service
+}
+equals(QT_MAJOR_VERSION, 5) {
+    timedrc.files = timed.rc
+    dbusconf.files = timed-qt5.conf
+    systemd.files = timed-qt5.service
+}
 timedrc.path  = $$(DESTDIR)/etc
-
-dbusconf.files = timed.conf
 dbusconf.path  = $$(DESTDIR)/etc/dbus-1/system.d
-
-systemd.files = timed.service
 systemd.path = $$(DESTDIR)/lib/systemd/system
 
 INSTALLS += target xml backupconf backupscripts cud rfs aegishelper aegisfs timedrc dbusconf systemd

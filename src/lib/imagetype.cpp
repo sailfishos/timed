@@ -25,8 +25,6 @@
 #include <string>
 using namespace std ;
 
-#include "daemon/f.h"
-
 #if F_IMAGE_TYPE
 
 #include <sysinfo.h>

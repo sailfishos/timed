@@ -32,8 +32,8 @@
 
 #include <QObject>
 
-#include "timed/event-io.h"
-#include "timed/nanotime.h"
+#include "../lib/event-io.h"
+#include "../lib/nanotime.h"
 
 #include "credentials.h"
 #include "wrappers.h"

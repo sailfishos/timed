@@ -1,0 +1,2 @@
+LIBS += -ltimed-voland-qt5
+QT += dbus

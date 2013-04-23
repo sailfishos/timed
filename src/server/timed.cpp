@@ -33,11 +33,13 @@
 #include <QFile>
 #include <QDateTime>
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+// TODO: add Qt5 replacement for ContextProvider
+#else
 #include <ContextProvider>
+#endif
 
-#include <timed/interface>
-#include <timed-voland/interface>
-#include <qmlog>
+#include "../voland/interface.h"
 
 #include "queue.type.h"
 #include "config.type.h"
@@ -56,6 +58,7 @@
 #include "csd.h"
 #include "notification.h"
 #include "time.h"
+#include "../common/log.h"
 
 #include <string>
 #include <fstream>
@@ -110,11 +113,6 @@ Timed::Timed(int ac, char **av) :
 
   init_unix_signal_handler() ;
   log_debug() ;
-
-  QMLOG_IF
-    init_dbus_peer_info() ;
-    log_debug() ;
-  QMLOG_ENDIF ;
 
   // init_act_dead() ;
   // init_dsme_mode() ;
@@ -212,11 +210,6 @@ void Timed::init_scratchbox_mode()
   const char *magic_path = "/targets/links/scratchbox.config" ;
   scratchbox_mode = access(magic_path, F_OK)==0 ;
 #endif
-  if (scratchbox_mode)
-  {
-    qmlog::enable() ;
-    qmlog::process_name("timed(sb)") ;
-  }
   log_info("%s" "SCRATCHBOX detected", scratchbox_mode ? "" : "no ") ;
 #else
   scratchbox_mode = false ;
@@ -538,21 +531,24 @@ void Timed::start_voland_watcher()
   }
 }
 
+
 void Timed::init_context_objects()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+  // TODO: add Qt5 replacement for ContextProvider
+#else
   context_service = new ContextProvider::Service(Maemo::Timed::bus()) ;
   context_service -> setAsDefault() ;
 
   log_debug("(new ContextProvider::Service(Maemo::Timed::bus()))->setAsDefault()") ;
-
   ContextProvider::Property("Alarm.Trigger") ;
   ContextProvider::Property("Alarm.Present") ;
   ContextProvider::Property("/com/nokia/time/time_zone/oracle") ;
   time_operational_p = new ContextProvider::Property("/com/nokia/time/system_time/operational") ;
   time_operational_p->setValue(am->is_epoch_open()) ;
   QObject::connect(am, SIGNAL(next_bootup_event(int,int)), this, SIGNAL(next_bootup_event(int,int)));
+#endif
 }
-
 
 void Timed::init_backup_object()
 {
@@ -661,10 +657,10 @@ void Timed::init_cellular_services()
   csd = new csd_t(this) ;
   tz_oracle = new tz_oracle_t ;
 
-  int res1 = QObject::connect(csd, SIGNAL(csd_cellular_time(const cellular_time_t &)), settings, SLOT(cellular_time_slot(const cellular_time_t &))) ;
-  int res2 = QObject::connect(csd, SIGNAL(csd_cellular_offset(const cellular_offset_t &)), tz_oracle, SLOT(cellular_offset(const cellular_offset_t &))) ;
-  int res3 = QObject::connect(csd, SIGNAL(csd_cellular_operator(const cellular_operator_t &)), tz_oracle, SLOT(cellular_operator(const cellular_operator_t &))) ;
-  int res4 = QObject::connect(tz_oracle, SIGNAL(cellular_zone_detected(olson *, suggestion_t, bool)), settings, SLOT(cellular_zone_slot(olson *, suggestion_t, bool))) ;
+  bool res1 = QObject::connect(csd, SIGNAL(csd_cellular_time(const cellular_time_t &)), settings, SLOT(cellular_time_slot(const cellular_time_t &)));
+  bool res2 = QObject::connect(csd, SIGNAL(csd_cellular_offset(const cellular_offset_t &)), tz_oracle, SLOT(cellular_offset(const cellular_offset_t &)));
+  bool res3 = QObject::connect(csd, SIGNAL(csd_cellular_operator(const cellular_operator_t &)), tz_oracle, SLOT(cellular_operator(const cellular_operator_t &)));
+  bool res4 = QObject::connect(tz_oracle, SIGNAL(cellular_zone_detected(olson *, suggestion_t, bool)), settings, SLOT(cellular_zone_slot(olson *, suggestion_t, bool)));
 
   log_assert(res1) ;
   log_assert(res2) ;
@@ -716,8 +712,12 @@ void Timed::stop_machine()
 }
 void Timed::stop_context()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+// TODO: add Qt5 replacement for ContextProvider
+#else
   delete context_service ;
   delete time_operational_p ;
+#endif
 }
 void Timed::stop_dbus()
 {
@@ -1099,7 +1099,11 @@ void Timed::update_oracle_context(bool s)
 void Timed::open_epoch()
 {
   am->open_epoch() ;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+  // TODO: add Qt5 replacement for ContextProvider
+#else
   time_operational_p->setValue(true) ;
+#endif
 }
 
 #if HAVE_DSME

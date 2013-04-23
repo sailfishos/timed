@@ -33,7 +33,7 @@
 #include "networkoperator.h"
 #endif
 
-#include "timed/nanotime.h"
+#include "../lib/nanotime.h"
 
 struct cellular_operator_t
 {

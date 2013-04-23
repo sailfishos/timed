@@ -21,11 +21,22 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
+
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <iodata-qt5/iodata>
+#include <iodata-qt5/validator>
+#include <iodata-qt5/storage>
+#else
 #include <iodata/iodata>
+#include <iodata/validator>
 #include <iodata/storage>
+#endif
 
 #include "queue.type.h"
 #include "settings.type.h"
+
+#include <string>
 
 #include "backup.h"
 
@@ -111,7 +122,8 @@ bool backup_t::save_queue_as(const string &path)
   iodata::storage *backup = new iodata::storage ;
 
   backup->set_primary_path(path) ;
-  backup->set_validator(events_data_validator(), "event_queue_t") ;
+  std::string name = "event_queue_t";
+  backup->set_validator(events_data_validator(), name) ;
   int res = backup->save(r) ;
 
   delete backup ;
@@ -136,7 +148,8 @@ bool backup_t::read_queue_from(const string &path)
   iodata::storage *backup = new iodata::storage ;
 
   backup->set_primary_path(backup_queue) ;
-  backup->set_validator(events_data_validator(), "event_queue_t") ;
+  std::string name = "event_queue_t";
+  backup->set_validator(events_data_validator(), name) ;
 
   iodata::record *r = backup->load() ;
 

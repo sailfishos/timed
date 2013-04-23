@@ -22,7 +22,7 @@
 #include <QDBusInterface>
 #include <QDBusReply>
 
-#include <qmlog>
+#include "../common/log.h"
 
 #include "ofonoconstants.h"
 #include "modemwatcher.h"

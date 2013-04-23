@@ -24,7 +24,7 @@
 #include <QDBusReply>
 #include <QDBusPendingReply>
 
-#include <qmlog>
+#include "../common/log.h"
 
 #include "ofonoconstants.h"
 #include "networkregistrationwatcher.h"
