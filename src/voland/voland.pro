@@ -19,15 +19,14 @@ equals(QT_MAJOR_VERSION, 4): devheaders.path  = /usr/include/timed-voland
 equals(QT_MAJOR_VERSION, 5): devheaders.path  = /usr/include/timed-voland-qt5
 
 pc.path = /usr/lib/pkgconfig
+prf.path =  $$[QT_INSTALL_DATA]/mkspecs/features
 equals(QT_MAJOR_VERSION, 4) {
     pc.files = timed-voland.pc
     prf.files = timed-voland.prf
-    prf.path = /usr/share/qt4/mkspecs/features
 }
 equals(QT_MAJOR_VERSION, 5) {
     pc.files = timed-voland-qt5.pc
     prf.files = timed-voland-qt5.prf
-    prf.path = /usr/share/qt5/mkspecs/features
 }
 
 INSTALLS = target devheaders prf pc

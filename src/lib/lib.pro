@@ -27,15 +27,14 @@ devheaders.path  = /usr/include/$$TARGET
 
 
 pc.path = /usr/lib/pkgconfig
+prf.path =  $$[QT_INSTALL_DATA]/mkspecs/features
 equals(QT_MAJOR_VERSION, 4) {
     pc.files = timed.pc
     prf.files = timed.prf
-    prf.path = /usr/share/qt4/mkspecs/features
 }
 equals(QT_MAJOR_VERSION, 5) {
     pc.files = timed-qt5.pc
     prf.files = timed-qt5.prf
-    prf.path = /usr/share/qt5/mkspecs/features
 }
 
 INSTALLS = target devheaders prf pc
