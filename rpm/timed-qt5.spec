@@ -30,7 +30,7 @@ BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  pkgconfig(Qt5Network)
 BuildRequires:  pkgconfig(Qt5Test)
 BuildRequires:  pkgconfig(dsme_dbus_if)
-BuildRequires:  libiodata-qt5-devel
+BuildRequires:  libiodata-qt5-devel >= 0.19
 BuildRequires:  libxslt
 
 %description
