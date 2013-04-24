@@ -15,7 +15,7 @@ Requires:
     - tzdata
     - tzdata-timed
 PkgBR:
-    - libiodata-devel >= 0.17
+    - libiodata-devel >= 0.19
     - libxslt
 PkgConfigBR:
     - contextprovider-1.0

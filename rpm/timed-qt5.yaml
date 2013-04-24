@@ -15,7 +15,7 @@ Requires:
     - tzdata
     - tzdata-timed
 PkgBR:
-    - libiodata-qt5-devel
+    - libiodata-qt5-devel >= 0.19
     - libxslt
 PkgConfigBR:
     - libpcrecpp
