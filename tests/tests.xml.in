@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testdefinition version="1.0">
+  <suite name="@PACKAGENAME@-tests" domain="middleware">
+    <set name="@PACKAGENAME@-unit_tests" feature="@PACKAGENAME@">
+      <case name="Setup environment">
+        <step>export DISPLAY=:0</step>
+      </case>
+      <case name="Automatic time update unit tests">
+        <step expected_result="0">/opt/tests/@PACKAGENAME@-tests/ut_networktime test_networktimeinfo</step>
+        <step expected_result="0">/opt/tests/@PACKAGENAME@-tests/ut_networktime test_networktime</step>
+        <step expected_result="0">/opt/tests/@PACKAGENAME@-tests/ut_networktime test_networkoperator</step>
+      </case>
+    </set>
+    <set name="@PACKAGENAME@-system_tests" feature="@PACKAGENAME@">
+      <case name="Setup environment">
+        <step>export DISPLAY=:0</step>
+      </case>
+      <case name="Add, replace, and cancel events">
+        <step>dbus-send --system --dest=com.nokia.time \
+              /com/nokia/startup/signal \
+              com.nokia.startup.signal.desktop_visible</step>
+        <step expected_result="0">/opt/tests/@PACKAGENAME@-tests/tst_events test_addEvent</step>
+        <step expected_result="0">/opt/tests/@PACKAGENAME@-tests/tst_events test_cancelEvent</step>
+        <step expected_result="0">/opt/tests/@PACKAGENAME@-tests/tst_events test_replaceEvent</step>
+      </case>
+    </set>
+  </suite>
+</testdefinition>
+
