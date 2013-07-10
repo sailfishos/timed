@@ -97,6 +97,7 @@ public slots:
 
   bool mode(const QString &mode, const QDBusMessage &message)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.mode('%s') by %s", mode.QC, PEER) ;
     bool user_mode = mode=="USER", actdead_mode = mode=="ACTDEAD" ;
     if (not user_mode and not actdead_mode)
@@ -110,12 +111,14 @@ public slots:
 
   Maemo::Timed::WallClock::Info get_wall_clock_info(const QDBusMessage &message)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.get_wall_clock_info() by %s", PEER) ;
     return timed->settings->get_wall_clock_info(nanotime_t()) ;
   }
 
   bool wall_clock_settings(const Maemo::Timed::WallClock::wall_settings_pimple_t &p, const QDBusMessage &message)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.wall_clock_settings(%s) by %s", p.SQC, PEER) ;
     // log_debug("%s", string_std_to_q(p.str()).c_str()) ;
     return timed->settings->wall_clock_settings(p) ;
@@ -168,54 +171,63 @@ public slots:
 
   bool dialog_response(uint cookie, int value, const QDBusMessage &message)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.dialog_response(cookie=%u, value=%d) by %s", cookie, value, PEER) ;
     return timed->dialog_response(cookie_t(cookie), value) ;
   }
 
   void query(const QMap<QString,QVariant> &words, const QDBusMessage &message, QList<QVariant> &res)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.query(...) by %s", PEER) ;
     timed->am->query(words, res) ;
   }
 
   void query_attributes(uint cookie, const QDBusMessage &message, QMap<QString,QVariant> &a)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.query_attributes(cookie=%u, ...) by %s", cookie, PEER) ;
     timed->am->get_event_attributes(cookie_t(cookie), a) ;
   }
 
   void get_attributes_by_cookie(uint cookie, const QDBusMessage &message, Q_Map_String_String &a)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.get_attributes_by_cookie(%d) by %s", cookie, PEER) ;
     timed->am->get_attributes_by_cookie(cookie, a) ;
   }
 
   void get_attributes_by_cookies(const Q_List_uint &cookies, const QDBusMessage &message, Q_Map_uint_String_String &a)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.get_attributes_by_cookies[%d] by %s", cookies.size(), PEER) ;
     timed->am->get_attributes_by_cookies(cookies, a) ;
   }
 
   void get_cookies_by_attributes(const Q_Map_String_String &words, const QDBusMessage &message, Q_List_uint &res)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.get_cookies_by_attributes(...) by %s", PEER) ;
     timed->am->get_cookies_by_attributes(words, res) ;
   }
 
   bool cancel(uint cookie, const QDBusMessage &message)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.cancel(cookie=%u) by %s", cookie, PEER) ;
     return timed->cancel(cookie_t(cookie)) ;
   }
 
   void cancel_events(const Q_List_uint &cookies, const QDBusMessage &message, Q_List_uint &failed)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.cancel_events([%d]) by %s", cookies.size(), PEER) ;
     timed->cancel_events(cookies, failed) ;
   }
 
   QString ping(const QDBusMessage &message)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.ping() by %s", PEER) ;
     iodata::record *r = timed->am->save(false) ; // false = not for backup
     std::ostringstream s ;
@@ -226,18 +238,21 @@ public slots:
 
   QString parse(QString text, const QDBusMessage &message)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.parse(text='%s') by %s", text.QC, PEER) ;
     return iodata::parse_and_print(text) ;
   }
 
   int pid(const QDBusMessage &message)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.pid() by %s", PEER) ;
     return getpid() ;
   }
 
   void enable_alarms(bool enable, const QDBusMessage &message)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.enable_alarms(%s) by %s", enable?"true":"false", PEER) ;
     timed->settings->alarms_are_enabled = enable ;
     timed->alarm_gate(enable) ;
@@ -245,24 +260,28 @@ public slots:
 
   bool alarms_enabled(const QDBusMessage &message)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.alarms_enabled() by %s", PEER) ;
     return timed->settings->alarms_are_enabled ;
   }
 
   bool set_default_snooze(int value, const QDBusMessage &message)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.set_default_snooze(value=%d) by %s", value, PEER) ;
     return timed->default_snooze(value)==value ;
   }
 
   int get_default_snooze(const QDBusMessage &message)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.get_default_snooze() by %s", PEER) ;
     return timed->default_snooze(0) ;
   }
 
   void halt(const QString &what, const QDBusMessage &message)
   {
+    Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.halt(what='%s') by %s", what.QC, PEER) ;
     timed->halt(string_q_to_std(what)) ;
   }

@@ -222,6 +222,7 @@ credentials_t credentials_t::from_given_process(pid_t pid)
   return creds ;
 #elif F_CREDS_UID
 // TODO: currently nobody:nobody is reported for all processes
+    Q_UNUSED(pid);
   return credentials_t() ;
 #else
 #error unimplemented credentials type
