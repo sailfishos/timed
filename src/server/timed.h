@@ -64,7 +64,11 @@
 struct Timed : public QCoreApplication
 {
 public:
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+  inline const char *configuration_path() { return  "/etc/timed-qt5.rc" ; }
+#else
   inline const char *configuration_path() { return  "/etc/timed.rc" ; }
+#endif
   // inline const char *configuration_type() { return  "/usr/share/timed/typeinfo/config.type" ; }
 
   inline const char *customization_path() { return  "/usr/share/timed/customization.data" ; } // TODO: make it configurable

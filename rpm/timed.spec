@@ -129,7 +129,7 @@ systemctl daemon-reload
 %doc COPYING debian/changelog debian/copyright
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/%{name}.conf
 %config(noreplace) %{_sysconfdir}/aegisfs.d/timed.aegisfs.conf
-%config(noreplace) %{_sysconfdir}/timed.rc
+%config(noreplace) %{_sysconfdir}/%{name}.rc
 %{_sysconfdir}/osso-cud-scripts/timed-clear-device.sh
 %{_sysconfdir}/osso-rfs-scripts/timed-restore-original-settings.sh
 %{_bindir}/%{name}

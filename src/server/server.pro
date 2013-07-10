@@ -127,7 +127,7 @@ equals(QT_MAJOR_VERSION, 4) {
     systemd.files = timed.service
 }
 equals(QT_MAJOR_VERSION, 5) {
-    timedrc.files = timed.rc
+    timedrc.files = timed-qt5.rc
     dbusconf.files = timed-qt5.conf
     systemd.files = timed-qt5.service
 }
