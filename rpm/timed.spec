@@ -19,15 +19,13 @@ Source100:  timed.yaml
 Requires:   tzdata
 Requires:   tzdata-timed
 Requires:   systemd
-Requires(preun): systemd
 Requires(post): /sbin/ldconfig
-Requires(post): systemd
 Requires(postun): /sbin/ldconfig
-Requires(postun): systemd
 BuildRequires:  pkgconfig(contextprovider-1.0)
 BuildRequires:  pkgconfig(libpcrecpp)
 BuildRequires:  pkgconfig(QtCore) >= 4.7
 BuildRequires:  pkgconfig(dsme_dbus_if)
+BuildRequires:  pkgconfig(systemd)
 BuildRequires:  libiodata-devel >= 0.19
 BuildRequires:  libxslt
 
@@ -99,29 +97,32 @@ rm -rf %{buildroot}
 #install -m 644 -D src/doc/libtimed.3 %{buildroot}/%{_mandir}/man3/libtimed.3
 #install -m 644 src/doc/libtimed-voland.3 %{buildroot}/%{_mandir}/man3/libtimed-voland.3
 
-install -d %{buildroot}/%{_localstatedir}/cache/%{name}/aegis/
-
-# The file %{buildroot}/lib/systemd/system/%{name}.service is installed by make install
-install -d %{buildroot}/lib/systemd/system/multi-user.target.wants/
-ln -s ../%{name}.service %{buildroot}/lib/systemd/system/multi-user.target.wants/%{name}.service
+# The file %{buildroot}/lib/systemd/user/%{name}.service is installed by make install
+install -d %{buildroot}%{_libdir}/systemd/user/pre-user-session.target.wants/
+ln -s ../%{name}.service %{buildroot}%{_libdir}/systemd/user/pre-user-session.target.wants/%{name}.service
 
 # Missing executable flags.
 chmod 755 %{buildroot}%{_datadir}/backup-framework/scripts/timed-restore-script.sh
 # << install post
 
-%preun
-if [ "$1" -eq 0 ]; then
-systemctl stop %{name}.service
-fi
-
 %post
 /sbin/ldconfig
-systemctl daemon-reload
-systemctl reload-or-try-restart %{name}.service
+if [ "$1" -ge 1 ]; then
+systemctl-user daemon-reload || :
+systemctl-user restart %{name}.service || :
+fi
+
+%preun
+if [ "$1" -eq 0 ]; then
+systemctl-user stop %{name}.service
+fi
 
 %postun
 /sbin/ldconfig
-systemctl daemon-reload
+if [ "$1" -eq 0 ]; then
+systemctl-user stop {%name}.service || :
+systemctl-user daemon-reload || :
+fi
 
 %files
 %defattr(-,root,root,-)
@@ -134,7 +135,7 @@ systemctl daemon-reload
 %{_sysconfdir}/osso-rfs-scripts/timed-restore-original-settings.sh
 %{_bindir}/%{name}
 %{_bindir}/timed-aegis-session-helper
-%{_libdir}/libtimed.so.*
+%{_libdir}/lib%{name}.so.*
 %{_libdir}/libtimed-voland.so.*
 %{_datadir}/backup-framework/applications/timedbackup.conf
 %{_datadir}/backup-framework/scripts/timed-backup-script.sh
@@ -143,9 +144,8 @@ systemctl daemon-reload
 # %{_mandir}/man3/libtimed.3.gz
 # %{_mandir}/man3/libtimed-voland.3.gz
 # %{_mandir}/man8/timed.8.gz
-%{_localstatedir}/cache/timed/
-/lib/systemd/system/%{name}.service
-/lib/systemd/system/multi-user.target.wants/%{name}.service
+%{_libdir}/systemd/user/%{name}.service
+%{_libdir}/systemd/user/pre-user-session.target.wants/%{name}.service
 # << files
 
 %files tests

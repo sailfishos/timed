@@ -133,7 +133,7 @@ equals(QT_MAJOR_VERSION, 5) {
 }
 timedrc.path  = $$(DESTDIR)/etc
 dbusconf.path  = $$(DESTDIR)/etc/dbus-1/system.d
-systemd.path = $$(DESTDIR)/lib/systemd/system
+systemd.path = $$(DESTDIR)/usr/lib/systemd/user
 
 INSTALLS += target xml backupconf backupscripts cud rfs aegishelper aegisfs timedrc dbusconf systemd
 

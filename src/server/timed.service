@@ -1,9 +1,10 @@
 [Unit]
 Description=Time Daemon
-After=syslog.target
+Requires=dbus.socket
 
 [Service]
-ExecStart=/usr/bin/timed
+Type=notify
+Restart=always
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=pre-user-session.target
