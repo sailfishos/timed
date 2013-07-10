@@ -523,10 +523,10 @@ void Timed::start_voland_watcher()
   stop_voland_watcher() ;
 
   voland_watcher = new QDBusServiceWatcher((QString)Maemo::Timed::Voland::service(),
-                                           QDBusConnection::systemBus());
+                                           QDBusConnection::sessionBus());
   QObject::connect(voland_watcher, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
 
-  QDBusConnectionInterface *bus_ifc = QDBusConnection::systemBus().interface();
+  QDBusConnectionInterface *bus_ifc = QDBusConnection::sessionBus().interface();
   bool voland_present = bus_ifc and bus_ifc->isServiceRegistered(Maemo::Timed::Voland::service()) ;
 
   if(voland_present)
@@ -627,8 +627,8 @@ void Timed::init_main_interface_dbus_name()
 void Timed::init_load_events()
 {
   event_storage = new iodata::storage ;
-  event_storage->set_primary_path(events_path) ;
-  event_storage->set_secondary_path(events_path+".bak") ;
+  event_storage->set_primary_path(events_path.toStdString()) ;
+  event_storage->set_secondary_path(events_path.toStdString()+".bak") ;
   event_storage->set_validator(events_data_validator(), "event_queue_t") ;
 
   iodata::record *events = event_storage->load() ;
@@ -729,6 +729,7 @@ void Timed::stop_dbus()
   delete backup_object ;
   Maemo::Timed::bus().unregisterService(Maemo::Timed::service()) ;
   Maemo::Timed::bus().unregisterService("com.nokia.timed.backup") ;
+  QDBusConnection::disconnectFromBus(QDBusConnection::sessionBus().name());
   QDBusConnection::disconnectFromBus(QDBusConnection::systemBus().name()) ;
 }
 void Timed::stop_stuff()
