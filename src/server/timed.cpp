@@ -33,6 +33,7 @@
 #include <QDBusConnectionInterface>
 #include <QFile>
 #include <QDateTime>
+#include <QDir>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 // TODO: add Qt5 replacement for ContextProvider
@@ -389,9 +390,16 @@ void Timed::init_configuration()
   else
     log_warning("configuration file '%s' corrupted or non-existing, using default values", configuration_path()) ;
 
+  std::string data_directory = c->get("data_directory")->str();
+  data_path = QDir().homePath() + QDir::separator() + QString::fromStdString(data_directory);
+  if (!QDir(data_path).exists())
+    QDir().mkpath(data_path);
 
-  events_path = c->get("queue_path")->str() ; // TODO: make C++ variables match data fields
-  settings_path = c->get("settings_path")->str() ;
+  std::string events_file = c->get("events_file")->str();
+  std::string settings_file = c->get("settings_file")->str();
+  events_path = data_path + QDir::separator() + QString::fromStdString(events_file);
+  settings_path = data_path + QDir::separator() + QString::fromStdString(settings_file);
+
   threshold_period_long = c->get("queue_threshold_long")->value() ;
   threshold_period_short = c->get("queue_threshold_short")->value() ;
   ping_period = c->get("voland_ping_sleep")->value() ;
@@ -444,8 +452,8 @@ void Timed::init_customization()
 void Timed::init_read_settings()
 {
   settings_storage = new iodata::storage ;
-  settings_storage->set_primary_path(settings_path) ;
-  settings_storage->set_secondary_path(settings_path+".bak") ;
+  settings_storage->set_primary_path(settings_path.toStdString());
+  settings_storage->set_secondary_path(settings_path.toStdString() + ".bak");
   settings_storage->set_validator(settings_data_validator(), "settings_t") ;
 
   iodata::record *tree = settings_storage->load() ;
@@ -1227,13 +1235,12 @@ void Timed::kernel_notification(const nanotime_t &jump_forwards)
   settings->process_kernel_notification(jump_forwards) ;
 }
 
-#define CONST_FIRST_BOOT_DATE_FILE        "/var/cache/timed/first-boot-hwclock.dat"
-
 void Timed::init_first_boot_hwclock_time_adjustment_check() {
     if (first_boot_date_adjusted)
         return;
 
-    QFile file(CONST_FIRST_BOOT_DATE_FILE);
+    QString path = data_path + QDir::separator() + "first-boot-hwclock.dat";
+    QFile file(path);
     if (file.exists()) {
         first_boot_date_adjusted = true;
         return;
@@ -1247,11 +1254,11 @@ void Timed::init_first_boot_hwclock_time_adjustment_check() {
     first_boot_date_adjusted = true;
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        log_error("Failed to open file %s", CONST_FIRST_BOOT_DATE_FILE);
+        log_error("Failed to open file %s", path.toStdString().c_str());
         return;
     }
     if (!file.isWritable()) {
-        log_error("File not writable: %s", CONST_FIRST_BOOT_DATE_FILE);
+        log_error("File not writable: %s", path.toStdString().c_str());
         return;
     }
 
