@@ -105,6 +105,7 @@ chmod 755 %{buildroot}%{_datadir}/backup-framework/scripts/timed-restore-script.
 
 %post
 /sbin/ldconfig
+setcap cap_sys_time+ep %{_bindir}/%{name}
 if [ "$1" -ge 1 ]; then
 systemctl-user daemon-reload || :
 systemctl-user restart %{name}.service || :
