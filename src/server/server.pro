@@ -81,7 +81,7 @@ SOURCES += notification.cpp
 HEADERS += notification.h
 
 CONFIG += link_pkgconfig
-PKGCONFIG += libpcrecpp
+PKGCONFIG += libpcrecpp libsystemd-daemon
 equals(QT_MAJOR_VERSION, 4) {
     CONFIG += iodata
     PKGCONFIG += contextprovider-1.0

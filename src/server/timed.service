@@ -4,6 +4,7 @@ Requires=dbus.socket
 
 [Service]
 Type=notify
+ExecStart=/usr/bin/timed --systemd
 Restart=always
 
 [Install]

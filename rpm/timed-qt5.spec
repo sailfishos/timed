@@ -19,17 +19,15 @@ Source100:  timed-qt5.yaml
 Requires:   tzdata
 Requires:   tzdata-timed
 Requires:   systemd
-Requires(preun): systemd
 Requires(post): /sbin/ldconfig
-Requires(post): systemd
 Requires(postun): /sbin/ldconfig
-Requires(postun): systemd
 BuildRequires:  pkgconfig(libpcrecpp)
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  pkgconfig(Qt5Network)
 BuildRequires:  pkgconfig(Qt5Test)
 BuildRequires:  pkgconfig(dsme_dbus_if)
+BuildRequires:  pkgconfig(systemd)
 BuildRequires:  libiodata-qt5-devel >= 0.19
 BuildRequires:  libxslt
 

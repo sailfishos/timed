@@ -4,7 +4,7 @@ Requires=dbus.socket
 
 [Service]
 Type=notify
-ExecStart=/usr/bin/timed-qt5
+ExecStart=/usr/bin/timed-qt5 --systemd
 Restart=always
 
 [Install]
