@@ -497,6 +497,8 @@ void Timed::init_create_event_machine()
 
   QObject::connect(am, SIGNAL(queue_to_be_saved()), this, SLOT(event_queue_changed())) ;
 
+  // Forward signal from am to DBUS via com_nokia_time DBUS adaptor
+  QObject::connect(am, SIGNAL(next_bootup_event(int,int)), this, SIGNAL(next_bootup_event(int,int)));
 #if 0
   QDBusConnectionInterface *bus_ifc = Maemo::Timed::Voland::bus().interface() ;
 
@@ -559,7 +561,6 @@ void Timed::init_context_objects()
   ContextProvider::Property("/com/nokia/time/time_zone/oracle") ;
   time_operational_p = new ContextProvider::Property("/com/nokia/time/system_time/operational") ;
   time_operational_p->setValue(am->is_epoch_open()) ;
-  QObject::connect(am, SIGNAL(next_bootup_event(int,int)), this, SIGNAL(next_bootup_event(int,int)));
 #endif
 }
 
