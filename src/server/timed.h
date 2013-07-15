@@ -64,7 +64,11 @@
 struct Timed : public QCoreApplication
 {
 public:
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+  inline const char *configuration_path() { return  "/etc/timed-qt5.rc" ; }
+#else
   inline const char *configuration_path() { return  "/etc/timed.rc" ; }
+#endif
   // inline const char *configuration_type() { return  "/usr/share/timed/typeinfo/config.type" ; }
 
   inline const char *customization_path() { return  "/usr/share/timed/customization.data" ; } // TODO: make it configurable
@@ -92,7 +96,7 @@ private:
 public:
   bool is_nitz_supported() { return nitz_supported ; }
   const string &default_timezone() { return tz_by_default ; }
-  const string &get_settings_path() { return settings_path ; }
+  const QString get_settings_path() { return settings_path; }
   void init_first_boot_hwclock_time_adjustment_check();
 
 private:
@@ -176,7 +180,7 @@ private:
   simple_timer *short_save_threshold_timer, *long_save_threshold_timer ;
   unsigned threshold_period_long, threshold_period_short ;
   unsigned ping_period, ping_max_num ;
-  string events_path, settings_path ;
+  QString data_path, events_path, settings_path;
   int default_gmt_offset ;
 #if HAVE_DSME
   dsme_mode_t *dsme_mode_handler ;

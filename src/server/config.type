@@ -16,9 +16,9 @@ config_t =
 [
   { name = "queue_threshold_long", type = $integer, value = 5000 },
   { name = "queue_threshold_short", type = $integer, value = 1000 },
-  { name = "queue_path", type = $bytes, value = "/var/cache/timed/events.data" },
-  { name = "settings_path", type = $bytes, value = "/var/cache/timed/settings.data" },
-  { name = "product_path", type = $bytes, value = "/usr/share/timed/customization.data" },
+  { name = "data_directory", type = $bytes, value = ".timed" },
+  { name = "settings_file", type = $bytes, value = "settings.data" },
+  { name = "events_file", type = $bytes, value = "events.data" },
 
   { name = "default_timezone", type = $bytes, value = "Europe/Helsinki" },
   { name = "default_gmt_offset", type = $integer, value = 7200 }, /* Finnish winter: GTM+2 */
@@ -27,8 +27,6 @@ config_t =
   { name = "voland_ping_sleep",   type = $integer, value = 3000 /* 3 seconds */},
 
   { name = "dialog_discard_threshold", type = $integer, value = 1440 /* one day */ }
-
-// XXX: remove it  { name = "saved_utc_time_path", type = $bytes, value = "/var/cache/timed/utc.time" }
 ]
 
 .

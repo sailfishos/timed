@@ -1,9 +1,11 @@
 [Unit]
 Description=Time Daemon
-After=syslog.target
+Requires=dbus.socket
 
 [Service]
-ExecStart=/usr/bin/timed-qt5
+Type=notify
+ExecStart=/usr/bin/timed-qt5 --systemd
+Restart=always
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=pre-user-session.target

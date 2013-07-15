@@ -81,7 +81,7 @@ SOURCES += notification.cpp
 HEADERS += notification.h
 
 CONFIG += link_pkgconfig
-PKGCONFIG += libpcrecpp
+PKGCONFIG += libpcrecpp libsystemd-daemon
 equals(QT_MAJOR_VERSION, 4) {
     CONFIG += iodata
     PKGCONFIG += contextprovider-1.0
@@ -127,13 +127,13 @@ equals(QT_MAJOR_VERSION, 4) {
     systemd.files = timed.service
 }
 equals(QT_MAJOR_VERSION, 5) {
-    timedrc.files = timed.rc
+    timedrc.files = timed-qt5.rc
     dbusconf.files = timed-qt5.conf
     systemd.files = timed-qt5.service
 }
 timedrc.path  = $$(DESTDIR)/etc
 dbusconf.path  = $$(DESTDIR)/etc/dbus-1/system.d
-systemd.path = $$(DESTDIR)/lib/systemd/system
+systemd.path = $$(DESTDIR)/usr/lib/systemd/user
 
 INSTALLS += target xml backupconf backupscripts cud rfs aegishelper aegisfs timedrc dbusconf systemd
 

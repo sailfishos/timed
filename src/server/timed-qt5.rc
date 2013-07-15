@@ -1,1 +1,3 @@
-queue_path = "/var/cache/timed-qt5/events.data" .
+data_directory = ".timed",
+events_file = "events.data",
+settings_file = "settings.data" .

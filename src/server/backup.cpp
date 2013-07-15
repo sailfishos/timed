@@ -100,7 +100,7 @@ void backup_t::read_data()
   // First we just copy the settings file.
   // Even if it contains rubbish, the second copy containing old settings
   // remains in our cache directory and will be used next time after restart.
-  status = status && execute((string)"/bin/cp "+backup_settings+" "+timed->get_settings_path()) ;
+  status = status && execute((string)"/bin/cp "+backup_settings+" "+timed->get_settings_path().toStdString());
 
   // Now we will replace events with 'backup' flag and save the queue
   status = status && read_queue_from(backup_queue) ;

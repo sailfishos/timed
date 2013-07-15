@@ -51,9 +51,9 @@ void pinguin_t::ping()
   const char *ifac = Maemo::Timed::Voland::/*activation_*/interface() ;
   const char *meth = "pid" ;
   QDBusMessage mess = QDBusMessage::createMethodCall(serv, path, ifac, meth) ;
-  if(QDBusConnection::systemBus().send(mess))
+  if(QDBusConnection::sessionBus().send(mess))
     log_info("the 'pid' request sent asyncronosly") ;
   else
-    log_error("Can't send the 'pid' request: %s", QDBusConnection::systemBus().lastError().message().toStdString().c_str()) ;
+    log_error("Can't send the 'pid' request: %s", QDBusConnection::sessionBus().lastError().message().toStdString().c_str()) ;
 }
 

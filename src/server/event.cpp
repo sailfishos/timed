@@ -690,7 +690,7 @@ void event_t::run_actions(const vector<unsigned> &acts, unsigned begin, unsigned
           if(const char *a = getenv("DBUS_SESSION_BUS_ADDRESS"))
             addr = (QString) a ;
 #endif
-          c = new QDBusConnection(QDBusConnection::systemBus());
+          c = new QDBusConnection(QDBusConnection::sessionBus());
         }
 #endif
       }
