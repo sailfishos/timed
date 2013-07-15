@@ -33,8 +33,6 @@
 #include <QMetaType>
 int main(int ac, char **av)
 {
-  const size_t cwd_len = 16 ;
-  char cwd[cwd_len], *p = getcwd(cwd, cwd_len) ;
 
 #if F_IMAGE_TYPE
   log_notice("image_type='%s'", image_type.c_str()) ;

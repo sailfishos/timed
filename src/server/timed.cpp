@@ -1211,17 +1211,6 @@ void Timed::harmattan_init_done(int runlevel)
     device_mode_reached(false) ; // ACT_DEAD mode
 }
 
-static char *chomp(char *s)
-{
-  if (s)
-  {
-    char *p = s + strlen(s) - 1 ;
-    while (*p=='\n' and s<=p)
-      *p-- = '\0' ;
-  }
-  return s ;
-}
-
 void Timed::init_kernel_notification()
 {
   notificator = new kernel_notification_t ;

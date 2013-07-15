@@ -718,7 +718,6 @@ void event_t::run_actions(const vector<unsigned> &acts, unsigned begin, unsigned
       // daemon and hope that is enough to get the actual
       // message to be delivered ...
       QString connection_name  = cc->baseService() ;
-      unsigned owner = get_name_owner_from_dbus_sync(*cc, connection_name) ;
 
       // it should be us (either pid or uid dependin on feature set) ...
       log_debug("pid=%d, ruid=%d, euid=%d, connection owner is '%u'", getpid(), getuid(), geteuid(), owner) ;
@@ -825,6 +824,8 @@ bool event_t::drop_privileges(const action_t &a)
   // creds := client_creds - (tokens_to_remove 1+2)
   set_change<string> (creds.tokens, tokens_to_remove1, false) ;
   set_change<string> (creds.tokens, tokens_to_remove2, false) ;
+#else
+  Q_UNUSED(a);
 #endif // F_TOKENS_AS_CREDENTIALS
 
   return creds.apply_and_compare() ;
