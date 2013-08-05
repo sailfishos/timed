@@ -125,17 +125,20 @@ equals(QT_MAJOR_VERSION, 4) {
     timedrc.files = timed.rc
     dbusconf.files = timed.conf
     systemd.files = timed.service
+    oneshot.files = setcaps-timed.sh
 }
 equals(QT_MAJOR_VERSION, 5) {
     timedrc.files = timed-qt5.rc
     dbusconf.files = timed-qt5.conf
     systemd.files = timed-qt5.service
+    oneshot.files = setcaps-timed-qt5.sh
 }
 timedrc.path  = $$(DESTDIR)/etc
 dbusconf.path  = $$(DESTDIR)/etc/dbus-1/system.d
 systemd.path = $$(DESTDIR)/usr/lib/systemd/user
+oneshot.path = $$(DESTDIR)/usr/lib/oneshot.d
 
-INSTALLS += target xml backupconf backupscripts cud rfs aegishelper aegisfs timedrc dbusconf systemd
+INSTALLS += target xml backupconf backupscripts cud rfs aegishelper aegisfs timedrc dbusconf systemd oneshot
 
 CONFIG(MEEGO) \
 {
@@ -152,3 +155,5 @@ else \
 }
 
 QMAKE_CXXFLAGS  += -Wall
+
+OTHER_FILES += *.sh
