@@ -10,7 +10,9 @@ Source0:    %{name}-%{version}.tar.bz2
 Requires:   tzdata
 Requires:   tzdata-timed
 Requires:   systemd
+Requires:   oneshot
 Requires(post): /sbin/ldconfig
+%{_oneshot_requires_post}
 Requires(postun): /sbin/ldconfig
 BuildRequires:  pkgconfig(libpcrecpp)
 BuildRequires:  pkgconfig(Qt5Core)
@@ -21,6 +23,7 @@ BuildRequires:  pkgconfig(dsme_dbus_if)
 BuildRequires:  pkgconfig(systemd)
 BuildRequires:  libiodata-qt5-devel >= 0.19
 BuildRequires:  libxslt
+BuildRequires:  oneshot
 
 %description
 The time daemon (%{name}) managing system time, time zone and settings,
@@ -79,10 +82,11 @@ ln -s ../%{name}.service %{buildroot}%{_libdir}/systemd/user/pre-user-session.ta
 
 # Missing executable flags.
 chmod 755 %{buildroot}%{_datadir}/backup-framework/scripts/timed-restore-script.sh
+chmod 755 %{buildroot}%{_oneshotdir}/setcaps-%{name}.sh
 
 %post
 /sbin/ldconfig
-setcap cap_sys_time+ep %{_bindir}/%{name}
+add-oneshot --now setcaps-%{name}.sh
 if [ "$1" -ge 1 ]; then
 systemctl-user daemon-reload || :
 systemctl-user restart %{name}.service || :
@@ -121,6 +125,7 @@ fi
 # %{_mandir}/man8/timed.8.gz
 %{_libdir}/systemd/user/%{name}.service
 %{_libdir}/systemd/user/pre-user-session.target.wants/%{name}.service
+%{_oneshotdir}/setcaps-%{name}.sh
 
 %files tests
 %defattr(-,root,root,-)
