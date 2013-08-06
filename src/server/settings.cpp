@@ -40,6 +40,8 @@
 #include "misc.h"
 #include "onitz.h"
 
+#define LOCALTIMELINK "/var/lib/timed/localtime"
+
 void source_t::load(const iodata::record *)
 {
   // empty, do nothing
@@ -330,7 +332,7 @@ string source_settings::symlink_target(string zone)
 }
 
 // returning: -1 if not exists
-// 0 if already in use by /etc/localtime,
+// 0 if already in use by LOCALTIMELINK,
 // 1 if file exists but not linked
 int source_settings::check_target(string path)
 {
@@ -346,7 +348,7 @@ int source_settings::check_target(string path)
     return -1 ;
   // The file exists and is a regular file !
   ino_t inode = s.st_ino ;
-  res = stat("/etc/localtime", &s) ;
+  res = stat(LOCALTIMELINK, &s);
   if(res!=0 || inode!=s.st_ino)
     return 1 ;
   return 0 ;
@@ -392,25 +394,25 @@ void source_settings::fix_etc_localtime()
     return ;
   // Now try to set symlink target
   struct stat l ;
-  int lstat_res = lstat("/etc/localtime", &l) ;
+  int lstat_res = lstat(LOCALTIMELINK, &l) ;
   if(lstat_res==0) // file exists, we can list it
   {
-    int unlink_res = unlink("/etc/localtime") ;
+    int unlink_res = unlink(LOCALTIMELINK) ;
     tzset() ;
     if(unlink_res)
     {
-      log_error("can't unlink /etc/localtime: %m") ;
+      log_error("can't unlink %s: %m", LOCALTIMELINK) ;
       return ;
     }
   }
   if(x==-1) // target doesn't exist, thus don't link
     return ;
-  int symlink_res = symlink(target.c_str(), "/etc/localtime") ;
+  int symlink_res = symlink(target.c_str(), LOCALTIMELINK) ;
   tzset() ;
   if(symlink_res==0)
-    log_info("created symlink: /etc/localtime -> %s", target.c_str()) ;
+    log_info("created symlink: %s -> %s", LOCALTIMELINK, target.c_str()) ;
   else
-    log_error("symlinking /etc/localtime -> %s failed: %m", target.c_str()) ;
+    log_error("symlinking %s -> %s failed: %m", LOCALTIMELINK, target.c_str()) ;
 }
 
 void source_settings::postload_fix_manual_zone()
