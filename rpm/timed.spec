@@ -11,8 +11,10 @@ Requires:   tzdata
 Requires:   tzdata-timed
 Requires:   systemd
 Requires:   oneshot
-Requires(post): /sbin/ldconfig
+%{_oneshot_groupadd_requires_pre}
 %{_oneshot_requires_post}
+%{_oneshot_groupadd_requires_post}
+Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  pkgconfig(contextprovider-1.0)
 BuildRequires:  pkgconfig(libpcrecpp)
@@ -87,7 +89,20 @@ ln -s ../%{name}.service %{buildroot}%{_libdir}/systemd/user/pre-user-session.ta
 chmod 755 %{buildroot}%{_datadir}/backup-framework/scripts/timed-restore-script.sh
 chmod 755 %{buildroot}%{_oneshotdir}/setcaps-%{name}.sh
 
+# Timed changes time zone by linking /var/lib/timed/localtime to zones in /usr/share/zoneinfo.
+# The links are done in the post section
+install -d %{buildroot}/var/lib/timed
+touch %{buildroot}/var/lib/timed/localtime
+
+%pre
+groupadd -rf timed
+groupadd-user timed
+
 %post
+# Make /etc/localtime a link to /var/lib/timed/localtime to make system time zone follow timed.
+ln -sf /usr/share/zoneinfo/Europe/Helsinki /var/lib/timed/localtime
+ln -sf /var/lib/timed/localtime /etc/localtime
+
 /sbin/ldconfig
 add-oneshot --now setcaps-%{name}.sh
 if [ "$1" -ge 1 ]; then
@@ -105,6 +120,7 @@ fi
 if [ "$1" -eq 0 ]; then
 systemctl-user stop {%name}.service || :
 systemctl-user daemon-reload || :
+getent group time >/dev/null && groupdel timed
 fi
 
 %files
@@ -129,6 +145,8 @@ fi
 %{_libdir}/systemd/user/%{name}.service
 %{_libdir}/systemd/user/pre-user-session.target.wants/%{name}.service
 %{_oneshotdir}/setcaps-%{name}.sh
+%dir %attr(0774,-,timed) /var/lib/timed
+%ghost /var/lib/timed/localtime
 
 %files tests
 %defattr(-,root,root,-)
