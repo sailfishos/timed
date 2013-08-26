@@ -103,6 +103,8 @@ Q_SIGNALS:
   void voland_needed() ;
   void next_bootup_event(int, int);
   void child_created(unsigned, int) ;
+  void alarm_present(bool present);
+  void alarm_trigger(QMap<QString, QVariant> triggers);
 public:
   void emit_child_created(unsigned cookie, int pid) { emit child_created(cookie, pid) ; }
   pause_t *initial_pause ;

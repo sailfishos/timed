@@ -439,17 +439,9 @@ void machine_t::request_state(event_t *e, const string &state_name)
 
 void machine_t::send_queue_context()
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-    // TODO: add Qt5 replacement for ContextProvider
-#else
-  // TODO CONTEXT CLEAN UP
-  static ContextProvider::Property alarm_triggers_p("Alarm.Trigger") ;
-  static ContextProvider::Property alarm_present_p("Alarm.Present") ;
-
-  alarm_triggers_p.setValue(QVariant::fromValue(cluster_queue->alarm_triggers)) ;
-  alarm_present_p.setValue(not cluster_queue->alarm_triggers.isEmpty()) ;
-  context_changed = false ;
-#endif
+  emit alarm_trigger(cluster_queue->alarm_triggers);
+  emit alarm_present(!cluster_queue->alarm_triggers.isEmpty());
+  context_changed = false;
 }
 
 cookie_t machine_t::add_event(const Maemo::Timed::event_io_t *eio, bool process_queue, const credentials_t *creds, const QDBusMessage *p_message)

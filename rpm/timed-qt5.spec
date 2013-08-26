@@ -11,6 +11,7 @@ Requires:   tzdata
 Requires:   tzdata-timed
 Requires:   systemd
 Requires:   oneshot
+Requires:   statefs
 %{_oneshot_groupadd_requires_pre}
 %{_oneshot_requires_post}
 %{_oneshot_groupadd_requires_post}
@@ -26,6 +27,7 @@ BuildRequires:  pkgconfig(systemd)
 BuildRequires:  libiodata-qt5-devel >= 0.19
 BuildRequires:  libxslt
 BuildRequires:  oneshot
+BuildRequires:  pkgconfig(statefs-qt5)
 
 %description
 The time daemon (%{name}) managing system time, time zone and settings,
@@ -99,6 +101,7 @@ groupadd-user timed
 # Make /etc/localtime a link to /var/lib/timed/localtime to make system time zone follow timed.
 ln -sf /usr/share/zoneinfo/Europe/Helsinki /var/lib/timed/localtime
 ln -sf /var/lib/timed/localtime /etc/localtime
+statefs register --statefs-type=inout /etc/timed-statefs.conf
 
 /sbin/ldconfig
 add-oneshot --now setcaps-%{name}.sh
@@ -126,6 +129,7 @@ fi
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/%{name}.conf
 %config(noreplace) %{_sysconfdir}/aegisfs.d/timed.aegisfs.conf
 %config(noreplace) %{_sysconfdir}/%{name}.rc
+%{_sysconfdir}/timed-statefs.conf
 %{_sysconfdir}/osso-cud-scripts/timed-clear-device.sh
 %{_sysconfdir}/osso-rfs-scripts/timed-restore-original-settings.sh
 %{_bindir}/%{name}

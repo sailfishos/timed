@@ -30,9 +30,7 @@
 #include <QDBusServiceWatcher>
 #include <QNetworkConfigurationManager>
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-// TODO: add Qt5 replacement for ContextProvider
-#else
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #include <ContextProvider>
 #endif
 
@@ -60,6 +58,14 @@
 #include "dsme-mode.h"
 #endif
 #include "notification.h"
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+namespace statefs {
+  namespace qt {
+    class InOutWriter;
+  }
+}
+#endif
 
 struct Timed : public QCoreApplication
 {
@@ -202,9 +208,12 @@ private:
   tz_oracle_t *tz_oracle ;
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-  // TODO: add Qt5 replacement for ContextProvider
+  statefs::qt::InOutWriter *alarm_present;
+  statefs::qt::InOutWriter *alarm_trigger;
 #else
   ContextProvider::Property *time_operational_p ;
+  ContextProvider::Property *alarm_present;
+  ContextProvider::Property *alarm_trigger;
   ContextProvider::Service *context_service ;
 #endif
 
@@ -226,6 +235,8 @@ private Q_SLOTS:
   void harmattan_init_done(int runlevel) ;
   void harmattan_desktop_visible() ;
   void kernel_notification(const nanotime_t &jump_forwards) ;
+  void set_alarm_present(bool present);
+  void set_alarm_trigger(const QMap<QString, QVariant> &triggers);
 public:
 #if 0
   void device_mode_reached(bool act_dead, const std::string &dbus_session) ;

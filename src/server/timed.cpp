@@ -36,7 +36,7 @@
 #include <QDir>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-// TODO: add Qt5 replacement for ContextProvider
+#include <statefs/qt/util.hpp>
 #else
 #include <ContextProvider>
 #endif
@@ -519,6 +519,9 @@ void Timed::init_create_event_machine()
     emit voland_registered() ;
   }
 #endif
+  QObject::connect(am, SIGNAL(alarm_present(bool)), this, SLOT(set_alarm_present(bool)));
+  QObject::connect(am, SIGNAL(alarm_trigger(QMap<QString,QVariant>)),
+                   this, SLOT(set_alarm_trigger(QMap<QString,QVariant>)));
 }
 
 void Timed::stop_voland_watcher()
@@ -550,14 +553,15 @@ void Timed::start_voland_watcher()
 void Timed::init_context_objects()
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-  // TODO: add Qt5 replacement for ContextProvider
+  alarm_present = new statefs::qt::InOutWriter("Alarm.Present");
+  alarm_trigger = new statefs::qt::InOutWriter("Alarm.Trigger");
 #else
   context_service = new ContextProvider::Service(Maemo::Timed::bus()) ;
   context_service -> setAsDefault() ;
 
   log_debug("(new ContextProvider::Service(Maemo::Timed::bus()))->setAsDefault()") ;
-  ContextProvider::Property("Alarm.Trigger") ;
-  ContextProvider::Property("Alarm.Present") ;
+  alarm_trigger = new ContextProvider::Property("Alarm.Trigger");
+  alarm_present = new ContextProvider::Property("Alarm.Present");
   ContextProvider::Property("/com/nokia/time/time_zone/oracle") ;
   time_operational_p = new ContextProvider::Property("/com/nokia/time/system_time/operational") ;
   time_operational_p->setValue(am->is_epoch_open()) ;
@@ -726,9 +730,9 @@ void Timed::stop_machine()
 }
 void Timed::stop_context()
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-// TODO: add Qt5 replacement for ContextProvider
-#else
+  delete alarm_present;
+  delete alarm_trigger;
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   delete context_service ;
   delete time_operational_p ;
 #endif
@@ -1114,9 +1118,7 @@ void Timed::update_oracle_context(bool s)
 void Timed::open_epoch()
 {
   am->open_epoch() ;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-  // TODO: add Qt5 replacement for ContextProvider
-#else
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   time_operational_p->setValue(true) ;
 #endif
 }
@@ -1255,4 +1257,31 @@ void Timed::init_first_boot_hwclock_time_adjustment_check() {
     QTextStream out(&file);
     out << QDateTime::currentDateTime().toString() << "\n";
     file.close();
+}
+
+void Timed::set_alarm_present(bool present)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+  alarm_present->set(QVariant(present));
+#else
+  alarm_present->setValue(present);
+#endif
+}
+
+void Timed::set_alarm_trigger(const QMap<QString, QVariant> &triggers)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+  // statefs supports only boolean and string types, marshall the QMap to a string
+  QString contextProperty = "";
+  QMapIterator<QString, QVariant> i(triggers);
+  while (i.hasNext()) {
+      i.next();
+      if (!contextProperty.isEmpty())
+          contextProperty += ",";
+      contextProperty += QString("%1:%2").arg(i.key()).arg(i.value().toUInt());
+  }
+  alarm_trigger->set(contextProperty);
+#else
+  alarm_trigger->setValue(QVariant::fromValue(triggers));
+#endif
 }
