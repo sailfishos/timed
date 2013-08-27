@@ -1316,6 +1316,38 @@ Maemo::Timed::Event::List::List(const event_list_io_t &eeio)
   }
 }
 
+QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::Event::Triggers &map)
+{
+  out.beginMap(QVariant::UInt, QVariant::UInt);
+  QMapIterator<uint, uint> iter(map);
+  while (iter.hasNext()) {
+    iter.next();
+    out.beginMapEntry();
+    out << iter.key() << iter.value();
+    out.endMapEntry();
+  }
+  out.endMap();
+  return out;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::Event::Triggers &map)
+{
+  map.clear();
+  in.beginMap();
+  while (!in.atEnd()) {
+    uint key;
+    uint value;
+    in.beginMapEntry();
+    in >> key >> value;
+    in.endMapEntry();
+    map.insert(key, value);
+  }
+  in.endMap();
+  return in;
+}
+
+register_qtdbus_metatype(Maemo::Timed::Event::Triggers, 11);
+
 #if 0
 int Maemo::Timed::Event::check(QString *err, bool exc) const
 {

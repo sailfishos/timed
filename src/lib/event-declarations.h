@@ -56,6 +56,7 @@ public:
   class Button ;
   class Recurrence ;
   class List ;
+  class Triggers;
   typedef event_io_t IO ;
   typedef qdbus_reply_wrapper<Maemo::Timed::Event> DBusReply ;
   typedef qdbus_pending_reply_wrapper<Maemo::Timed::Event> DBusPendingReply ;
@@ -318,6 +319,16 @@ private:
   List(const event_list_io_t &eeio) ;
   QVariant dbus_output() const ;
 } ;
+
+declare_qtdbus_io(Maemo::Timed::Event::Triggers);
+
+class Maemo::Timed::Event::Triggers : public QMap<quint32, quint32>
+{
+public:
+  Triggers() : QMap<quint32, quint32>()
+  {
+  }
+};
 
 #if NOT_DONE_YET
 void foo()

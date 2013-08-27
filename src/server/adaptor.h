@@ -76,6 +76,7 @@ signals:
   void settings_changed(const Maemo::Timed::WallClock::Info &, bool) ;
   void settings_changed_1(bool) ;
   void next_bootup_event(int next_boot_event, int next_non_boot_event);
+  void alarm_triggers_changed(Maemo::Timed::Event::Triggers);
 
 public slots:
 

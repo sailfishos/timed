@@ -46,6 +46,28 @@ bool Maemo::Timed::Interface::settings_changed_disconnect(QObject *object, const
   return Maemo::Timed::bus().disconnect(s,o,i,"settings_changed",object,slot) ;
 }
 
+bool Maemo::Timed::Interface::alarm_triggers_changed_connect(QObject *object, const char *slot)
+{
+  const char *s = Maemo::Timed::service();
+  const char *o = Maemo::Timed::objpath();
+  const char *i = Maemo::Timed::interface();
+  const char *alarm_trigger_changed_signal = SIGNAL(alarm_triggers_changed(Maemo::Timed::Event::Triggers));
+  if (QObject::connect(this, alarm_trigger_changed_signal, object, slot)) {
+    QObject::disconnect(this, alarm_trigger_changed_signal, object, slot);
+    return Maemo::Timed::bus().connect(s, o, i, "alarm_triggers_changed", object, slot);
+  } else {
+    return false;
+  }
+}
+
+bool Maemo::Timed::Interface::alarm_triggers_changed_disconnect(QObject *object, const char *slot)
+{
+  const char *s = Maemo::Timed::service();
+  const char *o = Maemo::Timed::objpath();
+  const char *i = Maemo::Timed::interface();
+  return Maemo::Timed::bus().disconnect(s, o, i, "alarm_triggers_changed", object, slot);
+}
+
 Maemo::Timed::Interface::Interface(QObject *parent)
   : QDBusAbstractInterface(Maemo::Timed::service(), Maemo::Timed::objpath(), Maemo::Timed::interface(), Maemo::Timed::bus(), parent)
 {

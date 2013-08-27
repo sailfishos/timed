@@ -45,6 +45,8 @@ Q_DECLARE_METATYPE(Q_List_uint) ;
 Q_DECLARE_METATYPE(Q_Map_String_String) ;
 Q_DECLARE_METATYPE(Q_Map_uint_String_String) ;
 
+register_qtdbus_metatype(Maemo::Timed::Event::Triggers, 11);
+
 namespace Maemo
 {
   namespace Timed
@@ -75,12 +77,15 @@ namespace Maemo
       // void xxx(bool yyy) { /* emit settings_changed_1(yyy) ; */ }
     signals:
        void settings_changed(const Maemo::Timed::WallClock::Info &info, bool time_changed) ;
+       void alarm_triggers_changed(Maemo::Timed::Event::Triggers);
       // void settings_changed_1(bool time_changed) ;
     public:
       Interface(QObject *parent=NULL) ;
       // -- dbus signals -- //
       bool settings_changed_connect(QObject *object, const char *slot) ;
       bool settings_changed_disconnect(QObject *object, const char *slot) ;
+      bool alarm_triggers_changed_connect(QObject *object, const char *slot);
+      bool alarm_triggers_changed_disconnect(QObject *object, const char *slot);
       // -- application methods -- //
       qtdbus_method(get_wall_clock_info, (void)) ;
       qtdbus_method(wall_clock_settings, (const Maemo::Timed::WallClock::Settings &s), s.dbus_output(__PRETTY_FUNCTION__)) ;
