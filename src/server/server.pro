@@ -87,7 +87,9 @@ equals(QT_MAJOR_VERSION, 4) {
     PKGCONFIG += contextprovider-1.0
 }
 equals(QT_MAJOR_VERSION, 5) {
+    QMAKE_CXXFLAGS += -std=c++0x # required by statefs-qt5
     CONFIG += iodata-qt5
+    PKGCONFIG += statefs-qt5
 }
 
 
@@ -132,6 +134,9 @@ equals(QT_MAJOR_VERSION, 5) {
     dbusconf.files = timed-qt5.conf
     systemd.files = timed-qt5.service
     oneshot.files = setcaps-timed-qt5.sh
+    statefs.files = timed-statefs.conf
+    statefs.path = /etc
+    INSTALLS += statefs
 }
 timedrc.path  = $$(DESTDIR)/etc
 dbusconf.path  = $$(DESTDIR)/etc/dbus-1/system.d

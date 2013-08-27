@@ -720,7 +720,7 @@ void event_t::run_actions(const vector<unsigned> &acts, unsigned begin, unsigned
       QString connection_name  = cc->baseService() ;
 
       // it should be us (either pid or uid dependin on feature set) ...
-      log_debug("pid=%d, ruid=%d, euid=%d, connection owner is '%u'", getpid(), getuid(), geteuid(), owner) ;
+      log_debug("pid=%d, ruid=%d, euid=%d", getpid(), getuid(), geteuid()) ;
       QDBusConnection::disconnectFromBus(connection_name) ;
       delete cc ;
     }
