@@ -392,6 +392,12 @@ void source_settings::fix_etc_localtime()
   int x = check_target(target) ;
   if(x==0) // already okey
     return ;
+
+  if(x==-1) { // target doesn't exist, thus don't link
+    log_error("file %s does not exist, cannot change time zone", target.c_str());
+    return;
+  }
+
   // Now try to set symlink target
   struct stat l ;
   int lstat_res = lstat(LOCALTIMELINK, &l) ;
@@ -405,8 +411,7 @@ void source_settings::fix_etc_localtime()
       return ;
     }
   }
-  if(x==-1) // target doesn't exist, thus don't link
-    return ;
+
   int symlink_res = symlink(target.c_str(), LOCALTIMELINK) ;
   tzset() ;
   if(symlink_res==0)
