@@ -1,7 +1,7 @@
 Name:       timed
 
 Summary:    Time daemon
-Version:    2.59
+Version:    2.66
 Release:    1
 Group:      System/System Control
 License:    LGPLv2
