@@ -100,6 +100,8 @@ groupadd-user timed
 
 %post
 # Make /etc/localtime a link to /var/lib/timed/localtime to make system time zone follow timed.
+# Remove existing link so that copying the UTC file will not overwrite anything during reinstall.
+rm -f /var/lib/timed/localtime
 cp /usr/share/zoneinfo/UTC /var/lib/timed/localtime
 ln -sf /var/lib/timed/localtime /etc/localtime
 
