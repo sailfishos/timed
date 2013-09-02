@@ -100,7 +100,7 @@ groupadd-user timed
 
 %post
 # Make /etc/localtime a link to /var/lib/timed/localtime to make system time zone follow timed.
-ln -sf /usr/share/zoneinfo/Europe/Helsinki /var/lib/timed/localtime
+cp /usr/share/zoneinfo/UTC /var/lib/timed/localtime
 ln -sf /var/lib/timed/localtime /etc/localtime
 
 /sbin/ldconfig
