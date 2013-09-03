@@ -44,7 +44,7 @@ void map_std_to_q(const std::map<std::string, std::string> &from, QMap<QString, 
 std::string str_iso8601(time_t t) ;
 std::string str_printf(const char *format, ...) __attribute__((format(printf,1,2))) ;
 
-inline int n_bits_64(uint64_t x)
+inline int n_bits_64(qulonglong x)
 {
   // printf("step0: x=%Ld\n", x) ;
   x = (x&0x5555555555555555LL) + (((x&0xAAAAAAAAAAAAAAAALL)>>1)) ;

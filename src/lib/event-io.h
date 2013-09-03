@@ -76,7 +76,7 @@ struct Maemo::Timed::button_io_t
 
 struct Maemo::Timed::recurrence_io_t
 {
-  uint64_t mins ;
+  qulonglong mins ;
   uint32_t hour ;
   uint32_t mday ;
   uint32_t wday ;

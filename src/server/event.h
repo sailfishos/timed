@@ -51,7 +51,7 @@ struct abstract_state_t ;
 
 struct recurrence_pattern_t
 {
-  uint64_t mins ;
+  qulonglong mins ;
   uint32_t hour ;
   uint32_t mday ;
   uint32_t wday ;
@@ -65,11 +65,11 @@ struct recurrence_pattern_t
   }
   static iodata::bit_codec *codec, *mins_codec, *hour_codec, *mday_codec, *wday_codec, *mons_codec ;
 
-  uint64_t mins_mask(const string &x) const { return mins_codec->decode(x) ; }
-  uint64_t hour_mask(const string &x) const { return hour_codec->decode(x) ; }
-  uint64_t mday_mask(const string &x) const { return mday_codec->decode(x) ; }
-  uint64_t wday_mask(const string &x) const { return wday_codec->decode(x) ; }
-  uint64_t mons_mask(const string &x) const { return mons_codec->decode(x) ; }
+  qulonglong mins_mask(const string &x) const { return mins_codec->decode(x) ; }
+  qulonglong hour_mask(const string &x) const { return hour_codec->decode(x) ; }
+  qulonglong mday_mask(const string &x) const { return mday_codec->decode(x) ; }
+  qulonglong wday_mask(const string &x) const { return wday_codec->decode(x) ; }
+  qulonglong mons_mask(const string &x) const { return mons_codec->decode(x) ; }
 
   iodata::record *save() const ;
   void load(const iodata::record *r) ;
