@@ -32,6 +32,7 @@ SYNOPSIS
 *class Maemo::Timed::Event::Button ;*
 *class Maemo::Timed::Event::Recurrence ;*
 *class Maemo::Timed::Event::List ;*
+*class Maemo::Timed::Event::Triggers ;*
 
 [verse]
 *class Maemo::Timed::Event::DBusReply ;*
@@ -71,6 +72,24 @@ DAEMON INTERFACE
   The meaning of the slot parameters: the Info structure is described below in
   'WALL CLOCK HANDLING'. The 'time_changed' flas is set iff the system time
   was changed (not only the settings).
+  +
+  bool *alarm_triggers_changed_connect*(QObject &ast; object, const char &ast; slot) -
+  connects the given object/slot pair to the D-Bus signal sent by the daemon
+  when alarm queue changes. Return value indicates if the connection was
+  performed.
+  +
+  bool *alarm_triggers_changed_disconnect*(QObject &ast; object, const char &ast; slot) -
+  disconnects the given object/slot pair from the D-Bus signal sent by the daemon
+  when the alarm queue changes. Returns true if the disconnection was
+  successful.
+  +
+  The 'slot' must have the signature
+  'void alarm_triggers_changed(const Maemo::Timed::Event::Triggers)'.
+  If not, then the call will fail, no signal will be delivered, and a
+  warning
+  will be printed by Qt library (which is nowhere documented through).
+  The parameter 'Maemo::Timed::Event::Triggers' is a QMap<quint32,quint32>,
+  where the keys are cookies and values trigger times as seconds since Unix epoch.
 //  +
 //  Qt signals provided by the class and mirroring the D-Bus signals sent by the
 //  daemon:
@@ -1229,6 +1248,13 @@ class *Maemo::Timed::Event::Action*::
   +
   void *removeCredentialAccrue(const QString &token)* - removes the accrued
   credential with geven token.
+
+*class Maemo::Timed::Event::Triggers*::
+  This class represents the queue of currently active alarms. The class inherits
+  QMap<quint32, quint32>, the keys of the map are are cookies and values trigger
+  times as seconds since Unix epoch. A client application can obtain an instance
+  of this class by subscribing to the 'alarm_triggers_changed' D-Bus signal, see
+  'alarm_triggers_changed_connect' and 'alarm_triggers_changed_disconnect'
 
 EXCEPTIONS
 ----------

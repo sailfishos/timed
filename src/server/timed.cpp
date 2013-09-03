@@ -1270,6 +1270,18 @@ void Timed::set_alarm_present(bool present)
 
 void Timed::set_alarm_trigger(const QMap<QString, QVariant> &triggers)
 {
+  Maemo::Timed::Event::Triggers triggerMap;
+  QMapIterator<QString, QVariant> iter(triggers);
+  while (iter.hasNext()) {
+    iter.next();
+    uint cookie = iter.key().toUInt();
+    // The alarm_triggers are reported as nanoseconds since epoch, cf. cluster_queue_t::enter
+    // Convert the time to seconds since epoch, corresponding to QDateTime::toTime_t()
+    quint64 tmp = iter.value().toULongLong() / (quint64) nanotime_t::NANO;
+    quint32 seconds_after_epoch = (quint32) tmp;
+    triggerMap.insert(cookie, seconds_after_epoch);
+  }
+  emit alarm_triggers_changed(triggerMap);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
   // statefs supports only boolean and string types, marshall the QMap to a string
   QString contextProperty = "";
