@@ -34,7 +34,7 @@ void cluster_queue_t::enter(event_t *e)
   if(alarm && !empty_r)
   {
     QString key = QString("%1").arg(e->cookie.value()) ;
-    uint64_t value = (uint64_t)nanotime_t::NANO * e->trigger.value() ;
+    qulonglong value = (qulonglong)nanotime_t::NANO * e->trigger.value() ;
     alarm_triggers.insert(key, value) ;
     log_debug("inserted %s=>%lld, state=%s", key.toStdString().c_str(), value, e->state->name()) ;
     machine->context_changed = true ;

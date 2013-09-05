@@ -365,8 +365,8 @@ void event_t::codec_initializer()
   recurrence_pattern_t::mday_codec->register_name((uint32_t)~1, "whole_month") ;
 
   for(unsigned m=0; m<60; ++m)
-    recurrence_pattern_t::mins_codec->register_name((uint64_t)1<<m, str_printf("m%02d", m)) ;
-  recurrence_pattern_t::mins_codec->register_name(((uint64_t)1<<60)-1, "every_minute") ;
+    recurrence_pattern_t::mins_codec->register_name((qulonglong)1<<m, str_printf("m%02d", m)) ;
+  recurrence_pattern_t::mins_codec->register_name(((qulonglong)1<<60)-1, "every_minute") ;
 
   for(unsigned h=0; h<24; ++h)
     recurrence_pattern_t::hour_codec->register_name(1<<h, str_printf("h%02d", h)) ;

@@ -309,7 +309,7 @@ bool broken_down_t::is_a_regular_day() const
 }
 
 #define _set(res, mask, shift) res |= ((x&(mask))!=0)<<(shift)
-static inline int log2_64(uint64_t x)
+static inline int log2_64(qulonglong x)
 {
   int res = 0 ;
   _set(res, 0xAAAAAAAAAAAAAAAAll, 0) ;
@@ -337,11 +337,11 @@ static inline int log2_32(uint32_t x)
 bool broken_down_t::find_a_good_minute(const recurrence_pattern_t *p)
 {
   log_assert(p->mins && p->hour) ;
-  log_assert(p->mins < (uint64_t)1<<60) ;
+  log_assert(p->mins < (qulonglong)1<<60) ;
   log_assert(p->hour < (uint32_t)1<<24) ;
-  uint64_t this_hour_mask = ~ ( ((uint64_t)1<<(minute)) - 1 ) ;
+  qulonglong this_hour_mask = ~ ( ((qulonglong)1<<(minute)) - 1 ) ;
   if((1 << hour) & p->hour)
-    if(uint64_t x = p->mins & this_hour_mask)
+    if(qulonglong x = p->mins & this_hour_mask)
     {
 #define _remove_upper_bits(x) (((((x)-1)^(x)) + 1) >> 1)
       x = _remove_upper_bits(x) ;
@@ -355,7 +355,7 @@ bool broken_down_t::find_a_good_minute(const recurrence_pattern_t *p)
   {
     x = _remove_upper_bits(x) ;
     hour = log2_32(x) ;
-    uint64_t y = p->mins ;
+    qulonglong y = p->mins ;
     y = _remove_upper_bits(y) ;
 #undef _remove_upper_bits
     minute = log2_64(y) ;
