@@ -840,7 +840,7 @@ static void event_emit_recurrences(CONST Maemo::Timed::Event &eve)
     if( min != 0 )
     {
       printf("    Minutes:");
-      for( int i = 0; i < 24; ++i )
+      for( int i = 0; i < 60; ++i )
       {
         if( min & (1LL << i) ) printf(" %d", i);
       }
