@@ -1210,7 +1210,7 @@ void Timed::harmattan_desktop_visible()
 
 void Timed::harmattan_init_done(int runlevel)
 {
-  if (runlevel==5)
+  if (runlevel==4)
     device_mode_reached(false) ; // ACT_DEAD mode
 }
 
