@@ -28,6 +28,7 @@ BuildRequires:  libiodata-qt5-devel >= 0.19
 BuildRequires:  libxslt
 BuildRequires:  oneshot
 BuildRequires:  pkgconfig(statefs-qt5)
+BuildRequires:  statefs-devel >= 0.3.21
 
 %description
 The time daemon (%{name}) managing system time, time zone and settings,
@@ -92,10 +93,12 @@ chmod 755 %{buildroot}%{_oneshotdir}/setcaps-%{name}.sh
 # Initial links are done in the post section
 install -d %{buildroot}/var/lib/timed
 touch %{buildroot}/var/lib/timed/localtime
+%statefs_provider_install inout timed %{_sysconfdir}/timed-statefs.conf
 
 %pre
 groupadd -rf timed
 groupadd-user timed
+%statefs_pre
 
 %post
 # Make /etc/localtime a link to /var/lib/timed/localtime to make system time zone follow timed.
@@ -103,7 +106,6 @@ groupadd-user timed
 rm -f /var/lib/timed/localtime
 cp /usr/share/zoneinfo/UTC /var/lib/timed/localtime
 ln -sf /var/lib/timed/localtime /etc/localtime
-statefs register --statefs-type=inout /etc/timed-statefs.conf
 
 /sbin/ldconfig
 add-oneshot --now setcaps-%{name}.sh
@@ -113,6 +115,8 @@ systemctl-user restart %{name}.service || :
 fi
 
 %preun
+%statefs_preun
+%statefs_provider_unregister inout timed
 if [ "$1" -eq 0 ]; then
 systemctl-user stop %{name}.service
 fi
@@ -124,14 +128,18 @@ systemctl-user stop {%name}.service || :
 systemctl-user daemon-reload || :
 getent group time >/dev/null && groupdel timed
 fi
+%statefs_postun
 
-%files
+%posttrans
+%statefs_provider_register inout timed
+%statefs_posttrans
+
+%files -f timed.files
 %defattr(-,root,root,-)
 %doc COPYING debian/changelog debian/copyright
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/%{name}.conf
 %config(noreplace) %{_sysconfdir}/aegisfs.d/timed.aegisfs.conf
 %config(noreplace) %{_sysconfdir}/%{name}.rc
-%{_sysconfdir}/timed-statefs.conf
 %{_sysconfdir}/osso-cud-scripts/timed-clear-device.sh
 %{_sysconfdir}/osso-rfs-scripts/timed-restore-original-settings.sh
 %{_bindir}/%{name}
