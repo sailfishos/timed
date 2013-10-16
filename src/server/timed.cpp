@@ -1218,6 +1218,7 @@ void Timed::init_kernel_notification()
 {
   notificator = new kernel_notification_t ;
   QObject::connect(notificator, SIGNAL(system_time_changed(const nanotime_t &)), this, SLOT(kernel_notification(const nanotime_t &))) ;
+  QObject::connect(notificator, SIGNAL(restart_alarm_timer()), this, SLOT(restart_alarm_timer()));
   notificator->start() ;
 }
 
@@ -1225,6 +1226,12 @@ void Timed::kernel_notification(const nanotime_t &jump_forwards)
 {
   log_notice("KERNEL: system time changed by %s", jump_forwards.str().c_str()) ;
   settings->process_kernel_notification(jump_forwards) ;
+}
+
+void Timed::restart_alarm_timer()
+{
+  log_debug();
+  machine_t::pause_t p(am);
 }
 
 void Timed::init_first_boot_hwclock_time_adjustment_check() {

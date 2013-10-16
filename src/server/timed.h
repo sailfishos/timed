@@ -236,6 +236,7 @@ private Q_SLOTS:
   void harmattan_init_done(int runlevel) ;
   void harmattan_desktop_visible() ;
   void kernel_notification(const nanotime_t &jump_forwards) ;
+  void restart_alarm_timer();
   void set_alarm_present(bool present);
   void set_alarm_trigger(const QMap<QString, QVariant> &triggers);
 public:
