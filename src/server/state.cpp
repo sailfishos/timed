@@ -395,7 +395,7 @@ void state_queued_t::timer_start()
     log_notice("go to sleep, next alarm in %s seconds", time_to_wait.str().c_str()) ;
 
   if(no_sleep)
-    alarm_timer->start(0) ;
+    alarm_timeout();
   else
   {
     static const int threshold = 3600+1 ; // One hour
