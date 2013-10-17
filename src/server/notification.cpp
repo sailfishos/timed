@@ -102,7 +102,18 @@ void kernel_notification_t::ready_to_read(int fd)
     nanotime_t jump = nanotime_t::systime_at_zero() - time_at_zero ;
     log_notice("kernel system time change notification detected") ;
     stop() ;
-    emit system_time_changed(jump) ;
+
+    // The time may have changed because of a wake up from suspend.
+    // The QTimer tracking next alarm trigger time may ignore time spent in suspend,
+    // restarting the alarm timer will recalculate the trigger time.
+    emit restart_alarm_timer();
+
+    // Do not react to small changes in time, which may be a result of
+    // timers being a bit off after waking up from suspend.
+    if (abs(jump.sec()) > 0) {
+      log_debug("system time change > 0 secs, emitting system_time_changed");
+      emit system_time_changed(jump) ;
+    }
     start() ;
   }
   else if (res<=0)

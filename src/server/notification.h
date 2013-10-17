@@ -23,6 +23,7 @@ private Q_SLOTS:
   void ready_to_read(int fd) ;
 Q_SIGNALS:
   void system_time_changed(const nanotime_t &) ;
+  void restart_alarm_timer();
 } ;
 
 
