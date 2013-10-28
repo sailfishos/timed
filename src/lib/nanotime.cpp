@@ -66,6 +66,7 @@ nanotime_t nanotime_t::monotonic_now()
 {
   static AndroidAlarmWrapper wrapper;
   struct timespec ts;
+  memset(&ts, 0, sizeof(struct timespec));
   int res = wrapper.getTime(&ts);
 
   if (res < 0) {
