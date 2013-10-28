@@ -28,7 +28,7 @@
 #include "modemwatcher.h"
 
 ModemWatcher::ModemWatcher(const QString objectPath, const QString interface, QObject *parent) :
-    QObject(parent), m_objectPath(objectPath), m_interface(interface)
+    QObject(parent), m_objectPath(objectPath), m_interface(interface), m_interfaceAvailable(false)
 {
     QDBusConnection::systemBus().connect(OfonoConstants::OFONO_SERVICE, m_objectPath,
                                          OfonoConstants::OFONO_MODEM_INTERFACE, "PropertyChanged",
