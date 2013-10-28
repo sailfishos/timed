@@ -40,7 +40,7 @@ public:
     QDateTime dateTime() const;
     int offsetFromUtc() const;
     int daylightAdjustment() const;
-    struct timespec* timestamp() const;
+    const timespec *timestamp() const;
     QString mnc() const;
     QString mcc() const;
     bool isValid() const;
@@ -50,9 +50,8 @@ private:
     QDateTime m_dateTime;
     int m_daylightAdjustment;
     int m_offsetFromUtc;
-    qlonglong m_timestampSeconds;
-    qlonglong m_timestampNanoSeconds;
     QString m_mnc;
     QString m_mcc;
+    struct timespec m_timespec;
 };
 #endif // NETWORKTIMEINFO_H
