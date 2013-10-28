@@ -16,7 +16,8 @@ static const time_t timestamp = 2147483645 ; // three seconds before apocalypse
 #define TFD_TIMER_CANCELON_SET (1<<1)
 #endif
 
-kernel_notification_t::kernel_notification_t()
+kernel_notification_t::kernel_notification_t(QObject *parent)
+  : QObject(parent)
 {
   fd = -1 ;
   timerfd = NULL ;

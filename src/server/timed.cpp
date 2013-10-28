@@ -1216,7 +1216,7 @@ void Timed::harmattan_init_done(int runlevel)
 
 void Timed::init_kernel_notification()
 {
-  notificator = new kernel_notification_t ;
+  notificator = new kernel_notification_t(this);
   QObject::connect(notificator, SIGNAL(system_time_changed(const nanotime_t &)), this, SLOT(kernel_notification(const nanotime_t &))) ;
   QObject::connect(notificator, SIGNAL(restart_alarm_timer()), this, SLOT(restart_alarm_timer()));
   notificator->start() ;
