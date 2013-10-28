@@ -1,10 +1,11 @@
 [Unit]
 Description=Time Daemon
 Requires=dbus.socket
+After=booster-generic.service
 
 [Service]
 Type=notify
-ExecStart=/usr/bin/timed-qt5 --systemd
+ExecStart=/usr/bin/invoker -s --type=generic /usr/bin/timed-qt5 --systemd
 Restart=always
 
 [Install]
