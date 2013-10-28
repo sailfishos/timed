@@ -694,7 +694,7 @@ void Timed::init_cellular_services()
 
 void Timed::init_network_events()
 {
-  network_configuration_manager = new QNetworkConfigurationManager ;
+  network_configuration_manager = new QNetworkConfigurationManager(this);
   connect(network_configuration_manager, SIGNAL(onlineStateChanged(bool)), am, SLOT(online_state_changed(bool))) ;
   bool connected_now = network_configuration_manager->isOnline() ;
   if (connected_now)
