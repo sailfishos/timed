@@ -10,7 +10,8 @@ using namespace std ;
 #include "dsme-mode.h"
 #include "interfaces.h"
 
-dsme_mode_t::dsme_mode_t()
+dsme_mode_t::dsme_mode_t(QObject *parent)
+  : QObject(parent)
 {
   signal_received = false ;
   mode = "[unknown]" ;

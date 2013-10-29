@@ -333,7 +333,7 @@ void Timed::init_device_mode()
 {
   current_mode = "(unknown)" ;
 #if HAVE_DSME
-  dsme_mode_handler = new dsme_mode_t ;
+  dsme_mode_handler = new dsme_mode_t(this);
   QObject::connect(dsme_mode_handler, SIGNAL(mode_is_changing()), this, SLOT(dsme_mode_is_changing())) ;
   QObject::connect(dsme_mode_handler, SIGNAL(mode_reported(const string &)), this, SLOT(dsme_mode_reported(const string &))) ;
 #if F_ACTING_DEAD

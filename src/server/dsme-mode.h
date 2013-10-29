@@ -15,7 +15,7 @@ struct dsme_mode_t : public QObject
   DsmeReqInterface *dsme_iface ;
   bool signal_received ;
   std::string mode ;
-  dsme_mode_t() ;
+  dsme_mode_t(QObject *parent = 0);
 
   Q_OBJECT ;
 Q_SIGNALS:
