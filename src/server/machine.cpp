@@ -838,6 +838,7 @@ bool machine_t::is_frozen()
 }
 
 request_watcher_t::request_watcher_t(machine_t *owner)
+  : QObject(owner)
 {
   machine = owner ;
   w = NULL ;
@@ -855,7 +856,7 @@ request_watcher_t::~request_watcher_t()
 void request_watcher_t::watch(const QDBusPendingCall &async_call)
 {
   log_assert(w==NULL, "watch() called more then once") ;
-  w = new QDBusPendingCallWatcher(async_call) ;
+  w = new QDBusPendingCallWatcher(async_call, this);
   QObject::connect(w, SIGNAL(finished(QDBusPendingCallWatcher*)), this, SLOT(call_returned(QDBusPendingCallWatcher*))) ;
 }
 
