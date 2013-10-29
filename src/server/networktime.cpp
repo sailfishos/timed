@@ -40,6 +40,14 @@ NetworkTime::NetworkTime(QObject *parent) :
                      this, SLOT(onModemRemoved(QString)));
 }
 
+NetworkTime::~NetworkTime()
+{
+    foreach (NetworkTimeWatcher* watcher, m_watcherMap)
+        delete watcher;
+
+    m_watcherMap.clear();
+}
+
 NetworkTimeInfo NetworkTime::timeInfo() const
 {
     return m_networkTimeInfo;

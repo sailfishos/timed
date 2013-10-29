@@ -39,6 +39,14 @@ NetworkOperator::NetworkOperator(QObject *parent) :
                      this, SLOT(onModemRemoved(QString)));
 }
 
+NetworkOperator::~NetworkOperator()
+{
+    foreach (NetworkRegistrationWatcher* watcher, m_watcherMap)
+        delete watcher;
+
+    m_watcherMap.clear();
+}
+
 QString NetworkOperator::mnc() const
 {
     return m_mnc;
