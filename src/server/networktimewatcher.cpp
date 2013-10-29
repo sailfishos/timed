@@ -78,6 +78,7 @@ void NetworkTimeWatcher::queryNetworkTimeCallback(QDBusPendingCallWatcher *watch
 
     QVariantMap map = reply.argumentAt<0>();
     emit networkTimeQueryCompleted(map);
+    watcher->deleteLater();
 }
 
 void NetworkTimeWatcher::onNetworkTimeChanged(QVariantMap map)

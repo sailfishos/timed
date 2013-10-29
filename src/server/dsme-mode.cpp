@@ -66,4 +66,6 @@ void dsme_mode_t::request_finished(QDBusPendingCallWatcher *watcher)
   }
   else
     log_warning("ignoring dsme state request reply, current state is '%s'", mode.c_str()) ;
+
+  watcher->deleteLater();
 }
