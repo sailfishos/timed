@@ -848,6 +848,8 @@ request_watcher_t::~request_watcher_t()
   delete w ;
   for(set<event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
     detach_not_destroy(*it) ;
+
+  events.clear();
 }
 
 void request_watcher_t::watch(const QDBusPendingCall &async_call)
@@ -880,12 +882,12 @@ void request_watcher_t::detach_not_destroy(event_t *e)
 
   // Now detach:
   e->request_watcher = NULL ;
-  this->events.erase(e) ;
 }
 
 void request_watcher_t::detach(event_t *e)
 {
   detach_not_destroy(e) ;
+  this->events.erase(e);
 
   // The object should be destroyed if empty
   if (this->events.empty())
