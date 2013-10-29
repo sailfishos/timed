@@ -30,6 +30,7 @@
 #if OFONO
 
 csd_t::csd_t(Timed *owner)
+  : QObject(owner)
 {
   timed = owner ;
   nt = new NetworkTime;
