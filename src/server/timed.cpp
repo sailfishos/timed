@@ -1079,7 +1079,7 @@ void Timed::tz_by_oracle(olson *tz, tz_suggestions_t s)
 
 void Timed::update_oracle_context(bool s)
 {
-  log_warning("update_oracle_context(%d): NOT IMPLEMENTED", s) ;
+  log_debug("update_oracle_context(%d): NOT IMPLEMENTED", s);
 #if 0
   static ContextProvider::Property oracle_p("/com/nokia/time/time_zone/oracle") ;
   static const char * const uncertain_key = "uncertain" ;
