@@ -10,7 +10,8 @@ using namespace std ;
 #include "dsme-mode.h"
 #include "interfaces.h"
 
-dsme_mode_t::dsme_mode_t()
+dsme_mode_t::dsme_mode_t(QObject *parent)
+  : QObject(parent)
 {
   signal_received = false ;
   mode = "[unknown]" ;
@@ -66,4 +67,6 @@ void dsme_mode_t::request_finished(QDBusPendingCallWatcher *watcher)
   }
   else
     log_warning("ignoring dsme state request reply, current state is '%s'", mode.c_str()) ;
+
+  watcher->deleteLater();
 }

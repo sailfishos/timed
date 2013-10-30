@@ -37,6 +37,7 @@ class NetworkOperator : public QObject
 
 public:
     explicit NetworkOperator(QObject *parent = 0);
+    ~NetworkOperator();
     QString mnc() const;
     QString mcc() const;
     bool isValid() const;

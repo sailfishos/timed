@@ -39,6 +39,7 @@ class NetworkTime : public QObject
 
 public:
     explicit NetworkTime (QObject *parent=0);
+    ~NetworkTime();
     NetworkTimeInfo timeInfo() const;
     void queryTimeInfo();
     bool isValid() const;

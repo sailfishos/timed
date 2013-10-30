@@ -67,7 +67,7 @@ void ut_networktime::test_networktimeinfo()
     QVERIFY(networkTimeInfo.mnc().compare(mnc) == 0);
     QVERIFY(networkTimeInfo.mcc().compare(mcc) == 0);
 
-    struct timespec *timestamp = networkTimeInfo.timestamp();
+    const struct timespec *timestamp = networkTimeInfo.timestamp();
     QVERIFY(timestamp->tv_sec == timestampSeconds);
     QVERIFY(timestamp->tv_nsec == timestampNanoSeconds);
 }

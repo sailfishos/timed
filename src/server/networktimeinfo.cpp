@@ -30,10 +30,10 @@ NetworkTimeInfo::NetworkTimeInfo(const QDateTime &dateTime,
                                  const QString &mcc)
     : m_dateTime(dateTime), m_daylightAdjustment(daylightAdjustment),
       m_offsetFromUtc(offsetFromUtc),
-      m_timestampSeconds(timestampSeconds),
-      m_timestampNanoSeconds(timestampNanoSeconds),
       m_mnc(mnc), m_mcc(mcc)
 {
+    m_timespec.tv_sec = timestampSeconds;
+    m_timespec.tv_nsec = timestampNanoSeconds;
 }
 
 NetworkTimeInfo::NetworkTimeInfo(const NetworkTimeInfo &other)
@@ -41,14 +41,15 @@ NetworkTimeInfo::NetworkTimeInfo(const NetworkTimeInfo &other)
     m_dateTime = other.dateTime();
     m_daylightAdjustment = other.daylightAdjustment();
     m_offsetFromUtc = other.offsetFromUtc();
-    m_timestampSeconds = other.timestamp()->tv_sec;
-    m_timestampNanoSeconds = other.timestamp()->tv_nsec;
+    m_timespec.tv_sec = other.timestamp()->tv_sec;
+    m_timespec.tv_nsec = other.timestamp()->tv_nsec;
     m_mnc = other.mnc();
     m_mcc = other.mcc();
 }
 
 NetworkTimeInfo::NetworkTimeInfo()
 {
+    memset(&m_timespec, 0, sizeof(struct timespec));
 }
 
 NetworkTimeInfo::~NetworkTimeInfo()
@@ -70,12 +71,9 @@ int NetworkTimeInfo::daylightAdjustment() const
     return m_daylightAdjustment;
 }
 
-timespec* NetworkTimeInfo::timestamp() const
+const timespec* NetworkTimeInfo::timestamp() const
 {
-    struct timespec *ts = new timespec;
-    ts->tv_sec = m_timestampSeconds;
-    ts->tv_nsec = m_timestampNanoSeconds;
-    return ts;
+    return &m_timespec;
 }
 
 QString NetworkTimeInfo::mnc() const
@@ -104,6 +102,6 @@ QString NetworkTimeInfo::toString() const
             .arg(m_daylightAdjustment)
             .arg(m_mnc)
             .arg(m_mcc)
-            .arg(m_timestampSeconds)
-            .arg(m_timestampNanoSeconds);
+            .arg(m_timespec.tv_sec)
+            .arg(m_timespec.tv_nsec);
 }

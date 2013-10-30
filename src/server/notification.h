@@ -14,7 +14,7 @@ struct kernel_notification_t : public QObject
   bool is_running ;
   nanotime_t time_at_zero ;
 
-  kernel_notification_t() ;
+  kernel_notification_t(QObject *parent = 0);
  ~kernel_notification_t() ;
   void start() ;
   void stop() ;

@@ -333,7 +333,7 @@ void Timed::init_device_mode()
 {
   current_mode = "(unknown)" ;
 #if HAVE_DSME
-  dsme_mode_handler = new dsme_mode_t ;
+  dsme_mode_handler = new dsme_mode_t(this);
   QObject::connect(dsme_mode_handler, SIGNAL(mode_is_changing()), this, SLOT(dsme_mode_is_changing())) ;
   QObject::connect(dsme_mode_handler, SIGNAL(mode_reported(const string &)), this, SLOT(dsme_mode_reported(const string &))) ;
 #if F_ACTING_DEAD
@@ -694,7 +694,7 @@ void Timed::init_cellular_services()
 
 void Timed::init_network_events()
 {
-  network_configuration_manager = new QNetworkConfigurationManager ;
+  network_configuration_manager = new QNetworkConfigurationManager(this);
   connect(network_configuration_manager, SIGNAL(onlineStateChanged(bool)), am, SLOT(online_state_changed(bool))) ;
   bool connected_now = network_configuration_manager->isOnline() ;
   if (connected_now)
@@ -1216,7 +1216,7 @@ void Timed::harmattan_init_done(int runlevel)
 
 void Timed::init_kernel_notification()
 {
-  notificator = new kernel_notification_t ;
+  notificator = new kernel_notification_t(this);
   QObject::connect(notificator, SIGNAL(system_time_changed(const nanotime_t &)), this, SLOT(kernel_notification(const nanotime_t &))) ;
   QObject::connect(notificator, SIGNAL(restart_alarm_timer()), this, SLOT(restart_alarm_timer()));
   notificator->start() ;
