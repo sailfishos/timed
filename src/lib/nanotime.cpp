@@ -28,7 +28,6 @@
 
 #include "nanotime.h"
 #include "../common/log.h"
-#include "androidalarmwrapper.h"
 
 nanotime_t nanotime_t::div2() const
 {
@@ -64,21 +63,23 @@ nanotime_t nanotime_t::systime_now()
 
 nanotime_t nanotime_t::monotonic_now()
 {
-  static AndroidAlarmWrapper wrapper;
   struct timespec ts;
   memset(&ts, 0, sizeof(struct timespec));
-  int res = wrapper.getTime(&ts);
-
-  if (res < 0) {
+  int res = -1;
+#if defined(CLOCK_BOOTTIME)
+  res = clock_gettime(CLOCK_BOOTTIME, &ts);
+#endif
+  if (res < 0)
     res = clock_gettime(CLOCK_MONOTONIC, &ts);
-  }
 
   nanotime_t t = nanotime_t::from_timespec(ts);
 
-  if(res<0)
+  if(res < 0) {
+    log_error("clock_gettime error: %m");
     t.invalidate() ;
-  else
+  } else {
     t.fix_overflow() ;
+  }
   return t ;
 }
 

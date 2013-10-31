@@ -8,10 +8,10 @@ equals(QT_MAJOR_VERSION, 5): TARGET = timed-qt5
 
 VERSION = 0.$$(TIMED_VERSION)
 
-HEADERS = interface.h androidalarmwrapper.h
+HEADERS = interface.h
 SOURCES = interface.cpp event-io.cpp event-pimple.cpp exception.cpp nanotime.cpp imagetype.cpp aliases.cpp
 
-SOURCES += wall-settings.cpp wall-info.cpp qmacro.cpp androidalarmwrapper.cpp
+SOURCES += wall-settings.cpp wall-info.cpp qmacro.cpp
 
 LIBS += -lrt
 
