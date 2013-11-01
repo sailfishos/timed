@@ -101,7 +101,8 @@ void kernel_notification_t::ready_to_read(int fd)
   if (res<0 and errno == ECANCELED) // that's it!
   {
     nanotime_t jump = nanotime_t::systime_at_zero() - time_at_zero ;
-    log_notice("kernel system time change notification detected") ;
+    log_notice("kernel system time change notification detected, jump: %s", jump.str().c_str()) ;
+
     stop() ;
 
     // The time may have changed because of a wake up from suspend.
@@ -111,8 +112,12 @@ void kernel_notification_t::ready_to_read(int fd)
 
     // Do not react to small changes in time, which may be a result of
     // timers being a bit off after waking up from suspend.
-    if (abs(jump.sec()) > 0) {
-      log_debug("system time change > 0 secs, emitting system_time_changed");
+    //
+    // Must use nanotime_t operators when determining that the jump is > 2 seconds,
+    // the operators in nanotime_t do various adjustments to the values stored internally,
+    // whereas the getters like nanotime_t::sec() do not.
+    if (jump <= nanotime_t(-2) || jump >= nanotime_t(2)) {
+      log_debug("system time change > 0 secs (%i), emitting system_time_changed");
       emit system_time_changed(jump) ;
     }
     start() ;
