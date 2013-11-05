@@ -643,21 +643,9 @@ bool source_settings::wall_clock_settings(const Maemo::Timed::WallClock::wall_se
 
 void source_settings::process_kernel_notification(const nanotime_t &jump_forwards)
 {
-  // 1. Disable auto time update
-  time_nitz = false ;
-
-  // 2. If auto zone update => update manual zone
-  if (local_cellular and cellular_zone->available())
-    manual_zone->value = cellular_zone->value ;
-
-  // 3. Disable auto zone
-  local_cellular = false ;
-
-  // 4. invoke signal (fake value of 1.000000239 second)
-  // o->invoke_signal(nanotime_t(1,239)) ; // TODO: real time jump value needed !!! XXX
   o->invoke_signal(-jump_forwards) ;
 
-  // 5. make time valid
+  // Make time valid
   o->open_epoch() ;
 }
 
