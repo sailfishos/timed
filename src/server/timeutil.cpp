@@ -391,9 +391,8 @@ time_t broken_down_t::mktime_strict(int dst /* = -1 */) const
   return t ;
 }
 
-void broken_down_t::from_time_t(const ticker_t &ticker, int *wday)
+void broken_down_t::from_time_t(const time_t &time, int *wday)
 {
-  time_t time = ticker.value() ;
   struct tm tm ;
   localtime_r(&time, &tm) ;
   if(wday)
