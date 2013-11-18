@@ -1,11 +1,13 @@
 [Unit]
 Description=Time Daemon
 Requires=dbus.socket
+After=dbus.socket
 
 [Service]
 Type=notify
 ExecStart=/usr/bin/timed-qt5 --systemd
 Restart=always
+RestartSec=1
 
 [Install]
 WantedBy=pre-user-session.target
