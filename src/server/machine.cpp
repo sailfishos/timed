@@ -193,6 +193,7 @@ machine_t::machine_t(const Timed *daemon) : timed(daemon)
   next_cookie = 1 ;
   log_debug() ;
   context_changed = false ;
+  startup_time = nanotime_t::monotonic_now().to_time_t();
   log_debug("last line") ;
 }
 
@@ -442,6 +443,11 @@ void machine_t::send_queue_context()
   emit alarm_trigger(cluster_queue->alarm_triggers);
   emit alarm_present(!cluster_queue->alarm_triggers.isEmpty());
   context_changed = false;
+}
+
+qlonglong machine_t::running_time()
+{
+  return nanotime_t::monotonic_now().to_time_t() - startup_time;
 }
 
 cookie_t machine_t::add_event(const Maemo::Timed::event_io_t *eio, bool process_queue, const credentials_t *creds, const QDBusMessage *p_message)
@@ -766,6 +772,9 @@ void machine_t::load_events(const iodata::array *events_data, bool trusted_sourc
     e->flags = ee->get("flags")->decode(event_t::codec) ;
     iodata::load(e->recrs, ee->get("recrs")->arr()) ;
     iodata::load_int_array(e->snooze, ee->get("snooze")->arr()) ;
+
+    if (e->recrs.size() > 0)
+      e->trigger_if_missed = true;
 
     const iodata::array *a = ee->get("b_attr")->arr() ;
     unsigned nb = a->size() ;

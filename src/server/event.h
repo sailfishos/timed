@@ -134,6 +134,10 @@ struct event_t
   cred_modifier_t *cred_modifier ;
   credentials_t *client_creds ;
 
+  // If the event has recurrences, then it needs to be triggered if it was missed by
+  // RenameMeNameSpace::Missing_Threshold when timed starts. event_t::trigger_if_missed
+  // is used to indicate this.
+  bool trigger_if_missed;
 
   vector<recurrence_pattern_t> recrs ;
   vector<action_t> actions ;

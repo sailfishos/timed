@@ -588,13 +588,13 @@ static ticker_t recur_regular_day(const broken_down_t &day, const recurrence_pat
   return ticker_t() ;
 }
 
-ticker_t state_recurred_t::apply_pattern(const broken_down_t &start, int wday, const recurrence_pattern_t *p)
+ticker_t state_recurred_t::apply_pattern(const broken_down_t &start, int wday, const recurrence_pattern_t *p, qlonglong offset)
 {
   broken_down_t day = start ;
   unsigned nxt_year = day.year + 1 ;
   if(broken_down_t::YEARX <= nxt_year)
     -- nxt_year ;
-  time_t threshold = machine->transition_started().value() ;
+  time_t threshold = machine->transition_started().value() - offset;
   for(bool today_flag=true;  day.find_a_good_day(p, wday, today_flag, nxt_year) ; today_flag=false)
   {
     if (not today_flag)
@@ -659,12 +659,16 @@ void state_recurred_t::enter(event_t *e)
   abstract_state_t::enter(e) ;
   switch_timezone x(e->tz) ;
   broken_down_t now ;
-  int now_wday ;
-  now.from_time_t(machine->transition_started(), &now_wday) ;
+  int now_wday;
+  qlonglong offset = 0;
+  if (e->trigger_if_missed && machine->running_time() < RenameMeNameSpace::Missing_Threshold)
+    offset = RenameMeNameSpace::Missing_Threshold - machine->running_time();
+
+  now.from_time_t(machine->transition_started().value() - offset, &now_wday);
   ticker_t best_ticker = ticker_t(0) ;
   for(unsigned i=0; i<e->recrs.size(); ++i)
   {
-    ticker_t res = apply_pattern(now, now_wday, &e->recrs[i]) ;
+    ticker_t res = apply_pattern(now, now_wday, &e->recrs[i], offset);
     if(res.is_valid() && (!best_ticker.is_valid() || res<best_ticker))
       best_ticker = res ;
   }
@@ -693,6 +697,10 @@ void state_triggered_t::enter(event_t *e)
   // Frist get rid of one time trigger info:
   e->ticker = ticker_t() ;
   e->invalidate_t() ;
+
+  // Clear trigger if missed flag if set
+  if (e->trigger_if_missed)
+    e->trigger_if_missed = false;
 
   if(e->flags & EventFlags::Single_Shot)
     e->recrs.resize(0) ; // no recurrence anymore

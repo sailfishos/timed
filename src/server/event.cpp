@@ -44,6 +44,7 @@ event_t::event_t()
   state = NULL ;
   request_watcher = NULL ;
   cookie = cookie_t(0) ; // paranoid
+  trigger_if_missed = false;
 }
 
 event_t::~event_t()

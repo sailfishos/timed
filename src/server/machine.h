@@ -92,6 +92,7 @@ struct machine_t : public QObject
   void unregister_event(event_t *e) ;
   bool is_event_registered(event_t *e) ;
   void send_queue_context() ;
+  qlonglong running_time();
   Q_OBJECT ;
 public Q_SLOTS:
   void online_state_changed(bool connected) ;
@@ -124,6 +125,7 @@ public:
 private:
   string s_states() ;
   string s_transition_queue() ;
+  time_t startup_time;
 
 public:
   // states

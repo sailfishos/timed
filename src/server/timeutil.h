@@ -65,7 +65,7 @@ struct broken_down_t
   bool is_valid() const ;
   struct tm *to_struct_tm(struct tm *dest=NULL) const ;
   void from_struct_tm(const struct tm *) ;
-  void from_time_t(const ticker_t &ticker, int *wday=NULL) ;
+  void from_time_t(const time_t &time, int *wday=NULL);
   bool same_struct_tm(const struct tm *) const ;
   void increment_day() ;
   bool find_a_good_day(const recurrence_pattern_t *p, int &wday, bool &today, unsigned max_year) ;
