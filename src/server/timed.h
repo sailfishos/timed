@@ -67,6 +67,8 @@ namespace statefs {
 }
 #endif
 
+class NtpController;
+
 struct Timed : public QCoreApplication
 {
 public:
@@ -126,6 +128,7 @@ private:
   void init_dst_checker() ;
   void init_start_event_machine() ;
   void init_cellular_services() ;
+  void init_ntp();
   void init_network_events() ;
   void init_apply_tz_settings() ;
   void init_kernel_notification() ;
@@ -160,6 +163,8 @@ public:
   void cancel_events(const QList<uint> &cookies, QList<uint> &failed) { am->cancel_events(cookies, failed) ;}
   void alarm_gate(bool value) { return am->alarm_gate(value) ; }
   int default_snooze(int value) { return settings->default_snooze(value) ; }
+  void enable_ntp_time_adjustment(bool enable);
+
   QDBusConnectionInterface *ses_iface ;
 
   map<int,unsigned> children ;
@@ -207,6 +212,7 @@ private:
   QTimer *dst_timer ;
   std::string sent_signature ;
   tz_oracle_t *tz_oracle ;
+  NtpController *ntp_controller;
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
   statefs::qt::InOutWriter *alarm_present;
