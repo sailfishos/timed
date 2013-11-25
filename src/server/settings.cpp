@@ -566,12 +566,15 @@ bool source_settings::wall_clock_settings(const Maemo::Timed::WallClock::wall_se
         set_system_time(nitz_utc->value_at_zero()) ;
         o->open_epoch() ;
       }
+      o->enable_ntp_time_adjustment(true);
       break ;
     case Op_Set_Time_Manual:
+      o->enable_ntp_time_adjustment(false);
       manual_utc->value = value_at_zero() ;
       time_nitz = false ;
       break ;
     case Op_Set_Time_Manual_Val:
+      o->enable_ntp_time_adjustment(false);
       time_nitz = false ;
       manual_utc->value = p.time_at_zero ;
       set_system_time(p.time_at_zero) ;

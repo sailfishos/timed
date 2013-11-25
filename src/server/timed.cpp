@@ -61,6 +61,7 @@
 #include "notification.h"
 #include "time.h"
 #include "../common/log.h"
+#include "ntpcontroller.h"
 
 #include <string>
 #include <fstream>
@@ -160,6 +161,9 @@ Timed::Timed(int ac, char **av) :
 
   init_load_events() ;
   log_debug() ;
+
+  init_ntp();
+  log_debug();
 
 #if OFONO
   init_cellular_services() ;
@@ -692,6 +696,12 @@ void Timed::init_cellular_services()
 }
 #endif // OFONO
 
+
+void Timed::init_ntp()
+{
+  ntp_controller = new NtpController(settings->time_nitz, this);
+}
+
 void Timed::init_network_events()
 {
   network_configuration_manager = new QNetworkConfigurationManager(this);
@@ -852,6 +862,11 @@ bool Timed::dialog_response(cookie_t c, int value)
 {
   log_debug("Responded: %d(value=%d)", c.value(), value) ;
   return am->dialog_response(c, value) ;
+}
+
+void Timed::enable_ntp_time_adjustment(bool enable)
+{
+    ntp_controller->enableNtpTimeAdjustment(enable);
 }
 
 void Timed::system_owner_changed(const QString &name, const QString &oldowner, const QString &newowner)

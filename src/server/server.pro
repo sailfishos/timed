@@ -41,7 +41,8 @@ HEADERS += peer.h \
     networktimeinfo.h \
     ofonomodemmanager.h \
     modemwatcher.h \
-    ofonoconstants.h
+    ofonoconstants.h \
+    ntpcontroller.h
 
 SOURCES += peer.cpp \
     tzdata.cpp \
@@ -66,7 +67,8 @@ SOURCES += peer.cpp \
     networktimeinfo.cpp \
     ofonomodemmanager.cpp \
     modemwatcher.cpp \
-    ofonoconstants.cpp
+    ofonoconstants.cpp \
+    ntpcontroller.cpp
 
 SOURCES += credentials.cpp aegis.cpp
 HEADERS += credentials.h
