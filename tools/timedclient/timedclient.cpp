@@ -937,11 +937,9 @@ static void cookie_emit_details(uint cookie)
 }
 
 /** Query a list of events from timed */
-static QList<uint> cookies_get(void)
+static QList<uint> cookies_get(QMap<QString,QVariant> match)
 {
   QList<uint> res;
-
-  QMap<QString,QVariant> match;
   QDBusReply< QList<QVariant> > reply = timed_dbus.query_sync(match);
 
   if( !reply.isValid() )
@@ -965,6 +963,12 @@ static QList<uint> cookies_get(void)
 cleanup:
   return res;
 
+}
+
+static QList<uint> cookies_get(void)
+{
+  QMap<QString,QVariant> match;
+  return cookies_get(match);
 }
 
 /* ------------------------------------------------------------------------- *
@@ -1303,6 +1307,34 @@ static void do_add_recurrence(char *args)
   }
 }
 
+/** Handle option: --search=<args> */
+static QList<uint> do_search(char *args)
+{
+  QMap<QString,QVariant> attributes;
+  while( *args )
+  {
+    char *arg = slice(args, &args, ';');
+    char *key = slice(arg, &arg, '=');
+    char *val = slice(arg, &arg, 0);
+
+    if ( *key == 0 || *val == 0 ) {
+      fprintf(stderr, "missing attribute key or value: %s=%s\n", key, val);
+      continue;
+    }
+    attributes.insert(key, val);
+  }
+
+  QList<uint> cookieList = cookies_get(attributes);
+  int n = 0;
+  foreach( uint cookie, cookies_get(attributes) )
+  {
+    printf("%s%u", n++ ? " " : "", cookie);
+  }
+  printf("\n");
+
+  return cookieList;
+}
+
 /** Handle option: --add-event=<args> */
 static void do_add_event(char *args)
 {
@@ -1402,6 +1434,7 @@ static const struct option OPT_L[] =
   {"show",           0, 0, 'L'},
   {"ping",           0, 0, 'p'},
 
+  {"search",         1, 0, 's'}, // <args>
   {"add-button",     1, 0, 'b'}, // <args>
   {"add-action",     1, 0, 'a'}, // <args>
   {"add-recurrence", 1, 0, 'r'}, // <args>
@@ -1427,6 +1460,7 @@ static const char OPT_S[] =
 "l"  // --list
 "i"  // --info
 "p"  // --ping
+"s:"  // --search=<args>
 "L"  // --show
 "c:" // --cancel-event=<cookie>
 "C"  // --cancel-events
@@ -1458,6 +1492,7 @@ static const char USAGE[] =
 "  --add-recurrence=<args> -r<args>    --  Add recurrence to event\n"
 "  --add-event=<args>      -e<args>    --  Send event to timed\n"
 "  --get-event=<cookie>    -g<cookie>  --  Show details of event\n"
+"  --search=<args>         -s<args>    --  List cookies by attributes\n"
 "\n"
 "  --cancel-event=<cookie> -c<cookie>  --  Cancel one event\n"
 "  --cancel-events         -C          --  Cancel all events\n"
@@ -1544,6 +1579,10 @@ static const char USAGE[] =
 "  If none of the above is matched, assumes generic attribute\n"
 "  of <ATTRIB_KEY>=<ATTRIB_VALUE> form, added via setAttribute()\n"
 "\n"
+"SEARCH ARGS\n"
+"  List of attribute key-value pairs <ATTRIB_KEY>=<ATTRIB_VALUE>\n"
+"  separated by a semicolon: 'foo=bar;a=b;type=countdown'.\n"
+"\n"
 "NOTES\n"
 "  You need to define buttons, actions and recurrence items before\n"
 "  adding the alarm, i.e. pass options in order -bxxx -axxx -rxxx -exxx.\n"
@@ -1583,6 +1622,7 @@ main(int argc, char **argv)
     case 'i': do_info_all();             break;
     case 'L': do_show_all();             break;
     case 'p': do_ping_all();             break;
+    case 's': do_search(optarg);         break;
     case 'g': do_show_one(optarg);       break;
     case 'b': do_add_button(optarg);     break;
     case 'a': do_add_action(optarg);     break;
