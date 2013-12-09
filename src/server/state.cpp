@@ -855,6 +855,7 @@ void state_dlg_cntr_t::request_voland()
     map_std_to_q(e->attr.txt, p->attr) ;
     p->attr.insert("STATE", e->state->name()) ;
     p->attr.insert("COOKIE", QString("%1").arg(e->cookie.value()));
+    p->attr.insert("timeoutSnoozeCounter", QString("%1").arg(e->tsz_counter));
     log_debug() ;
     p->buttons.resize(e->b_attr.size()) ;
     log_debug() ;
