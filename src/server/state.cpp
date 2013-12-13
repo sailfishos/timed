@@ -728,7 +728,7 @@ void state_button_t::enter(event_t *e)
   if (e->tsz_max)
   {
     log_debug("processing restricted timeout snooze event: cookie=%d, max=%d, count=%d", e->cookie.value(), e->tsz_max, e->tsz_counter) ;
-    if (no!=0)
+    if (no!=0 || e->tsz_counter == e->tsz_max)
       e->tsz_counter=0 ;
     else if (e->tsz_counter < e->tsz_max)
     {
