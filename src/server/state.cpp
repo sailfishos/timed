@@ -307,7 +307,7 @@ void state_qentry_t::enter(event_t *e)
 {
   abstract_state_t::enter(e) ;
   log_assert(e->trigger.is_valid()) ;
-  machine->state_flt_conn->go_to(e) ;
+  machine->state_flt_alrm->go_to(e);
 }
 
 state_queued_t::state_queued_t(machine_t *owner) : abstract_io_state_t("QUEUED", owner)
@@ -459,11 +459,6 @@ void state_queued_t::filter_closed(abstract_filter_state_t *f_st)
   log_debug("event_found=%d", event_found) ;
   if(event_found)
     machine->process_transition_queue() ;
-}
-
-bool state_flt_conn_t::filter(event_t *e)
-{
-  return e->flags & EventFlags::Need_Connection ;
 }
 
 bool state_flt_alrm_t::filter(event_t *e)

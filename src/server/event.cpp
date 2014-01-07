@@ -305,7 +305,6 @@ void event_t::codec_initializer()
   recurrence_pattern_t::mons_codec = new iodata::bit_codec ;
 #define REG(codec_ptr, space, name) ((codec_ptr)->register_name(space::name, lowercase(#name)))
   REG(event_t::codec, EventFlags, Alarm) ;
-  REG(event_t::codec, EventFlags, Need_Connection) ;
   REG(event_t::codec, EventFlags, Trigger_If_Missed) ;
   REG(event_t::codec, EventFlags, Postpone_If_Missed) ;
   REG(event_t::codec, EventFlags, User_Mode) ;

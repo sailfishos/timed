@@ -55,7 +55,6 @@ machine_t::machine_t(const Timed *daemon) : timed(daemon)
     state_new = new state_new_t(this),                         // T
     state_scheduler = new state_scheduler_t(this),             // T
     state_qentry = new state_qentry_t(this),                   // T
-    state_flt_conn = new state_flt_conn_t(this),               // IO G F -->NEW
     state_flt_alrm = new state_flt_alrm_t(this),               // IO G F -->NEW
     state_flt_user = new state_flt_user_t(this),               // IO G F -->NEW
     state_queued = new state_queued_t(this),                   // IO A   -->NEW
@@ -159,7 +158,6 @@ machine_t::machine_t(const Timed *daemon) : timed(daemon)
   log_assert(flt_user) ;
 #endif
 
-  QObject::connect(state_flt_conn, SIGNAL(closed(abstract_filter_state_t*)), state_queued, SLOT(filter_closed(abstract_filter_state_t*))) ;
   QObject::connect(state_flt_alrm, SIGNAL(closed(abstract_filter_state_t*)), state_queued, SLOT(filter_closed(abstract_filter_state_t*))) ;
   QObject::connect(state_flt_user, SIGNAL(closed(abstract_filter_state_t*)), state_queued, SLOT(filter_closed(abstract_filter_state_t*))) ;
 
@@ -366,7 +364,7 @@ void machine_t::invoke_process_transition_queue()
 
 void machine_t::reshuffle_queue(const nanotime_t &back)
 {
-  abstract_io_state_t *from[] = {state_queued, state_flt_conn, state_flt_alrm, state_flt_user, NULL} ;
+  abstract_io_state_t *from[] = {state_queued, state_flt_alrm, state_flt_user, NULL};
   for(abstract_io_state_t **p=from, *state; (state=*p); ++p)
   {
     for(set<event_t*>::iterator it=state->events.begin(); it!=state->events.end(); ++it)
@@ -933,13 +931,4 @@ void request_watcher_t::call_returned(QDBusPendingCallWatcher *w)
 
   // Don't need the watcher any more
   delete this ;
-}
-
-void machine_t::online_state_changed(bool connected)
-{
-  log_notice("ONLINE state: %s", connected?"connected":"not connected") ;
-  if (connected)
-    state_flt_conn->open() ;
-  else
-    state_flt_conn->close() ;
 }

@@ -213,15 +213,6 @@ struct state_skipped_t : public abstract_state_t
   void enter(event_t *e) ;
 } ;
 
-struct state_flt_conn_t : public abstract_filter_state_t
-{
-  state_flt_conn_t(machine_t *owner) : abstract_filter_state_t("FLT_CONN", "QENTRY", "FLT_ALRM", owner) { }
-  virtual ~state_flt_conn_t() { }
-  uint32_t cluster_bits() { return EventFlags::Cluster_Queue ; }
-  bool filter(event_t *) ;
-  Q_OBJECT ;
-} ;
-
 struct state_flt_alrm_t : public abstract_filter_state_t
 {
   state_flt_alrm_t(machine_t *owner) : abstract_filter_state_t("FLT_ALRM", "QENTRY", "FLT_USER", owner) { }

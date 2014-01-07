@@ -94,8 +94,6 @@ struct machine_t : public QObject
   void send_queue_context() ;
   qlonglong running_time();
   Q_OBJECT ;
-public Q_SLOTS:
-  void online_state_changed(bool connected) ;
 Q_SIGNALS:
   void engine_pause(int dx) ;
   void voland_registered() ;
@@ -141,7 +139,6 @@ public:
   state_missed_t *state_missed ;
   state_due_t *state_due ;
   state_skipped_t *state_skipped ;
-  state_flt_conn_t *state_flt_conn ;
   state_flt_alrm_t *state_flt_alrm ;
   state_flt_user_t *state_flt_user ;
   state_snoozed_t *state_snoozed ;
