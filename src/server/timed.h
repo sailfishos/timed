@@ -28,7 +28,6 @@
 #include <QMetaMethod>
 #include <QDBusConnectionInterface>
 #include <QDBusServiceWatcher>
-#include <QNetworkConfigurationManager>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #include <ContextProvider>
@@ -129,7 +128,6 @@ private:
   void init_start_event_machine() ;
   void init_cellular_services() ;
   void init_ntp();
-  void init_network_events() ;
   void init_apply_tz_settings() ;
   void init_kernel_notification() ;
 
@@ -250,7 +248,6 @@ public:
   void device_mode_reached(bool act_dead, const std::string &dbus_session) ;
 #endif
   void device_mode_reached(bool user_mode) ;
-  QNetworkConfigurationManager *network_configuration_manager ;
 #if 0
   void nitz_notification(const cellular_info_t &) ;
   void tz_by_oracle(olson *tz, tz_suggestions_t) ;

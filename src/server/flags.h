@@ -84,7 +84,6 @@ namespace WallOpcode
       enum
       {
         Alarm                   = 1<<0,
-        Need_Connection         = 1<<1,
         Trigger_If_Missed       = 1<<2,
         Postpone_If_Missed      = 1<<3,
         User_Mode               = 1<<4,

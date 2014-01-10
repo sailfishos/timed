@@ -1,5 +1,5 @@
 QT -= gui
-QT += dbus network
+QT += dbus
 
 TEMPLATE = app
 
