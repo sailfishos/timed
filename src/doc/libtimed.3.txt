@@ -693,8 +693,8 @@ EVENT HANDLING
   +
   void *setMaximalTimeoutSnoozeCounter(int tsz_max_counter)* - restricts snoozing
   by user's inactivity in the notification dialog to given repeat amount. The event
-  will be marked as served in case of one more inactivity. The counter will be
-  reset by any manual snoooze.
+  will be marked as served and the counter reset in case of one more inactivity.
+  The counter will also be reset by any manual snoooze or dismiss.
   +
   int *maximalTimeoutSnoozeCounter()* const - gets maximal timeout snoooze
   counter (see *setMaximalTimeoutSnoozeCounter* for details).

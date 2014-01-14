@@ -728,7 +728,7 @@ void state_button_t::enter(event_t *e)
   if (e->tsz_max)
   {
     log_debug("processing restricted timeout snooze event: cookie=%d, max=%d, count=%d", e->cookie.value(), e->tsz_max, e->tsz_counter) ;
-    if (no!=0)
+    if (no!=0 || e->tsz_counter == e->tsz_max)
       e->tsz_counter=0 ;
     else if (e->tsz_counter < e->tsz_max)
     {
@@ -853,6 +853,10 @@ void state_dlg_cntr_t::request_voland()
     p->cookie = e->cookie.value() ;
     log_debug() ;
     map_std_to_q(e->attr.txt, p->attr) ;
+    p->attr.insert("STATE", e->state->name()) ;
+    p->attr.insert("COOKIE", QString("%1").arg(e->cookie.value()));
+    p->attr.insert("timeoutSnoozeCounter", QString("%1").arg(e->tsz_counter));
+    p->attr.insert("maximalTimeoutSnoozeCounter", QString("%1").arg(e->tsz_max));
     log_debug() ;
     p->buttons.resize(e->b_attr.size()) ;
     log_debug() ;

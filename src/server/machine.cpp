@@ -565,6 +565,8 @@ void machine_t::get_event_attributes(cookie_t c, QMap<QString,QVariant> &a)
   event_t *e = it->second ;
   a.insert("STATE", e->state->name()) ;
   a.insert("COOKIE", QString("%1").arg(c.value())) ;
+  a.insert("timeoutSnoozeCounter", QString("%1").arg(e->tsz_counter));
+  a.insert("maximalTimeoutSnoozeCounter", QString("%1").arg(e->tsz_max));
   for(attribute_t::const_iterator at=e->attr.txt.begin(); at!=e->attr.txt.end(); at++)
   {
     QString key = string_std_to_q(at->first) ;
@@ -582,6 +584,8 @@ void machine_t::get_attributes_by_cookie(uint cookie, QMap<QString,QString> &a)
   a.insert("STATE", e->state->name()) ;
   static QString decimal = "%1" ;
   a.insert("COOKIE", decimal.arg(cookie)) ;
+  a.insert("timeoutSnoozeCounter", QString("%1").arg(e->tsz_counter));
+  a.insert("maximalTimeoutSnoozeCounter", QString("%1").arg(e->tsz_max));
   for(attribute_t::const_iterator at=e->attr.txt.begin(); at!=e->attr.txt.end(); at++)
   {
     QString key = string_std_to_q(at->first) ;
