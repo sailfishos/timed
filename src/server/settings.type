@@ -23,6 +23,7 @@ settings_t =
   { name = "cellular_zone",  type=$record,       record="generic_zone_t" },
 
   { name = "default_snooze", type = $integer, value = 300 },
+  { name = "app_snooze",     type = $array|$record,  record = "key_int_t" },
   { name = "alarms",         type = $integer, value = 1 }
 ],
 
@@ -33,6 +34,12 @@ empty_t =
 manual_offset_t=
 [
   { name = "value",          type=$integer,     value=-1 }
+],
+
+key_int_t =
+[
+  { name = "key",            type = $bytes|$mandatory },
+  { name = "value",          type = $integer }
 ],
 
 // This is used by manual AND cellular zone. Will be changed to

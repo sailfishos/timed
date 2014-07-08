@@ -280,6 +280,27 @@ public slots:
     return timed->default_snooze(0) ;
   }
 
+  bool set_app_snooze(const QString &name, int value, const QDBusMessage &message)
+  {
+    Q_UNUSED(message);
+    log_notice("DBUS::com.nokia.time.set_app_snooze(name='%s',value=%d) by %s", name.toStdString().c_str(), value, PEER) ;
+    return timed->settings->set_app_snooze(name.toStdString(), value)==value ;
+  }
+
+  int get_app_snooze(const QString &name, const QDBusMessage &message)
+  {
+    Q_UNUSED(message);
+    log_notice("DBUS::com.nokia.time.get_default_snooze(name='%s') by %s", name.toStdString().c_str(), PEER) ;
+    return timed->settings->get_app_snooze(name.toStdString()) ;
+  }
+
+  void remove_app_snooze(const QString &name, const QDBusMessage &message)
+  {
+    Q_UNUSED(message);
+    log_notice("DBUS::com.nokia.time.remove_app_snooze(name='%s') by %s", name.toStdString().c_str(), PEER) ;
+    timed->settings->remove_app_snooze(name.toStdString()) ;
+  }
+
   void halt(const QString &what, const QDBusMessage &message)
   {
     Q_UNUSED(message);

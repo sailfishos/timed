@@ -50,8 +50,8 @@ struct source_t
   virtual ~source_t() { } ;
   virtual const char* name() const = 0 ;
   virtual bool available() const = 0 ;
-  virtual void load(const iodata::record *) ;
-  virtual iodata::record *save() const ;
+  virtual void load(const iodata::item *) ;
+  virtual iodata::item *save() const ;
 } ;
 
 struct utc_source_t : public source_t
@@ -106,8 +106,8 @@ struct manual_offset_t : public offset_source_t
 {
   virtual ~manual_offset_t() { }
   const char* name() const { return "manual_offset" ; }
-  void load(const iodata::record *) ;
-  iodata::record *save() const ;
+  void load(const iodata::item *) ;
+  iodata::item *save() const ;
 } ;
 
 struct nitz_offset_t : public offset_source_t
@@ -122,8 +122,8 @@ struct zone_source_t : public source_t
   virtual ~zone_source_t() { }
   virtual string zone() const { return value ; }
   bool available() const { return !value.empty() ; }
-  void load(const iodata::record *) ;
-  iodata::record *save() const ;
+  void load(const iodata::item *) ;
+  iodata::item *save() const ;
 } ;
 
 struct manual_zone_t : public zone_source_t
@@ -137,9 +137,25 @@ struct cellular_zone_t : public zone_source_t
   virtual ~cellular_zone_t() { }
   suggestion_t suggestions ;
   const char *name() const { return "cellular_zone" ; }
-  // void load(const iodata::record *) ;
-  // iodata::record *save() const ;
 } ;
+
+struct key_int_t : public source_t
+{
+  map<string,int> m ;
+  typedef map<string,int>::iterator iterator ;
+  typedef map<string,int>::const_iterator const_iterator ;
+  virtual ~key_int_t() { }
+  int get(const string &key, int default_value=0) const ;
+  bool available() const { return !m.empty(); }
+  iodata::item *save() const ;
+  void load(const iodata::item *) ;
+} ;
+
+struct app_snooze_t : public key_int_t
+{
+  virtual ~app_snooze_t() { }
+  const char *name() const { return "app_snooze" ; }
+};
 
 #if 0
 // TODO: remove this?
@@ -170,6 +186,8 @@ struct customization_settings
 
 struct source_settings : public QObject
 {
+  static const int min_snooze = 30 ;
+
   source_settings(Timed *owner) ;
   virtual ~source_settings() ;
   Timed *o ;
@@ -178,6 +196,7 @@ struct source_settings : public QObject
   cellular_zone_t *cellular_zone ;
   offset_source_t *manual_offset, *nitz_offset ;
   utc_source_t *manual_utc, *nitz_utc, *gps_utc, *ntp_utc ;
+  key_int_t *app_snooze ;
 
   bool time_nitz, local_cellular, auto_dst ;
   bool format_24 ;
@@ -186,6 +205,11 @@ struct source_settings : public QObject
 
   int default_snooze() const ;
   int default_snooze(int new_value) ;
+
+  int get_app_snooze(const string &app) ;
+  int get_app_snooze(const string &app, int default_value) ;
+  int set_app_snooze(const string &app, int value) ;
+  void remove_app_snooze(const string &app) ;
 
   int offset() const ;
   string zone() const ;

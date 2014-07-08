@@ -42,12 +42,12 @@
 
 #define LOCALTIMELINK "/var/lib/timed/localtime"
 
-void source_t::load(const iodata::record *)
+void source_t::load(const iodata::item *)
 {
   // empty, do nothing
 }
 
-iodata::record *source_t::save() const
+iodata::item *source_t::save() const
 {
   return new iodata::record ;
 }
@@ -67,28 +67,57 @@ nanotime_t nitz_utc_t::value_at_zero() const
   return value ;
 }
 
-void manual_offset_t::load(const iodata::record *r)
+void manual_offset_t::load(const iodata::item *r)
 {
   value = r->get("value")->value() ;
 }
 
-iodata::record *manual_offset_t::save() const
+iodata::item *manual_offset_t::save() const
 {
   iodata::record *r = new iodata::record ;
   r->add("value", value) ;
   return r ;
 }
 
-void zone_source_t::load(const iodata::record *r)
+void zone_source_t::load(const iodata::item *r)
 {
   value = r->get("value")->str() ;
 }
 
-iodata::record *zone_source_t::save() const
+iodata::item *zone_source_t::save() const
 {
   iodata::record *r = new iodata::record ;
   r->add("value", value) ;
   return r ;
+}
+
+int key_int_t::get(const string &key, int default_value) const
+{
+  const_iterator it=m.find(key) ;
+  return it==m.end() ? default_value : it->second ;
+}
+
+iodata::item *key_int_t::save() const
+{
+    iodata::array *a = new iodata::array ;
+    for(const_iterator it=m.begin(); it!=m.end(); ++it)
+    {
+      iodata::record *r = new iodata::record ;
+      r->add("key", new iodata::bytes(it->first)) ;
+      r->add("value", it->second) ;
+      a->add(r) ;
+    }
+    return a ;
+}
+
+void key_int_t::load(const iodata::item *a)
+{
+    m.clear();
+    for(unsigned i=0; i<a->size(); ++i)
+    {
+      const iodata::item *r = a->get(i) ;
+      m[r->get("key")->str()]=r->get("value")->value() ;
+    }
 }
 
 source_settings::source_settings(Timed *owner) : QObject(owner)
@@ -111,6 +140,7 @@ source_settings::source_settings(Timed *owner) : QObject(owner)
   _creat(nitz_offset) ;
   _creat(manual_zone) ;
   _creat(cellular_zone) ;
+  _creat(app_snooze) ;
 #undef _creat // spell it without 'e' ;-)
 }
 
@@ -127,12 +157,38 @@ int source_settings::default_snooze() const
 
 int source_settings::default_snooze(int new_value)
 {
-  if(30 <= new_value) // TODO: make it configurierable?
+  if(min_snooze <= new_value)
   {
     default_snooze_value = new_value ;
     o->save_settings() ;
   }
   return default_snooze_value ;
+}
+
+int source_settings::get_app_snooze(const string &app)
+{
+  return get_app_snooze(app, default_snooze_value) ;
+}
+
+int source_settings::get_app_snooze(const string &app, int default_value)
+{
+  return app.empty() ? default_value : app_snooze->get(app, default_value) ;
+}
+
+int source_settings::set_app_snooze(const string &app, int value)
+{
+  if(min_snooze <= value && !app.empty() && app_snooze->get(app) != value)
+  {
+    app_snooze->m[app] = value ;
+    o->save_settings() ;
+  }
+  return get_app_snooze(app) ;
+}
+
+void source_settings::remove_app_snooze(const string &app)
+{
+  if(app_snooze->m.erase(app)>0)
+    o->save_settings() ;
 }
 
 void source_settings::load(const iodata::record *r, const string &default_tz)
@@ -150,7 +206,7 @@ void source_settings::load(const iodata::record *r, const string &default_tz)
   for(map<string,source_t*>::iterator it=src.begin(); it!=src.end(); ++it)
   {
     log_debug("it: '%s'", it->first.c_str()) ;
-    it->second->load(r->get(it->first)->rec()) ;
+    it->second->load(r->get(it->first)) ;
     if (zone_source_t *z = dynamic_cast<zone_source_t*> (it->second))
     {
       if (z->value == "[unknown]")
