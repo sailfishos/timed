@@ -117,7 +117,7 @@ void kernel_notification_t::ready_to_read(int fd)
     // the operators in nanotime_t do various adjustments to the values stored internally,
     // whereas the getters like nanotime_t::sec() do not.
     if (jump <= nanotime_t(-2) || jump >= nanotime_t(2)) {
-      log_debug("system time change > 0 secs (%i), emitting system_time_changed");
+      log_debug("system time change > 0 secs (%i), emitting system_time_changed", jump.s);
       emit system_time_changed(jump) ;
     }
     start() ;
