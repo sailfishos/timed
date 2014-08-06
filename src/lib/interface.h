@@ -105,6 +105,9 @@ namespace Maemo
       qtdbus_method(alarms_enabled, (void)) ;
       qtdbus_method(set_default_snooze, (int value), value) ;
       qtdbus_method(get_default_snooze, (void)) ;
+      qtdbus_method(set_app_snooze, (const QString &name, int value), name, value) ;
+      qtdbus_method(get_app_snooze, (const QString &name), name) ;
+      qtdbus_method(remove_app_snooze, (const QString &name), name) ;
       // -- to be called by voland -- //
       qtdbus_method(dialog_response, (uint32_t cookie, int button), cookie, button) ;
       // -- not documented stuff -- //

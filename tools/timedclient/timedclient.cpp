@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------------- *
- * Copyright (C) 2013 Jolla Ltd.
+ * Copyright (C) 2013-2014 Jolla Ltd.
  * Contact: Simo Piiroinen <simo.piiroinen@jollamobile.com>
  * License: LGPLv2
  * ------------------------------------------------------------------------- */
@@ -1069,6 +1069,44 @@ static void do_get_snooze(void)
   }
 }
 
+/** Handle option: --set-app-snooze=<app:secs> */
+static void do_set_app_snooze(char *args)
+{
+  char* sep = strchr(args, ':');
+  if (!sep)
+  {
+    qWarning() << "Invalid parameter";
+  }
+  else
+  {
+    int snooze = parse_int(sep+1);
+    QString app(QLatin1String(args, sep-args));
+    QDBusReply<void> reply = timed_dbus.set_app_snooze_sync(app, snooze);
+    if(! reply.isValid() )
+    {
+      qWarning() << "'set_app_snooze' call failed" << timed_dbus.lastError();
+    }
+    else
+    {
+      printf("%s snooze set to %d\n", app.toStdString().c_str(), snooze);
+    }
+  }
+}
+
+/** Handle option: --get-app-snooze=<app> */
+static void do_get_app_snooze(char *args)
+{
+  QDBusReply<int> reply = timed_dbus.get_app_snooze_sync(args);
+  if( !reply.isValid() )
+  {
+    qWarning() << "'get_app_snooze' call failed" << timed_dbus.lastError();
+  }
+  else
+  {
+    printf("%d\n", reply.value());
+  }
+}
+
 /** Handle option: --get-enabled */
 static void do_get_enabled(void)
 {
@@ -1446,6 +1484,8 @@ static const struct option OPT_L[] =
 
   {"set-snooze",     1, 0, 003}, // <secs>
   {"get-snooze",     0, 0, 004},
+  {"set-app-snooze", 1, 0, 006}, // <app:secs>
+  {"get-app-snooze", 1, 0, 007}, // <app>
   {"set-enabled",    1, 0, 001}, // <bool>
   {"get-enabled",    0, 0, 002},
   {"get-pid",        0, 0, 005},
@@ -1499,6 +1539,8 @@ static const char USAGE[] =
 "\n"
 "  --set-snooze=<secs>                 --  Set default snooze value\n"
 "  --get-snooze                        --  Query default snooze value\n"
+"  --set-app-snooze=<app:secs>         --  Set app specific snooze value\n"
+"  --get-app-snooze=<app>              --  Query app specific snooze value\n"
 "\n"
 "  --set-enabled=<bool>                --  Enable/Disable alarms\n"
 "  --get-enabled                       --  Query enabled status\n"
@@ -1597,7 +1639,7 @@ static const char USAGE[] =
 "  Simo Piiroinen <simo.piiroinen@jollamobile.com>\n"
 "\n"
 "COPYRIGHT \n"
-"  Copyright(C) 2013 Jolla Ltd.\n"
+"  Copyright(C) 2013-2014 Jolla Ltd.\n"
 "  This is free software; see the source for copying conditions.\n"
 ;
 
@@ -1635,6 +1677,8 @@ main(int argc, char **argv)
     case 003: do_set_snooze(optarg);     break;
     case 004: do_get_snooze();           break;
     case 005: do_get_pid();              break;
+    case 006: do_set_app_snooze(optarg); break;
+    case 007: do_get_app_snooze(optarg); break;
 
     default:
       fprintf(stderr, "?? getopt returned character code 0x%x ??\n", opt);

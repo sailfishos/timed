@@ -750,7 +750,11 @@ void state_button_t::enter(event_t *e)
 
   // handle special value, +1 means default snooze
   if(snooze_length==+1)
-    snooze_length = machine->timed->settings->default_snooze() ;
+  {
+    string app = e->attr("APPLICATION") ;
+    snooze_length = machine->timed->settings->get_app_snooze(app) ;
+    log_debug("app=%s, snooze=%d", app.c_str(), snooze_length) ;
+  }
 
   if(snooze_length > 0)
   {
