@@ -107,24 +107,6 @@ xml.path = $$(DESTDIR)/usr/share/contextkit/providers
 # typeinfo.files = queue.type config.type settings.type customization.type tzdata.type timed-cust-rc.type
 # typeinfo.path = $$(DESTDIR)/usr/share/timed/typeinfo
 
-backupconf.files = timedbackup.conf
-backupconf.path = $$(DESTDIR)/usr/share/backup-framework/applications
-
-backupscripts.files = timed-backup-script.sh timed-restore-script.sh
-backupscripts.path = $$(DESTDIR)/usr/share/backup-framework/scripts
-
-cud.files = timed-clear-device.sh
-cud.path = $$(DESTDIR)/etc/osso-cud-scripts
-
-rfs.files = timed-restore-original-settings.sh
-rfs.path = $$(DESTDIR)/etc/osso-rfs-scripts
-
-aegishelper.files = timed-aegis-session-helper
-aegishelper.path  = $$(DESTDIR)/usr/bin
-
-aegisfs.files = timed.aegisfs.conf
-aegisfs.path  = $$(DESTDIR)/etc/aegisfs.d
-
 equals(QT_MAJOR_VERSION, 4) {
     timedrc.files = timed.rc
     dbusconf.files = timed.conf

@@ -84,10 +84,6 @@ rm -rf %{buildroot}
 install -d %{buildroot}%{_libdir}/systemd/user/pre-user-session.target.wants/
 ln -s ../%{name}.service %{buildroot}%{_libdir}/systemd/user/pre-user-session.target.wants/%{name}.service
 
-# Missing executable flags.
-chmod 755 %{buildroot}%{_datadir}/backup-framework/scripts/timed-restore-script.sh
-chmod 755 %{buildroot}%{_oneshotdir}/setcaps-%{name}.sh
-
 # Timed changes time zone by linking /var/lib/timed/localtime to zones in /usr/share/zoneinfo.
 # Initial links are done in the post section
 install -d %{buildroot}/var/lib/timed
@@ -137,17 +133,10 @@ fi
 %defattr(-,root,root,-)
 %doc COPYING debian/changelog debian/copyright
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/%{name}.conf
-%config(noreplace) %{_sysconfdir}/aegisfs.d/timed.aegisfs.conf
 %config(noreplace) %{_sysconfdir}/%{name}.rc
-%{_sysconfdir}/osso-cud-scripts/timed-clear-device.sh
-%{_sysconfdir}/osso-rfs-scripts/timed-restore-original-settings.sh
 %{_bindir}/%{name}
-%{_bindir}/timed-aegis-session-helper
 %{_libdir}/lib%{name}.so.*
 %{_libdir}/libtimed-voland-qt5.so.*
-%{_datadir}/backup-framework/applications/timedbackup.conf
-%{_datadir}/backup-framework/scripts/timed-backup-script.sh
-%{_datadir}/backup-framework/scripts/timed-restore-script.sh
 %{_datadir}/contextkit/providers/com.nokia.time.context
 # %{_mandir}/man3/libtimed.3.gz
 # %{_mandir}/man3/libtimed-voland.3.gz
