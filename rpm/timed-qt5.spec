@@ -84,6 +84,9 @@ rm -rf %{buildroot}
 install -d %{buildroot}%{_libdir}/systemd/user/pre-user-session.target.wants/
 ln -s ../%{name}.service %{buildroot}%{_libdir}/systemd/user/pre-user-session.target.wants/%{name}.service
 
+# Missing executable flags.
+chmod 755 %{buildroot}%{_oneshotdir}/setcaps-%{name}.sh
+
 # Timed changes time zone by linking /var/lib/timed/localtime to zones in /usr/share/zoneinfo.
 # Initial links are done in the post section
 install -d %{buildroot}/var/lib/timed
