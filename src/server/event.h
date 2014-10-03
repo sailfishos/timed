@@ -27,6 +27,8 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <sys/types.h> 
+#include <unistd.h> 
 
 using namespace std ;
 

@@ -24,6 +24,9 @@
 #include "f.h"
 
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+
 #if F_CREDS_AEGIS_LIBCREDS
 #include <sys/creds.h>
 #endif // F_CREDS_AEGIS_LIBCREDS

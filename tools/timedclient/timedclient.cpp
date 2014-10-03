@@ -719,11 +719,11 @@ static void event_emit_buttons(CONST Maemo::Timed::Event &eve)
 
     printf("  Button%d:\n", i);
 
-    QMapIterator<QString, QString> i(button.attributes());
-    while( i.hasNext() )
+    QMapIterator<QString, QString> iter(button.attributes());
+    while( iter.hasNext() )
     {
-      i.next();
-      printf("    %s = '%s'\n", sz(i.key()), sz(i.value()));
+      iter.next();
+      printf("    %s = '%s'\n", sz(iter.key()), sz(iter.value()));
     }
 
     printf("    Snooze: %d\n", button.snooze());
@@ -739,11 +739,11 @@ static void event_emit_actions(CONST Maemo::Timed::Event &eve)
 
     printf("  Action%d:\n", i);
 
-    QMapIterator<QString, QString> i(act.attributes());
-    while( i.hasNext() )
+    QMapIterator<QString, QString> iter(act.attributes());
+    while( iter.hasNext() )
     {
-      i.next();
-      printf("    %s = '%s'\n", sz(i.key()), sz(i.value()));
+      iter.next();
+      printf("    %s = '%s'\n", sz(iter.key()), sz(iter.value()));
     }
 
     printf("    Flags:");
