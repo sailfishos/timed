@@ -1,4 +1,4 @@
 Name: libtimed-qt5
 Description: timed communication library
-Version: 2.91
+Version: 2.92
 Libs: -ltimed-qt5
