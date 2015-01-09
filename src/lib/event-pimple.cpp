@@ -1348,17 +1348,5 @@ const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::Event::Tr
 
 register_qtdbus_metatype(Maemo::Timed::Event::Triggers, 11);
 
-#if 0
-int Maemo::Timed::Event::check(QString *err, bool exc) const
-{
-  try
-  {
-  }
-  catch(const char *message)
-  {
-  }
-}
-#else
 int Maemo::Timed::Event::check(QString *, bool ) const { return 0 ; }
 // TODO: get rid of it
-#endif

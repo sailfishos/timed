@@ -80,22 +80,6 @@ signals:
 
 public slots:
 
-#if 0
-  bool session(const QString &mode, const QString &bus_address, const QDBusMessage &message)
-  {
-    log_notice("DBUS::com.nokia.time.session(mode='%s', bus='%s') by %s", mode.QC, bus_address.QC, PEER) ;
-    bool fail = mode!="ACTDEAD" and mode!="USER" ;
-    bool act_dead = mode=="ACTDEAD" ;
-    if (fail)
-    {
-      log_critical("unknown mode '%s'", mode.QC) ;
-      return false ;
-    }
-    timed->device_mode_reached(act_dead, bus_address.toStdString()) ;
-    return true ;
-  }
-#endif
-
   bool mode(const QString &mode, const QDBusMessage &message)
   {
     Q_UNUSED(message);
@@ -334,10 +318,6 @@ public slots:
   bool fake_nitz_signal(int mcc, int offset, int time, int dst)
   {
     log_notice("(fake_nitz_signal) mcc=%d offset=%d time=%d dst=%d", mcc, offset, time, dst) ;
-#if 0
-    cellular_handler::object()->fake_nitz_signal(mcc, offset, time, dst) ;
-    return true ; // TODO make above method returning bool (not void) and check parameters
-#endif
     QDateTime qdt = time_t_to_qdatetime((time_t)time) ;
     if (not qdt.isValid())
     {

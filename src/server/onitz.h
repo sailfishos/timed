@@ -47,53 +47,6 @@ using namespace std ;
 #include "misc.h"
 
 #include "cellular.h"
-#if 0
-struct cellular_info_t
-{
-  bool flag_offset, flag_time, flag_dst, flag_mcc, flag_mnc ;
-
-  nanotime_t time_at_zero_value, timestamp_value ;
-  int offset_value, dst_value ;
-  int mcc_value ;
-  string mnc_value ;
-
-  bool has_offset() const { return flag_offset ; }
-  bool has_time() const { return flag_time ; }
-  bool has_dst() const { return flag_dst ; }
-  bool has_mcc() const { return flag_mcc ; }
-  bool has_mnc() const { return flag_mnc ; }
-
-  nanotime_t timestamp() const { return timestamp_value ; }
-  int offset() const { log_assert(has_offset()) ; return offset_value ; }
-  nanotime_t time_at_zero() const { log_assert(has_time()) ; return time_at_zero_value ; }
-  int dst() const { log_assert(has_dst()) ; return dst_value ; }
-  int mcc() const { log_assert(has_mcc()) ; return mcc_value ; }
-  string mnc() const { log_assert(has_mnc()) ; return mnc_value ; }
-
-  cellular_info_t()
-  {
-    flag_offset = flag_time = flag_dst = flag_mcc = flag_mnc = false ;
-  } ;
-
-  string to_string() const
-  {
-    ostringstream os ;
-    os << str_printf("{ ts=%d.%09u", timestamp().sec(), timestamp().nano()) ;
-    if(has_mcc())
-      os << ", mcc=" << mcc() ;
-    if(has_mnc())
-      os << ", mnc='" << mnc() << "'" ;
-    if(has_offset())
-      os << ", offset=" << offset() ;
-    if(has_time())
-      os << ", time_at_zero=" << str_printf("%d.%09u", time_at_zero().sec(), time_at_zero().nano()) ;
-    if(has_dst())
-      os << ", dst=" << dst() ;
-    os << "}" ;
-    return os.str() ;
-  }
-} ;
-#endif
 
 struct cellular_handler : public QObject
 {
@@ -101,33 +54,15 @@ struct cellular_handler : public QObject
 private:
   static cellular_handler *static_object ;
   virtual ~cellular_handler() ;
-#if 0
-#if OFONO
-  NetworkTime *cnt;
-  NetworkOperator *cop;
-#endif
-#endif
   cellular_handler() ;
-#if 0
-  Q_INVOKABLE void emulate_operator_signal() ;
-#endif
 
 signals:
-#if 0
-  void cellular_data_received(const cellular_info_t &) ;
-#endif
 
 public:
   static cellular_handler *object() ;
   static void uninitialize() ;
   void fake_nitz_signal(int mcc, int offset, int time, int dst) ;
 public slots:
-#if 0
-#if OFONO
-  void new_nitz_signal(const NetworkTimeInfo &) ; // { log_assert(false, "to be implemented") ; }
-#endif
-  void new_operator(const QString &mnc, const QString &mcc) ;
-#endif
 } ;
 
 #endif

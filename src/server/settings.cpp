@@ -214,12 +214,6 @@ void source_settings::load(const iodata::record *r, const string &default_tz)
     }
     log_debug() ;
   }
-#if 0
-  postload_fix_manual_zone() ;
-  postload_fix_manual_offset() ;
-  if(check_target(etc_localtime()) != 0)
-    o->invoke_signal() ;
-#endif
 }
 
 iodata::record *source_settings::save() const
@@ -753,20 +747,3 @@ void source_settings::cellular_zone_slot(olson *tz, suggestion_t s, bool sure)
   }
   o->invoke_signal() ;
 }
-
-#if 0
-void source_settings::cellular_information(const cellular_info_t &ci)
-{
-  log_debug() ;
-
-  if(ci.has_time())
-  {
-    nitz_utc->value = ci.time_at_zero() ;
-    if(time_nitz) // we want to use nitz as time source
-    {
-      set_system_time(nitz_utc->value_at_zero()) ;
-      o->open_epoch() ;
-    }
-  }
-}
-#endif

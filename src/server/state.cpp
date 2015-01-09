@@ -48,25 +48,6 @@ void abstract_state_t::go_to(event_t *e)
   machine->request_state(e, this) ;
 }
 
-#if 0
-void abstract_state_t::enter(event_t *e)
-{
-  uint32_t cluster_before = e->flags & EventFlags::Cluster_Mask ;
-  uint32_t cluster_after = cluster_bits() ;
-  uint32_t off = cluster_before & ~cluster_after ;
-  uint32_t on = cluster_after & ~cluster_before ;
-  log_debug("[%d]->%s before=0x%08X after=0x%08X off=0x%08X on=0x%08X", e->cookie.value(), name(), cluster_before, cluster_after, off, on) ;
-  if (off)
-    for (uint32_t b; b = (off ^ (off-1)), b &= off ; off ^= b)
-      machine->clusters[b]->leave(e) ;
-
-  e->flags &= ~ EventFlags::Cluster_Mask ;
-  e->flags |= cluster_after ;
-  if (on)
-    for(uint32_t b; b = (on ^ (on-1)), b &= on ; on ^= b)
-      machine->clusters[b]->enter(e) ;
-}
-#else
 void abstract_state_t::enter(event_t *e)
 {
   uint32_t cluster_after = cluster_bits() ;
@@ -84,7 +65,6 @@ void abstract_state_t::enter(event_t *e)
         machine->clusters[b]->enter(e) ;
   }
 }
-#endif
 
 void abstract_io_state_t::enter(event_t *e)
 {
@@ -601,54 +581,6 @@ ticker_t state_recurred_t::apply_pattern(const broken_down_t &start, int wday, c
   return ticker_t() ;
 }
 
-#if 0 // here is the old pattern scheduling code
-
-ticker_t state_recurred_t::apply_pattern(broken_down_t &t, int wday, const recurrence_pattern_t *p)
-{
-  unsigned nxt_year = t.year + 1 ;
-  if(broken_down_t::YEARX <= nxt_year)
-    -- nxt_year ;
-  broken_down_t started = t ;
-  for(bool today_flag=true;  t.find_a_good_day(p, wday, today_flag, nxt_year) ; today_flag=false)
-  {
-    log_debug() ;
-    broken_down_t td = t ;
-    if(!today_flag)
-      td.hour = td.minute = 0 ;
-    while(td.find_a_good_minute(p))
-    {
-      struct tm tm ;
-      td.to_struct_tm(&tm) ;
-      log_debug("td=(%s)", td.str().c_str()) ;
-      log_debug("tm=%s", tm_str(&tm).c_str()) ;
-      time_t time = mktime(&tm) ;
-      log_debug("time=%d", (int)time) ;
-      if(time==time_t(-1))
-        continue ;
-      log_debug() ;
-      if(time <= machine->transition_started().value())
-      {
-        log_debug() ;
-        td.increment_min(1) ;
-        log_debug() ;
-        continue ;
-      }
-      log_debug() ;
-      if(!td.same_struct_tm(&tm))
-      {
-        td.increment_min(1) ;
-        continue ;
-      }
-      log_debug() ;
-      t = td ;
-      return ticker_t(time) ;
-    }
-  }
-  log_debug() ;
-  return ticker_t(0) ;
-}
-#endif
-
 void state_recurred_t::enter(event_t *e)
 {
   abstract_state_t::enter(e) ;
@@ -870,12 +802,6 @@ void state_dlg_cntr_t::request_voland()
     log_debug() ;
     Maemo::Timed::Voland::Reminder R(p) ;
     reminders.push_back(QVariant::fromValue(R)) ;
-#if 0 // GET RID OF THIS PIECE SOON !
-    log_debug() ;
-    Maemo::Timed::Voland::Reminder RR = R ;
-    ifc.open_async(RR); // fire and forget
-    log_debug() ;
-#endif
     log_debug() ;
   }
   log_debug() ;

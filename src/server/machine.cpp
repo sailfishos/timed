@@ -112,26 +112,6 @@ machine_t::machine_t(const Timed *daemon) : timed(daemon)
   state_aborted->set_action_mask(ActionFlags::State_Aborted) ;
   // states_failed->set_action_mask(ActionFlags::State_Failed) ;
 
-#if 0
-  log_debug() ;
-  io_state *queued = dynamic_cast<io_state*> (states["QUEUED"]) ;
-  log_assert(queued!=NULL) ;
-
-  gate_state *armed = dynamic_cast<gate_state*> (states["ARMED"]) ;
-  log_assert(armed!=NULL) ;
-  armed->open() ; // will be closed in some very special situations
-
-  log_debug() ;
-  gate_state *dlg_wait = dynamic_cast<gate_state*> (states["DLG_WAIT"]) ;
-  gate_state *dlg_requ = dynamic_cast<gate_state*> (states["DLG_REQU"]) ;
-  gate_state *dlg_user = dynamic_cast<gate_state*> (states["DLG_USER"]) ;
-  gate_state *dlg_cntr = dynamic_cast<gate_state*> (states["DLG_CNTR"]) ;
-  log_assert(dlg_wait!=NULL) ;
-  log_assert(dlg_requ!=NULL) ;
-  log_assert(dlg_user!=NULL) ;
-  log_assert(dlg_cntr!=NULL) ;
-#endif
-
   state_armed->open() ;
 
   QObject::connect(state_dlg_wait, SIGNAL(voland_needed()), this, SIGNAL(voland_needed())) ;
@@ -147,16 +127,6 @@ machine_t::machine_t(const Timed *daemon) : timed(daemon)
 
   QObject::connect(state_queued, SIGNAL(sleep()), state_dlg_cntr, SLOT(open()), Qt::QueuedConnection) ;
   QObject::connect(state_dlg_wait, SIGNAL(opened()), state_dlg_cntr, SLOT(open()), Qt::QueuedConnection) ;
-
-#if 0
-  log_debug() ;
-  filter_state *flt_conn = dynamic_cast<filter_state*> (states["FLT_CONN"]) ;
-  filter_state *flt_alrm = dynamic_cast<filter_state*> (states["FLT_ALRM"]) ;
-  filter_state *flt_user = dynamic_cast<filter_state*> (states["FLT_USER"]) ;
-  log_assert(flt_conn) ;
-  log_assert(flt_alrm) ;
-  log_assert(flt_user) ;
-#endif
 
   QObject::connect(state_flt_alrm, SIGNAL(closed(abstract_filter_state_t*)), state_queued, SLOT(filter_closed(abstract_filter_state_t*))) ;
   QObject::connect(state_flt_user, SIGNAL(closed(abstract_filter_state_t*)), state_queued, SLOT(filter_closed(abstract_filter_state_t*))) ;
@@ -417,25 +387,6 @@ void machine_t::request_state(event_t *e, abstract_state_t *st)
   // log_debug("done; transition_queue: %s; states: %s", s_transition_queue().c_str(), s_states().c_str()) ;
 }
 
-#if 0
-void machine_t::request_state(event_t *e, const char *state_name)
-{
-  request_state(e, string(state_name)) ;
-}
-
-void machine_t::request_state(event_t *e, const string &state_name)
-{
-  state *new_state = NULL ;
-  if(not state_name.empty())
-  {
-    map<string, state*>::iterator it = states.find(state_name) ;
-    log_assert(it!=states.end(), "Unknown state: '%s'", state_name.c_str()) ;
-    new_state = it->second ;
-  }
-  request_state(e, new_state) ;
-}
-#endif
-
 void machine_t::send_queue_context()
 {
   emit alarm_trigger(cluster_queue->alarm_triggers);
@@ -455,17 +406,11 @@ cookie_t machine_t::add_event(const Maemo::Timed::event_io_t *eio, bool process_
   // Using pointers instead of usual C++ references, just because a NULL-reference
   //   usually confuses people (though working just fine)
 
-#if 0
-  if (event_t *e = new event_t)
-  {
-    // #include "simple-event.c++"
-    #include "clock-ui-event.c++"
-#else
   if (event_t *e = event_t::from_dbus_iface(eio))
   {
     if (e->actions.size() > 0)
       e->client_creds = creds ? new credentials_t(*creds) : new credentials_t(*p_message) ;
-#endif
+
     register_event(e) ;
 
     if (process_queue)
@@ -510,14 +455,10 @@ void machine_t::add_events(const Maemo::Timed::event_list_io_t &lst, QList<QVari
   bool valid = false ;
   for(int i=0; i<lst.ee.size(); ++i)
   {
-#if 1
     bool need_credentials = lst.ee[i].actions.size() > 0 ;
     if (need_credentials and not creds)
       creds = new credentials_t(message) ;
     unsigned cookie = add_event(&lst.ee[i], false, creds, NULL).value() ;
-#else // make some testing here
-    unsigned cookie = add_event(&lst.ee[i], false, NULL  , &message).value() ;
-#endif
     res.push_back(cookie) ;
     if (cookie)
     {

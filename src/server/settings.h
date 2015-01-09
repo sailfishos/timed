@@ -157,33 +157,6 @@ struct app_snooze_t : public key_int_t
   const char *name() const { return "app_snooze" ; }
 };
 
-#if 0
-// TODO: remove this?
-struct customization_settings
-{
-  customization_settings() ;
-
-  bool net_time_enabled;
-  bool time_nitz;
-  bool format_24;
-  QString default_tz;
-  QString time_nitz_str;
-  QString format_24_str;
-  QMap<QString, QVariant> valueMap;
-
-  void load();
-  void load(const iodata::record *) ;
-  iodata::record* save();
-
-  QMap<QString, QVariant> get_values();
-
-  static void check_customization(int ac, char** av);
-  static iodata::storage* get_storage();
-  static QByteArray get_hash();
-
-};
-#endif
-
 struct source_settings : public QObject
 {
   static const int min_snooze = 30 ;
@@ -237,9 +210,6 @@ struct source_settings : public QObject
   void postload_fix_manual_offset() ;
   void process_kernel_notification(const nanotime_t &jump_forwards) ;
 
-#if 0
-  void cellular_information(const cellular_info_t &ci) ;
-#endif
   Q_OBJECT ;
 public Q_SLOTS:
   void cellular_time_slot(const cellular_time_t &T) ;

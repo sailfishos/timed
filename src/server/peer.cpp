@@ -32,23 +32,6 @@
 #include "misc.h"
 #include "peer.h"
 
-#if 0
-pid_t peer::pid_by_dbus_message(const QDBusMessage &message)
-{
-  QString sender = message.service() ;
-  uint32_t owner_id = get_name_owner_from_dbus_sync(Maemo::Timed::bus(), sender) ;
-
-  if (owner_id == ~0u)
-  {
-    log_warning("can't get owner (pid) of the caller, already terminated?") ;
-    return -1 ;
-  }
-
-  pid_t pid = owner_id ;
-  return pid ;
-}
-#endif
-
 static string cmdline_by_pid(pid_t pid)
 {
   const int max_len = 1024 ;
@@ -67,17 +50,6 @@ static string cmdline_by_pid(pid_t pid)
   }
   return (string) buf ;
 }
-
-#if 0
-string peer::info_by_dbus_message(const QDBusMessage &message)
-{
-  pid_t pid = peer::pid_by_dbus_message(message) ;
-  ostringstream os ;
-  os << "{cmd='" << cmdline_by_pid(pid) << "', pid=" << pid << ", cred=" ;
-  os << credentials_t::from_given_process(pid).str() << "}" ;
-  return os.str() ;
-}
-#endif
 
 peer_t::peer_t(bool mode, QObject *parent) :
   QObject(parent)

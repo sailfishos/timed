@@ -53,12 +53,4 @@ private Q_SLOTS:
   void reply_slot(QDBusPendingCallWatcher *w) ;
 } ;
 
-#if 0
-namespace peer
-{
-  pid_t pid_by_dbus_message(const QDBusMessage &message) ;
-  std::string cmdline_by_pid(pid_t pid) ;
-  std::string info_by_dbus_message(const QDBusMessage &message) ;
-}
-#endif
 #endif//MAEMO_TIMED_PEER_H

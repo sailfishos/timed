@@ -86,10 +86,6 @@ public:
   // inline const char *event_queue_type() { return  "/usr/share/timed/typeinfo/queue.type" ; }
 
 private:
-#if 0
-  bool act_dead_mode ;
-#endif
-
   bool scratchbox_mode ;
 
   bool format24_by_default ;
@@ -244,14 +240,7 @@ private Q_SLOTS:
   void set_alarm_present(bool present);
   void set_alarm_trigger(const QMap<QString, QVariant> &triggers);
 public:
-#if 0
-  void device_mode_reached(bool act_dead, const std::string &dbus_session) ;
-#endif
   void device_mode_reached(bool user_mode) ;
-#if 0
-  void nitz_notification(const cellular_info_t &) ;
-  void tz_by_oracle(olson *tz, tz_suggestions_t) ;
-#endif
 public Q_SLOTS:
   void check_dst() ;
 public:

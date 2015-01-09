@@ -210,13 +210,8 @@ void Timed::init_dbus_peer_info()
 void Timed::init_scratchbox_mode()
 {
 #if F_SCRATCHBOX
-#if 0
-  const char *path = getenv("PATH") ;
-  scratchbox_mode = path && strstr(path, "scratchbox") ; // XXX: more robust sb detection?
-#else
   const char *magic_path = "/targets/links/scratchbox.config" ;
   scratchbox_mode = access(magic_path, F_OK)==0 ;
-#endif
   log_info("%s" "SCRATCHBOX detected", scratchbox_mode ? "" : "no ") ;
 #else
   scratchbox_mode = false ;
@@ -228,43 +223,6 @@ void Timed::init_scratchbox_mode()
 //      some sanity checks are performed.
 
 #if F_ACTING_DEAD
-// Ask DSME: are we in ACT_DEAD mode?
-// Returns:
-//          -1: nobody knows (for example: DSME not running)
-//           0: USER mode
-//           1: ACT_DEAD mode
-#if 0
-static int is_act_dead_by_dsme(string &dsme_mode)
-{
-  // QDBusInterface dsme(dsme_service, dsme_req_path, dsme_req_interface, QDBusConnection::systemBus()) ;
-  DsmeReqInterface dsme ;
-
-  if (not dsme.isValid())
-  {
-    log_error("DSME interface isn't valid") ;
-    return -1 ;
-  }
-
-  QDBusReply<QString> res = dsme.get_state_sync() ;
-
-  if (not res.isValid())
-  {
-    log_error("DSME returned invalid answer, last error: '%s'", QDBusConnection::systemBus().lastError().message().toStdString().c_str()) ;
-    return -1 ;
-  }
-
-  dsme_mode = res.value().toStdString() ;
-  log_notice("got a mode string from DSME: '%s'", dsme_mode.c_str()) ;
-
-  if (dsme_mode=="USER")
-    return 0 ;
-  else if (dsme_mode=="ACTDEAD")
-    return 1 ;
-  else
-    return -1 ;
-}
-#endif
-
 // Detecting run mode by /tmp/USER, /tmp/ACT_DEAD, /tmp/STATUS
 // Returns:
 //          -1: nobody knows (files are not in consistent state)
@@ -292,41 +250,6 @@ static int is_act_dead_by_status_files()
     return -1 ;
   }
 }
-
-// Make two stage detection, return only if successfully detected
-#if 0
-static bool init_act_dead_v2(bool use_status_files)
-{
-  string s_dsme_mode ;
-  int dsme_mode = is_act_dead_by_dsme(s_dsme_mode) ;
-  if (0<=dsme_mode) // got a valid answer: user or act_dead
-    return dsme_mode ;
-
-  if (use_status_files)
-  {
-    int sb_mode = is_act_dead_by_status_files() ;
-    if (0<=sb_mode)
-      return sb_mode ;
-  }
-
-  // oops, we don't know which mode we're running in; let's die
-
-  // how to die? it depends on dsme mode
-
-  log_critical("can't decide in which mode to run (dsme mode: '%s')", s_dsme_mode.c_str()) ;
-
-  if (s_dsme_mode=="SHUTDOWN" or s_dsme_mode=="REBOOT")
-  {
-    log_critical("go to sleep, waiting to be killed, bye...") ;
-    while(true) sleep(239239239) ;
-  }
-
-  log_critical("will be terminated in two seconds, bye...") ;
-
-  sleep(2) ;
-  log_abort("aborting") ;
-}
-#endif
 
 #endif
 
@@ -362,18 +285,6 @@ void Timed::init_device_mode()
   if (not res2)
     log_critical("can't connect to 'init_done' signal") ;
 }
-
-#if 0
-void Timed::init_act_dead()
-{
-#if F_ACTING_DEAD
-  act_dead_mode = init_act_dead_v2(scratchbox_mode) ;
-#else
-  act_dead_mode = false ;
-#endif
-  log_notice("running in %s mode", act_dead_mode ? "ACT_DEAD" : "USER") ;
-}
-#endif
 
 // * Reading configuration file
 // * Warning if no exists (which is okey)
@@ -479,11 +390,6 @@ void Timed::init_create_event_machine()
   log_debug("am=new machine done") ;
   q_pause = NULL ;
 
-  // The following call is commented out: device mode will be known later
-#if 0
-  am->device_mode_detected(not act_dead_mode) ; // TODO: avoid "not" here
-#endif
-
   short_save_threshold_timer = new simple_timer(threshold_period_short) ;
   long_save_threshold_timer = new simple_timer(threshold_period_long) ;
   QObject::connect(short_save_threshold_timer, SIGNAL(timeout()), this, SLOT(queue_threshold_timeout())) ;
@@ -500,26 +406,10 @@ void Timed::init_create_event_machine()
 
   // Forward signal from am to DBUS via com_nokia_time DBUS adaptor
   QObject::connect(am, SIGNAL(next_bootup_event(int,int)), this, SIGNAL(next_bootup_event(int,int)));
-#if 0
-  QDBusConnectionInterface *bus_ifc = Maemo::Timed::Voland::bus().interface() ;
-
-  voland_watcher = new QDBusServiceWatcher((QString)Maemo::Timed::Voland::service(), Maemo::Timed::Voland::bus()) ;
-  QObject::connect(voland_watcher, SIGNAL(serviceOwnerChanged(QString,QString,QString)), this, SLOT(system_owner_changed(QString,QString,QString))) ;
-#else
   voland_watcher = NULL ;
-#endif
   QObject::connect(this, SIGNAL(voland_registered()), am, SIGNAL(voland_registered())) ;
   QObject::connect(this, SIGNAL(voland_unregistered()), am, SIGNAL(voland_unregistered())) ;
 
-#if 0
-  bool voland_present = bus_ifc->isServiceRegistered(Maemo::Timed::Voland::service()) ;
-
-  if(voland_present)
-  {
-    log_info("Voland service %s detected", Maemo::Timed::Voland::service()) ;
-    emit voland_registered() ;
-  }
-#endif
   QObject::connect(am, SIGNAL(alarm_present(bool)), this, SLOT(set_alarm_present(bool)));
   QObject::connect(am, SIGNAL(alarm_trigger(QMap<QString,QVariant>)),
                    this, SLOT(set_alarm_trigger(QMap<QString,QVariant>)));
@@ -667,11 +557,6 @@ void Timed::init_start_event_machine()
 #if OFONO
 void Timed::init_cellular_services()
 {
-#if 0
-  nitz_object = cellular_handler::object() ;
-  int nitzrez = QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), this, SLOT(nitz_notification(const cellular_info_t &))) ;
-  log_debug("nitzrez=%d", nitzrez) ;
-#endif
   tzdata::init(tz_by_default) ;
   csd = new csd_t(this) ;
   tz_oracle = new tz_oracle_t ;
@@ -685,11 +570,6 @@ void Timed::init_cellular_services()
   log_assert(res2) ;
   log_assert(res3) ;
   log_assert(res4) ;
-
-#if 0
-  QObject::connect(tz_oracle, SIGNAL(tz_detected(olson *, tz_suggestions_t)), this, SLOT(tz_by_oracle(olson *, tz_suggestions_t))) ;
-  QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
-#endif
 }
 #endif // OFONO
 
@@ -901,10 +781,6 @@ void Timed::queue_threshold_timeout()
 
 void Timed::save_event_queue()
 {
-#if 0
-  log_warning("skipping writing queue file") ;
-  return ;
-#endif
   iodata::record *queue = am->save(false) ; // false = full queue, not backup
   int res = event_storage->save(queue) ;
 
@@ -1055,67 +931,9 @@ void Timed::unix_signal(int signo)
   }
 }
 
-#if 0
-void Timed::nitz_notification(const cellular_info_t &ci)
-{
-  log_debug() ;
-  log_info("nitz_notification: %s", ci.to_string().c_str()) ;
-  settings->cellular_information(ci) ;
-  log_debug() ;
-}
-#endif
-
-#if 0
-void Timed::tz_by_oracle(olson *tz, tz_suggestions_t s)
-{
-  log_debug("time zone '%s' magicaly detected", tz->name().c_str()) ;
-  settings->cellular_zone->value = tz->name() ;
-  settings->cellular_zone->suggestions = s ;
-  if(settings->local_cellular)
-  {
-    settings->fix_etc_localtime() ;
-    update_oracle_context(true) ;
-  }
-  invoke_signal() ;
-}
-#endif
-
 void Timed::update_oracle_context(bool s)
 {
   log_debug("update_oracle_context(%d): NOT IMPLEMENTED", s);
-#if 0
-  static ContextProvider::Property oracle_p("/com/nokia/time/time_zone/oracle") ;
-  static const char * const uncertain_key = "uncertain" ;
-  static const char * const primary_key = "primary_candidates" ;
-  static const char * const possible_key = "possible_candidates" ;
-
-  if(!set)
-  {
-    oracle_p.unsetValue() ;
-    return ;
-  }
-
-  QMap<QString, QVariant> map ;
-
-  tz_suggestions_t &s = settings->cellular_zone->suggestions ;
-
-  bool uncertain = s.gq == Uncertain ;
-  if(uncertain)
-  {
-    map.insert(uncertain_key, true) ;
-    QList<QVariant> primary_list ;
-    for(vector<olson*>::iterator it=s.zones.begin(); it!=s.zones.end(); ++it)
-      primary_list << string_std_to_q((*it)->name()) ;
-    map.insert(primary_key, primary_list) ;
-    (void) possible_key ; // not used variable
-  }
-  else
-  {
-    map.insert(uncertain_key, false) ;
-  }
-
-  oracle_p.setValue(map) ;
-#endif
 }
 
 void Timed::open_epoch()
@@ -1152,34 +970,9 @@ void Timed::dsme_mode_reported(const string &mode)
     log_warning("MODE: machine remain frozen (mode reported by dsme: '%s')", mode.c_str()) ;
     return ;
   }
-#if 0
-  if (const char *addr = getenv("DBUS_SESSION_BUS_ADDRESS"))
-    connect_to_session_bus(session_bus_address = addr) ;
-  start_voland_watcher() ;
-#endif
 }
 #endif
 
-#if 0
-void Timed::device_mode_reached(bool act_dead, const string &new_address)
-{
-  act_dead_mode = act_dead ;
-  log_debug("act_dead=%d, new_address='%s'", act_dead, new_address.c_str()) ;
-#if 0
-  bool res = setenv("DBUS_SESSION_BUS_ADDRESS", dbus_session.c_str(), true) ;
-  if (res<0)
-  {
-    log_error("can't set DBUS_SESSION_BUS_ADDRESS environment: %m") ;
-    QDBusConnection::disconnectFromBus(session_bus_name.c_str()) ;
-    return ;
-  }
-#endif
-  connect_to_session_bus(session_bus_address = new_address) ;
-  start_voland_watcher() ;
-  am->device_mode_detected(not act_dead) ;
-  am->unfreeze() ;
-}
-#endif
 void Timed::device_mode_reached(bool user_mode)
 {
   log_notice("MODE: running in %s mode", user_mode ? "USER" : "ACTDEAD") ;
@@ -1189,21 +982,7 @@ void Timed::device_mode_reached(bool user_mode)
 
 void Timed::session_reported(const QString &new_address)
 {
-#if 0
-  session_bus_address = new_address.toStdString() ;
-  log_notice("session bus address changed: '%s'", session_bus_address.c_str()) ;
-  if (session_bus_address.empty())
-  {
-    stop_voland_watcher() ;
-    QDBusConnection::disconnectFromBus(session_bus_name.c_str()) ;
-  }
-  else
-  {
-    start_voland_watcher() ;
-  }
-#else
   (void)new_address ;
-#endif
 }
 
 void Timed::harmattan_desktop_visible()
