@@ -1,4 +1,4 @@
 Name: libtimed
 Description: timed communication library
-Version: 2.92
+Version: 2.93
 Libs: -ltimed
