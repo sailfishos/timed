@@ -23,6 +23,7 @@ BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  pkgconfig(Qt5Test)
 BuildRequires:  pkgconfig(dsme_dbus_if)
 BuildRequires:  pkgconfig(systemd)
+BuildRequires:  pkgconfig(statefs)
 BuildRequires:  libiodata-qt5-devel >= 0.19
 BuildRequires:  libxslt
 BuildRequires:  oneshot
