@@ -25,6 +25,7 @@
 #include <QObject>
 
 class QDBusServiceWatcher;
+class QDBusPendingCallWatcher;
 
 class NtpController : public QObject
 {
@@ -36,6 +37,7 @@ public:
 
 public slots:
     void serviceRegistered();
+    void propertiesReply(QDBusPendingCallWatcher *call);
 
 private:
     void setConnmanProperty(QString key, QString value);
