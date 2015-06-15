@@ -69,56 +69,15 @@
 #include <sstream>
 #include <iomanip>
 
-static void spam()
-{
-#if NO_SPAM
-  time_t now = time(NULL) ;
-  for(int i=0; i<12; ++i)
-  {
-    time_t then = now + i*30*24*60*60 ;
-    struct tm t ;
-    localtime_r(&then, &t) ;
-    log_debug("i=%d, time:%ld, t.tm_gmtoff=%ld", i, then, t.tm_gmtoff) ;
-  }
-#endif
-#if NO_SPAM
-  qlonglong A=1111, B=2222 ;
-  QString str = "bebe " ;
-  str += QString(" timestamp: %1/%2").arg(A).arg(B) ;
-  log_debug("%s", str.toStdString().c_str()) ;
-#endif
-#if NO_SPAM
-  log_info("AA") ;
-  for(nanotime_t x(-2,0); x.sec()<3; x+=nanotime_t(0,100000000))
-  {
-    QString res ;
-    QTextStream os(&res) ;
-    os << x ;
-    log_info("%s=%ld", string_q_to_std(res).c_str(), x.to_time_t()) ;
-  }
-  log_info("BB") ;
-#endif
-}
-
 Timed::Timed(int ac, char **av) :
   QCoreApplication(ac, av),
   peer(NULL)
-//  session_bus_name("timed_not_connected"),
-//  session_bus_address("invalid_address")
 {
-  spam() ;
   halted = "" ; // XXX: remove it, as we don't want to halt anymore
   first_boot_date_adjusted = false;
   log_debug() ;
 
-  init_scratchbox_mode() ;
-  log_debug() ;
-
   init_unix_signal_handler() ;
-  log_debug() ;
-
-  // init_act_dead() ;
-  // init_dsme_mode() ;
   log_debug() ;
 
   init_configuration() ;
@@ -206,53 +165,6 @@ void Timed::init_dbus_peer_info()
   peer =  new peer_t(true) ;
 }
 
-// * Condition "running inside of scratchbox" is detected
-void Timed::init_scratchbox_mode()
-{
-#if F_SCRATCHBOX
-  const char *magic_path = "/targets/links/scratchbox.config" ;
-  scratchbox_mode = access(magic_path, F_OK)==0 ;
-  log_info("%s" "SCRATCHBOX detected", scratchbox_mode ? "" : "no ") ;
-#else
-  scratchbox_mode = false ;
-#endif
-}
-
-// * Condition "running in ACT DEAD mode" is detected.
-// * When running on Harmattan device (not scratchbox!):
-//      some sanity checks are performed.
-
-#if F_ACTING_DEAD
-// Detecting run mode by /tmp/USER, /tmp/ACT_DEAD, /tmp/STATUS
-// Returns:
-//          -1: nobody knows (files are not in consistent state)
-//           0: USER mode
-//           1: ACT_DEAD mode
-static int is_act_dead_by_status_files()
-{
-  bool tmp_act_dead = access("/tmp/ACT_DEAD", F_OK) == 0 ;
-  bool tmp_user = access("/tmp/USER", F_OK) == 0 ;
-  string tmp_state ;
-  iodata::storage::read_file_to_string("/tmp/STATE", tmp_state) ;
-  bool mode_is_user = tmp_user and not tmp_act_dead and tmp_state == "USER\n" ;
-  bool mode_is_act_dead = not tmp_user and tmp_act_dead and tmp_state == "ACT_DEAD\n" ;
-
-  if (mode_is_user)
-    return 0 ;
-  else if (mode_is_act_dead)
-    return 1 ;
-  else
-  {
-    log_error("inconsistent device mode indication, more info follows") ;
-    log_error("/tmp/USER %s exist", tmp_user ? "does" : "doesn't") ;
-    log_error("/tmp/ACT_DEAD %s exist", tmp_act_dead ? "does" : "doesn't") ;
-    log_error("content of /tmp/STATE: '%s'", tmp_state.c_str()) ;
-    return -1 ;
-  }
-}
-
-#endif
-
 void Timed::init_device_mode()
 {
   current_mode = "(unknown)" ;
@@ -260,17 +172,6 @@ void Timed::init_device_mode()
   dsme_mode_handler = new dsme_mode_t(this);
   QObject::connect(dsme_mode_handler, SIGNAL(mode_is_changing()), this, SLOT(dsme_mode_is_changing())) ;
   QObject::connect(dsme_mode_handler, SIGNAL(mode_reported(const string &)), this, SLOT(dsme_mode_reported(const string &))) ;
-#if F_ACTING_DEAD
-  if (scratchbox_mode)
-  {
-    int is_act_dead = is_act_dead_by_status_files() ;
-    bool user_mode = is_act_dead==0, mode_known = is_act_dead==0 or is_act_dead==1 ;
-    if (not mode_known)
-      log_abort("can't detect running mode") ;
-    device_mode_reached(user_mode) ;
-  }
-  else
-#endif
   {
     dsme_mode_handler->init_request() ;
   }

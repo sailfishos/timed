@@ -104,9 +104,6 @@ target.path = $$(DESTDIR)/usr/bin
 xml.files  = com.nokia.time.context
 xml.path = $$(DESTDIR)/usr/share/contextkit/providers
 
-# typeinfo.files = queue.type config.type settings.type customization.type tzdata.type timed-cust-rc.type
-# typeinfo.path = $$(DESTDIR)/usr/share/timed/typeinfo
-
 equals(QT_MAJOR_VERSION, 4) {
     timedrc.files = timed.rc
     dbusconf.files = timed.conf
@@ -127,21 +124,7 @@ dbusconf.path  = $$(DESTDIR)/etc/dbus-1/system.d
 systemd.path = $$(DESTDIR)/usr/lib/systemd/user
 oneshot.path = $$(DESTDIR)/usr/lib/oneshot.d
 
-INSTALLS += target xml backupconf backupscripts cud rfs aegishelper aegisfs timedrc dbusconf systemd oneshot
-
-CONFIG(MEEGO) \
-{
-  message("MEEGO flag is set")
-  DEFINES += __MEEGO__
-} \
-else \
-{
-  message("MEEGO flag is not set, assuming HARMATTAN")
-  CONFIG  += cellular-qt
-  LIBS    += -lcreds
-  DEFINES += __HARMATTAN__
-  QMAKE_CXXFLAGS  += -Wall -Wno-psabi
-}
+INSTALLS += target xml timedrc dbusconf systemd oneshot
 
 QMAKE_CXXFLAGS  += -Wall
 

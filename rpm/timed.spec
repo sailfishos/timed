@@ -69,7 +69,7 @@ mkdir -p src/h/timed
 ln -sf ../../lib/qmacro.h src/h/timed
 
 %qmake  \
-    -recursive "CONFIG += MEEGO dsme_dbus_if"
+    -recursive "CONFIG += dsme_dbus_if"
 
 make %{?jobs:-j%jobs}
 

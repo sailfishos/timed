@@ -86,8 +86,6 @@ public:
   // inline const char *event_queue_type() { return  "/usr/share/timed/typeinfo/queue.type" ; }
 
 private:
-  bool scratchbox_mode ;
-
   bool format24_by_default ;
   bool auto_time_by_default ;
   bool guess_tz_by_default ;
@@ -107,8 +105,6 @@ private:
   // init_* methods, to be called by constructor only
   void init_unix_signal_handler() ;
   void init_dbus_peer_info() ;
-  void init_scratchbox_mode() ;
-  void init_act_dead() ;
   void init_configuration() ;
   void init_customization() ;
   void init_read_settings() ;
