@@ -42,8 +42,8 @@
 # define log_debug(FMT,ARGS...) \
     do { \
         printf("DEBUG: %s:%d: %s", __FILE__, __LINE__, Q_FUNC_INFO); \
-        if (strlen(""FMT) > 0) \
-            printf(":\n- "FMT"\n", ## ARGS); \
+        if (strlen("" FMT) > 0) \
+            printf(":\n- " FMT "\n", ## ARGS); \
         else \
             printf("\n"); \
     } while(0)
@@ -52,31 +52,31 @@
 #endif
 
 #if LOG_LEVEL >= LOG_INFO
-# define log_info(FMT,ARGS...) do { fprintf(stderr, "INFO: "FMT"\n", ## ARGS); } while(0)
+# define log_info(FMT,ARGS...) do { fprintf(stderr, "INFO: " FMT "\n", ## ARGS); } while(0)
 #else
 # define log_info(FMT,ARGS...) do { } while(0)
 #endif
 
 #if LOG_LEVEL >= LOG_INFO
-# define log_notice(FMT,ARGS...) do { fprintf(stderr, "NOTICE: "FMT"\n", ## ARGS); } while(0)
+# define log_notice(FMT,ARGS...) do { fprintf(stderr, "NOTICE: " FMT "\n", ## ARGS); } while(0)
 #else
 # define log_notice(FMT,ARGS...) do { } while(0)
 #endif
 
 #if LOG_LEVEL >= LOG_WARNING
-# define log_warning(FMT,ARGS...) do { fprintf(stderr, "WARNING: "FMT"\n", ## ARGS); } while(0)
+# define log_warning(FMT,ARGS...) do { fprintf(stderr, "WARNING: " FMT "\n", ## ARGS); } while(0)
 #else
 # define log_warning(FMT,ARGS...) do { } while(0)
 #endif
 
 #if LOG_LEVEL >= LOG_ERROR
-# define log_error(FMT,ARGS...) do { fprintf(stderr, "ERROR: "FMT"\n", ## ARGS); } while(0)
+# define log_error(FMT,ARGS...) do { fprintf(stderr, "ERROR: " FMT "\n", ## ARGS); } while(0)
 #else
 # define log_error(FMT,ARGS...) do { } while(0)
 #endif
 
 #if LOG_LEVEL >= LOG_CRITICAL
-# define log_critical(FMT,ARGS...) do { fprintf(stderr, "CRITICAL: "FMT"\n", ## ARGS); } while(0)
+# define log_critical(FMT,ARGS...) do { fprintf(stderr, "CRITICAL: " FMT "\n", ## ARGS); } while(0)
 #else
 # define log_critical(FMT,ARGS...) do { } while(0)
 #endif
@@ -85,10 +85,10 @@
 # define log_assert(COND, ARGS...) \
     do { \
         if (!(COND)) \
-            fprintf(stderr, "ASSERT: "ARGS); \
+            fprintf(stderr, "ASSERT: " ARGS); \
         assert(COND); \
     } while(0)
-# define log_abort(FMT,ARGS...) do { fprintf(stderr, "ABORT: "FMT"\n", ## ARGS); assert(0); } while(0)
+# define log_abort(FMT,ARGS...) do { fprintf(stderr, "ABORT: " FMT "\n", ## ARGS); assert(0); } while(0)
 #else
 # define log_assert(COND, ARGS...) do { assert(COND); } while(0)
 # define log_abort(FMT,ARGS...) do { assert(0); } while(0)
