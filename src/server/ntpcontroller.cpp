@@ -21,11 +21,12 @@
 
 #include "ntpcontroller.h"
 
-#include <QDBusInterface>
-#include <QDBusReply>
-#include <QDBusVariant>
-#include <QDBusServiceWatcher>
+#include <QtDBus/QDBusInterface>
+#include <QtDBus/QDBusReply>
+#include <QtDBus/QDBusVariant>
+#include <QtDBus/QDBusServiceWatcher>
 #include <QtDBus/QDBusPendingCallWatcher>
+#include <QtDBus/QDBusConnectionInterface>
 
 #include "../common/log.h"
 
@@ -42,8 +43,8 @@ NtpController::NtpController(bool enable, QObject *parent) :
                                                this);
     connect(m_connmanWatcher, SIGNAL(serviceRegistered(QString)),
             this, SLOT(serviceRegistered()));
-    QDBusInterface connmanInterface(CONNMAN_SERVICE, "/",  CONNMAN_INTERFACE, QDBusConnection::systemBus());
-    if (connmanInterface.isValid())
+
+    if (QDBusConnection::systemBus().interface()->isServiceRegistered(CONNMAN_SERVICE))
         enableNtpTimeAdjustment(m_enable);
 }
 

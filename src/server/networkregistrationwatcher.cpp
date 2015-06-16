@@ -37,7 +37,7 @@ NetworkRegistrationWatcher::NetworkRegistrationWatcher(const QString path, QObje
                                          this, SLOT(onPropertyChanged(QString, QDBusVariant)));
 
     QObject::connect(this, SIGNAL(interfaceAvailableChanged(bool)),
-                     this, SLOT(getPropertiesAsync()));
+                     this, SLOT(getProperties()));
 }
 
 NetworkRegistrationWatcher::~NetworkRegistrationWatcher()
@@ -48,28 +48,6 @@ NetworkRegistrationWatcher::~NetworkRegistrationWatcher()
 }
 
 void NetworkRegistrationWatcher::getProperties()
-{
-    if (!interfaceAvailable())
-        return;
-
-    QDBusMessage request = QDBusMessage::createMethodCall(OfonoConstants::OFONO_SERVICE,
-                                                          objectPath(), interface(),
-                                                          "GetProperties");
-    QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(request);
-    if (reply.error().isValid()) {
-        log_error("DBus call to interface %s function GetProperties of path %s failed: %s",
-                  interface().toStdString().c_str(),
-                  objectPath().toStdString().c_str(),
-                  reply.error().message().toStdString().c_str());
-        return;
-    }
-
-    QVariantMap map = reply.value();
-    foreach (const QString &key, map.keys())
-        emit propertyChanged(objectPath(), key, map.value(key));
-}
-
-void NetworkRegistrationWatcher::getPropertiesAsync()
 {
     if (!interfaceAvailable())
         return;
@@ -86,10 +64,10 @@ void NetworkRegistrationWatcher::getPropertiesAsync()
     QDBusPendingCall async = dbusInterface.asyncCall("GetProperties");
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(async, this);
     QObject::connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                     this, SLOT(getPropertiesAsyncCallback(QDBusPendingCallWatcher*)));
+                     this, SLOT(getPropertiesCallback(QDBusPendingCallWatcher*)));
 }
 
-void NetworkRegistrationWatcher::getPropertiesAsyncCallback(QDBusPendingCallWatcher *watcher)
+void NetworkRegistrationWatcher::getPropertiesCallback(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
     if (reply.error().isValid()) {

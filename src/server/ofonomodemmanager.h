@@ -27,7 +27,8 @@
 #include <QStringList>
 #include <QVariant>
 
-class ModemWatcher;
+class QDBusServiceWatcher;
+class QDBusPendingCallWatcher;
 
 class OfonoModemManager : public QObject
 {
@@ -37,7 +38,7 @@ public:
     explicit OfonoModemManager(QObject *parent = 0);
     ~OfonoModemManager();
 
-    QStringList getModems();
+    QStringList getModemList();
 
 signals:
     void modemAdded(QString objectPath);
@@ -46,10 +47,14 @@ signals:
 private slots:
     void onModemAdded(QDBusObjectPath objectPath, QVariantMap map);
     void onModemRemoved(QDBusObjectPath objectPath);
+    void serviceRegistered();
+    void getModemsReply(QDBusPendingCallWatcher *call);
 
 private:
     QStringList m_modemList;
+    QDBusServiceWatcher *m_ofonoWatcher;
     bool addModem(QString objectPath);
+    void getModems();
 };
 
 #endif // OFONOMODEMMANAGER_H

@@ -19,18 +19,19 @@
 **                                                                        **
 ***************************************************************************/
 
-#include <QDBusArgument>
-#include <QDBusInterface>
-#include <QDBusConnection>
-#include <QDBusMetaType>
-#include <QDBusReply>
+#include <QtDBus/QDBusArgument>
+#include <QtDBus/QDBusInterface>
+#include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusMetaType>
+#include <QtDBus/QDBusReply>
+#include <QtDBus/QDBusServiceWatcher>
+#include <QtDBus/QDBusConnectionInterface>
 #include <QList>
 
 #include "../common/log.h"
 
 #include "ofonomodemmanager.h"
 #include "ofonoconstants.h"
-#include "modemwatcher.h"
 
 struct OfonoModemProperties
 {
@@ -74,22 +75,15 @@ OfonoModemManager::OfonoModemManager(QObject *parent) :
                                          OfonoConstants::OFONO_MANAGER_INTERFACE, "ModemRemoved",
                                          this, SLOT(onModemRemoved(QDBusObjectPath)));
 
-    QDBusMessage request = QDBusMessage::createMethodCall(OfonoConstants::OFONO_SERVICE,
-                                                          OfonoConstants::OFONO_MANAGER_PATH,
-                                                          OfonoConstants::OFONO_MANAGER_INTERFACE,
-                                                          "GetModems");
+    m_ofonoWatcher = new QDBusServiceWatcher(OfonoConstants::OFONO_SERVICE,
+                                             QDBusConnection::systemBus(),
+                                             QDBusServiceWatcher::WatchForRegistration,
+                                             this);
+    connect(m_ofonoWatcher, SIGNAL(serviceRegistered(QString)),
+            this, SLOT(serviceRegistered()));
 
-    QDBusReply<OfonoModemList> reply = QDBusConnection::systemBus().call(request);
-    if (reply.error().isValid()) {
-        log_error("DBus call to interface %s function GetModems of path %s failed: %s",
-                  OfonoConstants::OFONO_MANAGER_INTERFACE,
-                  OfonoConstants::OFONO_MANAGER_PATH,
-                  reply.error().message().toStdString().c_str());
-    } else {
-        OfonoModemList list = reply;
-        for (int i = 0; i < list.count(); i++)
-            addModem(list.at(i).name.path());
-    }
+    if (QDBusConnection::systemBus().interface()->isServiceRegistered(OfonoConstants::OFONO_SERVICE))
+        getModems();
 }
 
 OfonoModemManager::~OfonoModemManager()
@@ -113,7 +107,40 @@ bool OfonoModemManager::addModem(QString objectPath)
     return false;
 }
 
-QStringList OfonoModemManager::getModems()
+void OfonoModemManager::serviceRegistered()
+{
+    getModems();
+}
+
+void OfonoModemManager::getModems()
+{
+    QDBusMessage request = QDBusMessage::createMethodCall(OfonoConstants::OFONO_SERVICE,
+                                                          OfonoConstants::OFONO_MANAGER_PATH,
+                                                          OfonoConstants::OFONO_MANAGER_INTERFACE,
+                                                          "GetModems");
+    QDBusPendingReply<OfonoModemList> reply = QDBusConnection::systemBus().asyncCall(request);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+    QObject::connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                     this, SLOT(getModemsReply(QDBusPendingCallWatcher*)));
+}
+
+void OfonoModemManager::getModemsReply(QDBusPendingCallWatcher *call)
+{
+    QDBusReply<OfonoModemList> reply = *call;
+    call->deleteLater();
+    if (reply.error().isValid()) {
+        log_error("DBus call to interface %s function GetModems of path %s failed: %s",
+                  OfonoConstants::OFONO_MANAGER_INTERFACE,
+                  OfonoConstants::OFONO_MANAGER_PATH,
+                  reply.error().message().toStdString().c_str());
+    } else {
+        OfonoModemList list = reply;
+        for (int i = 0; i < list.count(); i++)
+            onModemAdded(list.at(i).name, QVariantMap());
+    }
+}
+
+QStringList OfonoModemManager::getModemList()
 {
     return m_modemList;
 }
