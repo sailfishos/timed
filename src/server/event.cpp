@@ -917,12 +917,6 @@ iodata::record *event_t::save(bool for_backup)
   return r ;
 }
 
-bool event_t::compute_recurrence()
-{
-  log_assert(false, "obsolete function") ;
-  return false ;
-}
-
 namespace
 {
   struct singleton_t
