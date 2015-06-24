@@ -755,28 +755,6 @@ bool event_t::accrue_privileges(const action_t &a)
 {
   credentials_t creds = credentials_t::from_current_process() ;
 
-#if F_TOKENS_AS_CREDENTIALS
-  const cred_modifier_t *E = cred_modifier, *A = a.cred_modifier ;
-
-  // tokens_to_accrue1 := EVENT.add - ACTION.drop
-  set<string> tokens_to_accrue1 ;
-  if (E)
-    tokens_to_accrue1 = E->tokens_by_value(true) ;
-  if (E and A)
-    set_change<string> (tokens_to_accrue1, A->tokens_by_value(false), false) ;
-
-  // tokens_to_accrue2 := ACTION.add - EVENT.drop
-  set<string> tokens_to_accrue2 ;
-  if (A)
-    tokens_to_accrue2 = A->tokens_by_value(true) ;
-  if (A and E)
-    set_change<string> (tokens_to_accrue2, E->tokens_by_value(false), false) ;
-
-  // creds += (tokens_to_accrue 1+2)
-  set_change<string> (creds.tokens, tokens_to_accrue1, true) ;
-  set_change<string> (creds.tokens, tokens_to_accrue2, true) ;
-#endif // F_TOKENS_AS_CREDENTIALS
-
   string uid = find_action_attribute("USER", a, false) ;
   string gid = find_action_attribute("GROUP", a, false) ;
 
@@ -793,29 +771,7 @@ bool event_t::drop_privileges(const action_t &a)
   log_assert(client_creds!=NULL) ;
   credentials_t creds = *client_creds ;
 
-#if F_TOKENS_AS_CREDENTIALS
-  const cred_modifier_t *E = cred_modifier, *A = a.cred_modifier ;
-
-  // tokens_to_remove1 := EVENT.drop - ACTION.add
-  set<string> tokens_to_remove1 ;
-  if (E)
-    tokens_to_remove1 = E->tokens_by_value(false) ;
-  if (E and A)
-    set_change<string> (tokens_to_remove1, A->tokens_by_value(true), false) ;
-
-  // tokens_to_remove2 := ACTION.drop - EVENT.add
-  set<string> tokens_to_remove2 ;
-  if (A)
-    tokens_to_remove2 = A->tokens_by_value(false) ;
-  if (A and E)
-    set_change<string> (tokens_to_remove2, E->tokens_by_value(true), false) ;
-
-  // creds := client_creds - (tokens_to_remove 1+2)
-  set_change<string> (creds.tokens, tokens_to_remove1, false) ;
-  set_change<string> (creds.tokens, tokens_to_remove2, false) ;
-#else
   Q_UNUSED(a);
-#endif // F_TOKENS_AS_CREDENTIALS
 
   return creds.apply_and_compare() ;
 }

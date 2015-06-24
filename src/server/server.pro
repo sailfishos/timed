@@ -70,7 +70,7 @@ SOURCES += peer.cpp \
     ofonoconstants.cpp \
     ntpcontroller.cpp
 
-SOURCES += credentials.cpp aegis.cpp
+SOURCES += credentials.cpp
 HEADERS += credentials.h
 
 SOURCES += olson.cpp tz.cpp

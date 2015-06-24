@@ -24,6 +24,13 @@
 #ifndef TIMED_F_H
 #define TIMED_F_H
 
+#define F_CREDS_UID 1
+#define OFONO 1
+#define F_UID_AS_CREDENTIALS 1
+#define F_DBUS_INFO_AS_CREDENTIALS 1
+
+// Obsolete flags below
+/*
 #if __MEEGO__
 #  define F_CREDS_UID 1
 //#  define F_CREDS_NOBODY 1
@@ -58,5 +65,5 @@
 #if F_CREDS_AEGIS_LIBCREDS + F_CREDS_UID + F_CREDS_NOBODY != 1
 #  warning 'aegis_libcreds', 'uid' and 'nobody' credential features are mutualy exclusive
 #endif
-
+*/
 #endif//TIMED_F_H
