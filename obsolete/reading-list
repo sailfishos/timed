@@ -1,5 +1,0 @@
-ftp://munnari.oz.au/pub/oldtz/
-ftp://ftp.rfc-editor.org/in-notes/rfc3339.txt
-http://www.exit109.com/~ghealton/y2k/yrexamples.html
-
- printf( "time_t TheTime=%llu\n", (unsigned long long)TheTime );
