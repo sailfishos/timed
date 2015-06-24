@@ -135,7 +135,7 @@ fi
 
 %files -f timed.files
 %defattr(-,root,root,-)
-%doc COPYING debian/changelog debian/copyright
+%doc COPYING copyright
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/%{name}.conf
 %config(noreplace) %{_sysconfdir}/%{name}.rc
 %{_bindir}/%{name}
