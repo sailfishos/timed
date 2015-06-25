@@ -31,7 +31,6 @@
 #include "machine.h"
 #include "timed.h"
 #include "event.h"
-#include "f.h"
 
 using namespace Maemo::Timed ;
 

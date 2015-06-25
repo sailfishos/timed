@@ -27,7 +27,6 @@ using namespace std;
 
 #include <pcrecpp.h>
 
-#include "f.h"
 #include "cellular.h"
 #include "misc.h"
 #include "tzdata.h"

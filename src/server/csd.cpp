@@ -21,7 +21,6 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#include "f.h"
 
 #include "timed.h"
 

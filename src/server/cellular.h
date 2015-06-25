@@ -26,8 +26,6 @@
 
 #include <QString>
 
-#include "f.h"
-
 #if OFONO
 #include "networktime.h"
 #include "networkoperator.h"

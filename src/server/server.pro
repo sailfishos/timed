@@ -22,6 +22,10 @@ CONFIG(dsme_dbus_if) {
     DEFINES += HAVE_DSME
 }
 
+CONFIG(ofono) {
+    DEFINES += OFONO
+}
+
 HEADERS += peer.h \
     settings.h \
     csd.h \
@@ -42,7 +46,7 @@ HEADERS += peer.h \
     ofonomodemmanager.h \
     modemwatcher.h \
     ofonoconstants.h \
-    ntpcontroller.h
+    ntpcontroller.h \
 
 SOURCES += peer.cpp \
     tzdata.cpp \
