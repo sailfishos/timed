@@ -30,8 +30,9 @@ using namespace std ;
 
 #include <QTimer>
 
-#include "olson.h"
 #include "cellular.h"
+
+class olson;
 
 struct status_t
 {

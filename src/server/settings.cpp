@@ -38,6 +38,8 @@
 #include "timed.h"
 #include "settings.h"
 #include "misc.h"
+#include "olson.h"
+#include "notification.h"
 #include "../common/log.h"
 
 #define LOCALTIMELINK "/var/lib/timed/localtime"

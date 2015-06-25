@@ -42,19 +42,13 @@
 #endif
 
 #include "wrappers.h"
-#include "singleshot.h"
-#include "pinguin.h"
 #include "settings.h"
-#include "unix-signal.h"
-#include "olson.h"
 #include "machine.h"
 #include "tz.h"
-#include "csd.h"
 #include "event.h"
 #if HAVE_DSME
 #include "dsme-mode.h"
 #endif
-#include "notification.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 namespace statefs {
@@ -64,7 +58,14 @@ namespace statefs {
 }
 #endif
 
+class simple_timer;
+class pinguin_t;
+class UnixSignal;
+class kernel_notification_t;
 class NtpController;
+#if OFONO
+class csd_t;
+#endif
 
 struct Timed : public QCoreApplication
 {

@@ -57,11 +57,17 @@
 #include "settings.h"
 #include "tz.h"
 #include "tzdata.h"
-#include "csd.h"
 #include "notification.h"
 #include "time.h"
 #include "../common/log.h"
 #include "ntpcontroller.h"
+#include "olson.h"
+#include "singleshot.h"
+#include "pinguin.h"
+#include "unix-signal.h"
+#if OFONO
+#include "csd.h"
+#endif
 
 #include <string>
 #include <fstream>

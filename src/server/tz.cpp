@@ -24,6 +24,7 @@
 #include "tz.h"
 #include "tzdata.h"
 #include "misc.h"
+#include "olson.h"
 #include "../common/log.h"
 
 tz_oracle_t::tz_oracle_t()

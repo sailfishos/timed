@@ -21,15 +21,11 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#include "adaptor.h"
-#include "timed.h"
-#include "event.h"
 
+#include "timed.h"
+#include "unix-signal.h"
 #include "../common/log.h"
 
-#include "f.h"
-
-#include <QMetaType>
 int main(int ac, char **av)
 {
 
