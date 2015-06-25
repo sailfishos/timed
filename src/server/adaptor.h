@@ -42,6 +42,7 @@
 #include "misc.h"
 #include "csd.h"
 #include "credentials.h"
+#include "../common/log.h"
 
 #include "../lib/interface.h" // TODO: is Maemo::Timed::bus() the correct way?
 

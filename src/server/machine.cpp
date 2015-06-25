@@ -35,6 +35,7 @@
 #include "machine.h"
 #include "timed.h"
 #include "cluster.h"
+#include "misc.h"
 
 machine_t::machine_t(const Timed *daemon) : timed(daemon)
 {

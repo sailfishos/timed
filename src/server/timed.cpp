@@ -539,8 +539,6 @@ void Timed::stop_stuff()
   delete tz_oracle ;
   log_debug() ;
   delete dst_timer ;
-  log_debug() ;
-  cellular_handler::uninitialize() ;
   log_notice("stop_stuff() DONE") ;
 }
 
@@ -979,4 +977,31 @@ void Timed::set_alarm_trigger(const QMap<QString, QVariant> &triggers)
 #else
   alarm_trigger->setValue(QVariant::fromValue(triggers));
 #endif
+}
+
+bool Timed::notify(QObject *obj, QEvent *ev)
+{
+  try { return QCoreApplication::notify(obj, ev); }
+  catch(const iodata::validator::exception &e)
+  {
+    log_critical("%s", e.info().c_str()) ;
+  }
+  catch(const iodata::exception &e)
+  {
+    log_critical("iodata::exception: '%s'", e.info().c_str()) ;
+  }
+  catch(const event_exception &e)
+  {
+    log_critical("event_exception: pid=%d, '%s'", e.pid(), e.what()) ;
+  }
+  catch(const std::exception &e)
+  {
+    log_critical("oops, unknown std::exception: %s", e.what()) ;
+  }
+  catch(...)
+  {
+    log_critical("oops, unknown exception of unknown type ...") ;
+  }
+  log_critical("aborting...") ;
+  abort();
 }

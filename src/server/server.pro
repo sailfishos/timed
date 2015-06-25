@@ -37,7 +37,6 @@ HEADERS += \
     singleshot.h \
     pinguin.h \
     unix-signal.h \
-    onitz.h \
     networktime.h \
     networktimewatcher.h \
     networkoperator.h \
@@ -63,7 +62,6 @@ SOURCES += \
     settings.cpp \
     pinguin.cpp \
     unix-signal.cpp \
-    onitz.cpp \
     networktime.cpp \
     networktimewatcher.cpp \
     networkoperator.cpp \

@@ -38,7 +38,7 @@
 #include "timed.h"
 #include "settings.h"
 #include "misc.h"
-#include "onitz.h"
+#include "../common/log.h"
 
 #define LOCALTIMELINK "/var/lib/timed/localtime"
 

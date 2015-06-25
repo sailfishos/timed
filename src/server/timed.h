@@ -46,7 +46,6 @@
 #include "pinguin.h"
 #include "settings.h"
 #include "unix-signal.h"
-#include "onitz.h"
 #include "olson.h"
 #include "machine.h"
 #include "tz.h"
@@ -132,7 +131,6 @@ public:
   machine_t *am ;
   pinguin_t *ping ;
   source_settings *settings ;
-  cellular_handler *nitz_object ;
 #if OFONO
   csd_t *csd ;
 #endif
@@ -247,32 +245,7 @@ private:
 public:
   Q_OBJECT ;
 public:
-  bool notify(QObject *obj, QEvent *ev)
-  {
-    try { return QCoreApplication::notify(obj, ev); }
-    catch(const iodata::validator::exception &e)
-    {
-      log_critical("%s", e.info().c_str()) ;
-    }
-    catch(const iodata::exception &e)
-    {
-      log_critical("iodata::exception: '%s'", e.info().c_str()) ;
-    }
-    catch(const event_exception &e)
-    {
-      log_critical("event_exception: pid=%d, '%s'", e.pid(), e.what()) ;
-    }
-    catch(const std::exception &e)
-    {
-      log_critical("oops, unknown std::exception: %s", e.what()) ;
-    }
-    catch(...)
-    {
-      log_critical("oops, unknown exception of unknown type ...") ;
-    }
-    log_critical("aborting...") ;
-    abort();
-  }
+  bool notify(QObject *obj, QEvent *ev);
 } ;
 
 #endif

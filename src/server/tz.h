@@ -30,8 +30,6 @@ using namespace std ;
 
 #include <QTimer>
 
-
-#include "onitz.h"
 #include "olson.h"
 #include "cellular.h"
 

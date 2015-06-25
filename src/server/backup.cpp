@@ -38,6 +38,7 @@
 
 #include <string>
 
+#include "../common/log.h"
 #include "backup.h"
 
 // The directory name, must match the path mentioned in timedbackup.conf:

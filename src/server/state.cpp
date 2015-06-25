@@ -33,6 +33,7 @@
 #include "event.h"
 #include "misc.h"
 #include "timed.h"
+#include "../common/log.h"
 
 #include "state.h"
 

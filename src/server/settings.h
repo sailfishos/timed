@@ -33,8 +33,6 @@
 #include <iodata/iodata>
 #endif
 
-#include "onitz.h"
-
 #include "../lib/nanotime.h"
 #include "../lib/wall-declarations.h"
 #include "../lib/wall-info.h"
