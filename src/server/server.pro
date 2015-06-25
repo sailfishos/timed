@@ -27,6 +27,8 @@ CONFIG(ofono) {
 }
 
 HEADERS += \
+    tzdata.h \
+    cellular.h \
     settings.h \
     csd.h \
     adaptor.h \
@@ -45,7 +47,7 @@ HEADERS += \
     ofonomodemmanager.h \
     modemwatcher.h \
     ofonoconstants.h \
-    ntpcontroller.h \
+    ntpcontroller.h
 
 SOURCES += \
     tzdata.cpp \
