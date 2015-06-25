@@ -70,8 +70,7 @@
 #include <iomanip>
 
 Timed::Timed(int ac, char **av) :
-  QCoreApplication(ac, av),
-  peer(NULL)
+  QCoreApplication(ac, av)
 {
   halted = "" ; // XXX: remove it, as we don't want to halt anymore
   first_boot_date_adjusted = false;
@@ -157,12 +156,6 @@ void Timed::init_unix_signal_handler()
   signal_object->handle(SIGINT) ;
   signal_object->handle(SIGTERM) ;
   signal_object->handle(SIGCHLD) ;
-}
-
-// * Enable questioning of Dbus peers
-void Timed::init_dbus_peer_info()
-{
-  peer =  new peer_t(true) ;
 }
 
 void Timed::init_device_mode()

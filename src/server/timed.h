@@ -52,7 +52,6 @@
 #include "tz.h"
 #include "csd.h"
 #include "event.h"
-#include "peer.h"
 #if HAVE_DSME
 #include "dsme-mode.h"
 #endif
@@ -104,7 +103,6 @@ private:
 
   // init_* methods, to be called by constructor only
   void init_unix_signal_handler() ;
-  void init_dbus_peer_info() ;
   void init_configuration() ;
   void init_customization() ;
   void init_read_settings() ;
@@ -138,7 +136,6 @@ public:
 #if OFONO
   csd_t *csd ;
 #endif
-  peer_t *peer ;
 
   void load_events() ;
   void check_voland_service() ;

@@ -26,7 +26,7 @@ CONFIG(ofono) {
     DEFINES += OFONO
 }
 
-HEADERS += peer.h \
+HEADERS += \
     settings.h \
     csd.h \
     adaptor.h \
@@ -48,7 +48,7 @@ HEADERS += peer.h \
     ofonoconstants.h \
     ntpcontroller.h \
 
-SOURCES += peer.cpp \
+SOURCES += \
     tzdata.cpp \
     cellular.cpp \
     csd.cpp \
