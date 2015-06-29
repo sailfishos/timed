@@ -38,6 +38,7 @@ public:
     explicit NetworkRegistrationWatcher(const QString objectPath, QObject *parent = 0);
     ~NetworkRegistrationWatcher();
 
+public slots:
     void getProperties();
 
 signals:
@@ -45,7 +46,6 @@ signals:
 
 private slots:
     void onPropertyChanged(QString name, QDBusVariant value);
-    void getPropertiesAsync();
-    void getPropertiesAsyncCallback(QDBusPendingCallWatcher *watcher);
+    void getPropertiesCallback(QDBusPendingCallWatcher *watcher);
 };
 #endif // NETWORKREGISTRATIONRWATCHER_H

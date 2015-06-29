@@ -28,6 +28,7 @@
 
 class QDBusInterface;
 class QDBusPendingCallWatcher;
+class QDBusServiceWatcher;
 
 class ModemWatcher : public QObject
 {
@@ -47,9 +48,13 @@ private:
     QString m_objectPath;
     QString m_interface;
     bool m_interfaceAvailable;
-    bool checkInterfaceAvailability(QVariant variant);
+    QDBusServiceWatcher *m_ofonoWatcher;
+
+    void checkInterfaceAvailability(QVariant variant);
 
 private slots:
     void onModemPropertyChanged(QString objectPath, QDBusVariant value);
+    void getProperties();
+    void getPropertiesReply(QDBusPendingCallWatcher *call);
 };
 #endif // MODEMWATCHER_H

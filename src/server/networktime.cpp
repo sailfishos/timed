@@ -30,7 +30,7 @@
 NetworkTime::NetworkTime(QObject *parent) :
     QObject(parent)
 {
-    foreach (const QString objectPath, m_modemManager.getModems())
+    foreach (const QString objectPath, m_modemManager.getModemList())
         onModemAdded(objectPath);
 
     QObject::connect(&m_modemManager, SIGNAL(modemAdded(QString)),

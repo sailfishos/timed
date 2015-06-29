@@ -29,7 +29,7 @@
 NetworkOperator::NetworkOperator(QObject *parent) :
     QObject(parent), m_mccUpdated(false), m_mncUpdated(false)
 {
-    foreach (const QString objectPath, m_modemManager.getModems())
+    foreach (const QString objectPath, m_modemManager.getModemList())
         onModemAdded(objectPath);
 
     QObject::connect(&m_modemManager, SIGNAL(modemAdded(QString)),
@@ -70,8 +70,8 @@ void NetworkOperator::onModemAdded(QString objectPath)
     NetworkRegistrationWatcher *watcher = new NetworkRegistrationWatcher(objectPath, this);
     QObject::connect(watcher, SIGNAL(propertyChanged(QString, QString, QVariant)),
                      this, SLOT(onWatcherPropertyChanged(QString, QString, QVariant)));
-    watcher->getProperties();
     m_watcherMap.insert(objectPath, watcher);
+    watcher->getProperties();
 }
 
 void NetworkOperator::onModemRemoved(QString objectPath)
