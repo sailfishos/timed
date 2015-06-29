@@ -1,3 +1,0 @@
-#!/bin/sh -e
-
-aegisfs --uninstall /etc/aegisfs.d/timed.aegisfs.conf

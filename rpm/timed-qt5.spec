@@ -1,7 +1,7 @@
 Name:       timed-qt5
 
 Summary:    Time daemon
-Version:    2.93
+Version:    3.0
 Release:    1
 Group:      System/System Control
 License:    LGPLv2
@@ -69,7 +69,7 @@ mkdir -p src/h/timed-qt5
 ln -sf ../../lib/qmacro.h src/h/timed-qt5
 
 %qmake5  \
-    -recursive "CONFIG += MEEGO dsme_dbus_if"
+    -recursive "CONFIG += dsme_dbus_if ofono"
 
 make %{?jobs:-j%jobs}
 
@@ -135,7 +135,7 @@ fi
 
 %files -f timed.files
 %defattr(-,root,root,-)
-%doc COPYING debian/changelog debian/copyright
+%doc COPYING copyright
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/%{name}.conf
 %config(noreplace) %{_sysconfdir}/%{name}.rc
 %{_bindir}/%{name}

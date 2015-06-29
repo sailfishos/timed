@@ -21,11 +21,12 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#include "f.h"
 
 #include "timed.h"
 
 #include "csd.h"
+#include "misc.h"
+#include "../common/log.h"
 
 #if OFONO
 

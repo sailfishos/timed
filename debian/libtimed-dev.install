@@ -1,5 +1,0 @@
-usr/include/timed
-usr/lib/libtimed.so
-
-usr/share/qt4/mkspecs/features/timed.prf
-usr/lib/pkgconfig/timed.pc

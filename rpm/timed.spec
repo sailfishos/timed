@@ -1,7 +1,7 @@
 Name:       timed
 
 Summary:    Time daemon
-Version:    2.93
+Version:    3.0
 Release:    1
 Group:      System/System Control
 License:    LGPLv2
@@ -69,7 +69,7 @@ mkdir -p src/h/timed
 ln -sf ../../lib/qmacro.h src/h/timed
 
 %qmake  \
-    -recursive "CONFIG += MEEGO dsme_dbus_if"
+    -recursive "CONFIG += dsme_dbus_if ofono"
 
 make %{?jobs:-j%jobs}
 
@@ -129,12 +129,10 @@ fi
 %defattr(-,root,root,-)
 %doc COPYING debian/changelog debian/copyright
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/%{name}.conf
-%config(noreplace) %{_sysconfdir}/aegisfs.d/timed.aegisfs.conf
 %config(noreplace) %{_sysconfdir}/%{name}.rc
 %{_sysconfdir}/osso-cud-scripts/timed-clear-device.sh
 %{_sysconfdir}/osso-rfs-scripts/timed-restore-original-settings.sh
 %{_bindir}/%{name}
-%{_bindir}/timed-aegis-session-helper
 %{_libdir}/lib%{name}.so.*
 %{_libdir}/libtimed-voland.so.*
 %{_datadir}/backup-framework/applications/timedbackup.conf

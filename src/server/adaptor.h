@@ -40,16 +40,18 @@
 
 #include "timed.h"
 #include "misc.h"
-#include "csd.h"
 #include "credentials.h"
-#include "peer.h"
+#include "../common/log.h"
+#if OFONO
+#include "csd.h"
+#endif
 
 #include "../lib/interface.h" // TODO: is Maemo::Timed::bus() the correct way?
 
 #define SQC str().toStdString().c_str()
 #define QC toStdString().c_str()
 #define CC c_str()
-#define PEER timed->peer ? timed->peer->info(message.service().toStdString()).c_str() : qPrintable(message.service())
+#define PEER qPrintable(message.service())
 
 static QDateTime time_t_to_qdatetime(time_t t)
 {
@@ -79,22 +81,6 @@ signals:
   void alarm_triggers_changed(Maemo::Timed::Event::Triggers);
 
 public slots:
-
-#if 0
-  bool session(const QString &mode, const QString &bus_address, const QDBusMessage &message)
-  {
-    log_notice("DBUS::com.nokia.time.session(mode='%s', bus='%s') by %s", mode.QC, bus_address.QC, PEER) ;
-    bool fail = mode!="ACTDEAD" and mode!="USER" ;
-    bool act_dead = mode=="ACTDEAD" ;
-    if (fail)
-    {
-      log_critical("unknown mode '%s'", mode.QC) ;
-      return false ;
-    }
-    timed->device_mode_reached(act_dead, bus_address.toStdString()) ;
-    return true ;
-  }
-#endif
 
   bool mode(const QString &mode, const QDBusMessage &message)
   {
@@ -334,10 +320,6 @@ public slots:
   bool fake_nitz_signal(int mcc, int offset, int time, int dst)
   {
     log_notice("(fake_nitz_signal) mcc=%d offset=%d time=%d dst=%d", mcc, offset, time, dst) ;
-#if 0
-    cellular_handler::object()->fake_nitz_signal(mcc, offset, time, dst) ;
-    return true ; // TODO make above method returning bool (not void) and check parameters
-#endif
     QDateTime qdt = time_t_to_qdatetime((time_t)time) ;
     if (not qdt.isValid())
     {

@@ -9,7 +9,7 @@ equals(QT_MAJOR_VERSION, 5): TARGET = timed-qt5
 VERSION = 0.$$(TIMED_VERSION)
 
 HEADERS = interface.h
-SOURCES = interface.cpp event-io.cpp event-pimple.cpp exception.cpp nanotime.cpp imagetype.cpp aliases.cpp
+SOURCES = interface.cpp event-io.cpp event-pimple.cpp exception.cpp nanotime.cpp aliases.cpp
 
 SOURCES += wall-settings.cpp wall-info.cpp qmacro.cpp
 
@@ -41,16 +41,4 @@ INSTALLS = target devheaders prf pc
 
 OTHER_FILES += *.pc *.prf
 
-CONFIG(MEEGO) \
-{
-  message("MEEGO flag is set")
-  DEFINES += __MEEGO__
-} \
-else \
-{
-  message("MEEGO flag is not set, assuming HARMATTAN")
-  DEFINES += __HARMATTAN__
-  LIBS += -lsysinfo
-  QMAKE_CXXFLAGS  += -Wall -Wno-psabi
-}
 QMAKE_CXXFLAGS  += -Wall

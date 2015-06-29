@@ -1,2 +1,0 @@
-#!/bin/sh
-exec /usr/bin/invoker --delay 10 --type=m $0.launch "$@"

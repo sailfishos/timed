@@ -27,7 +27,6 @@ using namespace std;
 
 #include <pcrecpp.h>
 
-#include "f.h"
 #include "cellular.h"
 #include "misc.h"
 #include "tzdata.h"
@@ -108,13 +107,6 @@ string cellular_operator_t::str() const
 void cellular_operator_t::init()
 {
   alpha2 = tzdata::iso_3166_1_alpha2_by_mcc(mcc) ;
-#if 0
-  static pcrecpp::RE integer = "(\\d+)" ;
-  if (p[0]=='\0') //empty string
-    mcc_value = 0 ;
-  else if (not integer.FullMatch(mcc, &mcc_value))
-    mcc_value = -1 ;
-#endif
 }
 
 cellular_time_t::cellular_time_t() :

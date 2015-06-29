@@ -24,8 +24,6 @@
 #ifndef MAEMO_TIMED_CSD_H
 #define MAEMO_TIMED_CSD_H
 
-#include "f.h"
-
 #if OFONO
 
 #include <string>

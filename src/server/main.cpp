@@ -21,22 +21,13 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-#include "adaptor.h"
-#include "timed.h"
-#include "event.h"
 
-#include "../lib/imagetype.h"
+#include "timed.h"
+#include "unix-signal.h"
 #include "../common/log.h"
 
-#include "f.h"
-
-#include <QMetaType>
 int main(int ac, char **av)
 {
-
-#if F_IMAGE_TYPE
-  log_notice("image_type='%s'", image_type.c_str()) ;
-#endif
 
   try
   {

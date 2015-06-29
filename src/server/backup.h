@@ -93,7 +93,7 @@ public:
   backup_t(Timed *daemon, QObject *owner) : com_nokia_backupclient(owner), timed(daemon) { }
 
 public slots:
-  unsigned char backupStarts() { log_debug() ; clean_up() ; dump_data() ; return 0 ; }
+  unsigned char backupStarts() { clean_up() ; dump_data() ; return 0 ; }
   unsigned char backupFinished() { clean_up() ; return 0 ; }
   unsigned char restoreStarts() { clean_up() ; return 0 ; }
   unsigned char restoreFinished() { disable_triggering() ; read_data() ; clean_up() ; return 0 ; }

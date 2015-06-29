@@ -147,24 +147,6 @@ string tzdata::set_str(const set<olson*> &x)
 
 #include "tzdata.type.h"
 
-#if 0
-static struct tz_distinct_t
-{
-  // olson * guess_timezone(int mcc, tz_suggestions_t &list) ;
-  tz_distinct_t(const iodata::record *) ;
-  map<int, vector<olson*> > mcc_to_tzlist ;
-}
-*tz_distinct=NULL ;
-
-static struct tz_single_t
-{
-  // olson * guess_timezone(int mcc) ;
-  tz_single_t(const iodata::record *) ;
-  map<int, string> mcc_to_tz ;
-}
-tz_single_t *tz_single=NULL ;
-#endif
-
 static iodata::record *open_database(const char *path, const char *type)
 {
   log_notice("opening file '%s', reading record of type '%s'", path, type) ;

@@ -42,21 +42,13 @@
 #endif
 
 #include "wrappers.h"
-#include "singleshot.h"
-#include "pinguin.h"
 #include "settings.h"
-#include "unix-signal.h"
-#include "onitz.h"
-#include "olson.h"
 #include "machine.h"
 #include "tz.h"
-#include "csd.h"
 #include "event.h"
-#include "peer.h"
 #if HAVE_DSME
 #include "dsme-mode.h"
 #endif
-#include "notification.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 namespace statefs {
@@ -66,7 +58,14 @@ namespace statefs {
 }
 #endif
 
+class simple_timer;
+class pinguin_t;
+class UnixSignal;
+class kernel_notification_t;
 class NtpController;
+#if OFONO
+class csd_t;
+#endif
 
 struct Timed : public QCoreApplication
 {
@@ -86,12 +85,6 @@ public:
   // inline const char *event_queue_type() { return  "/usr/share/timed/typeinfo/queue.type" ; }
 
 private:
-#if 0
-  bool act_dead_mode ;
-#endif
-
-  bool scratchbox_mode ;
-
   bool format24_by_default ;
   bool auto_time_by_default ;
   bool guess_tz_by_default ;
@@ -110,9 +103,6 @@ private:
 
   // init_* methods, to be called by constructor only
   void init_unix_signal_handler() ;
-  void init_dbus_peer_info() ;
-  void init_scratchbox_mode() ;
-  void init_act_dead() ;
   void init_configuration() ;
   void init_customization() ;
   void init_read_settings() ;
@@ -142,11 +132,9 @@ public:
   machine_t *am ;
   pinguin_t *ping ;
   source_settings *settings ;
-  cellular_handler *nitz_object ;
 #if OFONO
   csd_t *csd ;
 #endif
-  peer_t *peer ;
 
   void load_events() ;
   void check_voland_service() ;
@@ -244,14 +232,7 @@ private Q_SLOTS:
   void set_alarm_present(bool present);
   void set_alarm_trigger(const QMap<QString, QVariant> &triggers);
 public:
-#if 0
-  void device_mode_reached(bool act_dead, const std::string &dbus_session) ;
-#endif
   void device_mode_reached(bool user_mode) ;
-#if 0
-  void nitz_notification(const cellular_info_t &) ;
-  void tz_by_oracle(olson *tz, tz_suggestions_t) ;
-#endif
 public Q_SLOTS:
   void check_dst() ;
 public:
@@ -265,32 +246,7 @@ private:
 public:
   Q_OBJECT ;
 public:
-  bool notify(QObject *obj, QEvent *ev)
-  {
-    try { return QCoreApplication::notify(obj, ev); }
-    catch(const iodata::validator::exception &e)
-    {
-      log_critical("%s", e.info().c_str()) ;
-    }
-    catch(const iodata::exception &e)
-    {
-      log_critical("iodata::exception: '%s'", e.info().c_str()) ;
-    }
-    catch(const event_exception &e)
-    {
-      log_critical("event_exception: pid=%d, '%s'", e.pid(), e.what()) ;
-    }
-    catch(const std::exception &e)
-    {
-      log_critical("oops, unknown std::exception: %s", e.what()) ;
-    }
-    catch(...)
-    {
-      log_critical("oops, unknown exception of unknown type ...") ;
-    }
-    log_critical("aborting...") ;
-    abort();
-  }
+  bool notify(QObject *obj, QEvent *ev);
 } ;
 
 #endif

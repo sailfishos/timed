@@ -182,7 +182,6 @@ struct event_t
   bool to_be_keeped() { return (flags & EventFlags::Keep_Alive) !=0 ; }
   void invalidate_t() { t.year = t.month = t.day = t.hour = t.minute = 0 ; }
   string broken_str() ;
-  bool compute_recurrence() ;
   void process_dialog_ack() ;
   pid_t fork_and_set_credentials(const action_t &action, bool &error) ;
   pid_t fork_and_set_credentials_v2(const action_t &action, bool &error) ;
