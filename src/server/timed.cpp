@@ -190,17 +190,22 @@ void Timed::init_device_mode()
 // * Warning if no exists (which is okey)
 void Timed::init_configuration()
 {
+  const char *input_path = configuration_path();
   iodata::storage *config_storage = new iodata::storage ;
-  config_storage->set_primary_path(configuration_path()) ;
+  config_storage->set_primary_path(input_path) ;
   config_storage->set_validator(etc_timed_rc_validator(), "config_t") ;
 
+  /* Because config_storage->load() also sets up the default values, we
+   * must call it even if we know that the input file is not present ... */
   iodata::record *c = config_storage->load() ;
   log_assert(c, "loading configuration settings failed") ;
 
   if(config_storage->source()==0)
-    log_info("configuration loaded from '%s'", configuration_path()) ;
+    log_info("configuration loaded from '%s'", input_path) ;
+  else if(access(input_path, F_OK) == -1 && errno == ENOENT)
+    log_info("configuration file '%s' does not exist, using default values", input_path);
   else
-    log_warning("configuration file '%s' corrupted or non-existing, using default values", configuration_path()) ;
+    log_warning("configuration file '%s' corrupted, using default values", input_path);
 
   std::string data_directory = c->get("data_directory")->str();
   data_path = QDir().homePath() + QDir::separator() + QString::fromStdString(data_directory);
@@ -231,17 +236,22 @@ static bool parse_boolean(const string &str)
 // * read customization data provided by customization package
 void Timed::init_customization()
 {
+  const char *input_path = customization_path();
   iodata::storage *storage = new iodata::storage ;
-  storage->set_primary_path(customization_path()) ;
+  storage->set_primary_path(input_path) ;
   storage->set_validator(customization_data_validator(), "customization_t") ;
 
+  /* Because config_storage->load() also sets up the default values, we
+   * must call it even if we know that the input file is not present ... */
   iodata::record *c = storage->load() ;
   log_assert(c, "loading customization settings failed") ;
 
   if(storage->source()==0)
-    log_info("customization loaded from '%s'", customization_path()) ;
+    log_info("customization loaded from '%s'", input_path) ;
+  else if(access(input_path, F_OK) == -1 && errno == ENOENT)
+    log_info("customization file '%s' does not exist, using default values", input_path);
   else
-    log_warning("customization file '%s' corrupted or non-existing, using default values", customization_path()) ;
+    log_warning("customization file '%s' corrupted, using default values", input_path);
 
   format24_by_default = parse_boolean(c->get("format24")->str()) ;
   nitz_supported = parse_boolean(c->get("useNitz")->str()) ;
