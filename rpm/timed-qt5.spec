@@ -4,8 +4,8 @@ Summary:    Time daemon
 Version:    3.1
 Release:    1
 Group:      System/System Control
-License:    LGPLv2
-URL:        https://github.com/nemomobile/timed
+License:    LGPLv2.1
+URL:        https://git.merproject.org/mer-core/timed
 Source0:    %{name}-%{version}.tar.bz2
 Requires:   tzdata
 Requires:   tzdata-timed
@@ -77,10 +77,6 @@ make %{?jobs:-j%jobs}
 rm -rf %{buildroot}
 %qmake5_install
 
-#install -m 644 -D src/doc/timed.8 %{buildroot}/%{_mandir}/man8/timed.8
-#install -m 644 -D src/doc/libtimed.3 %{buildroot}/%{_mandir}/man3/libtimed.3
-#install -m 644 src/doc/libtimed-voland.3 %{buildroot}/%{_mandir}/man3/libtimed-voland.3
-
 # The file %{buildroot}/lib/systemd/user/%{name}.service is installed by make install
 install -d %{buildroot}%{_libdir}/systemd/user/pre-user-session.target.wants/
 ln -s ../%{name}.service %{buildroot}%{_libdir}/systemd/user/pre-user-session.target.wants/%{name}.service
@@ -142,9 +138,6 @@ fi
 %{_libdir}/lib%{name}.so.*
 %{_libdir}/libtimed-voland-qt5.so.*
 %{_datadir}/contextkit/providers/com.nokia.time.context
-# %{_mandir}/man3/libtimed.3.gz
-# %{_mandir}/man3/libtimed-voland.3.gz
-# %{_mandir}/man8/timed.8.gz
 %{_libdir}/systemd/user/%{name}.service
 %{_libdir}/systemd/user/pre-user-session.target.wants/%{name}.service
 %{_oneshotdir}/setcaps-%{name}.sh
