@@ -56,6 +56,12 @@ void tz_oracle_t::output(olson *zone, suggestion_t *s, bool sure)
 
 void tz_oracle_t::set_by_offset(const cellular_offset_t &data)
 {
+  if (!operators.contains(data.modem)) {
+      log_notice("NITZ offset received for unknown modem: %s: %s", data.modem.toStdString().c_str(), data.str().c_str());
+      return;
+  }
+
+  const cellular_operator_t &oper(operators[data.modem].oper);
   if (oper.known_mcc())
   {
     set<olson*> m, r, result ; // main, real
@@ -101,7 +107,7 @@ void tz_oracle_t::set_by_offset(const cellular_offset_t &data)
       zone = olson::by_offset(data.offset) ;
       if (zone==NULL)
       {
-        log_error("failed to set time zome by offset=%d", data.offset) ;
+        log_error("failed to set time zone by offset=%d", data.offset) ;
         return ;
       }
     }
@@ -109,7 +115,7 @@ void tz_oracle_t::set_by_offset(const cellular_offset_t &data)
     {
       zone = * result.begin() ;
       for (set<olson*>::const_iterator it=result.begin(); it!=result.end(); ++it)
-        if (*it==stat.last_zone)
+        if (*it==operators[data.modem].stat.last_zone)
         {
           zone = *it ;
           break ;
@@ -139,25 +145,30 @@ void tz_oracle_t::set_by_offset(const cellular_offset_t &data)
   }
 }
 
-void tz_oracle_t::set_by_operator()
+void tz_oracle_t::set_by_operator(const QString &modem)
 {
   // bool known = oper.known_mcc() ;
 
-  if (oper.known_mcc())
+  if (!operators.contains(modem)) {
+      log_error("cannot set timezone according to operator settings for modem: unknown modem: %s", modem.toStdString().c_str());
+      return;
+  }
+
+  if (operators[modem].oper.known_mcc())
   {
     set<olson*> all_zones, main_zones, real_zones ;
-    tzdata::by_country(oper.location(), tzdata::All_Zones, all_zones) ;
-    tzdata::by_country(oper.location(), tzdata::Main_Zones, main_zones) ;
-    tzdata::by_country(oper.location(), tzdata::Real_Zones, real_zones) ;
+    tzdata::by_country(operators[modem].oper.location(), tzdata::All_Zones, all_zones) ;
+    tzdata::by_country(operators[modem].oper.location(), tzdata::Main_Zones, main_zones) ;
+    tzdata::by_country(operators[modem].oper.location(), tzdata::Real_Zones, real_zones) ;
     olson *guess = NULL ;
-    if (stat.last_zone and all_zones.count(stat.last_zone)) // zone contained in this country: take it
-      guess = stat.last_zone ;
+    if (operators[modem].stat.last_zone and all_zones.count(operators[modem].stat.last_zone)) // zone contained in this country: take it
+      guess = operators[modem].stat.last_zone ;
     else
     {
-      stat.last_zone = NULL ;
+      operators[modem].stat.last_zone = NULL ;
       guess = tzdata::device_default() ;
       if (not all_zones.count(guess)) // we're not in home country
-        if (olson *first = tzdata::country_default(oper.location())) // let's be paranoid
+        if (olson *first = tzdata::country_default(operators[modem].oper.location())) // let's be paranoid
           guess = first ;
     }
     log_assert(guess, "oops, guessed NULL pointer") ;
@@ -173,15 +184,15 @@ void tz_oracle_t::set_by_operator()
   }
   else // some weird operator located nowhere
   {
-    if (stat.last_zone==NULL)
+    if (operators[modem].stat.last_zone==NULL)
     {
-      log_notice("can't guess zone for operator %s", oper.str().c_str()) ;
+      log_notice("can't guess zone for operator %s", operators[modem].oper.str().c_str()) ;
       return ;
     }
     else
     {
-      log_notice("guessing last used zone '%s' for operator %s", stat.last_zone->name().c_str(), oper.str().c_str()) ;
-      output(stat.last_zone) ;
+      log_notice("guessing last used zone '%s' for operator %s", operators[modem].stat.last_zone->name().c_str(), operators[modem].oper.str().c_str()) ;
+      output(operators[modem].stat.last_zone) ;
     }
   }
 }
@@ -189,62 +200,75 @@ void tz_oracle_t::set_by_operator()
 void tz_oracle_t::cellular_offset(const cellular_offset_t &data)
 {
   timer->stop() ; // preventing setting tz by operator only
-  if (data.oper.empty())
-    log_error("opratorless NITZ received: %s", data.str().c_str()) ;
-  else if (oper != data.oper)
-  {
-    log_error("unexpected operator change in NITZ package %s (current operator %s)", data.str().c_str(), oper.str().c_str()) ;
-    history->save_status(stat, oper) ;
-    oper = data.oper ;
-    history->load_status(stat, oper) ;
+  if (data.oper.empty()) {
+    log_error("operatorless NITZ received: %s", data.str().c_str()) ;
+  } else {
+    if (!operators.contains(data.modem)) {
+      log_notice("received NITZ from operator for unknown modem: %s: %s", data.modem.toStdString().c_str(), data.str().c_str()) ;
+      operators.insert(data.modem, operator_status_t(data.oper)); // TODO: is this correct?  i.e., just add it?  Do I need to save_status or anything?
+    } else if (operators[data.modem].oper != data.oper) {
+      log_error("unexpected operator change in NITZ package %s (current operator %s)", data.str().c_str(), operators[data.modem].oper.str().c_str()) ;
+      history->save_status(operators[data.modem].stat, operators[data.modem].oper) ;
+      operators[data.modem].oper = data.oper ;
+      history->load_status(operators[data.modem].stat, operators[data.modem].oper) ;
+    }
   }
   set_by_offset(data) ;
 }
 
-void tz_oracle_t::cellular_operator(const cellular_operator_t &o)
+void tz_oracle_t::cellular_operator(const cellular_operator_t &o, const QString &modem)
 {
   timer->stop() ;
 
   bool empty = o.empty() ;
-  bool same = o==oper ;
-  bool same_country = o.known_mcc() and o.location()==oper.location() ;
+  bool same = operators.contains(modem) and o==operators[modem].oper ;
+  bool same_country = operators.contains(modem) and o.known_mcc() and o.location()==operators[modem].oper.location() ;
 
   log_debug("o=%s, empty=%d, same=%d, same_country=%d", o.str().c_str(), empty, same, same_country) ;
   if (empty) // disconnected: do nothing
   {
     log_debug("empty operator") ;
-    have_oper = false ;
     return ;
   }
-  else
-    have_oper = true ; // TODO: oper = o ;
 
   if (same) // same as current or same as last: do nothing
     return ;
 
-  // now the operator is changing, first we have to save status
-  history->save_status(stat, oper) ;
+  if (operators.contains(modem))
+  {
+    // now the operator is changing, first we have to save status
+    history->save_status(operators[modem].stat, operators[modem].oper) ;
+    operators[modem].oper = o ;
+    history->load_status(operators[modem].stat, operators[modem].oper) ;
+  }
+  else
+  {
+    // new modem operator info.  TODO: is this possible?  is the load_status here correct?
+    log_debug("new operator for modem: %s", modem.toStdString().c_str());
+    operators.insert(modem, operator_status_t(o));
+    history->load_status(operators[modem].stat, operators[modem].oper) ;
+  }
 
-  oper = o ;
-
-  history->load_status(stat, oper) ;
   log_debug() ;
 
   if(same_country) // nothing to do?
     return ;
 
-  bool small_country = oper.known_mcc() and tzdata::is_single_zone_country(oper.location()) ;
+  bool small_country = operators[modem].oper.known_mcc() and tzdata::is_single_zone_country(operators[modem].oper.location()) ;
 
-  if (small_country and stat.regular)
-    set_by_operator() ;
-  else
+  if (small_country and operators[modem].stat.regular)
+    set_by_operator(modem) ;
+  else {
+    timer->setProperty("modem", modem);
     timer->start(nitz_wait_ms) ;
+  }
 }
 
 void tz_oracle_t::waiting_for_nitz_timeout()
 {
   timer->stop() ;
-  set_by_operator() ;
+  QString modem = timer->property("modem").toString();
+  set_by_operator(modem) ;
 }
 
 void suggestion_t::add(olson *zone, int score)

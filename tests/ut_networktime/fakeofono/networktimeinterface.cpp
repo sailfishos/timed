@@ -28,7 +28,7 @@ NetworkTimeInterface::NetworkTimeInterface(QObject *parent)
 
 void NetworkTimeInterface::emulateNetworkTimeChange(qlonglong utc, qlonglong received,
                                                     int timezone, uint dst, QString mcc,
-                                                    QString mnc)
+                                                    QString mnc, QString modem)
 {
     m_utc = utc;
     m_received = received;
@@ -36,6 +36,7 @@ void NetworkTimeInterface::emulateNetworkTimeChange(qlonglong utc, qlonglong rec
     m_dst = dst;
     m_mcc = mcc;
     m_mnc = mnc;
+    m_modem = modem;
     emit NetworkTimeChanged(encode());
 }
 
@@ -56,5 +57,6 @@ QVariantMap NetworkTimeInterface::encode()
     map.insert("DST", QVariant(m_dst));
     map.insert("MobileCountryCode", QVariant(m_mcc));
     map.insert("MobileNetworkCode", QVariant(m_mnc));
+    map.insert("ModemPath", QVariant(m_modem));
     return map;
 }

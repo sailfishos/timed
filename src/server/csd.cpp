@@ -48,9 +48,9 @@ csd_t::csd_t(Timed *owner)
   else
     log_error("connection to cellular csd signals failed: %s %s", res1?"":time_signal1, res2?"":time_signal2) ;
 
-  static const char *operator_signal = SIGNAL(operatorChanged(const QString &, const QString &)) ;
-  static const char *operator_slot = SLOT(csd_operator_s(const QString &, const QString &)) ;
-  bool res_op = QObject::connect(op, operator_signal, this, operator_slot);
+  static const char *operator_signal = SIGNAL(operatorChanged(const QString &, const QString &, const QString &)) ;
+  static const char *operator_slot = SLOT(csd_operator_s(const QString &, const QString &, const QString &)) ;
+  bool res_op = QObject::connect(op, operator_signal, this, operator_slot) ;
   if(res_op)
     log_info("succesfully connected to csd network operator signal") ;
   else
@@ -62,9 +62,6 @@ csd_t::csd_t(Timed *owner)
   timer = new QTimer ;
   timer->setSingleShot(true) ;
   QObject::connect(timer, SIGNAL(timeout()), this, SLOT(wait_for_operator_timeout())) ;
-
-  time = NULL ;
-  offs = NULL ;
 }
 
 csd_t::~csd_t()
@@ -72,21 +69,23 @@ csd_t::~csd_t()
   delete nt ;
   delete op ;
   delete timer ;
-  delete offs ;
-  delete time ;
+  Q_FOREACH (const QString &m, oper_time_offs.keys()) oper_time_offs[m].cleanup();
 }
 
 void csd_t::csd_operator_q()
 {
-  QString mcc = op->mcc(), mnc = op->mnc() ;
-  log_notice("CSD::csd_operator_q {mcc='%s', mnc='%s'}", mcc.toStdString().c_str(), mnc.toStdString().c_str()) ;
-  process_csd_network_operator(mcc, mnc) ;
+  Q_FOREACH (const QString &modem, op->modems())
+  {
+    QString mcc = op->mcc(modem), mnc = op->mnc(modem) ;
+    log_notice("CSD::csd_operator_q {modem='%s', mcc='%s', mnc='%s'}", modem.toStdString().c_str(), mcc.toStdString().c_str(), mnc.toStdString().c_str()) ;
+    process_csd_network_operator(modem, mcc, mnc) ;
+  }
 }
 
-void csd_t::csd_operator_s(const QString &mnc, const QString &mcc)
+void csd_t::csd_operator_s(const QString &modem, const QString &mnc, const QString &mcc)
 {
-  log_notice("CSD::csd_operator_s {mcc='%s', mnc='%s'}", mcc.toStdString().c_str(), mnc.toStdString().c_str()) ;
-  process_csd_network_operator(mcc, mnc) ;
+  log_notice("CSD::csd_operator_s {modem='%s', mcc='%s', mnc='%s'}", modem.toStdString().c_str(), mcc.toStdString().c_str(), mnc.toStdString().c_str()) ;
+  process_csd_network_operator(modem, mcc, mnc) ;
 }
 
 void csd_t::csd_time_q(const NetworkTimeInfo &nti)
@@ -104,32 +103,35 @@ void csd_t::csd_time_s(const NetworkTimeInfo &nti)
 void csd_t::input_csd_network_time_info(const NetworkTimeInfo &nti)
 {
   timer->stop() ;
+  const QString &modem(nti.modem()) ;
+  if (!oper_time_offs.contains(modem))
+    oper_time_offs.insert(modem, cellular_operator_time_offset_t(cellular_operator_t(nti))) ;
   cellular_time_t new_time(nti) ;
-  if (offs)
-    delete offs ;
-  offs = new cellular_offset_t(nti) ;
+  oper_time_offs[modem].setCellularOffset(new cellular_offset_t(nti)) ;
   if (new_time.is_valid())
   {
-    if (time)
-      delete time ;
-    time = new cellular_time_t(new_time) ;
+    oper_time_offs[modem].setCellularTime(new cellular_time_t(new_time)) ;
   }
 }
 
-void csd_t::output_csd_network_time_info()
+void csd_t::output_csd_network_time_info(const QString &modem)
 {
   timer->stop() ; // paranoia
-  if (offs)
+  if (!oper_time_offs.contains(modem))
   {
-    emit csd_cellular_offset(*offs) ;
-    delete offs ;
-    offs = NULL ;
+    log_notice("cannot output csd network time info for unknown modem: %s", modem.toStdString().c_str()) ;
+    return;
   }
-  if (time)
+
+  if (oper_time_offs[modem].offs)
   {
-    emit csd_cellular_time(*time) ;
-    delete time ;
-    time = NULL ;
+    emit csd_cellular_offset(*oper_time_offs[modem].offs) ;
+    oper_time_offs[modem].setCellularOffset(NULL) ;
+  }
+  if (oper_time_offs[modem].time)
+  {
+    emit csd_cellular_time(*oper_time_offs[modem].time) ;
+    oper_time_offs[modem].setCellularTime(NULL) ;
   }
 }
 
@@ -142,39 +144,62 @@ void csd_t::process_csd_network_time_info(const NetworkTimeInfo &nti)
     log_notice("empty time info, ignoring it") ;
     return ;
   }
+
+  if (!oper_time_offs.contains(nti.modem()))
+  {
+    log_notice("ignoring time info for unknown modem: %s", nti.modem().toStdString().c_str()) ;
+    return ;
+  }
+
   nanotime_t actuality = nanotime_t::monotonic_now() - nanotime_t::from_timespec (*nti.timestamp()) ;
   input_csd_network_time_info(nti) ;
 
   // Decide if the data is to be sent immediately or to wait for operator change signal
-  bool current_operator = offs->oper.mcc == oper.mcc and offs->oper.mnc == oper.mnc ;
-  bool empty_operator = offs->oper.mcc.empty() and offs->oper.mnc.empty() ;
+  const QString &modem(nti.modem());
+  bool current_operator = oper_time_offs[modem].offs->oper.mcc == oper_time_offs[modem].oper.mcc and oper_time_offs[modem].offs->oper.mnc == oper_time_offs[modem].oper.mnc ;
+  bool empty_operator = oper_time_offs[modem].offs->oper.mcc.empty() and oper_time_offs[modem].offs->oper.mnc.empty() ;
   bool input_is_old = actuality > old_nitz_threshold ;
   bool send_now = input_is_old or (current_operator and not empty_operator) ;
 
-  log_debug("offs->oper=%s, oper=%s, actuality=%s", offs->oper.str().c_str(), oper.str().c_str(), actuality.str().c_str()) ;
+  log_debug("offs->oper=%s, oper=%s, actuality=%s", oper_time_offs[modem].offs->oper.str().c_str(), oper_time_offs[modem].oper.str().c_str(), actuality.str().c_str()) ;
   log_debug("current_operator=%d, empty_operator=%d, input_is_old=%d", current_operator, empty_operator, input_is_old) ;
   log_debug("send_now=%d", send_now) ;
 
   if (send_now)
-    output_csd_network_time_info() ;
+  {
+    output_csd_network_time_info(modem) ;
+  }
   else
+  {
+    timer->setProperty("modem", modem) ;
     timer->start(operator_wait_ms) ;
+  }
 }
 
-void csd_t::process_csd_network_operator(const QString &mcc, const QString &mnc)
+void csd_t::process_csd_network_operator(const QString &modem, const QString &mcc, const QString &mnc)
 {
   timer->stop() ;
-  oper = cellular_operator_t(mcc, mnc) ;
-  if (offs)
-    offs->oper = oper ;
-  output_csd_network_time_info() ; // if needed
-  emit csd_cellular_operator(oper) ;
+  if (!oper_time_offs.contains(modem))
+  {
+    oper_time_offs.insert(modem, cellular_operator_time_offset_t(cellular_operator_t(mcc, mnc))) ;
+  }
+  else
+  {
+    oper_time_offs[modem].oper = cellular_operator_t(mcc, mnc) ;
+    if (oper_time_offs[modem].offs)
+    {
+      oper_time_offs[modem].offs->oper = oper_time_offs[modem].oper ;
+    }
+  }
+  output_csd_network_time_info(modem) ; // if needed
+  emit csd_cellular_operator(oper_time_offs[modem].oper, modem) ;
 }
 
 void csd_t::wait_for_operator_timeout() // timer slot
 {
   timer->stop() ; // paranoia
-  output_csd_network_time_info() ; // probably needed
+  QString modem = timer->property("modem").toString() ;
+  output_csd_network_time_info(modem) ; // probably needed
 }
 
 string csd_t::csd_network_time_info_to_string(const NetworkTimeInfo &nti)
@@ -199,6 +224,7 @@ string csd_t::csd_network_time_info_to_string(const NetworkTimeInfo &nti)
 
   os << ", mcc='" << nti.mcc().toStdString() << "'" ;
   os << ", mnc='" << nti.mnc().toStdString() << "'" ;
+  os << ", modem='" << nti.modem().toStdString() << "'" ;
 
   os << ", received=" << str_printf("%lld.%09lu", (long long)nti.timestamp()->tv_sec, nti.timestamp()->tv_nsec) ;
 

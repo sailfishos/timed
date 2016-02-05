@@ -48,30 +48,87 @@ NetworkTime::~NetworkTime()
     m_watcherMap.clear();
 }
 
-NetworkTimeInfo NetworkTime::timeInfo() const
+QString NetworkTime::defaultModem() const
 {
-    return m_networkTimeInfo;
+    return m_defaultModem;
 }
 
-void NetworkTime::queryTimeInfo()
+NetworkTimeInfo NetworkTime::timeInfo(const QString &modem) const
+{
+    if (m_networkTimeInfo.contains(modem))
+        return m_networkTimeInfo[modem];
+
+    if (!m_defaultModem.isEmpty())
+        return m_networkTimeInfo[m_defaultModem];
+
+    Q_FOREACH (const QString &m, m_networkTimeInfo.keys()) {
+        if (m_networkTimeInfo[m].isValid()) {
+            m_defaultModem = m;
+            return m_networkTimeInfo[m];
+        }
+    }
+
+    return NetworkTimeInfo();
+}
+
+#include <QtDebug>
+void NetworkTime::queryTimeInfo(const QString &modem)
 {
     bool querySent = false;
-    foreach (const QString objectPath, m_watcherMap.keys()) {
-        if (m_watcherMap.value(objectPath)->interfaceAvailable()) {
-            m_watcherMap.value(objectPath)->queryNetworkTime();
-            querySent = true;
+    if (!modem.isEmpty()) {
+        if (m_watcherMap.contains(modem)) {
+            if (m_watcherMap.value(modem)->interfaceAvailable()) {
+                m_watcherMap.value(modem)->queryNetworkTime();
+                return;
+            } else {
+                log_notice("cannot query time info for unavailable modem: %s", modem.toStdString().c_str());
+            }
+        } else {
+            log_notice("cannot query time info for unknown modem: %s", modem.toStdString().c_str());
+        }
+    } else if (!m_defaultModem.isEmpty()) {
+        if (m_watcherMap.contains(m_defaultModem)) {
+            if (m_watcherMap.value(m_defaultModem)->interfaceAvailable()) {
+                m_watcherMap.value(m_defaultModem)->queryNetworkTime();
+                return;
+            } else {
+                log_notice("cannot query time info for unavailable default modem: %s", m_defaultModem.toStdString().c_str());
+            }
+        } else {
+            log_error("cannot query time info for unknown default modem: %s", m_defaultModem.toStdString().c_str()); // should never happen.
+        }
+    } else {
+        // query any available modem
+        Q_FOREACH (const QString &objectPath, m_watcherMap.keys()) {
+            if (m_watcherMap.value(objectPath)->interfaceAvailable()) {
+                m_watcherMap.value(objectPath)->queryNetworkTime();
+                m_defaultModem = objectPath;
+                querySent = true;
+            }
         }
     }
 
     if (!querySent) {
-        m_networkTimeInfo = NetworkTimeInfo(); // Construct a invalid NetworkTimeInfo
-        emit timeInfoQueryCompleted(m_networkTimeInfo);
+        emit timeInfoQueryCompleted(NetworkTimeInfo()); // Construct a invalid NetworkTimeInfo
     }
 }
 
-bool NetworkTime::isValid() const
+bool NetworkTime::isValid(const QString &modem) const
 {
-    return m_networkTimeInfo.isValid();
+    if (m_networkTimeInfo.contains(modem))
+        return m_networkTimeInfo[modem].isValid();
+
+    if (!m_defaultModem.isEmpty())
+        return m_networkTimeInfo[m_defaultModem].isValid();
+
+    Q_FOREACH (const QString &m, m_networkTimeInfo.keys()) {
+        if (m_networkTimeInfo[m].isValid()) {
+            m_defaultModem = m;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void NetworkTime::onModemAdded(QString objectPath)
@@ -95,10 +152,19 @@ void NetworkTime::onModemRemoved(QString objectPath)
 
     NetworkTimeWatcher *watcher = m_watcherMap.value(objectPath);
     m_watcherMap.remove(objectPath);
+    m_networkTimeInfo.remove(objectPath);
+    if (m_defaultModem.compare(objectPath, Qt::CaseInsensitive) == 0) {
+        Q_FOREACH (const QString &m, m_networkTimeInfo.keys()) {
+            if (m_networkTimeInfo[m].isValid()) {
+                m_defaultModem = m;
+                break;
+            }
+        }
+    }
     delete watcher;
 }
 
-NetworkTimeInfo NetworkTime::parseNetworkTimeInfoFromMap(QVariantMap map)
+NetworkTimeInfo NetworkTime::parseNetworkTimeInfoFromMap(QVariantMap map, const QString &modem)
 {
     QVariant tmp;
     QDateTime dateTime;
@@ -144,21 +210,30 @@ NetworkTimeInfo NetworkTime::parseNetworkTimeInfoFromMap(QVariantMap map)
             mnc = tmp.toString();
     }
 
-    return NetworkTimeInfo(dateTime, daylightAdjustment, offsetFromUtc, received, 0, mnc, mcc);
+    if (modem.isEmpty()) log_error("unknown modem path for network time info: mnc=%s, mcc=%s", mnc.toStdString().c_str(), mcc.toStdString().c_str());
+    return NetworkTimeInfo(dateTime, daylightAdjustment, offsetFromUtc, received, 0, mnc, mcc, modem);
 }
 
 void NetworkTime::networkTimeChanged(QVariantMap map)
 {
-    m_networkTimeInfo = parseNetworkTimeInfoFromMap(map);
-    log_debug("time: %s",
-              m_networkTimeInfo.toString().toStdString().c_str());
-    emit timeInfoChanged(m_networkTimeInfo);
+    QString modem = m_watcherMap.key(qobject_cast<NetworkTimeWatcher*>(sender()));
+    m_networkTimeInfo.insert(modem, parseNetworkTimeInfoFromMap(map, modem));
+    if (m_defaultModem.isEmpty() && m_networkTimeInfo[modem].isValid()) {
+        m_defaultModem = modem;
+    }
+    log_debug("time: %s from modem: %s",
+              m_networkTimeInfo[modem].toString().toStdString().c_str(), modem.toStdString().c_str());
+    emit timeInfoChanged(m_networkTimeInfo[modem]);
 }
 
 void NetworkTime::networkTimeQueryCompletedSlot(QVariantMap map)
 {
-    m_networkTimeInfo = parseNetworkTimeInfoFromMap(map);
-    log_debug("time: %s",
-              m_networkTimeInfo.toString().toStdString().c_str());
-    emit timeInfoQueryCompleted(m_networkTimeInfo);
+    QString modem = m_watcherMap.key(qobject_cast<NetworkTimeWatcher*>(sender()));
+    m_networkTimeInfo.insert(modem, parseNetworkTimeInfoFromMap(map, modem));
+    if (m_defaultModem.isEmpty() && m_networkTimeInfo[modem].isValid()) {
+        m_defaultModem = modem;
+    }
+    log_debug("time: %s from modem: %s",
+              m_networkTimeInfo[modem].toString().toStdString().c_str(), modem.toStdString().c_str());
+    emit timeInfoQueryCompleted(m_networkTimeInfo[modem]);
 }

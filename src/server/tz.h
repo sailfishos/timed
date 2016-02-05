@@ -36,6 +36,7 @@ class olson;
 
 struct status_t
 {
+  status_t() : last_zone(NULL), regular(false) {}
   olson *last_zone ;
   bool regular ;
 } ;
@@ -75,15 +76,20 @@ struct tz_oracle_t : public QObject
   QTimer *timer ;
   history_t *history ;
 
-  cellular_operator_t oper ;
-  bool have_oper ;
-  status_t stat ;
+  struct operator_status_t {
+      operator_status_t() {}
+      operator_status_t(const cellular_operator_t &op) : oper(op) {}
+      operator_status_t(const operator_status_t &other) : oper(other.oper), stat(other.stat) {}
+      cellular_operator_t oper;
+      status_t stat;
+  };
+  QMap<QString, operator_status_t> operators; // modemPath key
 
   tz_oracle_t() ;
  ~tz_oracle_t() ;
 public slots:
   void waiting_for_nitz_timeout() ;
-  void cellular_operator(const cellular_operator_t &data) ;
+  void cellular_operator(const cellular_operator_t &data, const QString &modem) ;
   void cellular_offset(const cellular_offset_t &data) ;
 
 signals:
@@ -92,7 +98,7 @@ signals:
 private:
   void set_by_offset(const cellular_offset_t &data) ;
   // void set_by_operator(const cellular_operator_t &o) ;
-  void set_by_operator() ;
+  void set_by_operator(const QString &modem) ;
 
   void output(olson *zone, suggestion_t *s, bool sure) ;
   void output(olson *zone) ;

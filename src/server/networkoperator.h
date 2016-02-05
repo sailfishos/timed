@@ -38,22 +38,30 @@ class NetworkOperator : public QObject
 public:
     explicit NetworkOperator(QObject *parent = 0);
     ~NetworkOperator();
-    QString mnc() const;
-    QString mcc() const;
-    bool isValid() const;
+    QStringList modems() const;
+    QString defaultModem() const;
+    QString mnc(const QString &modem = QString()) const;
+    QString mcc(const QString &modem = QString()) const;
+    bool isValid(const QString &modem = QString()) const;
 
 signals:
-    void operatorChanged(const QString &mnc, const QString &mcc);
+    void operatorChanged(const QString &modem, const QString &mnc, const QString &mcc);
     
 private:
-    QString m_mnc;
-    QString m_mcc;
-    bool m_mccUpdated;
-    bool m_mncUpdated;
-    bool m_valid;
-    QString m_currentObjectPath;
     OfonoModemManager m_modemManager;
     QMap<QString, NetworkRegistrationWatcher*> m_watcherMap;
+
+    struct OperatorInfo {
+        OperatorInfo() : mncUpdated(false), mccUpdated(false) {}
+        OperatorInfo(const OperatorInfo &other)
+            : mnc(other.mnc), mcc(other.mcc), mncUpdated(other.mncUpdated), mccUpdated(other.mccUpdated) {}
+        QString mnc;
+        QString mcc;
+        bool mncUpdated;
+        bool mccUpdated;
+    };
+    QMap<QString, OperatorInfo> m_operatorInfo; // per modem.
+    mutable QString m_defaultModem;
 
 private slots:
     void onModemAdded(QString objectPath);

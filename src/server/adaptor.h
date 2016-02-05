@@ -295,7 +295,7 @@ public slots:
   }
 
 #if OFONO
-  bool fake_csd_time_signal(const QString &mcc, const QString &mnc, int offset, int time, int dst, int seconds, int nano_seconds)
+  bool fake_csd_time_signal(const QString &modem, const QString &mcc, const QString &mnc, int offset, int time, int dst, int seconds, int nano_seconds)
   {
     log_notice("(fake_csd_time_signal) mcc='%s' mnc='%s' offset=%d time=%d dst=%d seconds=%d nano_seconds=%d", mcc.toStdString().c_str(), mnc.toStdString().c_str(), offset, time, dst, seconds, nano_seconds) ;
     QDateTime qdt = time_t_to_qdatetime((time_t)time) ;
@@ -304,17 +304,17 @@ public slots:
       log_error("invalid time=%d parameter in in fake_csd_time_signal()", time) ;
       return false ;
     }
-    NetworkTimeInfo nti(qdt, dst, offset, seconds, nano_seconds, mnc, mcc);
+    NetworkTimeInfo nti(qdt, dst, offset, seconds, nano_seconds, mnc, mcc, modem) ;
     log_notice("FAKE_CSD::csd_time_s %s", csd_t::csd_network_time_info_to_string(nti).c_str()) ;
     timed->csd->process_csd_network_time_info(nti) ;
     return true ;
   }
 
-  bool fake_csd_time_signal_now(const QString &mcc, const QString &mnc, int offset, int time, int dst)
+  bool fake_csd_time_signal_now(const QString &modem, const QString &mcc, const QString &mnc, int offset, int time, int dst)
   {
-    log_notice("(fake_csd_time_signal_now) mcc='%s' mnc='%s' offset=%d time=%d dst=%d", mcc.toStdString().c_str(), mnc.toStdString().c_str(), offset, time, dst) ;
+    log_notice("(fake_csd_time_signal_now) modem='%s' mcc='%s' mnc='%s' offset=%d time=%d dst=%d", modem.toStdString().c_str(), mcc.toStdString().c_str(), mnc.toStdString().c_str(), offset, time, dst) ;
     nanotime_t now = nanotime_t::monotonic_now() ;
-    return fake_csd_time_signal(mcc, mnc, offset, time, dst, now.sec(), now.nano()) ;
+    return fake_csd_time_signal(modem, mcc, mnc, offset, time, dst, now.sec(), now.nano()) ;
   }
 
   bool fake_nitz_signal(int mcc, int offset, int time, int dst)
@@ -328,16 +328,16 @@ public slots:
     }
     nanotime_t now = nanotime_t::monotonic_now() ;
     QString mcc_s = str_printf("%d", mcc).c_str() ;
-    NetworkTimeInfo nti(qdt, dst, offset, now.sec(), now.nano(), "mnc", mcc_s);
+    NetworkTimeInfo nti(qdt, dst, offset, now.sec(), now.nano(), "mnc", mcc_s, "modem") ;
     log_notice("FAKE_CSD::csd_time_s %s", csd_t::csd_network_time_info_to_string(nti).c_str()) ;
     timed->csd->process_csd_network_time_info(nti) ;
     return true ;
   }
 
-  bool fake_operator_signal(const QString &mcc, const QString &mnc)
+  bool fake_operator_signal(const QString &modem, const QString &mcc, const QString &mnc)
   {
-    log_notice("FAKE_CSD::csd_operator_s {mcc='%s', mnc='%s'}", mcc.toStdString().c_str(), mnc.toStdString().c_str()) ;
-    timed->csd->process_csd_network_operator(mcc, mnc) ;
+    log_notice("FAKE_CSD::csd_operator_s {modem='%s', mcc='%s', mnc='%s'}", modem.toStdString().c_str(), mcc.toStdString().c_str(), mnc.toStdString().c_str()) ;
+    timed->csd->process_csd_network_operator(modem, mcc, mnc) ;
     return true ;
   }
 #endif // OFONO

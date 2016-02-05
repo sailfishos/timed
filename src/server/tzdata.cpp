@@ -79,7 +79,7 @@ map<string,string> mcc_to_xy ;
 map<string,map<string,int> > xy_to_zone_to_level ;
 // 3. Mapping alpha-2 to main zone: US=>New_York
 map<string,string> xy_to_zone0 ;
-// 4. Default country (alpha-2) and zone based on default time zome customization
+// 4. Default country (alpha-2) and zone based on default time zone customization
 string home_country ;
 olson *home_zone=NULL ;
 // 5. Set of alpha-2 of single zone counties (only 0,1,2 count; 3 doesn't)

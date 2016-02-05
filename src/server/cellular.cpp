@@ -155,6 +155,7 @@ cellular_offset_t::cellular_offset_t(const NetworkTimeInfo &cnti) :
   log_debug() ;
   if (cnti.isValid())
   {
+    modem = cnti.modem() ;
     offset = cnti.offsetFromUtc() ;
 
     // first of all check, if we can support this offset
@@ -210,7 +211,7 @@ string cellular_offset_t::str() const
       os << dst ;
 
     os << ", " << (sender_time ? "sender" : "receiver") << " time=" << timestamp << "=" << str_iso8601(timestamp) ;
-    os << " by " << oper.str() << "}" ;
+    os << " by " << oper.str() << " modem " << modem.toStdString() << "}" ;
   }
   else
     os << "{cellular_offset_t::invalid}" ;

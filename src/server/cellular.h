@@ -70,6 +70,7 @@ struct cellular_time_t
 struct cellular_offset_t
 {
   cellular_operator_t oper ;
+  QString modem ;
   int offset ;
   int dst ;
   time_t timestamp ;

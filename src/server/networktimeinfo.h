@@ -32,7 +32,8 @@ class NetworkTimeInfo
 public:
     NetworkTimeInfo(const QDateTime &dateTime, const int daylightAdjustment,
                     const int offsetFromUtc, const qlonglong timestampSeconds,
-                    const qlonglong timestampNanoSeconds, const QString &mnc, const QString &mcc);
+                    const qlonglong timestampNanoSeconds,
+                    const QString &mnc, const QString &mcc, const QString &modem);
     NetworkTimeInfo(const NetworkTimeInfo &other);
     NetworkTimeInfo();
     ~NetworkTimeInfo();
@@ -43,6 +44,7 @@ public:
     const timespec *timestamp() const;
     QString mnc() const;
     QString mcc() const;
+    QString modem() const;
     bool isValid() const;
     QString toString() const;
 
@@ -52,6 +54,7 @@ private:
     int m_offsetFromUtc;
     QString m_mnc;
     QString m_mcc;
+    QString m_modem;
     struct timespec m_timespec;
 };
 #endif // NETWORKTIMEINFO_H

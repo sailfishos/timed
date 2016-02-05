@@ -473,7 +473,7 @@ void Timed::init_cellular_services()
 
   bool res1 = QObject::connect(csd, SIGNAL(csd_cellular_time(const cellular_time_t &)), settings, SLOT(cellular_time_slot(const cellular_time_t &)));
   bool res2 = QObject::connect(csd, SIGNAL(csd_cellular_offset(const cellular_offset_t &)), tz_oracle, SLOT(cellular_offset(const cellular_offset_t &)));
-  bool res3 = QObject::connect(csd, SIGNAL(csd_cellular_operator(const cellular_operator_t &)), tz_oracle, SLOT(cellular_operator(const cellular_operator_t &)));
+  bool res3 = QObject::connect(csd, SIGNAL(csd_cellular_operator(const cellular_operator_t &, const QString &)), tz_oracle, SLOT(cellular_operator(const cellular_operator_t &, const QString &)));
   bool res4 = QObject::connect(tz_oracle, SIGNAL(cellular_zone_detected(olson *, suggestion_t, bool)), settings, SLOT(cellular_zone_slot(olson *, suggestion_t, bool)));
 
   log_assert(res1) ;
