@@ -36,16 +36,8 @@ class olson;
 
 struct status_t
 {
-  status_t() : last_zone(NULL), regular(false) {}
+  status_t() : last_zone(NULL) {}
   olson *last_zone ;
-  bool regular ;
-} ;
-
-// fake history implementation doing nothing
-struct history_t
-{
-  void save_status(const status_t &/*s*/, const cellular_operator_t &/*op*/) { }
-  void load_status(status_t &s, const cellular_operator_t &/*op*/) { s.last_zone=NULL, s.regular=true ; }
 } ;
 
 enum guess_quality
@@ -74,7 +66,6 @@ struct tz_oracle_t : public QObject
   static const int nitz_wait_ms = 1000 ;
 
   QTimer *timer ;
-  history_t *history ;
 
   struct operator_status_t {
       operator_status_t() {}

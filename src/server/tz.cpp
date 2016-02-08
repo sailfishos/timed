@@ -29,7 +29,6 @@
 
 tz_oracle_t::tz_oracle_t()
 {
-  history = new history_t ;
   timer = new QTimer ;
   timer->setSingleShot(true) ;
   connect(timer, SIGNAL(timeout()), this, SLOT(waiting_for_nitz_timeout())) ;
@@ -37,7 +36,6 @@ tz_oracle_t::tz_oracle_t()
 
 tz_oracle_t::~tz_oracle_t()
 {
-  delete history ;
   delete timer ;
 }
 
@@ -205,12 +203,10 @@ void tz_oracle_t::cellular_offset(const cellular_offset_t &data)
   } else {
     if (!operators.contains(data.modem)) {
       log_notice("received NITZ from operator for unknown modem: %s: %s", data.modem.toStdString().c_str(), data.str().c_str()) ;
-      operators.insert(data.modem, operator_status_t(data.oper)); // TODO: is this correct?  i.e., just add it?  Do I need to save_status or anything?
+      operators.insert(data.modem, operator_status_t(data.oper)); // add this new operator for the modem.
     } else if (operators[data.modem].oper != data.oper) {
       log_error("unexpected operator change in NITZ package %s (current operator %s)", data.str().c_str(), operators[data.modem].oper.str().c_str()) ;
-      history->save_status(operators[data.modem].stat, operators[data.modem].oper) ;
       operators[data.modem].oper = data.oper ;
-      history->load_status(operators[data.modem].stat, operators[data.modem].oper) ;
     }
   }
   set_by_offset(data) ;
@@ -236,27 +232,24 @@ void tz_oracle_t::cellular_operator(const cellular_operator_t &o, const QString 
 
   if (operators.contains(modem))
   {
-    // now the operator is changing, first we have to save status
-    history->save_status(operators[modem].stat, operators[modem].oper) ;
+    // operator is changing
     operators[modem].oper = o ;
-    history->load_status(operators[modem].stat, operators[modem].oper) ;
   }
   else
   {
-    // new modem operator info.  TODO: is this possible?  is the load_status here correct?
+    // new modem operator info.
     log_debug("new operator for modem: %s", modem.toStdString().c_str());
     operators.insert(modem, operator_status_t(o));
-    history->load_status(operators[modem].stat, operators[modem].oper) ;
   }
 
   log_debug() ;
 
-  if(same_country) // nothing to do?
+  if(same_country) // nothing to do?  not sure about this, what if small_country proves false?  could have a different tz required...
     return ;
 
   bool small_country = operators[modem].oper.known_mcc() and tzdata::is_single_zone_country(operators[modem].oper.location()) ;
 
-  if (small_country and operators[modem].stat.regular)
+  if (small_country)
     set_by_operator(modem) ;
   else {
     timer->setProperty("modem", modem);
