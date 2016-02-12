@@ -1,5 +1,5 @@
 Name: libtimed-voland
 Description: timed-voland communication library
-Version: 2.31
+Version: 3.2
 Libs: -ltimed-voland
 
