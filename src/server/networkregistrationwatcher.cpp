@@ -79,8 +79,9 @@ void NetworkRegistrationWatcher::getPropertiesCallback(QDBusPendingCallWatcher *
     }
 
     QVariantMap map = reply.argumentAt<0>();
-    foreach (const QString &key, map.keys())
+    foreach (const QString &key, map.keys()) {
         emit propertyChanged(objectPath(), key, map.value(key));
+    }
 
     watcher->deleteLater();
 }

@@ -40,18 +40,20 @@ class NetworkTime : public QObject
 public:
     explicit NetworkTime (QObject *parent=0);
     ~NetworkTime();
-    NetworkTimeInfo timeInfo() const;
-    void queryTimeInfo();
-    bool isValid() const;
+    QString defaultModem() const;
+    NetworkTimeInfo timeInfo(const QString &modemPath = QString()) const;
+    void queryTimeInfo(const QString &modemPath = QString());
+    bool isValid(const QString &modemPath = QString()) const;
 
 signals:
     void timeInfoChanged(const NetworkTimeInfo &timeInfo);
     void timeInfoQueryCompleted(const NetworkTimeInfo &timeInfo);
 
 private:
-    NetworkTimeInfo m_networkTimeInfo;
+    mutable QString m_defaultModem;
+    QMap<QString, NetworkTimeInfo> m_networkTimeInfo;
     QMap<QString, NetworkTimeWatcher*> m_watcherMap;
-    NetworkTimeInfo parseNetworkTimeInfoFromMap(QVariantMap map);
+    NetworkTimeInfo parseNetworkTimeInfoFromMap(QVariantMap map, const QString &modemPath);
     OfonoModemManager m_modemManager;
 
 private slots:

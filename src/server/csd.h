@@ -29,6 +29,8 @@
 #include <string>
 
 #include <QTimer>
+#include <QMap>
+#include <QString>
 
 #include "networktime.h"
 #include "networkoperator.h"
@@ -50,25 +52,35 @@ struct csd_t : public QObject
   NetworkOperator *op ;
   Q_INVOKABLE void csd_operator_q() ;
   QTimer *timer ;
-  cellular_time_t *time ;
-  cellular_offset_t *offs ;
-  cellular_operator_t oper ;
+
+  struct cellular_operator_time_offset_t {
+      cellular_operator_time_offset_t() : time(NULL), offs(NULL) {}
+      cellular_operator_time_offset_t(const cellular_operator_t &op) : oper(op), time(NULL), offs(NULL) {}
+      void cleanup() { delete time; delete offs; }
+      void setCellularTime(cellular_time_t *t) { delete time; time = t; }
+      void setCellularOffset(cellular_offset_t *o) { delete offs; offs = o; }
+      cellular_operator_t oper ;
+      cellular_time_t *time ;
+      cellular_offset_t *offs ;
+  };
+  QMap<QString, cellular_operator_time_offset_t> oper_time_offs; // modemPath key
+
 Q_SIGNALS:
   void csd_cellular_time(const cellular_time_t) ;
   void csd_cellular_offset(const cellular_offset_t) ;
-  void csd_cellular_operator(const cellular_operator_t) ;
+  void csd_cellular_operator(const cellular_operator_t, const QString &modem) ;
 private Q_SLOTS:
   void csd_time_q(const NetworkTimeInfo &nti) ;
   void csd_time_s(const NetworkTimeInfo &nti) ;
-  void csd_operator_s(const QString &mnc, const QString &mcc) ;
+  void csd_operator_s(const QString &modem, const QString &mnc, const QString &mcc) ;
   void wait_for_operator_timeout() ;
 private:
   void process_csd_network_time_info(const NetworkTimeInfo &nti) ;
-  void process_csd_network_operator(const QString &mcc, const QString &mnc) ;
+  void process_csd_network_operator(const QString &modem, const QString &mcc, const QString &mnc) ;
   friend class com_nokia_time ; // these private functions can be used by dbus fake
 private:
   void input_csd_network_time_info(const NetworkTimeInfo &nti) ;
-  void output_csd_network_time_info() ;
+  void output_csd_network_time_info(const QString &modem) ;
 
 public:
   csd_t(Timed *owner) ;

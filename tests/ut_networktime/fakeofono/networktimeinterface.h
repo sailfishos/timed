@@ -33,7 +33,7 @@ public:
     explicit NetworkTimeInterface(QObject *parent = 0);
 
     void emulateNetworkTimeChange(qlonglong utc, qlonglong received, int timezone,
-                                  uint dst, QString mcc, QString mnc);
+                                  uint dst, QString mcc, QString mnc, QString modem);
 
 public slots:
     QVariantMap GetNetworkTime();
@@ -48,6 +48,7 @@ private:
     uint m_dst;
     QString m_mcc;
     QString m_mnc;
+    QString m_modem;
 
     QVariantMap encode();
 };
