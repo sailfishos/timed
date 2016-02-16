@@ -141,7 +141,7 @@ fi
 %{_libdir}/systemd/user/%{name}.service
 %{_libdir}/systemd/user/pre-user-session.target.wants/%{name}.service
 %{_oneshotdir}/setcaps-%{name}.sh
-%dir %attr(0774,-,timed) /var/lib/timed
+%dir %attr(0775,-,timed) /var/lib/timed
 %ghost /var/lib/timed/localtime
 
 %files tests
