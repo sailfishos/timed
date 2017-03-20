@@ -478,6 +478,8 @@ void state_due_t::enter(event_t *e)
     next_state = machine->state_recurred  ;
   else if(machine->transition_started() - e->trigger > RenameMeNameSpace::Missing_Threshold)
     next_state = machine->state_missed ;
+  else if (machine->are_alarms_suppressed())
+    next_state = machine->state_missed ;
 
   log_notice("due event [%d]: e->trigger=%ld, now=%ld, next_state='%s'", e->cookie.value(), e->trigger.value(), machine->transition_started().value(), next_state->name()) ;
   machine->request_state(e, next_state) ;

@@ -120,6 +120,8 @@ public:
   void freeze() ;
   void unfreeze() ;
   bool is_frozen() ;
+  bool are_alarms_suppressed() ;
+  void set_alarms_suppressed(bool suppressed) ;
 private:
   string s_states() ;
   string s_transition_queue() ;

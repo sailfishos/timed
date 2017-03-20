@@ -790,6 +790,16 @@ bool machine_t::is_frozen()
   return state_waiting->is_closed() ;
 }
 
+bool machine_t::are_alarms_suppressed()
+{
+  return flags & MachineFlags::Suppress_Alarms ;
+}
+
+void machine_t::set_alarms_suppressed(bool suppressed)
+{
+  flags = suppressed ? (flags | MachineFlags::Suppress_Alarms) : (flags & ~MachineFlags::Suppress_Alarms) ;
+}
+
 request_watcher_t::request_watcher_t(machine_t *owner)
   : QObject(owner)
 {

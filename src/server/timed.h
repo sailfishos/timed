@@ -225,6 +225,7 @@ private Q_SLOTS:
   void dsme_mode_reported(const string &mode) ;
   void dsme_mode_is_changing() ;
 #endif
+  void devicelock_state_changed(int state) ;
   void harmattan_init_done(int runlevel) ;
   void harmattan_desktop_visible() ;
   void kernel_notification(const nanotime_t &jump_forwards) ;
