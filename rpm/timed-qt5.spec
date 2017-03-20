@@ -1,7 +1,7 @@
 Name:       timed-qt5
 
 Summary:    Time daemon
-Version:    3.3
+Version:    3.4
 Release:    1
 Group:      System/System Control
 License:    LGPLv2.1
