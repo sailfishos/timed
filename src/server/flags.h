@@ -170,6 +170,13 @@ namespace WallOpcode
       }
     }
 
+namespace MachineFlags
+{
+  enum
+  {
+    Suppress_Alarms     = 1<<0
+  };
+}
 
 namespace RenameMeNameSpace
 {

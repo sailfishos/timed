@@ -175,6 +175,15 @@ void Timed::init_device_mode()
     dsme_mode_handler->init_request() ;
   }
 #endif
+
+  const char *devicelock_service = "org.nemomobile.devicelock";
+  const char *devicelock_interface = "org.nemomobile.lipstick.devicelock";
+  const char *devicelock_path = "/devicelock";
+  QDBusConnection::systemBus().callWithCallback(QDBusMessage::createMethodCall(devicelock_service, devicelock_path, devicelock_interface, "state"),
+                                                this,
+                                                SLOT(device_lock_state_changed(int)));
+  QDBusConnection::systemBus().connect(devicelock_service, devicelock_path, devicelock_interface, "stateChanged", this, SLOT(devicelock_state_changed(int)));
+
   const char *startup_path="/com/nokia/startup/signal", *startup_iface="com.nokia.startup.signal" ;
   const char *desktop_visible_slot = SLOT(harmattan_desktop_visible()) ;
   const char *init_done_slot = SLOT(harmattan_init_done(int)) ;
@@ -880,6 +889,14 @@ void Timed::dsme_mode_reported(const string &mode)
   }
 }
 #endif
+
+void Timed::devicelock_state_changed(int state)
+{
+    if (state == 2 /* ManagerLockout */)
+      am->set_alarms_suppressed(true);
+    else
+      am->set_alarms_suppressed(false);
+}
 
 void Timed::device_mode_reached(bool user_mode)
 {
