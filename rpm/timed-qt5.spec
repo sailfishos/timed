@@ -113,15 +113,15 @@ fi
 %statefs_preun
 %statefs_provider_unregister inout timed
 if [ "$1" -eq 0 ]; then
-systemctl-user stop %{name}.service
+  systemctl-user stop %{name}.service || :
 fi
 
 %postun
 /sbin/ldconfig
 if [ "$1" -eq 0 ]; then
-systemctl-user stop {%name}.service || :
-systemctl-user daemon-reload || :
-getent group time >/dev/null && groupdel timed
+  systemctl-user stop {%name}.service || :
+  systemctl-user daemon-reload || :
+  getent group time >/dev/null && groupdel timed || :
 fi
 %statefs_postun
 
