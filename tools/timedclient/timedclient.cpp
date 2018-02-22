@@ -1391,7 +1391,7 @@ static void do_add_event(char *args)
 
     if( *val == 0 )
     {
-      if( event_set_flag(cur_eve, key) )
+      if( !event_set_flag(cur_eve, key) )
       {
         fprintf(stderr, "unknown event flag: %s\n", key);
       }
