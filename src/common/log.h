@@ -57,7 +57,7 @@
 # define log_info(FMT,ARGS...) do { } while(0)
 #endif
 
-#if LOG_LEVEL >= LOG_INFO
+#if LOG_LEVEL >= LOG_NOTICE
 # define log_notice(FMT,ARGS...) do { fprintf(stderr, "NOTICE: " FMT "\n", ## ARGS); } while(0)
 #else
 # define log_notice(FMT,ARGS...) do { } while(0)

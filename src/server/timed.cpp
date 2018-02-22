@@ -850,6 +850,7 @@ void Timed::unix_signal(int signo)
 
 void Timed::update_oracle_context(bool s)
 {
+  Q_UNUSED(s);
   log_debug("update_oracle_context(%d): NOT IMPLEMENTED", s);
 }
 

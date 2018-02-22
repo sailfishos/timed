@@ -33,7 +33,7 @@
 
 
 #if 0
-# define debugf(FMT,ARGS...) printf("DEBUG: "FMT, ## ARGS)
+# define debugf(FMT,ARGS...) printf("DEBUG: " FMT, ## ARGS)
 #else
 # define debugf(FMT,ARGS...) do { } while(0)
 #endif
