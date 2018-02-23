@@ -181,7 +181,7 @@ void Timed::init_device_mode()
   const char *devicelock_path = "/devicelock";
   QDBusConnection::systemBus().callWithCallback(QDBusMessage::createMethodCall(devicelock_service, devicelock_path, devicelock_interface, "state"),
                                                 this,
-                                                SLOT(device_lock_state_changed(int)));
+                                                SLOT(devicelock_state_changed(int)));
   QDBusConnection::systemBus().connect(devicelock_service, devicelock_path, devicelock_interface, "stateChanged", this, SLOT(devicelock_state_changed(int)));
 
   const char *startup_path="/com/nokia/startup/signal", *startup_iface="com.nokia.startup.signal" ;
@@ -850,6 +850,7 @@ void Timed::unix_signal(int signo)
 
 void Timed::update_oracle_context(bool s)
 {
+  Q_UNUSED(s);
   log_debug("update_oracle_context(%d): NOT IMPLEMENTED", s);
 }
 

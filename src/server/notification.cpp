@@ -85,9 +85,12 @@ void kernel_notification_t::stop()
     close(fd) ;
     fd = -1 ;
   }
+
+#if LOG_LEVEL >= LOG_NOTICE
   nanotime_t new_time_at_zero = nanotime_t::systime_at_zero() ;
   nanotime_t drift = new_time_at_zero - time_at_zero ;
   log_notice("stopped kernel system time change notification watcher (time_at_zero=%s, drift=%s)", time_at_zero.str().c_str(), drift.str().c_str()) ;
+#endif
 }
 
 void kernel_notification_t::ready_to_read(int fd)
