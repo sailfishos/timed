@@ -31,7 +31,6 @@
 
 #define numof(a) (sizeof(a)/sizeof*(a))
 
-
 #if 0
 # define debugf(FMT,ARGS...) printf("DEBUG: " FMT, ## ARGS)
 #else
@@ -1415,7 +1414,7 @@ static void do_add_event(char *args)
         int h = tm.tm_hour;
         int m = tm.tm_min;
 
-	debugf("Setting time: %04d-%02d-%02d %02d:%02d\n", Y,M,D, h,m);
+        debugf("Setting time: %04d-%02d-%02d %02d:%02d\n", Y,M,D, h,m);
         cur_eve.setTime(Y,M,D, h,m);
       }
       else
