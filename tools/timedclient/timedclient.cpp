@@ -31,7 +31,6 @@
 
 #define numof(a) (sizeof(a)/sizeof*(a))
 
-
 #if 0
 # define debugf(FMT,ARGS...) printf("DEBUG: " FMT, ## ARGS)
 #else
@@ -1415,7 +1414,7 @@ static void do_add_event(char *args)
         int h = tm.tm_hour;
         int m = tm.tm_min;
 
-	debugf("Setting time: %04d-%02d-%02d %02d:%02d\n", Y,M,D, h,m);
+        debugf("Setting time: %04d-%02d-%02d %02d:%02d\n", Y,M,D, h,m);
         cur_eve.setTime(Y,M,D, h,m);
       }
       else
@@ -1457,6 +1456,290 @@ static void do_add_event(char *args)
   cur_eve_quit();
 }
 
+static const char *UtcSource_repr(enum Maemo::Timed::WallClock::UtcSource val)
+{
+  const char *repr = "Unknown";
+
+  switch( val ) {
+  case Maemo::Timed::WallClock::UtcManual:
+    repr = "UtcManual";
+    break;
+  case Maemo::Timed::WallClock::UtcNitz:
+    repr = "UtcNitz";
+    break;
+  case Maemo::Timed::WallClock::UtcGps:
+    repr = "UtcGps";
+    break;
+  case Maemo::Timed::WallClock::UtcNtp:
+    repr = "UtcNtp";
+    break;
+  default:
+    break;
+  }
+
+  return repr;
+}
+
+static const char *TimezoneSource_repr(enum Maemo::Timed::WallClock::TimezoneSource val)
+{
+  const char *repr = "Unknown";
+
+  switch( val ) {
+  case Maemo::Timed::WallClock::TimezoneManual:
+    repr = "TimezoneManual";
+    break;
+  case Maemo::Timed::WallClock::TimezoneCellular:
+    repr = "TimezoneCellular";
+    break;
+  default:
+    break;
+  }
+
+  return repr;
+}
+
+static const char *OffsetSource_repr(enum Maemo::Timed::WallClock::OffsetSource val)
+{
+  const char *repr = "Unknown";
+
+  switch( val ) {
+  case Maemo::Timed::WallClock::OffsetManual:
+    repr = "OffsetManual";
+    break;
+  case Maemo::Timed::WallClock::OffsetNitz:
+    repr = "OffsetNitz";
+    break;
+  default:
+    break;
+  }
+
+  return repr;
+}
+
+static void show_tz_info(Maemo::Timed::WallClock::Info &info,
+                         Maemo::Timed::WallClock::TimezoneSource src)
+{
+  QString tz("N/A");
+
+  if( info.timezoneAvailable(src) )
+  {
+    tz = info.timezone(src);
+  }
+
+  printf("%-20s %s\n",
+         TimezoneSource_repr(src),
+         tz.toUtf8().constData());
+}
+
+static void show_utc_info(Maemo::Timed::WallClock::Info &info,
+                          Maemo::Timed::WallClock::UtcSource src)
+{
+  time_t t = -1;
+
+  if( info.utcAvailable(src) )
+  {
+    t = info.utc(src);
+  }
+
+  if( t < 0 )
+  {
+    printf("%-20s %s\n",
+           UtcSource_repr(src),
+           "N/A");
+  }
+  else
+  {
+    printf("%-20s %ld\n",
+           UtcSource_repr(src),
+           (long)t);
+  }
+}
+
+static void show_offset_info(Maemo::Timed::WallClock::Info &info,
+                             Maemo::Timed::WallClock::OffsetSource src)
+{
+  int t = -1;
+
+  if( info.offsetAvailable(src) )
+  {
+    t = info.offset(src);
+  }
+
+  if( t < 0 )
+  {
+    printf("%-20s %s\n",
+           OffsetSource_repr(src),
+           "N/A");
+  }
+  else
+  {
+    printf("%-20s %d\n",
+           OffsetSource_repr(src),
+           t);
+  }
+}
+
+/** Handle option: --get-info */
+static void do_get_info(void)
+{
+  QDBusReply<Maemo::Timed::WallClock::Info> reply = timed_dbus.get_wall_clock_info_sync();
+  if( !reply.isValid() )
+  {
+    qWarning() << "'get_wall_clock_info_sync' call failed" << timed_dbus.lastError();
+  }
+  else
+  {
+    Maemo::Timed::WallClock::Info info = reply.value();
+
+#define Xi(v) printf("%-20s %ld\n", #v, (long)(info.v()))
+#define Xt(v) printf("%-20s %ld\n", #v, (long)(info.v()))
+#define Xb(v) printf("%-20s %s\n", #v, info.v() ? "true" : "false")
+#define Xs(v) printf("%-20s %s\n", #v, info.v().toUtf8().constData())
+
+    Xb(flagTimeNitz);
+    Xb(flagLocalCellular);
+    Xb(flagAutoDst);
+    Xb(flagFormat24);
+    Xs(etcLocaltime);
+    Xs(humanReadableTz);
+    Xi(secondsEastOfGmt);
+    Xs(tzAbbreviation);
+
+    Xt(utc);
+
+    printf("%-20s %s\n",
+           "utcSource",
+           UtcSource_repr(info.utcSource()));
+
+    printf("%-20s %s\n",
+           "timezoneSource",
+           TimezoneSource_repr(info.timezoneSource()));
+
+    printf("%-20s %s\n",
+           "offsetSource",
+           OffsetSource_repr(info.offsetSource()));
+
+    Xt(clockDiff);
+
+    Xb(nitzSupported);
+
+    Xs(defaultTimezone);
+    show_tz_info(info, Maemo::Timed::WallClock::TimezoneManual);
+    show_tz_info(info, Maemo::Timed::WallClock::TimezoneCellular);
+
+    show_utc_info(info, Maemo::Timed::WallClock::UtcManual);
+    show_utc_info(info, Maemo::Timed::WallClock::UtcNitz);
+    show_utc_info(info, Maemo::Timed::WallClock::UtcGps);
+    show_utc_info(info, Maemo::Timed::WallClock::UtcNtp);
+
+    show_offset_info(info, Maemo::Timed::WallClock::OffsetManual);
+    show_offset_info(info, Maemo::Timed::WallClock::OffsetNitz);
+
+#if 0 // not interesting except for extreme debugging
+    Xs(str);
+#endif
+
+#undef Xi
+#undef Xt
+#undef Xb
+#undef Xs
+  }
+}
+
+/** Handle option: --set-info=<args> */
+static void do_set_info(char *args)
+{
+  Maemo::Timed::WallClock::Settings req;
+
+  while( *args )
+  {
+    char *arg = slice(args, &args, ';');
+    char *key = slice(arg, &arg, '=');
+    char *val = slice(arg, &arg, 0);
+
+    if( *key == 0 )
+    {
+      // ignore
+    }
+    else if( !strcmp(key, "format24" ) )
+    {
+      req.setFlag24(parse_bool(val));
+    }
+    else if( !strcmp(key, "timeNitz") )
+    {
+      req.setTimeNitz();
+    }
+    else if( !strcmp(key, "timeManual") )
+    {
+      struct tm tm;
+      if( !*val )
+      {
+        req.setTimeManual();
+      }
+      else if( parse_date_and_time(val, &tm) )
+      {
+        req.setTimeManual(mktime(&tm));
+      }
+      else {
+        time_t t = parse_int(val);
+        req.setTimeManual(t);
+      }
+    }
+    else if( !strcmp(key, "offsetCellular") )
+    {
+      req.setOffsetCellular();
+    }
+    else if( !strcmp(key, "offsetManual") )
+    {
+      if( *val )
+      {
+        req.setOffsetManual(parse_int(val));
+      }
+      else
+      {
+        req.setOffsetManual();
+      }
+    }
+    else if( !strcmp(key, "timezoneCellular") )
+    {
+      if( *val )
+      {
+        req.setTimezoneCellular();
+      }
+      else
+      {
+        const QString tz(val);
+        req.setTimezoneCellular(tz);
+      }
+    }
+    else if( !strcmp(key, "timezoneManual") )
+    {
+      const QString tz(val);
+      req.setTimezoneManual(tz);
+    }
+    else
+    {
+      qWarning("unknown key: %s", key);
+    }
+  }
+
+  if( !req.check() )
+  {
+    qWarning() << "invalid/insufficient settings args given";
+  }
+  else
+  {
+    QDBusReply<bool> rsp = timed_dbus.wall_clock_settings_sync(req);
+    if( !rsp.isValid() )
+    {
+      qWarning() << "'wall_clock_settings_sync' dbus call failed" << timed_dbus.lastError();
+    }
+    else if( !rsp.value() )
+    {
+      qWarning() << "the given settings were rejected by timed";
+    }
+  }
+}
 /* ------------------------------------------------------------------------- *
  * COMMAND LINE OPTIONS
  * ------------------------------------------------------------------------- */
@@ -1489,6 +1772,9 @@ static const struct option OPT_L[] =
   {"set-enabled",    1, 0, 001}, // <bool>
   {"get-enabled",    0, 0, 002},
   {"get-pid",        0, 0, 005},
+
+  {"get-info",       0, 0, 010},
+  {"set-info",       1, 0, 011}, // <args>
 
   // sentinel
   {0, 0, 0, 0}
@@ -1546,6 +1832,8 @@ static const char USAGE[] =
 "  --get-enabled                       --  Query enabled status\n"
 "\n"
 "  --get-pid                           --  Query PID of timed process\n"
+"  --get-info                          --  Query settings\n"
+"  --set-info=<args>                   --  Modify settings\n"
 "\n"
 "EXAMPLES\n"
 "  Add two button alarm that triggers every tuesday 10:00\n"
@@ -1559,6 +1847,12 @@ static const char USAGE[] =
 "  Add one button alarm that triggers after 10 seconds\n"
 "    timedclient -b'TITLE=button0'\\\n"
 "                -e'APPLICATION=test;TITLE=Hello;ticker=10'\n"
+"\n"
+"  Choose timezone manually and enable automatic time sync\n"
+"  (the settings ui does not make this available on all devices)\n"
+"    timedclient-qt5\\\n"
+"      --set-info=timeNitz\\\n"
+"      --set-info=timezoneManual=Europe/London\n"
 "\n"
 "BUTTON ARGS\n"
 "  snooze=<secs>\n"
@@ -1625,6 +1919,21 @@ static const char USAGE[] =
 "  List of attribute key-value pairs <ATTRIB_KEY>=<ATTRIB_VALUE>\n"
 "  separated by a semicolon: 'foo=bar;a=b;type=countdown'.\n"
 "\n"
+"SETTINGS ARGS\n"
+"  format24=<true|false>\n"
+"    true = use 24h time representation; false = use am/pm\n"
+"  timeNitz\n"
+"    Enable automatic time sync (NITZ and/or NTP)\n"
+"  timeManual[=<date|time_t>]\n"
+"    Disable automatic time sync, optionally set system time too\n"
+"  timezoneCellular[=<tz>]\n"
+"    Enable automatic tz selection, optionally set fallback tz\n"
+"  timezoneManual[=<tz>]\n"
+"    Disable automatic tz selection, optionally set manual tz\n"
+"  offsetCellular\n"
+"  offsetManual[=<integer>]\n"
+"    Deprecated, not expected to be useful\n"
+"\n"
 "NOTES\n"
 "  You need to define buttons, actions and recurrence items before\n"
 "  adding the alarm, i.e. pass options in order -bxxx -axxx -rxxx -exxx.\n"
@@ -1679,6 +1988,8 @@ main(int argc, char **argv)
     case 005: do_get_pid();              break;
     case 006: do_set_app_snooze(optarg); break;
     case 007: do_get_app_snooze(optarg); break;
+    case 010: do_get_info();             break;
+    case 011: do_set_info(optarg);       break;
 
     default:
       fprintf(stderr, "?? getopt returned character code 0x%x ??\n", opt);
