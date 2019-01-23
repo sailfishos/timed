@@ -71,7 +71,7 @@ ln -sf ../../lib/qmacro.h src/h/timed-qt5
 %qmake5  \
     -recursive "CONFIG += dsme_dbus_if ofono"
 
-make %{?jobs:-j%jobs}
+make %{?_smp_mflags}
 
 %install
 rm -rf %{buildroot}
@@ -131,7 +131,7 @@ fi
 
 %files -f timed.files
 %defattr(-,root,root,-)
-%doc COPYING copyright
+%license COPYING copyright
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/%{name}.conf
 %config(noreplace) %{_sysconfdir}/%{name}.rc
 %{_bindir}/%{name}
@@ -146,20 +146,17 @@ fi
 
 %files tests
 %defattr(-,root,root,-)
-%doc COPYING
 /opt/tests/%{name}-tests
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/org.fakeofono.conf
 
 %files tools
 %defattr(-,root,root,-)
-%doc COPYING
 %{_bindir}/timedclient-qt5
 
 %files devel
 %defattr(-,root,root,-)
-%doc COPYING
-%{_includedir}/%{name}/*
-%{_includedir}/timed-voland-qt5/*
+%{_includedir}/%{name}
+%{_includedir}/timed-voland-qt5
 %{_libdir}/lib%{name}.so
 %{_libdir}/libtimed-voland-qt5.so
 %{_libdir}/pkgconfig/timed-qt5.pc
