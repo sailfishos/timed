@@ -7,6 +7,7 @@ Group:      System/System Control
 License:    LGPLv2.1
 URL:        https://git.merproject.org/mer-core/timed
 Source0:    %{name}-%{version}.tar.bz2
+Source1:    %{name}.privileges
 Requires:   tzdata
 Requires:   tzdata-timed
 Requires:   systemd
@@ -81,6 +82,9 @@ rm -rf %{buildroot}
 install -d %{buildroot}%{_libdir}/systemd/user/pre-user-session.target.wants/
 ln -s ../%{name}.service %{buildroot}%{_libdir}/systemd/user/pre-user-session.target.wants/%{name}.service
 
+mkdir -p %{buildroot}%{_datadir}/mapplauncherd/privileges.d
+install -m 644 -p %{SOURCE1} %{buildroot}%{_datadir}/mapplauncherd/privileges.d/
+
 # Missing executable flags.
 chmod 755 %{buildroot}%{_oneshotdir}/setcaps-%{name}.sh
 
@@ -138,6 +142,7 @@ fi
 %{_libdir}/lib%{name}.so.*
 %{_libdir}/libtimed-voland-qt5.so.*
 %{_datadir}/contextkit/providers/com.nokia.time.context
+%{_datadir}/mapplauncherd/privileges.d/*
 %{_libdir}/systemd/user/%{name}.service
 %{_libdir}/systemd/user/pre-user-session.target.wants/%{name}.service
 %{_oneshotdir}/setcaps-%{name}.sh
