@@ -92,6 +92,9 @@ chmod 755 %{buildroot}%{_oneshotdir}/setcaps-%{name}.sh
 # Initial links are done in the post section
 install -d %{buildroot}/var/lib/timed
 touch %{buildroot}/var/lib/timed/localtime
+# Make /etc/localtime a link to /var/lib/timed/localtime to make system time zone follow timed.
+install -d %{buildroot}%{_sysconfdir}
+ln -sf /var/lib/timed/localtime %{buildroot}%{_sysconfdir}/localtime
 %statefs_provider_install inout timed %{_sysconfdir}/timed-statefs.conf
 
 %pre
@@ -100,11 +103,9 @@ groupadd-user timed
 %statefs_pre
 
 %post
-# Make /etc/localtime a link to /var/lib/timed/localtime to make system time zone follow timed.
 # Remove existing link so that copying the UTC file will not overwrite anything during reinstall.
 rm -f /var/lib/timed/localtime
 cp /usr/share/zoneinfo/UTC /var/lib/timed/localtime
-ln -sf /var/lib/timed/localtime /etc/localtime
 
 /sbin/ldconfig
 add-oneshot --now setcaps-%{name}.sh
@@ -138,6 +139,7 @@ fi
 %license COPYING copyright
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/%{name}.conf
 %config(noreplace) %{_sysconfdir}/%{name}.rc
+%config(noreplace) %{_sysconfdir}/localtime
 %{_bindir}/%{name}
 %{_libdir}/lib%{name}.so.*
 %{_libdir}/libtimed-voland-qt5.so.*
