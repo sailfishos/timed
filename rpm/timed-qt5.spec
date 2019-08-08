@@ -4,8 +4,8 @@ Summary:    Time daemon
 Version:    3.5
 Release:    1
 Group:      System/System Control
-License:    LGPLv2.1
-URL:        https://git.merproject.org/mer-core/timed
+License:    LGPLv2
+URL:        https://git.sailfishos.org/mer-core/timed
 Source0:    %{name}-%{version}.tar.bz2
 Source1:    %{name}.privileges
 Requires:   tzdata
