@@ -137,9 +137,9 @@ fi
 %files -f timed.files
 %defattr(-,root,root,-)
 %license COPYING copyright
-%config(noreplace) %{_sysconfdir}/dbus-1/system.d/%{name}.conf
-%config(noreplace) %{_sysconfdir}/%{name}.rc
-%config(noreplace) %{_sysconfdir}/localtime
+%config %{_sysconfdir}/dbus-1/system.d/%{name}.conf
+%config %{_sysconfdir}/%{name}.rc
+%config %{_sysconfdir}/localtime
 %{_bindir}/%{name}
 %{_libdir}/lib%{name}.so.*
 %{_libdir}/libtimed-voland-qt5.so.*
@@ -154,7 +154,7 @@ fi
 %files tests
 %defattr(-,root,root,-)
 /opt/tests/%{name}-tests
-%config(noreplace) %{_sysconfdir}/dbus-1/system.d/org.fakeofono.conf
+%config %{_sysconfdir}/dbus-1/system.d/org.fakeofono.conf
 
 %files tools
 %defattr(-,root,root,-)
