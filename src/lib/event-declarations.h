@@ -110,6 +110,9 @@ public:
   void setReminderFlag() ;
   bool reminderFlag() const ;
   void clearReminderFlag() ;
+  void setSharedFlag();
+  bool sharedFlag() const;
+  void clearSharedFlag();
   void setBootFlag() ;
   bool bootFlag() const ;
   void clearBootFlag() ;

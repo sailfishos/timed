@@ -321,6 +321,7 @@ void event_t::codec_initializer()
   REG(event_t::codec, EventFlags, Empty_Recurring) ;
   REG(event_t::codec, EventFlags, In_Dialog) ;
   REG(event_t::codec, EventFlags, Missed) ;
+  REG(event_t::codec, EventFlags, Shared);
 
   REG(action_t::codec, ActionFlags, Send_Cookie) ;
   REG(action_t::codec, ActionFlags, Send_Event_Attributes) ;

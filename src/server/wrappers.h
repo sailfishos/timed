@@ -42,6 +42,15 @@ public:
 
 struct cookie_t
 {
+  enum {
+    /* NB: While "cookie_t" is using unsigned integer value, some parts
+     *     of the sw stack treat it as a signed integer -> to avoid
+     *     confusion the hight bit is kept cleared so that cookie values
+     *     stay positive also under such circumstances.
+     */
+    SharedBit = 1 << 30,
+    ValueMask = SharedBit - 1,
+  };
 private:
   unsigned val ;
 public:
@@ -49,8 +58,22 @@ public:
   explicit cookie_t(unsigned v) : val(v) { }
   unsigned value() const { return val ; }
   bool is_valid() const { return val>0 ; }
-  const cookie_t & operator++() { ++val ; return *this ; }
+  const cookie_t & operator++()
+  {
+    val = (val & SharedBit) | ((val + 1) & ValueMask);
+    return *this;
+  }
   bool operator<(const cookie_t &y) const { return val < y.val ; }
+  void setShared(bool shared)
+  {
+    val &= ValueMask;
+    if (shared)
+      val |= SharedBit;
+  }
+  bool shared() const
+  {
+    return val & SharedBit;
+  }
 } ;
 
 #endif

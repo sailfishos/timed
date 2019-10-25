@@ -160,7 +160,7 @@ Maemo::Timed::Event::Action * Maemo::Timed::Event::getAction(event_action_pimple
     throw Exception(__PRETTY_FUNCTION__, "invalid argument") ;
 
   Maemo::Timed::Event::Action *ea = pa->ptr.get() ;
-  
+
   if(ea == NULL)
   {
     ea = new Maemo::Timed::Event::Action ;
@@ -216,7 +216,7 @@ Maemo::Timed::Event::Button * Maemo::Timed::Event::getButton(event_button_pimple
     throw Exception(__PRETTY_FUNCTION__, "invalid argument") ;
 
   Maemo::Timed::Event::Button *eb = pb->ptr.get() ;
-  
+
   if(eb == NULL)
   {
     eb = new Maemo::Timed::Event::Button ;
@@ -458,6 +458,21 @@ bool Maemo::Timed::Event::reminderFlag() const
 void Maemo::Timed::Event::clearReminderFlag()
 {
   p->eio.flags &= ~EventFlags::Reminder ;
+}
+
+void Maemo::Timed::Event::setSharedFlag()
+{
+  p->eio.flags |= EventFlags::Shared;
+}
+
+bool Maemo::Timed::Event::sharedFlag() const
+{
+  return p->eio.flags & EventFlags::Shared;
+}
+
+void Maemo::Timed::Event::clearSharedFlag()
+{
+  p->eio.flags &= ~EventFlags::Shared;
 }
 
 void Maemo::Timed::Event::setBootFlag()

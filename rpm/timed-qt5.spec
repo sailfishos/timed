@@ -13,6 +13,7 @@ Requires:   tzdata-timed
 Requires:   systemd
 Requires:   oneshot
 Requires:   statefs
+Requires:   sailfish-setup >= 0.1.7
 %{_oneshot_groupadd_requires_pre}
 %{_oneshot_requires_post}
 %{_oneshot_groupadd_requires_post}
@@ -30,6 +31,7 @@ BuildRequires:  libxslt
 BuildRequires:  oneshot
 BuildRequires:  pkgconfig(statefs-qt5)
 BuildRequires:  statefs-devel >= 0.3.21
+BuildRequires:  pkgconfig(sailfishaccesscontrol) >= 0.0.1
 
 %description
 The time daemon (%{name}) managing system time, time zone and settings,
@@ -92,6 +94,7 @@ chmod 755 %{buildroot}%{_oneshotdir}/setcaps-%{name}.sh
 # Initial links are done in the post section
 install -d %{buildroot}/var/lib/timed
 touch %{buildroot}/var/lib/timed/localtime
+install -d %{buildroot}/var/lib/timed/shared_events
 # Make /etc/localtime a link to /var/lib/timed/localtime to make system time zone follow timed.
 install -d %{buildroot}%{_sysconfdir}
 ln -sf /var/lib/timed/localtime %{buildroot}%{_sysconfdir}/localtime
@@ -149,7 +152,9 @@ fi
 %{_libdir}/systemd/user/pre-user-session.target.wants/%{name}.service
 %{_oneshotdir}/setcaps-%{name}.sh
 %dir %attr(0775,-,timed) /var/lib/timed
+%dir %attr(02770,root,sailfish-alarms) /var/lib/timed/shared_events
 %ghost /var/lib/timed/localtime
+%ghost /var/lib/timed/shared_events/events.data
 
 %files tests
 %defattr(-,root,root,-)
