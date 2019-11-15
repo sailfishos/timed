@@ -1,6 +1,8 @@
 /***************************************************************************
 **                                                                        **
 **   Copyright (C) 2009-2011 Nokia Corporation.                           **
+**   Copyright (C) 2019 Jolla Ltd.                                        **
+**   Copyright (c) 2019 Open Mobile Platform LLC.                         **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
