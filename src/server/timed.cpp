@@ -69,11 +69,21 @@
 #include "csd.h"
 #endif
 
+#include <sailfishaccesscontrol.h>
+
 #include <string>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+
+/* Supplementary group required for accessing shared alarms
+ *
+ * User must belong to this group in order to:
+ * - Access files used for storing shared alarm events
+ * - Schedule an alarm with EventFlags::Shared bit set
+ */
+#define GROUP_SAILFISH_ALARMS "sailfish-alarms"
 
 Timed::Timed(int ac, char **av) :
   QCoreApplication(ac, av)
@@ -216,15 +226,29 @@ void Timed::init_configuration()
   else
     log_warning("configuration file '%s' corrupted, using default values", input_path);
 
-  std::string data_directory = c->get("data_directory")->str();
-  data_path = QDir().homePath() + QDir::separator() + QString::fromStdString(data_directory);
-  if (!QDir(data_path).exists())
-    QDir().mkpath(data_path);
+  /* Get configured data file basenames */
+  QString events_file = QString::fromStdString(c->get("events_file")->str());
+  QString settings_file = QString::fromStdString(c->get("settings_file")->str());
 
-  std::string events_file = c->get("events_file")->str();
-  std::string settings_file = c->get("settings_file")->str();
-  events_path = data_path + QDir::separator() + QString::fromStdString(events_file);
-  settings_path = data_path + QDir::separator() + QString::fromStdString(settings_file);
+  /* Private data directory in $HOME */
+  QString data_directory = QString::fromStdString(c->get("data_directory")->str());
+  private_data_directory = QDir().homePath() + QDir::separator() + data_directory;
+  if (!QDir(private_data_directory).exists())
+    QDir().mkpath(private_data_directory);
+  private_settings_path = private_data_directory + QDir::separator() + settings_file;
+  private_events_path = private_data_directory + QDir::separator() + events_file;
+
+  /* Shared events data directory under /var/lib/timed
+   *
+   * Note: Setting up shared data directories requires root
+   *       privileges -> handled during package installation phase.
+   */
+  shared_events_directory = QString::fromStdString(c->get("shared_events_directory")->str());
+  if (!QDir(shared_events_directory).exists()) {
+    log_critical("shared events directory '%s' does not exist",
+                 qUtf8Printable(shared_events_directory));
+  }
+  shared_events_path = shared_events_directory + QDir::separator() + events_file;
 
   threshold_period_long = c->get("queue_threshold_long")->value() ;
   threshold_period_short = c->get("queue_threshold_short")->value() ;
@@ -278,16 +302,76 @@ void Timed::init_customization()
   delete storage ;
 }
 
+bool Timed::permissions_helper(const QString &label, const QString &directory,
+                               bool write_access, const QString &group) const
+{
+  bool allowed = false;
+  int mode = write_access ? (R_OK | W_OK) : R_OK;
+  if (directory.isEmpty()) {
+    /* Partial/missing configuration: Severely cripples functionality */
+    log_critical("%s: directory not configured", qUtf8Printable(label));
+  } else if (!group.isEmpty()
+             && !sailfish_access_control_hasgroup(geteuid(),
+                                                  qUtf8Printable(group))) {
+    /* It is expected that some users do not have access to shared alarms */
+    log_debug("%s: uid %d - not in %s group", qUtf8Printable(label),
+              (int)geteuid(), qUtf8Printable(group));
+  } else if (access(qUtf8Printable(directory), mode) == -1) {
+    /* Supplementary group requirements are met, but filesystem level
+     * access is denied: Severely cripples functionality */
+    log_critical("%s: directory %s - no %s access: %m", qUtf8Printable(label),
+                 qUtf8Printable(directory),
+                 write_access ? "read-write" : "read");
+  } else {
+    allowed = true;
+  }
+  return allowed;
+}
+
+bool Timed::permissions_shared_events() const
+{
+  return permissions_helper("shared_events_storage",
+                            shared_events_directory,
+                            true,
+                            GROUP_SAILFISH_ALARMS);
+}
+
+bool Timed::permissions_private_events() const
+{
+  return permissions_helper("private_events_storage",
+                            private_data_directory,
+                            true,
+                            QString());
+}
+
+bool Timed::permissions_private_settings(bool write_access) const
+{
+  return permissions_helper("private_settings_storage",
+                            private_data_directory,
+                            write_access,
+                            QString());
+}
+
 // * read settings
 // * apply customization defaults, if needed
 void Timed::init_read_settings()
 {
-  settings_storage = new iodata::storage ;
-  settings_storage->set_primary_path(settings_path.toStdString());
-  settings_storage->set_secondary_path(settings_path.toStdString() + ".bak");
-  settings_storage->set_validator(settings_data_validator(), "settings_t") ;
+  /* Settings must be loaded even if we have read-only access. */
 
-  iodata::record *tree = settings_storage->load() ;
+  private_settings_storage = new iodata::storage;
+  if (permissions_private_settings(false)) {
+    private_settings_storage->set_primary_path(private_settings_path.toStdString());
+    private_settings_storage->set_secondary_path(private_settings_path.toStdString() + ".bak");
+  } else {
+    /* We are not allowed to read configuration data, but default
+     * value processing requires that we form a valid parse tree
+     * -> parsing an empty file is sufficient for our purposes.
+     */
+    private_settings_storage->set_primary_path("/dev/null");
+  }
+  private_settings_storage->set_validator(settings_data_validator(), "settings_t");
+
+  iodata::record *tree = private_settings_storage->load();
 
   log_assert(tree, "loading settings failed") ;
 
@@ -358,7 +442,6 @@ void Timed::start_voland_watcher()
     emit voland_registered() ;
   }
 }
-
 
 void Timed::init_context_objects()
 {
@@ -449,26 +532,53 @@ void Timed::init_main_interface_dbus_name()
 
 void Timed::init_load_events()
 {
-  event_storage = new iodata::storage ;
-  event_storage->set_primary_path(events_path.toStdString()) ;
-  event_storage->set_secondary_path(events_path.toStdString()+".bak") ;
-  event_storage->set_validator(events_data_validator(), "event_queue_t") ;
+  /* Event processing is futile unless we can write modified state
+   * back to filesystem -> Ignore data unless we have RW access. */
 
-  iodata::record *events = event_storage->load() ;
+  // Shared events
+  shared_event_storage = new iodata::storage;
+  shared_event_storage->set_primary_path(shared_events_path.toStdString());
+  shared_event_storage->set_secondary_path(shared_events_path.toStdString() + ".bak");
+  shared_event_storage->set_validator(events_data_validator(), "event_queue_t");
 
-  log_assert(events) ;
+  if (permissions_shared_events()) {
+    iodata::record *events = shared_event_storage->load();
+    log_assert(events);
+    am->load(events);
+    delete events;
+  }
 
-  am->load(events) ;
+  // Private events
+  private_event_storage = new iodata::storage;
+  private_event_storage->set_primary_path(private_events_path.toStdString());
+  private_event_storage->set_secondary_path(private_events_path.toStdString() + ".bak");
+  private_event_storage->set_validator(events_data_validator(), "event_queue_t");
 
-  delete events ;
+  if (permissions_private_events()) {
+    iodata::record *events = private_event_storage->load();
+    log_assert(events);
+    am->load(events);
+    delete events;
+  }
 }
 
 void Timed::init_start_event_machine()
 {
-  if(not settings_storage->fix_files(false))
-    log_critical("can't fix the primary settings file") ;
-  if(not event_storage->fix_files(false))
-    log_critical("can't fix the primary event queue file") ;
+  if (permissions_private_settings(true)) {
+    if (not private_settings_storage->fix_files(false))
+      log_critical("can't fix the primary settings file");
+  }
+
+  if (permissions_private_events()) {
+    if (not private_event_storage->fix_files(false))
+      log_critical("can't fix the primary private event queue file");
+  }
+
+  if (permissions_shared_events()) {
+    if (not shared_event_storage->fix_files(false))
+      log_critical("can't fix the primary shared event queue file");
+  }
+
   am->process_transition_queue() ;
   am->start() ;
 }
@@ -491,7 +601,6 @@ void Timed::init_cellular_services()
   log_assert(res4) ;
 }
 #endif // OFONO
-
 
 void Timed::init_ntp()
 {
@@ -553,9 +662,10 @@ void Timed::stop_stuff()
   log_debug() ;
   delete voland_watcher ;
   log_debug() ;
-  delete event_storage ;
+  delete private_event_storage;
+  delete shared_event_storage;
   log_debug() ;
-  delete settings_storage ;
+  delete private_settings_storage;
   log_debug() ;
   delete short_save_threshold_timer ;
   log_debug() ;
@@ -566,7 +676,6 @@ void Timed::stop_stuff()
   delete dst_timer ;
   log_notice("stop_stuff() DONE") ;
 }
-
 
 // Move the stuff below to machine:: class
 
@@ -698,32 +807,48 @@ void Timed::queue_threshold_timeout()
 
 void Timed::save_event_queue()
 {
-  iodata::record *queue = am->save(false) ; // false = full queue, not backup
-  int res = event_storage->save(queue) ;
+  // Private data
+  if (permissions_private_events()) {
+    iodata::record *queue = am->save(false, machine_t::PrivateEvents); // false = full queue, not backup
+    int res = private_event_storage->save(queue);
+    if (res == 0) // primary file
+      log_info("private event queue written");
+    else if (res == 1)
+      log_warning("private event queue written to secondary file");
+    else
+      log_critical("private event queue can't be saved");
+    delete queue;
+  }
 
-  if(res==0) // primary file
-    log_info("event queue written") ;
-  else if(res==1)
-    log_warning("event queue written to secondary file") ;
-  else
-    log_critical("event queue can't be saved") ;
-
-  delete queue ;
+  // Shared data
+  if (permissions_shared_events()) {
+    iodata::record *queue = am->save(false, machine_t::SharedEvents); // false = full queue, not backup
+    int res = shared_event_storage->save(queue);
+    if (res == 0) // primary file
+      log_info("shared event queue written");
+    else if (res == 1)
+      log_warning("shared event queue written to secondary file");
+    else
+      log_critical("shared event queue can't be saved");
+    delete queue;
+  }
 }
 
 void Timed::save_settings()
 {
-  iodata::record *tree = settings->save() ;
-  int res = settings_storage->save(tree) ;
+  if (permissions_private_settings(true)) {
+    iodata::record *tree = settings->save();
+    int res = private_settings_storage->save(tree);
 
-  if(res==0) // primary file
-    log_info("wall clock settings written") ;
-  else if(res==1)
-    log_warning("wall clock settings written to secondary file") ;
-  else
-    log_critical("wall clock settings can't be saved") ;
+    if (res == 0) // primary file
+      log_info("wall clock settings written");
+    else if (res == 1)
+      log_warning("wall clock settings written to secondary file");
+    else
+      log_critical("wall clock settings can't be saved");
 
-  delete tree ;
+    delete tree;
+  }
 }
 
 void Timed::invoke_signal(const nanotime_t &back)
@@ -946,7 +1071,7 @@ void Timed::init_first_boot_hwclock_time_adjustment_check() {
     if (first_boot_date_adjusted)
         return;
 
-    QString path = data_path + QDir::separator() + "first-boot-hwclock.dat";
+    QString path = private_data_directory + QDir::separator() + "first-boot-hwclock.dat";
     QFile file(path);
     if (file.exists()) {
         first_boot_date_adjusted = true;

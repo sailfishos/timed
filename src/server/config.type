@@ -17,6 +17,7 @@ config_t =
   { name = "queue_threshold_long", type = $integer, value = 5000 },
   { name = "queue_threshold_short", type = $integer, value = 1000 },
   { name = "data_directory", type = $bytes, value = ".timed" },
+  { name = "shared_events_directory", type = $bytes, value = "/var/lib/timed/shared_events" },
   { name = "settings_file", type = $bytes, value = "settings.data" },
   { name = "events_file", type = $bytes, value = "events.data" },
 

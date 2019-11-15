@@ -216,7 +216,7 @@ public slots:
   {
     Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.ping() by %s", PEER) ;
-    iodata::record *r = timed->am->save(false) ; // false = not for backup
+    iodata::record *r = timed->am->save(false, machine_t::AllEvents); // false = not for backup
     std::ostringstream s ;
     s << *r ;
     delete r ;

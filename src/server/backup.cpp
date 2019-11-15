@@ -119,7 +119,7 @@ void backup_t::clean_up()
 
 bool backup_t::save_queue_as(const string &path)
 {
-  iodata::record *r = timed->am->save(true) ;
+  iodata::record *r = timed->am->save(true, machine_t::AllEvents);
   iodata::storage *backup = new iodata::storage ;
 
   backup->set_primary_path(path) ;

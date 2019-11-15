@@ -427,6 +427,16 @@ void machine_t::register_event(event_t *e)
 {
   if (not e->cookie.is_valid())
     e->cookie = cookie_t(next_cookie++) ;
+
+  /* Remove Shared flag when it is not permitted */
+  if (e->flags & EventFlags::Shared) {
+    if (!timed->permissions_shared_events()) {
+      log_warning("rejecting Shared flag");
+      e->flags &= ~EventFlags::Shared;
+    }
+  }
+
+  e->cookie.setShared(e->flags & EventFlags::Shared);
   events[e->cookie] = e ;
   state_start->go_to(e) ;
 }
@@ -672,7 +682,7 @@ uint32_t machine_t::attr(uint32_t mask)
   return flags & mask ;
 }
 
-iodata::record *machine_t::save(bool for_backup)
+iodata::record *machine_t::save(bool for_backup, EventTypes eventTypes)
 {
   iodata::record *r = new iodata::record ;
   iodata::array *q = new iodata::array ;
@@ -682,18 +692,24 @@ iodata::record *machine_t::save(bool for_backup)
     event_t *e = it->second ;
     if(for_backup and not (e->flags & EventFlags::Backup))
       continue ;
+    EventTypes eventType = e->cookie.shared() ? SharedEvents : PrivateEvents;
+    if (!(eventTypes & eventType))
+      continue;
     q->add(e->save(for_backup)) ;
   }
 
   r->add("events", q) ;
   if(not for_backup)
-    r->add("next_cookie", next_cookie) ;
+    r->add("next_cookie", next_cookie & cookie_t::ValueMask);
   return r ;
 }
 
 void machine_t::load(const iodata::record *r)
 {
-  next_cookie = r->get("next_cookie")->value() ;
+  int cookie = r->get("next_cookie")->value();
+  cookie &= cookie_t::ValueMask;
+  if (next_cookie < cookie)
+    next_cookie = cookie;
   const iodata::array *a = r->get("events")->arr() ;
   load_events(a, true, true) ;
 }

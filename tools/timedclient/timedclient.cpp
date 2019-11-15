@@ -540,6 +540,12 @@ static const event_flag_t event_flag_lut[] =
     &Maemo::Timed::Event::clearReminderFlag,
   },
   {
+    "shared",
+    &Maemo::Timed::Event::sharedFlag,
+    &Maemo::Timed::Event::setSharedFlag,
+    &Maemo::Timed::Event::clearSharedFlag,
+  },
+  {
     "boot",
     &Maemo::Timed::Event::bootFlag,
     &Maemo::Timed::Event::setBootFlag,
@@ -1907,6 +1913,7 @@ static const char USAGE[] =
 "  boot\n"
 "  keepAlive\n"
 "  reminder\n"
+"  shared\n"
 "  singleShot\n"
 "  triggerIfMissed\n"
 "  userMode\n"
