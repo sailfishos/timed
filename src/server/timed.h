@@ -179,9 +179,12 @@ private:
   iodata::storage *private_settings_storage;
   iodata::storage *shared_event_storage;
 
-  simple_timer *short_save_threshold_timer, *long_save_threshold_timer ;
-  unsigned threshold_period_long, threshold_period_short ;
-  unsigned ping_period, ping_max_num ;
+  simple_timer *short_save_threshold_timer;
+  simple_timer *long_save_threshold_timer;
+  unsigned threshold_period_long;
+  unsigned threshold_period_short;
+  unsigned ping_period;
+  unsigned ping_max_num;
   QString private_data_directory;
   QString private_events_path;
   QString private_settings_path;

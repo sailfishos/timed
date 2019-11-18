@@ -87,13 +87,63 @@
  */
 #define GROUP_SAILFISH_ALARMS "sailfish-alarms"
 
-Timed::Timed(int ac, char **av) :
-  QCoreApplication(ac, av)
-{
-  halted = "" ; // XXX: remove it, as we don't want to halt anymore
-  first_boot_date_adjusted = false;
-  log_debug() ;
 
+Timed::Timed(int ac, char **av)
+    : QCoreApplication(ac, av)
+    , format24_by_default(false)
+    , auto_time_by_default(false)
+    , guess_tz_by_default(false)
+    , nitz_supported(false)
+    , tz_by_default()
+    , first_boot_date_adjusted(false)
+    , am(nullptr)
+    , ping(nullptr)
+    , settings(nullptr)
+#if OFONO
+    , csd(nullptr)
+#endif
+    , ses_iface(nullptr)
+    , voland_watcher(nullptr)
+    , private_event_storage(nullptr)
+    , private_settings_storage(nullptr)
+    , shared_event_storage(nullptr)
+    , short_save_threshold_timer(nullptr)
+    , long_save_threshold_timer(nullptr)
+    , threshold_period_long(0)
+    , threshold_period_short(0)
+    , ping_period(0)
+    , ping_max_num(0)
+    , private_data_directory()
+    , private_events_path()
+    , private_settings_path()
+    , shared_events_directory()
+    , shared_events_path()
+    , default_gmt_offset(0)
+#if HAVE_DSME
+    , dsme_mode_handler(nullptr)
+#endif
+    , current_mode()
+    , q_pause(nullptr)
+    , signal_invoked(false)
+    , systime_back()
+    , dst_timer(nullptr)
+    , sent_signature()
+    , tz_oracle(nullptr)
+    , ntp_controller(nullptr)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    , alarm_present(nullptr)
+    , alarm_trigger(nullptr)
+#else
+    , time_operational_p(nullptr)
+    , alarm_present(nullptr)
+    , alarm_trigger(nullptr)
+    , context_service(nullptr)
+#endif
+    , backup_object(nullptr)
+    , notificator(nullptr)
+    , halted() // XXX: remove it, as we don't want to halt anymore
+    , signal_object(nullptr)
+{
   init_unix_signal_handler() ;
   log_debug() ;
 
