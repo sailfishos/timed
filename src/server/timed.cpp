@@ -79,6 +79,14 @@
 #include <sstream>
 #include <iomanip>
 
+/* Supplementary group required for changing clock settings
+ *
+ * User must belong to this group in order to:
+ * - Modify files used for storing shared clock settings
+ * - Request settings changes over D-Bus
+ */
+#define GROUP_SAILFISH_DATETIME "sailfish-datetime"
+
 /* Supplementary group required for accessing shared alarms
  *
  * User must belong to this group in order to:
@@ -106,6 +114,7 @@ Timed::Timed(int ac, char **av)
     , voland_watcher(nullptr)
     , private_event_storage(nullptr)
     , private_settings_storage(nullptr)
+    , shared_settings_storage(nullptr)
     , shared_event_storage(nullptr)
     , short_save_threshold_timer(nullptr)
     , long_save_threshold_timer(nullptr)
@@ -116,6 +125,8 @@ Timed::Timed(int ac, char **av)
     , private_data_directory()
     , private_events_path()
     , private_settings_path()
+    , shared_settings_directory()
+    , shared_settings_path()
     , shared_events_directory()
     , shared_events_path()
     , default_gmt_offset(0)
@@ -302,6 +313,14 @@ void Timed::init_configuration()
   }
   shared_events_path = shared_events_directory + QDir::separator() + events_file;
 
+  /* Shared settings data directory under /var/lib/timed */
+  shared_settings_directory = QString::fromStdString(c->get("shared_settings_directory")->str());
+  if (!QDir(shared_settings_directory).exists()) {
+    log_critical("shared settings directory '%s' does not exist",
+                 qUtf8Printable(shared_settings_directory));
+  }
+  shared_settings_path = shared_settings_directory + QDir::separator() + settings_file;
+
   threshold_period_long = c->get("queue_threshold_long")->value() ;
   threshold_period_short = c->get("queue_threshold_short")->value() ;
   ping_period = c->get("voland_ping_sleep")->value() ;
@@ -396,6 +415,17 @@ bool Timed::permissions_private_events() const
                             QString());
 }
 
+bool Timed::permissions_shared_settings(bool write_access) const
+{
+  /* Readable by all, writing requires GROUP_SAILFISH_DATETIME */
+  QString group(write_access ? GROUP_SAILFISH_DATETIME : "");
+
+  return permissions_helper("shared_settings_storage",
+                            shared_settings_directory,
+                            write_access,
+                            group);
+}
+
 bool Timed::permissions_private_settings(bool write_access) const
 {
   return permissions_helper("private_settings_storage",
@@ -408,22 +438,49 @@ bool Timed::permissions_private_settings(bool write_access) const
 // * apply customization defaults, if needed
 void Timed::init_read_settings()
 {
-  /* Settings must be loaded even if we have read-only access. */
+  /* When loading settings:
+   *
+   * 1. Try shared data
+   *    - expected to exist after migration
+   * 2. Try private data
+   *    - expected to exist before migration
+   *    - removed once migration is finished
+   * 3. Use /dev/null
+   *    - we need parse tree for default value processing
+   *    - any empty file will do, but /dev/null is pretty
+   *      much guaranteed to exist and be readable by all
+   */
 
+  iodata::record *tree = nullptr;
+
+  /* Setup shared data storage */
+  shared_settings_storage = new iodata::storage;
+  shared_settings_storage->set_primary_path(shared_settings_path.toStdString());
+  shared_settings_storage->set_secondary_path(shared_settings_path.toStdString() + ".bak");
+  shared_settings_storage->set_validator(settings_data_validator(), "settings_t");
+
+  /* If possible, read shared settings file */
+  if (access(qUtf8Printable(shared_settings_path), R_OK) == 0
+      && permissions_shared_settings(false)) {
+    tree = shared_settings_storage->load();
+  }
+
+  /* Setup private data storage */
   private_settings_storage = new iodata::storage;
-  if (permissions_private_settings(false)) {
+  if (access(qUtf8Printable(private_settings_path), R_OK) == 0
+      && permissions_private_settings(false)) {
     private_settings_storage->set_primary_path(private_settings_path.toStdString());
     private_settings_storage->set_secondary_path(private_settings_path.toStdString() + ".bak");
   } else {
-    /* We are not allowed to read configuration data, but default
-     * value processing requires that we form a valid parse tree
-     * -> parsing an empty file is sufficient for our purposes.
-     */
+    /* Private data has been migrated / is otherwise unreadable */
     private_settings_storage->set_primary_path("/dev/null");
   }
   private_settings_storage->set_validator(settings_data_validator(), "settings_t");
 
-  iodata::record *tree = private_settings_storage->load();
+  /* If reading shared settings file failed, read private / dummy data */
+  if (!tree) {
+    tree = private_settings_storage->load();
+  }
 
   log_assert(tree, "loading settings failed") ;
 
@@ -616,16 +673,19 @@ void Timed::init_load_events()
 
 void Timed::init_start_event_machine()
 {
-  if (permissions_private_settings(true)) {
-    if (not private_settings_storage->fix_files(false))
-      log_critical("can't fix the primary settings file");
+  /* Initialize shared settings file */
+  if (permissions_shared_settings(true)) {
+    if (not shared_settings_storage->fix_files(false))
+      log_critical("can't fix the primary shared settings file");
   }
 
+  /* Initialize private events file */
   if (permissions_private_events()) {
     if (not private_event_storage->fix_files(false))
       log_critical("can't fix the primary private event queue file");
   }
 
+  /* Initialize shared events file */
   if (permissions_shared_events()) {
     if (not shared_event_storage->fix_files(false))
       log_critical("can't fix the primary shared event queue file");
@@ -718,6 +778,7 @@ void Timed::stop_stuff()
   delete shared_event_storage;
   log_debug() ;
   delete private_settings_storage;
+  delete shared_settings_storage;
   log_debug() ;
   delete short_save_threshold_timer ;
   log_debug() ;
@@ -888,9 +949,10 @@ void Timed::save_event_queue()
 
 void Timed::save_settings()
 {
-  if (permissions_private_settings(true)) {
+  /* Try to save shared settings */
+  if (permissions_shared_settings(true)) {
     iodata::record *tree = settings->save();
-    int res = private_settings_storage->save(tree);
+    int res = shared_settings_storage->save(tree);
 
     if (res == 0) // primary file
       log_info("wall clock settings written");
@@ -900,6 +962,26 @@ void Timed::save_settings()
       log_critical("wall clock settings can't be saved");
 
     delete tree;
+  }
+
+  /* When we have valid shared data, remove stale private files */
+  if (access(qUtf8Printable(shared_settings_path), R_OK) == 0) {
+    if (unlink(qUtf8Printable(private_settings_path)) == 0) {
+      log_warning("%s: stale configuration file removed",
+                  qUtf8Printable(private_settings_path));
+    } else if (errno != ENOENT) {
+      log_error("%s: can't remove file: %m",
+                qUtf8Printable(private_settings_path));
+    }
+
+    QString backup = private_settings_path + ".bak";
+    if (unlink(qUtf8Printable(backup)) == 0) {
+      log_warning("%s: stale configuration file removed",
+                  qUtf8Printable(backup));
+    } else if (errno != ENOENT) {
+      log_error("%s: can't remove file: %m",
+                qUtf8Printable(backup));
+    }
   }
 }
 

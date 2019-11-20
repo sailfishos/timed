@@ -13,7 +13,7 @@ Requires:   tzdata-timed
 Requires:   systemd
 Requires:   oneshot
 Requires:   statefs
-Requires:   sailfish-setup >= 0.1.7
+Requires:   sailfish-setup >= 0.1.8
 %{_oneshot_groupadd_requires_pre}
 %{_oneshot_requires_post}
 %{_oneshot_groupadd_requires_post}
@@ -95,6 +95,7 @@ chmod 755 %{buildroot}%{_oneshotdir}/setcaps-%{name}.sh
 install -d %{buildroot}/var/lib/timed
 touch %{buildroot}/var/lib/timed/localtime
 install -d %{buildroot}/var/lib/timed/shared_events
+install -d %{buildroot}/var/lib/timed/shared_settings
 # Make /etc/localtime a link to /var/lib/timed/localtime to make system time zone follow timed.
 install -d %{buildroot}%{_sysconfdir}
 ln -sf /var/lib/timed/localtime %{buildroot}%{_sysconfdir}/localtime
@@ -153,8 +154,10 @@ fi
 %{_oneshotdir}/setcaps-%{name}.sh
 %dir %attr(0775,-,timed) /var/lib/timed
 %dir %attr(02770,root,sailfish-alarms) /var/lib/timed/shared_events
+%dir %attr(02775,root,sailfish-datetime) /var/lib/timed/shared_settings
 %ghost /var/lib/timed/localtime
 %ghost /var/lib/timed/shared_events/events.data
+%ghost /var/lib/timed/shared_settings/settings.data
 
 %files tests
 %defattr(-,root,root,-)

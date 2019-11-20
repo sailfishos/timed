@@ -1,4 +1,5 @@
 data_directory = ".timed",
 shared_events_directory = "/var/lib/timed/shared_events",
+shared_settings_directory = "/var/lib/timed/shared_settings",
 events_file = "events.data",
 settings_file = "settings.data" .

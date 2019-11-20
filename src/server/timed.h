@@ -98,7 +98,7 @@ private:
 public:
   bool is_nitz_supported() { return nitz_supported ; }
   const string &default_timezone() { return tz_by_default ; }
-  const QString get_settings_path() { return private_settings_path; }
+  const QString get_settings_path() { return shared_settings_path; }
   void init_first_boot_hwclock_time_adjustment_check();
 
 private:
@@ -177,6 +177,7 @@ private:
   QDBusServiceWatcher *voland_watcher ;
   iodata::storage *private_event_storage;
   iodata::storage *private_settings_storage;
+  iodata::storage *shared_settings_storage;
   iodata::storage *shared_event_storage;
 
   simple_timer *short_save_threshold_timer;
@@ -188,6 +189,8 @@ private:
   QString private_data_directory;
   QString private_events_path;
   QString private_settings_path;
+  QString shared_settings_directory;
+  QString shared_settings_path;
   QString shared_events_directory;
   QString shared_events_path;
   int default_gmt_offset ;
@@ -201,6 +204,7 @@ private:
 public:
   bool permissions_shared_events() const;
   bool permissions_private_events() const;
+  bool permissions_shared_settings(bool write_access) const;
   bool permissions_private_settings(bool write_access) const;
   void save_settings() ;
 private:

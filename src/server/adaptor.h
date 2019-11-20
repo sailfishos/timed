@@ -109,6 +109,12 @@ public slots:
   {
     Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.wall_clock_settings(%s) by %s", p.SQC, PEER) ;
+    if (!timed->permissions_shared_settings(true)) {
+      /* Settings application should hide relevant controls, so we do not
+       * normally expect to see requests that would need to be denied. */
+      log_warning("changing settings denied");
+      return false;
+    }
     // log_debug("%s", string_std_to_q(p.str()).c_str()) ;
     return timed->settings->wall_clock_settings(p) ;
   }
