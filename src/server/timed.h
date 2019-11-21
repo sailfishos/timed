@@ -31,17 +31,8 @@
 #include <QDBusConnectionInterface>
 #include <QDBusServiceWatcher>
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-#include <ContextProvider>
-#endif
-
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <iodata-qt5/validator>
 #include <iodata-qt5/storage>
-#else
-#include <iodata/validator>
-#include <iodata/storage>
-#endif
 
 #include "wrappers.h"
 #include "settings.h"
@@ -52,13 +43,11 @@
 #include "dsme-mode.h"
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 namespace statefs {
   namespace qt {
     class InOutWriter;
   }
 }
-#endif
 
 class simple_timer;
 class pinguin_t;
@@ -72,11 +61,7 @@ class csd_t;
 struct Timed : public QCoreApplication
 {
 public:
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
   inline const char *configuration_path() { return  "/etc/timed-qt5.rc" ; }
-#else
-  inline const char *configuration_path() { return  "/etc/timed.rc" ; }
-#endif
   // inline const char *configuration_type() { return  "/usr/share/timed/typeinfo/config.type" ; }
 
   inline const char *customization_path() { return  "/usr/share/timed/customization.data" ; } // TODO: make it configurable
@@ -219,15 +204,8 @@ private:
   tz_oracle_t *tz_oracle ;
   NtpController *ntp_controller;
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
   statefs::qt::InOutWriter *alarm_present;
   statefs::qt::InOutWriter *alarm_trigger;
-#else
-  ContextProvider::Property *time_operational_p ;
-  ContextProvider::Property *alarm_present;
-  ContextProvider::Property *alarm_trigger;
-  ContextProvider::Service *context_service ;
-#endif
 
   QObject *backup_object ;
 public:

@@ -28,11 +28,7 @@
 #include <QDBusMetaType>
 
 #include <QtGlobal>
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <timed-qt5/qmacro.h>
-#else
-#include <timed/qmacro.h>
-#endif
 
 namespace Maemo { namespace Timed { namespace Voland { class Reminder ; } } }
 

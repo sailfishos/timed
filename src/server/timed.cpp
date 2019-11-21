@@ -37,11 +37,7 @@
 #include <QDateTime>
 #include <QDir>
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <statefs/qt/util.hpp>
-#else
-#include <ContextProvider>
-#endif
 
 #include "../voland/interface.h"
 
@@ -141,15 +137,8 @@ Timed::Timed(int ac, char **av)
     , sent_signature()
     , tz_oracle(nullptr)
     , ntp_controller(nullptr)
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     , alarm_present(nullptr)
     , alarm_trigger(nullptr)
-#else
-    , time_operational_p(nullptr)
-    , alarm_present(nullptr)
-    , alarm_trigger(nullptr)
-    , context_service(nullptr)
-#endif
     , backup_object(nullptr)
     , notificator(nullptr)
     , halted() // XXX: remove it, as we don't want to halt anymore
@@ -554,20 +543,8 @@ void Timed::start_voland_watcher()
 
 void Timed::init_context_objects()
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
   alarm_present = new statefs::qt::InOutWriter("Alarm.Present");
   alarm_trigger = new statefs::qt::InOutWriter("Alarm.Trigger");
-#else
-  context_service = new ContextProvider::Service(Maemo::Timed::bus()) ;
-  context_service -> setAsDefault() ;
-
-  log_debug("(new ContextProvider::Service(Maemo::Timed::bus()))->setAsDefault()") ;
-  alarm_trigger = new ContextProvider::Property("Alarm.Trigger");
-  alarm_present = new ContextProvider::Property("Alarm.Present");
-  ContextProvider::Property("/com/nokia/time/time_zone/oracle") ;
-  time_operational_p = new ContextProvider::Property("/com/nokia/time/system_time/operational") ;
-  time_operational_p->setValue(am->is_epoch_open()) ;
-#endif
 }
 
 void Timed::init_backup_object()
@@ -750,10 +727,6 @@ void Timed::stop_context()
 {
   delete alarm_present;
   delete alarm_trigger;
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  delete context_service ;
-  delete time_operational_p ;
-#endif
 }
 void Timed::stop_dbus()
 {
@@ -1116,9 +1089,6 @@ void Timed::update_oracle_context(bool s)
 void Timed::open_epoch()
 {
   am->open_epoch() ;
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  time_operational_p->setValue(true) ;
-#endif
 }
 
 #if HAVE_DSME
@@ -1235,11 +1205,7 @@ void Timed::init_first_boot_hwclock_time_adjustment_check() {
 
 void Timed::set_alarm_present(bool present)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
   alarm_present->set(QVariant(present));
-#else
-  alarm_present->setValue(present);
-#endif
 }
 
 void Timed::set_alarm_trigger(const QMap<QString, QVariant> &triggers)
@@ -1256,7 +1222,6 @@ void Timed::set_alarm_trigger(const QMap<QString, QVariant> &triggers)
     triggerMap.insert(cookie, seconds_after_epoch);
   }
   emit alarm_triggers_changed(triggerMap);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
   // statefs supports only boolean and string types, marshall the QMap to a string
   QString contextProperty = "";
   QMapIterator<QString, QVariant> i(triggers);
@@ -1267,9 +1232,6 @@ void Timed::set_alarm_trigger(const QMap<QString, QVariant> &triggers)
       contextProperty += QString("%1:%2").arg(i.key()).arg(i.value().toUInt());
   }
   alarm_trigger->set(contextProperty);
-#else
-  alarm_trigger->setValue(QVariant::fromValue(triggers));
-#endif
 }
 
 bool Timed::notify(QObject *obj, QEvent *ev)
