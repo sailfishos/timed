@@ -133,17 +133,16 @@ source_settings::source_settings(Timed *owner) : QObject(owner)
   // new options:
   alarms_are_enabled = false ;
   default_snooze_value = 300 ;
-#define _creat(xxx) src[#xxx] = xxx = new xxx##_t ;
-  _creat(manual_utc) ;
-  _creat(nitz_utc) ;
-  _creat(gps_utc) ;
-  _creat(ntp_utc) ;
-  _creat(manual_offset) ;
-  _creat(nitz_offset) ;
-  _creat(manual_zone) ;
-  _creat(cellular_zone) ;
-  _creat(app_snooze) ;
-#undef _creat // spell it without 'e' ;-)
+
+  src["manual_utc"]    = manual_utc    = new manual_utc_t;
+  src["nitz_utc"]      = nitz_utc      = new nitz_utc_t;
+  src["gps_utc"]       = gps_utc       = new gps_utc_t;
+  src["ntp_utc"]       = ntp_utc       = new ntp_utc_t;
+  src["manual_offset"] = manual_offset = new manual_offset_t;
+  src["nitz_offset"]   = nitz_offset   = new nitz_offset_t;
+  src["manual_zone"]   = manual_zone   = new manual_zone_t;
+  src["cellular_zone"] = cellular_zone = new cellular_zone_t;
+  src["app_snooze"]    = app_snooze    = new app_snooze_t;
 }
 
 source_settings::~source_settings()

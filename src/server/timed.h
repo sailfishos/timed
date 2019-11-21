@@ -31,17 +31,8 @@
 #include <QDBusConnectionInterface>
 #include <QDBusServiceWatcher>
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-#include <ContextProvider>
-#endif
-
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <iodata-qt5/validator>
 #include <iodata-qt5/storage>
-#else
-#include <iodata/validator>
-#include <iodata/storage>
-#endif
 
 #include "wrappers.h"
 #include "settings.h"
@@ -52,13 +43,11 @@
 #include "dsme-mode.h"
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 namespace statefs {
   namespace qt {
     class InOutWriter;
   }
 }
-#endif
 
 class simple_timer;
 class pinguin_t;
@@ -72,11 +61,7 @@ class csd_t;
 struct Timed : public QCoreApplication
 {
 public:
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
   inline const char *configuration_path() { return  "/etc/timed-qt5.rc" ; }
-#else
-  inline const char *configuration_path() { return  "/etc/timed.rc" ; }
-#endif
   // inline const char *configuration_type() { return  "/usr/share/timed/typeinfo/config.type" ; }
 
   inline const char *customization_path() { return  "/usr/share/timed/customization.data" ; } // TODO: make it configurable
@@ -98,7 +83,7 @@ private:
 public:
   bool is_nitz_supported() { return nitz_supported ; }
   const string &default_timezone() { return tz_by_default ; }
-  const QString get_settings_path() { return private_settings_path; }
+  const QString get_settings_path() { return shared_settings_path; }
   void init_first_boot_hwclock_time_adjustment_check();
 
 private:
@@ -177,14 +162,20 @@ private:
   QDBusServiceWatcher *voland_watcher ;
   iodata::storage *private_event_storage;
   iodata::storage *private_settings_storage;
+  iodata::storage *shared_settings_storage;
   iodata::storage *shared_event_storage;
 
-  simple_timer *short_save_threshold_timer, *long_save_threshold_timer ;
-  unsigned threshold_period_long, threshold_period_short ;
-  unsigned ping_period, ping_max_num ;
+  simple_timer *short_save_threshold_timer;
+  simple_timer *long_save_threshold_timer;
+  unsigned threshold_period_long;
+  unsigned threshold_period_short;
+  unsigned ping_period;
+  unsigned ping_max_num;
   QString private_data_directory;
   QString private_events_path;
   QString private_settings_path;
+  QString shared_settings_directory;
+  QString shared_settings_path;
   QString shared_events_directory;
   QString shared_events_path;
   int default_gmt_offset ;
@@ -198,6 +189,7 @@ private:
 public:
   bool permissions_shared_events() const;
   bool permissions_private_events() const;
+  bool permissions_shared_settings(bool write_access) const;
   bool permissions_private_settings(bool write_access) const;
   void save_settings() ;
 private:
@@ -212,15 +204,8 @@ private:
   tz_oracle_t *tz_oracle ;
   NtpController *ntp_controller;
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
   statefs::qt::InOutWriter *alarm_present;
   statefs::qt::InOutWriter *alarm_trigger;
-#else
-  ContextProvider::Property *time_operational_p ;
-  ContextProvider::Property *alarm_present;
-  ContextProvider::Property *alarm_trigger;
-  ContextProvider::Service *context_service ;
-#endif
 
   QObject *backup_object ;
 public:
