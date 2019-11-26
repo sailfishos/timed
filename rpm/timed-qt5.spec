@@ -13,10 +13,8 @@ Requires:   tzdata-timed
 Requires:   systemd
 Requires:   oneshot
 Requires:   statefs
-Requires:   sailfish-setup >= 0.1.8
-%{_oneshot_groupadd_requires_pre}
+Requires:   sailfish-setup >= 0.1.10
 %{_oneshot_requires_post}
-%{_oneshot_groupadd_requires_post}
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  pkgconfig(libpcrecpp)
@@ -102,8 +100,6 @@ ln -sf /var/lib/timed/localtime %{buildroot}%{_sysconfdir}/localtime
 %statefs_provider_install inout timed %{_sysconfdir}/timed-statefs.conf
 
 %pre
-groupadd -rf timed
-groupadd-user timed
 %statefs_pre
 
 %post
@@ -130,7 +126,6 @@ fi
 if [ "$1" -eq 0 ]; then
   systemctl-user stop {%name}.service || :
   systemctl-user daemon-reload || :
-  getent group time >/dev/null && groupdel timed || :
 fi
 %statefs_postun
 
