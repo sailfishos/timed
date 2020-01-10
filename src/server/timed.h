@@ -43,12 +43,6 @@
 #include "dsme-mode.h"
 #endif
 
-namespace statefs {
-  namespace qt {
-    class InOutWriter;
-  }
-}
-
 class simple_timer;
 class pinguin_t;
 class UnixSignal;
@@ -95,7 +89,6 @@ private:
   void init_read_settings() ;
   void init_create_event_machine() ;
   void init_device_mode() ;
-  void init_context_objects() ;
   void init_backup_object() ;
   void init_main_interface_object() ;
   void init_backup_dbus_name() ;
@@ -110,7 +103,6 @@ private:
 
 public:
   void stop_machine() ;
-  void stop_context() ;
   void stop_stuff() ;
   void stop_dbus() ;
 
@@ -136,6 +128,8 @@ public:
   void cancel_events(const QList<uint> &cookies, QList<uint> &failed) { am->cancel_events(cookies, failed) ;}
   void alarm_gate(bool value) { return am->alarm_gate(value) ; }
   int default_snooze(int value) { return settings->default_snooze(value) ; }
+  bool get_alarm_present();
+  Maemo::Timed::Event::Triggers get_alarm_triggers();
   void enable_ntp_time_adjustment(bool enable);
 
   QDBusConnectionInterface *ses_iface ;
@@ -151,6 +145,7 @@ Q_SIGNALS:
   void voland_unregistered() ;
   void settings_changed(const Maemo::Timed::WallClock::Info &, bool system_time) ;
   void next_bootup_event(int next_boot_event, int next_non_boot_event);
+  void alarm_present_changed(bool present);
   void alarm_triggers_changed(Maemo::Timed::Event::Triggers);
   // void settings_changed_1(bool system_time) ;
 public:
@@ -171,6 +166,8 @@ private:
   unsigned threshold_period_short;
   unsigned ping_period;
   unsigned ping_max_num;
+  bool alarm_present;
+  Maemo::Timed::Event::Triggers alarm_triggers;
   QString private_data_directory;
   QString private_events_path;
   QString private_settings_path;
@@ -203,9 +200,6 @@ private:
   std::string sent_signature ;
   tz_oracle_t *tz_oracle ;
   NtpController *ntp_controller;
-
-  statefs::qt::InOutWriter *alarm_present;
-  statefs::qt::InOutWriter *alarm_trigger;
 
   QObject *backup_object ;
 public:

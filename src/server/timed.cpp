@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2011 Nokia Corporation.                           **
-**   Copyright (C) 2013-2019 Jolla Ltd.                                   **
+**   Copyright (c) 2009 - 2011 Nokia Corporation.                         **
+**   Copyright (c) 2013 - 2019 Jolla Ltd.                                 **
 **   Copyright (c) 2019 Open Mobile Platform LLC.                         **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
@@ -36,8 +36,6 @@
 #include <QFile>
 #include <QDateTime>
 #include <QDir>
-
-#include <statefs/qt/util.hpp>
 
 #include "../voland/interface.h"
 
@@ -118,6 +116,8 @@ Timed::Timed(int ac, char **av)
     , threshold_period_short(0)
     , ping_period(0)
     , ping_max_num(0)
+    , alarm_present(false)
+    , alarm_triggers(Maemo::Timed::Event::Triggers())
     , private_data_directory()
     , private_events_path()
     , private_settings_path()
@@ -137,8 +137,6 @@ Timed::Timed(int ac, char **av)
     , sent_signature()
     , tz_oracle(nullptr)
     , ntp_controller(nullptr)
-    , alarm_present(nullptr)
-    , alarm_trigger(nullptr)
     , backup_object(nullptr)
     , notificator(nullptr)
     , halted() // XXX: remove it, as we don't want to halt anymore
@@ -160,9 +158,6 @@ Timed::Timed(int ac, char **av)
   log_debug() ;
 
   init_device_mode() ;
-  log_debug() ;
-
-  init_context_objects() ;
   log_debug() ;
 
   init_backup_object() ;
@@ -541,12 +536,6 @@ void Timed::start_voland_watcher()
   }
 }
 
-void Timed::init_context_objects()
-{
-  alarm_present = new statefs::qt::InOutWriter("Alarm.Present");
-  alarm_trigger = new statefs::qt::InOutWriter("Alarm.Trigger");
-}
-
 void Timed::init_backup_object()
 {
   backup_object = new QObject ;
@@ -715,18 +704,12 @@ void Timed::init_apply_tz_settings()
 Timed::~Timed()
 {
   stop_machine() ;
-  stop_context() ;
   stop_dbus() ;
   stop_stuff() ;
 }
 void Timed::stop_machine()
 {
   delete am ;
-}
-void Timed::stop_context()
-{
-  delete alarm_present;
-  delete alarm_trigger;
 }
 void Timed::stop_dbus()
 {
@@ -842,6 +825,16 @@ bool Timed::dialog_response(cookie_t c, int value)
 {
   log_debug("Responded: %d(value=%d)", c.value(), value) ;
   return am->dialog_response(c, value) ;
+}
+
+bool Timed::get_alarm_present()
+{
+    return alarm_present;
+}
+
+Maemo::Timed::Event::Triggers Timed::get_alarm_triggers()
+{
+    return alarm_triggers;
 }
 
 void Timed::enable_ntp_time_adjustment(bool enable)
@@ -1205,7 +1198,10 @@ void Timed::init_first_boot_hwclock_time_adjustment_check() {
 
 void Timed::set_alarm_present(bool present)
 {
-  alarm_present->set(QVariant(present));
+  if (alarm_present != present) {
+    alarm_present = present;
+    emit alarm_present_changed(present);
+  }
 }
 
 void Timed::set_alarm_trigger(const QMap<QString, QVariant> &triggers)
@@ -1221,17 +1217,10 @@ void Timed::set_alarm_trigger(const QMap<QString, QVariant> &triggers)
     quint32 seconds_after_epoch = (quint32) tmp;
     triggerMap.insert(cookie, seconds_after_epoch);
   }
-  emit alarm_triggers_changed(triggerMap);
-  // statefs supports only boolean and string types, marshall the QMap to a string
-  QString contextProperty = "";
-  QMapIterator<QString, QVariant> i(triggers);
-  while (i.hasNext()) {
-      i.next();
-      if (!contextProperty.isEmpty())
-          contextProperty += ",";
-      contextProperty += QString("%1:%2").arg(i.key()).arg(i.value().toUInt());
+  if (alarm_triggers != triggerMap) {
+    alarm_triggers = triggerMap;
+    emit alarm_triggers_changed(triggerMap);
   }
-  alarm_trigger->set(contextProperty);
 }
 
 bool Timed::notify(QObject *obj, QEvent *ev)

@@ -1,6 +1,8 @@
 /***************************************************************************
 **                                                                        **
 **   Copyright (C) 2009-2011 Nokia Corporation.                           **
+**   Copyright (C) 2013-2019 Jolla Ltd.                                   **
+**   Copyright (c) 2019 Open Mobile Platform LLC.                         **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -46,8 +48,30 @@ bool Maemo::Timed::Interface::settings_changed_disconnect(QObject *object, const
   return Maemo::Timed::bus().disconnect(s,o,i,"settings_changed",object,slot) ;
 }
 
+bool Maemo::Timed::Interface::alarm_present_changed_connect(QObject *object, const char *slot)
+{
+  const char *s = Maemo::Timed::service();
+  const char *o = Maemo::Timed::objpath();
+  const char *i = Maemo::Timed::interface();
+  const char *alarm_present_changed_signal = SIGNAL(alarm_present_changed(bool));
+  if (QObject::connect(this, alarm_present_changed_signal, object, slot)) {
+    QObject::disconnect(this, alarm_present_changed_signal, object, slot);
+    return Maemo::Timed::bus().connect(s, o, i, "alarm_present_changed", object, slot);
+  }
+  return false;
+}
+
+bool Maemo::Timed::Interface::alarm_present_changed_disconnect(QObject *object, const char *slot)
+{
+  const char *s = Maemo::Timed::service();
+  const char *o = Maemo::Timed::objpath();
+  const char *i = Maemo::Timed::interface();
+  return Maemo::Timed::bus().disconnect(s, o, i, "alarm_present_changed", object, slot);
+}
+
 bool Maemo::Timed::Interface::alarm_triggers_changed_connect(QObject *object, const char *slot)
 {
+
   const char *s = Maemo::Timed::service();
   const char *o = Maemo::Timed::objpath();
   const char *i = Maemo::Timed::interface();
