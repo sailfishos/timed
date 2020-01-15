@@ -1,6 +1,8 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2011 Nokia Corporation.                           **
+**   Copyright (c) 2009-2011 Nokia Corporation.                           **
+**   Copyright (C) 2013-2019 Jolla Ltd.                                   **
+**   Copyright (c) 2019 Open Mobile Platform LLC.                         **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -77,6 +79,7 @@ namespace Maemo
       // void xxx(bool yyy) { /* emit settings_changed_1(yyy) ; */ }
     signals:
        void settings_changed(const Maemo::Timed::WallClock::Info &info, bool time_changed) ;
+       void alarm_present_changed(bool present);
        void alarm_triggers_changed(Maemo::Timed::Event::Triggers);
       // void settings_changed_1(bool time_changed) ;
     public:
@@ -84,6 +87,8 @@ namespace Maemo
       // -- dbus signals -- //
       bool settings_changed_connect(QObject *object, const char *slot) ;
       bool settings_changed_disconnect(QObject *object, const char *slot) ;
+      bool alarm_present_changed_connect(QObject *object, const char *slot);
+      bool alarm_present_changed_disconnect(QObject *object, const char *slot);
       bool alarm_triggers_changed_connect(QObject *object, const char *slot);
       bool alarm_triggers_changed_disconnect(QObject *object, const char *slot);
       // -- application methods -- //
@@ -108,6 +113,8 @@ namespace Maemo
       qtdbus_method(set_app_snooze, (const QString &name, int value), name, value) ;
       qtdbus_method(get_app_snooze, (const QString &name), name) ;
       qtdbus_method(remove_app_snooze, (const QString &name), name) ;
+      qtdbus_method(get_alarm_present, (void));
+      qtdbus_method(get_alarm_triggers, (void));
       // -- to be called by voland -- //
       qtdbus_method(dialog_response, (uint32_t cookie, int button), cookie, button) ;
       // -- not documented stuff -- //

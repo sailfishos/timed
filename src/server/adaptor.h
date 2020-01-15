@@ -80,6 +80,7 @@ signals:
   void settings_changed(const Maemo::Timed::WallClock::Info &, bool) ;
   void settings_changed_1(bool) ;
   void next_bootup_event(int next_boot_event, int next_non_boot_event);
+  void alarm_present_changed(bool present);
   void alarm_triggers_changed(Maemo::Timed::Event::Triggers);
 
 public slots:
@@ -293,6 +294,20 @@ public slots:
     Q_UNUSED(message);
     log_notice("DBUS::com.nokia.time.remove_app_snooze(name='%s') by %s", name.toStdString().c_str(), PEER) ;
     timed->settings->remove_app_snooze(name.toStdString()) ;
+  }
+
+  bool get_alarm_present(const QDBusMessage &message)
+  {
+    Q_UNUSED(message);
+    log_notice("DBUS::com.nokia.time.get_alarm_present() by %s", PEER) ;
+    return timed->get_alarm_present() ;
+  }
+
+  Maemo::Timed::Event::Triggers get_alarm_triggers(const QDBusMessage &message)
+  {
+    Q_UNUSED(message);
+    log_notice("DBUS::com.nokia.time.get_alarm_triggers() by %s", PEER) ;
+    return timed->get_alarm_triggers() ;
   }
 
   void halt(const QString &what, const QDBusMessage &message)

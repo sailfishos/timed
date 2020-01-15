@@ -12,7 +12,6 @@ Requires:   tzdata
 Requires:   tzdata-timed
 Requires:   systemd
 Requires:   oneshot
-Requires:   statefs
 Requires:   sailfish-setup >= 0.1.10
 %{_oneshot_requires_post}
 Requires(post): /sbin/ldconfig
@@ -23,12 +22,9 @@ BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  pkgconfig(Qt5Test)
 BuildRequires:  pkgconfig(dsme_dbus_if)
 BuildRequires:  pkgconfig(systemd)
-BuildRequires:  pkgconfig(statefs)
 BuildRequires:  libiodata-qt5-devel >= 0.19
 BuildRequires:  libxslt
 BuildRequires:  oneshot
-BuildRequires:  pkgconfig(statefs-qt5)
-BuildRequires:  statefs-devel >= 0.3.21
 BuildRequires:  pkgconfig(sailfishaccesscontrol) >= 0.0.1
 
 %description
@@ -97,10 +93,6 @@ install -d %{buildroot}/var/lib/timed/shared_settings
 # Make /etc/localtime a link to /var/lib/timed/localtime to make system time zone follow timed.
 install -d %{buildroot}%{_sysconfdir}
 ln -sf /var/lib/timed/localtime %{buildroot}%{_sysconfdir}/localtime
-%statefs_provider_install inout timed %{_sysconfdir}/timed-statefs.conf
-
-%pre
-%statefs_pre
 
 %post
 # Remove existing link so that copying the UTC file will not overwrite anything during reinstall.
@@ -115,8 +107,6 @@ systemctl-user restart %{name}.service || :
 fi
 
 %preun
-%statefs_preun
-%statefs_provider_unregister inout timed
 if [ "$1" -eq 0 ]; then
   systemctl-user stop %{name}.service || :
 fi
@@ -127,13 +117,8 @@ if [ "$1" -eq 0 ]; then
   systemctl-user stop {%name}.service || :
   systemctl-user daemon-reload || :
 fi
-%statefs_postun
 
-%posttrans
-%statefs_provider_register inout timed
-%statefs_posttrans
-
-%files -f timed.files
+%files
 %defattr(-,root,root,-)
 %license COPYING copyright
 %{_sysconfdir}/dbus-1/system.d/%{name}.conf
@@ -142,7 +127,6 @@ fi
 %{_bindir}/%{name}
 %{_libdir}/lib%{name}.so.*
 %{_libdir}/libtimed-voland-qt5.so.*
-%{_datadir}/contextkit/providers/com.nokia.time.context
 %{_datadir}/mapplauncherd/privileges.d/*
 %{_libdir}/systemd/user/%{name}.service
 %{_libdir}/systemd/user/pre-user-session.target.wants/%{name}.service

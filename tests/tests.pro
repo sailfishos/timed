@@ -1,5 +1,4 @@
-equals(QT_MAJOR_VERSION, 4): PACKAGENAME = timed
-equals(QT_MAJOR_VERSION, 5): PACKAGENAME = timed-qt5
+PACKAGENAME = timed-qt5
 
 TEMPLATE = subdirs
 

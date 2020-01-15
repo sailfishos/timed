@@ -34,8 +34,7 @@ SOURCES += ut_networktime.cpp \
 
 OTHER_FILES += fakeofono/org.fakeofono.conf
 
-equals(QT_MAJOR_VERSION, 4): target.path = $$(DESTDIR)/opt/tests/timed-tests
-equals(QT_MAJOR_VERSION, 5): target.path = $$(DESTDIR)/opt/tests/timed-qt5-tests
+target.path = $$(DESTDIR)/opt/tests/timed-qt5-tests
 dbusconf.files = fakeofono/org.fakeofono.conf
 dbusconf.path  = $$(DESTDIR)/etc/dbus-1/system.d
 
