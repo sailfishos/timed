@@ -3,7 +3,6 @@ Name:       timed-qt5
 Summary:    Time daemon
 Version:    3.6
 Release:    1
-Group:      System/System Control
 License:    LGPLv2
 URL:        https://git.sailfishos.org/mer-core/timed
 Source0:    %{name}-%{version}.tar.bz2
@@ -33,7 +32,6 @@ executing actions at given time and managing the event queue.
 
 %package tests
 Summary:    Test cases for %{name}
-Group:      Development/System
 Requires:   %{name} = %{version}-%{release}
 Requires:   testrunner-lite
 
@@ -42,7 +40,6 @@ Simple automated test cases, to be executed in cita.
 
 %package tools
 Summary:    Command line tools for communication with the time daemon
-Group:      Development/Tools
 Requires:   %{name} = %{version}-%{release}
 
 %description tools
@@ -50,7 +47,6 @@ timedclient - add, modify, remove, and query alarms.
 
 %package devel
 Summary:    Development package for %{name}
-Group:      Development/Libraries
 Requires:   %{name} = %{version}-%{release}
 Requires:   pkgconfig(Qt5Core)
 
