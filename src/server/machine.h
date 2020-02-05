@@ -1,8 +1,8 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2011 Nokia Corporation.                           **
-**   Copyright (C) 2013-2019 Jolla Ltd.                                   **
-**   Copyright (c) 2019 Open Mobile Platform LLC.                         **
+**   Copyright (c) 2009 - 2011 Nokia Corporation.                         **
+**   Copyright (c) 2013 - 2020 Jolla Ltd.                                 **
+**   Copyright (c) 2019 - 2020 Open Mobile Platform LLC.                  **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -122,7 +122,6 @@ public:
   iodata::record *save(bool for_backup, EventTypes eventTypes);
   void load(const iodata::record *) ;
   void load_events(const iodata::array *events_data, bool trusted_source, bool use_cookies) ;
-  void cancel_backup_events() ;
   abstract_state_t *state_by_name(const string &name) ;
   void freeze() ;
   void unfreeze() ;

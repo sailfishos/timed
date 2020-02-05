@@ -78,9 +78,6 @@ HEADERS += credentials.h
 SOURCES += olson.cpp tz.cpp
 HEADERS += tz.h
 
-SOURCES += backup.cpp
-HEADERS += backup.h
-
 SOURCES += notification.cpp
 HEADERS += notification.h
 

@@ -1,8 +1,8 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2011 Nokia Corporation.                           **
-**   Copyright (C) 2013-2019 Jolla Ltd.                                   **
-**   Copyright (c) 2019 Open Mobile Platform LLC.                         **
+**   Copyright (c) 2009 - 2011 Nokia Corporation.                         **
+**   Copyright (c) 2013 - 2020 Jolla Ltd.                                 **
+**   Copyright (c) 2019 - 2020 Open Mobile Platform LLC.                  **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -762,20 +762,6 @@ void machine_t::load_events(const iodata::array *events_data, bool trusted_sourc
 
     register_event(e) ;
   }
-}
-
-void machine_t::cancel_backup_events()
-{
-  // TODO: assert (queue is paused)
-  vector<event_t*> backup ;
-  for(map<cookie_t, event_t*>::const_iterator it=events.begin(); it!=events.end(); ++it)
-    if (it->second->flags & EventFlags::Backup)
-      backup.push_back(it->second) ;
-
-  for(vector<event_t*>::const_iterator it=backup.begin(); it!=backup.end(); ++it)
-    cancel_event(*it) ;
-
-  log_debug("cancelled all the bacjup events") ;
 }
 
 abstract_state_t *machine_t::state_by_name(const string &name)
