@@ -1,8 +1,8 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2011 Nokia Corporation.                           **
-**   Copyright (C) 2013-2019 Jolla Ltd.                                   **
-**   Copyright (c) 2019 Open Mobile Platform LLC.                         **
+**   Copyright (c) 2009 - 2011 Nokia Corporation.                         **
+**   Copyright (c) 2013 - 2020 Jolla Ltd.                                 **
+**   Copyright (c) 2019 - 2020 Open Mobile Platform LLC.                  **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -89,9 +89,7 @@ private:
   void init_read_settings() ;
   void init_create_event_machine() ;
   void init_device_mode() ;
-  void init_backup_object() ;
   void init_main_interface_object() ;
-  void init_backup_dbus_name() ;
   void init_main_interface_dbus_name() ;
   void init_load_events() ;
   void init_dst_checker() ;
@@ -139,7 +137,6 @@ public:
 public Q_SLOTS:
   void system_owner_changed(const QString &name, const QString &oldowner, const QString &newowner) ;
   void register_child(unsigned cookie, int pid) { children[pid] = cookie ; }
-  void session_reported(const QString &address) ;
 Q_SIGNALS:
   void voland_registered() ;
   void voland_unregistered() ;
@@ -201,7 +198,6 @@ private:
   tz_oracle_t *tz_oracle ;
   NtpController *ntp_controller;
 
-  QObject *backup_object ;
 public:
   kernel_notification_t *notificator ;
   void invoke_signal(const nanotime_t &) ;

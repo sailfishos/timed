@@ -1,8 +1,8 @@
 /***************************************************************************
 **                                                                        **
 **   Copyright (c) 2009 - 2011 Nokia Corporation.                         **
-**   Copyright (c) 2013 - 2019 Jolla Ltd.                                 **
-**   Copyright (c) 2019 Open Mobile Platform LLC.                         **
+**   Copyright (c) 2013 - 2020 Jolla Ltd.                                 **
+**   Copyright (c) 2019 - 2020 Open Mobile Platform LLC.                  **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -48,7 +48,6 @@
 #include "interfaces.h"
 #endif
 #include "adaptor.h"
-#include "backup.h"
 #include "timed.h"
 #include "settings.h"
 #include "tz.h"
@@ -137,7 +136,6 @@ Timed::Timed(int ac, char **av)
     , sent_signature()
     , tz_oracle(nullptr)
     , ntp_controller(nullptr)
-    , backup_object(nullptr)
     , notificator(nullptr)
     , halted() // XXX: remove it, as we don't want to halt anymore
     , signal_object(nullptr)
@@ -160,13 +158,7 @@ Timed::Timed(int ac, char **av)
   init_device_mode() ;
   log_debug() ;
 
-  init_backup_object() ;
-  log_debug() ;
-
   init_main_interface_object() ;
-  log_debug() ;
-
-  init_backup_dbus_name() ;
   log_debug() ;
 
   init_main_interface_dbus_name() ;
@@ -536,23 +528,6 @@ void Timed::start_voland_watcher()
   }
 }
 
-void Timed::init_backup_object()
-{
-  backup_object = new QObject ;
-  new backup_t(this, backup_object) ;
-  // XXX: what if we're using system bus: how should backup know this?
-  // TODO: if using system bus, keep track of started/terminated sessions? (omg!)
-  QDBusConnection conn = Maemo::Timed::bus() ;
-  const char * const path = "/com/nokia/timed/backup" ;
-  if (conn.registerObject(path, backup_object))
-    log_info("backup interface object registered on path '%s'", path) ;
-  else
-  {
-    log_critical("failed to register backup object on path '%s': %s", path, conn.lastError().message().toStdString().c_str()) ;
-    log_critical("backup/restore not available") ;
-  }
-}
-
 void Timed::init_main_interface_object()
 {
   new com_nokia_time(this) ;
@@ -567,24 +542,6 @@ void Timed::init_main_interface_object()
   // (usually it means, the dbus connection is not available)
   // but on the other hand we can still provide some services (like setting time and zone)
   // Anyway, we will terminate if the mutex like name is not available
-}
-
-void Timed::init_backup_dbus_name()
-{
-  // We're using an another name for backup interface
-  //   to avoid mess while switching to system bus and back again (later)
-  // XXX: But for now it's just the same connection as com.nokia.time
-  QDBusConnection conn = Maemo::Timed::bus() ;
-  const char * const name = "com.nokia.timed.backup" ;
-  const string conn_name = conn.name().toStdString() ;
-  if (conn.registerService(name))
-    log_info("service name '%s' registered on bus '%s'", name, conn_name.c_str()) ;
-  else
-  {
-    const string msg = conn.lastError().message().toStdString() ;
-    log_critical("can't register service '%s' on bus '%s': '%s'", name, conn_name.c_str(), msg.c_str()) ;
-    log_critical("backup/restore not available") ;
-  }
 }
 
 void Timed::init_main_interface_dbus_name()
@@ -713,9 +670,7 @@ void Timed::stop_machine()
 }
 void Timed::stop_dbus()
 {
-  delete backup_object ;
   Maemo::Timed::bus().unregisterService(Maemo::Timed::service()) ;
-  Maemo::Timed::bus().unregisterService("com.nokia.timed.backup") ;
   QDBusConnection::disconnectFromBus(QDBusConnection::sessionBus().name());
   QDBusConnection::disconnectFromBus(QDBusConnection::systemBus().name()) ;
 }
@@ -1126,11 +1081,6 @@ void Timed::device_mode_reached(bool user_mode)
   log_notice("MODE: running in %s mode", user_mode ? "USER" : "ACTDEAD") ;
   am->device_mode_detected(user_mode) ;
   am->unfreeze() ;
-}
-
-void Timed::session_reported(const QString &new_address)
-{
-  (void)new_address ;
 }
 
 void Timed::harmattan_desktop_visible()

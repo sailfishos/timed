@@ -1,5 +1,0 @@
-Name: libtimed-voland
-Description: timed-voland communication library
-Version: 3.6
-Libs: -ltimed-voland
-
