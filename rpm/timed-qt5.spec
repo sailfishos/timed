@@ -70,9 +70,9 @@ make %{?_smp_mflags}
 rm -rf %{buildroot}
 %qmake5_install
 
-# The file %{buildroot}/lib/systemd/user/%{name}.service is installed by make install
-install -d %{buildroot}%{_libdir}/systemd/user/pre-user-session.target.wants/
-ln -s ../%{name}.service %{buildroot}%{_libdir}/systemd/user/pre-user-session.target.wants/%{name}.service
+# The file %{buildroot}%{_userunitdir}/%{name}.service is installed by make install
+install -d %{buildroot}%{_userunitdir}/pre-user-session.target.wants/
+ln -s ../%{name}.service %{buildroot}%{_userunitdir}/pre-user-session.target.wants/%{name}.service
 
 mkdir -p %{buildroot}%{_datadir}/mapplauncherd/privileges.d
 install -m 644 -p %{SOURCE1} %{buildroot}%{_datadir}/mapplauncherd/privileges.d/
@@ -124,8 +124,8 @@ fi
 %{_libdir}/lib%{name}.so.*
 %{_libdir}/libtimed-voland-qt5.so.*
 %{_datadir}/mapplauncherd/privileges.d/*
-%{_libdir}/systemd/user/%{name}.service
-%{_libdir}/systemd/user/pre-user-session.target.wants/%{name}.service
+%{_userunitdir}/%{name}.service
+%{_userunitdir}/pre-user-session.target.wants/%{name}.service
 %{_oneshotdir}/setcaps-%{name}.sh
 %dir %attr(0775,-,timed) /var/lib/timed
 %dir %attr(02770,root,sailfish-alarms) /var/lib/timed/shared_events

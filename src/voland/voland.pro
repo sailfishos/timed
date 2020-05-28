@@ -11,12 +11,12 @@ SOURCES = interface.cpp reminder-pimple.cpp
 
 INCLUDEPATH += ../h
 
-target.path = /usr/lib
+target.path = $$[QT_INSTALL_LIBS]
 
 devheaders.files = reminder interface ta_interface reminder.h interface.h
 devheaders.path  = /usr/include/timed-voland-qt5
 
-pc.path = /usr/lib/pkgconfig
+pc.path = $$[QT_INSTALL_LIBS]/pkgconfig
 pc.files = timed-voland-qt5.pc
 
 prf.path =  $$[QT_INSTALL_DATA]/mkspecs/features
