@@ -14,7 +14,7 @@ SOURCES += wall-settings.cpp wall-info.cpp qmacro.cpp
 
 LIBS += -lrt
 
-target.path = /usr/lib
+target.path = $$[QT_INSTALL_LIBS]
 
 devheaders.files += hidden/exception exception.h qmacro.h
 devheaders.files += interface interface.h
@@ -23,7 +23,7 @@ devheaders.files += wallclock wall-declarations.h
 devheaders.path = /usr/include/timed-qt5
 devheaders.path  = /usr/include/$$TARGET
 
-pc.path = /usr/lib/pkgconfig
+pc.path = $$[QT_INSTALL_LIBS]/pkgconfig
 pc.files = timed-qt5.pc
 
 prf.path =  $$[QT_INSTALL_DATA]/mkspecs/features
