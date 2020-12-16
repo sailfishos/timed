@@ -221,6 +221,13 @@ public slots:
     timed->cancel_events(cookies, failed) ;
   }
 
+  bool dismiss(uint cookie, const QDBusMessage &message)
+  {
+    Q_UNUSED(message);
+    log_notice("DBUS::com.nokia.time.dismiss(cookie=%u) by %s", cookie, PEER) ;
+    return timed->dismiss(cookie_t(cookie)) ;
+  }
+
   QString ping(const QDBusMessage &message)
   {
     Q_UNUSED(message);

@@ -621,6 +621,26 @@ bool machine_t::dialog_response(cookie_t c, int value)
   return true ;
 }
 
+bool machine_t::dismiss_by_cookie(cookie_t c)
+{
+  event_t *e = find_event(c);
+
+  if (!e) {
+    log_error("Invalid cookie [%d] in dismiss", c.value()) ;
+    return false;
+  }
+
+  if (!(e->flags & EventFlags::Snoozing)) {
+    log_error("Unexpected dismisall of event [%d]", c.value()) ;
+    return false;
+  }
+
+  request_state(e, state_served) ;
+
+  invoke_process_transition_queue() ;
+  return true;
+}
+
 event_t *machine_t::find_event(cookie_t c)
 {
   log_assert(!transition_in_progress()) ;

@@ -100,6 +100,7 @@ namespace Maemo
       qtdbus_method(get_events, (const QList<uint> &cookies), QVariant::fromValue(cookies)) ;
       qtdbus_method(cancel, (uint32_t cookie), cookie) ;
       qtdbus_method(cancel_events, (const QList<uint> &cookies), QVariant::fromValue(cookies)) ;
+      qtdbus_method(dismiss, (uint32_t cookie), cookie) ;
       qtdbus_method(replace_event, (const Maemo::Timed::Event &e, uint32_t cookie), e.dbus_output(__PRETTY_FUNCTION__), cookie) ;
       qtdbus_method(query, (const QMap<QString,QVariant> &attr), QVariant::fromValue(attr)) ;
       qtdbus_method(query_attributes, (uint32_t cookie), cookie) ;

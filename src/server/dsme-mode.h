@@ -2,7 +2,6 @@
 #define MAEMO_TIMED_DSME_MODE_H
 
 #include <string>
-using std::string ;
 
 #include <QObject>
 #include <QDBusPendingCallWatcher>
@@ -19,7 +18,7 @@ struct dsme_mode_t : public QObject
 
   Q_OBJECT ;
 Q_SIGNALS:
-  void mode_reported(const string &mode) ;
+  void mode_reported(const std::string &mode) ;
   void mode_is_changing() ;
 public Q_SLOTS:
   void init_request() ;

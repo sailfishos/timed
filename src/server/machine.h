@@ -86,6 +86,7 @@ struct machine_t : public QObject
   bool cancel_by_cookie(cookie_t c) ;
   void cancel_events(const QList<uint> &cookies, QList<uint> &failed) ;
   void cancel_event(event_t *e) ;
+  bool dismiss_by_cookie(cookie_t c);
   event_t *find_event(cookie_t c) ;
   void alarm_gate(bool open) ;
   bool dialog_response(cookie_t c, int value) ;
