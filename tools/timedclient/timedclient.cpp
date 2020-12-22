@@ -1172,6 +1172,20 @@ static void do_set_enabled(char *args)
   }
 }
 
+/** Handle option: --set-mode=<string> */
+static void do_set_mode(char *args)
+{
+  QDBusReply<int> reply = timed_dbus.mode_sync(args);
+  if( !reply.isValid() )
+  {
+    qWarning() << "'mode' call failed" << timed_dbus.lastError();
+  }
+  else
+  {
+    printf("%d\n", reply.value());
+  }
+}
+
 /** Handle option: --cancel-event=<cookie> */
 static void do_cancel_event(char *args)
 {
@@ -1814,6 +1828,7 @@ static const struct option OPT_L[] =
   {"get-app-snooze", 1, 0, 007}, // <app>
   {"set-enabled",    1, 0, 001}, // <bool>
   {"get-enabled",    0, 0, 002},
+  {"set-mode",       1, 0, 012}, // <string>
   {"get-pid",        0, 0, 005},
 
   {"get-info",       0, 0, 010},
@@ -1875,6 +1890,8 @@ static const char USAGE[] =
 "\n"
 "  --set-enabled=<bool>                --  Enable/Disable alarms\n"
 "  --get-enabled                       --  Query enabled status\n"
+"\n"
+"  --set-mode=<string>                 --  Report USER|ACTDEAD mode change\n"
 "\n"
 "  --get-pid                           --  Query PID of timed process\n"
 "  --get-info                          --  Query settings\n"
@@ -2037,6 +2054,7 @@ main(int argc, char **argv)
     case 007: do_get_app_snooze(optarg); break;
     case 010: do_get_info();             break;
     case 011: do_set_info(optarg);       break;
+    case 012: do_set_mode(optarg);       break;
 
     default:
       fprintf(stderr, "?? getopt returned character code 0x%x ??\n", opt);

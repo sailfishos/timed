@@ -119,6 +119,7 @@ namespace Maemo
       // -- to be called by voland -- //
       qtdbus_method(dialog_response, (uint32_t cookie, int button), cookie, button) ;
       // -- not documented stuff -- //
+      qtdbus_method(mode, (const QString &mode), mode);
       qtdbus_method(ping, (void)) ;
       qtdbus_method(pid, (void)) ;
       qtdbus_method(parse, (const QString &text), text) ;
