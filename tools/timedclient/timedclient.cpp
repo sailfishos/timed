@@ -907,6 +907,21 @@ static void event_emit_details(CONST Maemo::Timed::Event &eve)
  * Cookie helpers
  * ------------------------------------------------------------------------- */
 
+/** Dismiss snoozed event  */
+static void cookie_dismiss(uint cookie)
+{
+  QDBusReply<bool> res = timed_dbus.dismiss_sync(cookie);
+
+  if(!res.isValid())
+  {
+    qWarning() << "'dismiss' call failed:" << timed_dbus.lastError();
+  }
+  else
+  {
+    printf("cookie %u dismissed = %s\n", cookie, repr_bool(res.value()));
+  }
+}
+
 /** Delete event from timed event queue */
 static void cookie_cancel(uint cookie)
 {
@@ -1157,6 +1172,20 @@ static void do_set_enabled(char *args)
   }
 }
 
+/** Handle option: --set-mode=<string> */
+static void do_set_mode(char *args)
+{
+  QDBusReply<int> reply = timed_dbus.mode_sync(args);
+  if( !reply.isValid() )
+  {
+    qWarning() << "'mode' call failed" << timed_dbus.lastError();
+  }
+  else
+  {
+    printf("%d\n", reply.value());
+  }
+}
+
 /** Handle option: --cancel-event=<cookie> */
 static void do_cancel_event(char *args)
 {
@@ -1170,6 +1199,12 @@ static void do_cancel_events(void)
   {
     cookie_cancel(cookie);
   }
+}
+
+/** Handle option: --dismiss-event=<cookie> */
+static void do_dismiss_event(char *args)
+{
+  cookie_dismiss(parse_cookie(args));
 }
 
 /** Handle option: --add-button=<args> */
@@ -1785,6 +1820,7 @@ static const struct option OPT_L[] =
 
   {"cancel-event",   1, 0, 'c'}, // <cookie>
   {"cancel-events",  0, 0, 'C'},
+  {"dismiss-event",  0, 0, 'd'},
 
   {"set-snooze",     1, 0, 003}, // <secs>
   {"get-snooze",     0, 0, 004},
@@ -1792,6 +1828,7 @@ static const struct option OPT_L[] =
   {"get-app-snooze", 1, 0, 007}, // <app>
   {"set-enabled",    1, 0, 001}, // <bool>
   {"get-enabled",    0, 0, 002},
+  {"set-mode",       1, 0, 012}, // <string>
   {"get-pid",        0, 0, 005},
 
   {"get-info",       0, 0, 010},
@@ -1811,6 +1848,7 @@ static const char OPT_S[] =
 "L"  // --show
 "c:" // --cancel-event=<cookie>
 "C"  // --cancel-events
+"d:" // --dismiss-event=<cookie>
 "g:" // --get-event=<cookie>
 "b:" // --add-button=<cookie>
 "a:" // --add-action=<cookie>
@@ -1843,6 +1881,7 @@ static const char USAGE[] =
 "\n"
 "  --cancel-event=<cookie> -c<cookie>  --  Cancel one event\n"
 "  --cancel-events         -C          --  Cancel all events\n"
+"  --dismiss-event=<cookie> -d<cookie> --  Dismiss snoozed event\n"
 "\n"
 "  --set-snooze=<secs>                 --  Set default snooze value\n"
 "  --get-snooze                        --  Query default snooze value\n"
@@ -1851,6 +1890,8 @@ static const char USAGE[] =
 "\n"
 "  --set-enabled=<bool>                --  Enable/Disable alarms\n"
 "  --get-enabled                       --  Query enabled status\n"
+"\n"
+"  --set-mode=<string>                 --  Report USER|ACTDEAD mode change\n"
 "\n"
 "  --get-pid                           --  Query PID of timed process\n"
 "  --get-info                          --  Query settings\n"
@@ -2003,6 +2044,7 @@ main(int argc, char **argv)
     case 'e': do_add_event(optarg);      break;
     case 'c': do_cancel_event(optarg);   break;
     case 'C': do_cancel_events();        break;
+    case 'd': do_dismiss_event(optarg);  break;
     case 001: do_set_enabled(optarg);    break;
     case 002: do_get_enabled();          break;
     case 003: do_set_snooze(optarg);     break;
@@ -2012,6 +2054,7 @@ main(int argc, char **argv)
     case 007: do_get_app_snooze(optarg); break;
     case 010: do_get_info();             break;
     case 011: do_set_info(optarg);       break;
+    case 012: do_set_mode(optarg);       break;
 
     default:
       fprintf(stderr, "?? getopt returned character code 0x%x ??\n", opt);
