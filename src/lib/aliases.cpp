@@ -1,10 +1,12 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2011 Nokia Corporation.                           **
+**   Copyright (c) 2009 - 2011 Nokia Corporation.                         **
+**   Copyright (c) 2021 Jolla Ltd.                                        **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
 **   Author: Victor Portnov <ext-victor.portnov@nokia.com>                **
+**   Author: Simo Piiroinen <simo.piiroinen@jolla.com>                    **
 **                                                                        **
 **     This file is part of Timed                                         **
 **                                                                        **
@@ -44,55 +46,53 @@ static vector<string> zones ;
 static bool loaded = false ;
 
 static void read_tz_list() ;
-static const char *read_file(const char *file) ;
-static void free_file_memory(const char *buffer) ;
 
 using namespace Maemo::Timed ;
 
-void read_tz_list()
+static char *slice(char *pos, char **ppos)
+{
+  while (*pos && isspace(*pos))
+    ++pos;
+  char *beg = pos;
+  while (*pos && !isspace(*pos))
+    ++pos;
+  if (*pos)
+    *pos++ = 0;
+  if (ppos)
+    *ppos = pos;
+  return beg;
+}
+
+static void read_tz_list()
 {
   if (loaded)
-    free_tz_list() ;
-
-  const char *txt = read_file(ZONE_ALIAS) ;
-
-  if (txt==NULL)
-  {
-    log_error("can't load olson name list (%s): %m", ZONE_ALIAS) ;
-    return ;
-  }
-
-  // log_debug("loaded %d bytes from '%s'", strlen(txt), ZONE_ALIAS) ;
-
-  bool new_line = true ;
-  for(const char *p=txt; *p != '\0'; )
-  {
-    if (isspace(*p))
-    {
-      if (*p++=='\n')
-        new_line = true ;
-    }
-    else
-    {
-      const char *w = p ;
-      while (not isspace(*p) and *p!='\0')
-        ++ p ;
-      string word(w, p-w) ;
-      if (new_line)
-      {
-        zones.push_back(word) ;
-        new_line = false ;
+    free_tz_list();
+  FILE *input = fopen(ZONE_ALIAS, "r");
+  if (input) {
+    char *text = nullptr;
+    size_t size = 0;
+    while (getline(&text, &size, input) >= 0) {
+      vector<string> columns;
+      char *pos = text;
+      char *tok;
+      while (*(tok = slice(pos, &pos)))
+        columns.push_back(tok);
+      for (auto name : columns) {
+        string path = "/usr/share/zoneinfo/" + name;
+        if (access(path.c_str(), R_OK) == 0) {
+          int index = zones.size();
+          zones.push_back(name);
+          for (auto alias : columns)
+            alias_to_zone[alias] = index;
+          break;
+        }
       }
-      alias_to_zone[word] = zones.size() - 1 ;
-      // log_debug("word: '%s' is alias for zone %d (name '%s')", word.c_str(), alias_to_zone[word], zones[alias_to_zone[word]].c_str()) ;
     }
+    free(text);
+    fclose(input);
   }
-
-  log_notice("loaded '%s': %d time zone names (%d with aliases)", ZONE_ALIAS, zones.size(), alias_to_zone.size()) ;
-
-  loaded = true ;
-
-  free_file_memory(txt) ;
+  log_notice("loaded '%s': %d time zone names (%d with aliases)", ZONE_ALIAS, zones.size(), alias_to_zone.size());
+  loaded = true;
 }
 
 void Maemo::Timed::free_tz_list()
@@ -126,71 +126,4 @@ string Maemo::Timed::tz_alias_to_name(const string &tz)
     return "" ;
 
   return zones[it->second] ;
-}
-
-void free_file_memory(const char *buffer)
-{
-  delete[] buffer ;
-}
-
-const char *read_file(const char *file)
-{
-  int fd = open(file, O_RDONLY) ;
-
-  if(fd < 0)
-    return NULL ;
-
-  struct stat st ;
-  if(fstat(fd, &st) < 0)
-  {
-    int errno_copy = errno ;
-    close(fd) ;
-    errno = errno_copy ;
-    return NULL ;
-  }
-
-  int size = st.st_size ;
-
-  if(size<=0)
-  {
-    close(fd) ;
-    errno = EIO ; // TODO find a better one?
-    return NULL ;
-  }
-
-  int done = 0 ;
-  char *buffer = new char[size+1] ;
-  log_assert(buffer) ;
-
-  while(done < size)
-  {
-    ssize_t bytes = read (fd, buffer + done, size - done) ;
-    if(bytes>0)
-      done += bytes ;
-    else if(bytes==0 || errno!=EINTR) // EOF or error (not interrupt)
-      break ;
-    else if(lseek(fd, done, SEEK_SET)!=done) // fix the position, if interrupted
-      break ;
-  }
-
-  int errno_copy = errno ;
-  close(fd) ; // failed? who cares, we got data already
-
-  if(done < size)
-  {
-    delete[] buffer ;
-    errno = errno_copy ;
-    return NULL ;
-  }
-
-  buffer[size] = '\0' ;
-
-  if(strlen(buffer)!=(unsigned)size) // some '\0' inside ?
-  {
-    delete[] buffer ;
-    errno = EILSEQ ;
-    return NULL ;
-  }
-
-  return buffer ;
 }
