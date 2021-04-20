@@ -35,6 +35,7 @@
 #include <QString>
 #include <QDBusAbstractAdaptor>
 #include <QDBusMessage>
+#include <QDateTime>
 
 #include "../lib/event-io.h"
 #include "../lib/wall-info.h"
