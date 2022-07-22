@@ -1482,6 +1482,10 @@ static void do_add_event(char *args)
     {
       cur_eve.setTimezone(val);
     }
+    else if( !strcmp(key, "MaximalTimeoutSnoozeCounter") )
+    {
+      cur_eve.setMaximalTimeoutSnoozeCounter(atoi(val));
+    }
     else
     {
       cur_eve.setAttribute(key, val);
