@@ -1482,6 +1482,10 @@ static void do_add_event(char *args)
     {
       cur_eve.setTimezone(val);
     }
+    else if( !strcmp(key, "maximalTimeoutSnoozeCounter") )
+    {
+      cur_eve.setMaximalTimeoutSnoozeCounter(atoi(val));
+    }
     else
     {
       cur_eve.setAttribute(key, val);
@@ -1974,6 +1978,7 @@ static const char USAGE[] =
 "  triggerIfMissed\n"
 "  userMode\n"
 "  suppressTimeoutSnooze\n"
+"  maximalTimeoutSnoozeCounter=<count>\n"
 "\n"
 "  If none of the above is matched, assumes generic attribute\n"
 "  of <ATTRIB_KEY>=<ATTRIB_VALUE> form, added via setAttribute()\n"
