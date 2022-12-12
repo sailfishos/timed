@@ -7,7 +7,7 @@ QT -= gui
 INCLUDEPATH += ../../src/h
 
 QMAKE_LIBDIR_FLAGS += -L../../src/lib -L../../src/voland
-LIBS += -ltimed-qt5 -ltimed-voland-qt5
+LIBS += -ltimed-qt$${QT_MAJOR_VERSION} -ltimed-voland-qt$${QT_MAJOR_VERSION}
 
 HEADERS += tst_events.h \
            simplevolandadaptor.h
@@ -15,5 +15,5 @@ HEADERS += tst_events.h \
 SOURCES += tst_events.cpp \
            simplevolandadaptor.cpp
 
-target.path = $$(DESTDIR)/opt/tests/timed-qt5-tests
+target.path = $$(DESTDIR)/opt/tests/timed-qt$${QT_MAJOR_VERSION}-tests
 INSTALLS += target

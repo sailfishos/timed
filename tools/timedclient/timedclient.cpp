@@ -1414,7 +1414,7 @@ static QList<uint> do_search(char *args)
       fprintf(stderr, "missing attribute key or value: %s=%s\n", key, val);
       continue;
     }
-    attributes.insert(key, val);
+    attributes.insert(key, QString::fromUtf8(val));
   }
 
   QList<uint> cookieList = cookies_get(attributes);

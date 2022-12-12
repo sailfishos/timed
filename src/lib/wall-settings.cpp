@@ -152,7 +152,11 @@ QString Maemo::Timed::WallClock::wall_settings_pimple_t::str() const
   os << "time_at_zero=" << time_at_zero.str().c_str() << ", " ;
   os << "offset=" << offset << ", " ;
   os << "zone='" << zone << "', " ;
+#if (QT_VERSION < QT_VERSION_CHECK(5,14,0))
   os << "valid=" << valid << "}" << flush ;
+#else
+  os << "valid=" << valid << "}" << Qt::flush ;
+#endif
   return res ;
 }
 

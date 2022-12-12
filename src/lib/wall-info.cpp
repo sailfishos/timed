@@ -211,7 +211,11 @@ QString Maemo::Timed::WallClock::Info::str() const
   os << " clock_back=" << p->systime_diff ;
   os << " nitz_supported=" << p->nitz_supported ;
   os << " default_timezone=" << p->default_timezone.toStdString().c_str() ;
+#if (QT_VERSION < QT_VERSION_CHECK(5,14,0))
   os << "}" << flush ;
+#else
+  os << "}" << Qt::flush ;
+#endif
   return res ;
 }
 
