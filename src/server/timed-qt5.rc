@@ -1,4 +1,4 @@
-data_directory = ".timed",
+data_directory = ".config/timed",
 shared_events_directory = "/var/lib/timed/shared_events",
 shared_settings_directory = "/var/lib/timed/shared_settings",
 events_file = "events.data",

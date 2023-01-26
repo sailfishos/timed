@@ -272,8 +272,11 @@ void Timed::init_configuration()
   /* Private data directory in $HOME */
   QString data_directory = QString::fromStdString(c->get("data_directory")->str());
   private_data_directory = QDir().homePath() + QDir::separator() + data_directory;
-  if (!QDir(private_data_directory).exists())
-    QDir().mkpath(private_data_directory);
+  if (!QDir(private_data_directory).exists()) {
+    QString old_data_dir = QDir().homePath() + QDir::separator() + ".timed";
+    if (!QDir().rename(old_data_dir, data_directory))
+      QDir().mkpath(private_data_directory);
+  }
   private_settings_path = private_data_directory + QDir::separator() + settings_file;
   private_events_path = private_data_directory + QDir::separator() + events_file;
 
