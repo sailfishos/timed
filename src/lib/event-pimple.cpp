@@ -167,7 +167,7 @@ Maemo::Timed::Event::Action * Maemo::Timed::Event::getAction(event_action_pimple
   {
     ea = new Maemo::Timed::Event::Action ;
     ea->p = pa ;
-    pa->ptr = std::auto_ptr<Action> (ea) ;
+    pa->ptr = std::unique_ptr<Action> (ea) ;
   }
   return ea ;
 }
@@ -223,7 +223,7 @@ Maemo::Timed::Event::Button * Maemo::Timed::Event::getButton(event_button_pimple
   {
     eb = new Maemo::Timed::Event::Button ;
     eb->p = pb ;
-    pb->ptr = std::auto_ptr<Button> (eb) ;
+    pb->ptr = std::unique_ptr<Button> (eb) ;
   }
   return eb ;
 }
@@ -309,7 +309,7 @@ Maemo::Timed::Event::Recurrence * Maemo::Timed::Event::getRecurrence(event_recur
   {
     er = new Maemo::Timed::Event::Recurrence ;
     er->p = pr ;
-    pr->ptr = std::auto_ptr<Recurrence> (er) ;
+    pr->ptr = std::unique_ptr<Recurrence> (er) ;
   }
   return er ;
 }
