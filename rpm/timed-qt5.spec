@@ -49,6 +49,7 @@ timedclient - add, modify, remove, and query alarms.
 Summary:    Development package for %{name}
 Requires:   %{name} = %{version}-%{release}
 Requires:   pkgconfig(Qt5Core)
+Requires:   pkgconfig(Qt5DBus)
 
 %description devel
 Header files and shared lib symlink for %{name}.
