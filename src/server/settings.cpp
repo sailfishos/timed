@@ -398,11 +398,15 @@ int source_settings::check_target(string path)
   if(!S_ISREG(s.st_mode))
     return -1 ;
   // The file exists and is a regular file !
-  ino_t inode = s.st_ino ;
-  res = stat(LOCALTIMELINK, &s);
-  if(res!=0 || inode!=s.st_ino)
-    return 1 ;
-  return 0 ;
+  char *buffer = new char[PATH_MAX];
+  ssize_t nbytes = readlink(LOCALTIMELINK, buffer, PATH_MAX);
+  if (nbytes == -1) {
+    delete[] buffer;
+    return 1;
+  }
+  string link_target(buffer, nbytes);
+  delete[] buffer;
+  return link_target == path ? 0 : 1;
 }
 
 string source_settings::etc_localtime() const
