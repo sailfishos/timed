@@ -5,16 +5,16 @@
  * ------------------------------------------------------------------------- */
 
 #ifndef TA_VOLAND_DBUS_H_
-# define TA_VOLAND_DBUS_H_
+#define TA_VOLAND_DBUS_H_
 
 /** D-Bus name of ta_voland service */
-# define TA_VOLAND_DBUS_SERVICE   "com.nokia.ta_voland"
+#define TA_VOLAND_DBUS_SERVICE "com.nokia.ta_voland"
 
 /** Name of ta_voland interface on D-Bus */
-# define TA_VOLAND_DBUS_INTERFACE "com.nokia.ta_voland"
+#define TA_VOLAND_DBUS_INTERFACE "com.nokia.ta_voland"
 
 /** Default ta_voland object path on D-Bus */
-# define TA_VOLAND_DBUS_PATH      "/com/nokia/ta_voland"
+#define TA_VOLAND_DBUS_PATH "/com/nokia/ta_voland"
 
 /** Get pid
  *
@@ -22,7 +22,7 @@
  *
  * @return INT32 pid
  */
-# define TA_VOLAND_DBUS_METHOD_PID  "pid"
+#define TA_VOLAND_DBUS_METHOD_PID "pid"
 
 /** Emulate user interaction
  *
@@ -35,7 +35,7 @@
  *
  * @return BOOLEAN ok
  */
-# define TA_VOLAND_DBUS_METHOD_ANSWER "answer"
+#define TA_VOLAND_DBUS_METHOD_ANSWER "answer"
 
 /** Get cookie of currently show alarm dialog
  *
@@ -44,12 +44,12 @@
  *
  * @return UINT32 cookie; unique alarm identifier, or 0
  */
-# define TA_VOLAND_DBUS_METHOD_TOP "top"
+#define TA_VOLAND_DBUS_METHOD_TOP "top"
 
 /** Terminate notification service
  *
  * Ask the notification service to terminate
  */
-# define TA_VOLAND_DBUS_METHOD_QUIT "quit"
+#define TA_VOLAND_DBUS_METHOD_QUIT "quit"
 
 #endif /* TA_VOLAND_DBUS_H_ */

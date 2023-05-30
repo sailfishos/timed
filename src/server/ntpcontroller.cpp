@@ -21,12 +21,12 @@
 
 #include "ntpcontroller.h"
 
-#include <QtDBus/QDBusInterface>
-#include <QtDBus/QDBusReply>
-#include <QtDBus/QDBusVariant>
-#include <QtDBus/QDBusServiceWatcher>
-#include <QtDBus/QDBusPendingCallWatcher>
 #include <QtDBus/QDBusConnectionInterface>
+#include <QtDBus/QDBusInterface>
+#include <QtDBus/QDBusPendingCallWatcher>
+#include <QtDBus/QDBusReply>
+#include <QtDBus/QDBusServiceWatcher>
+#include <QtDBus/QDBusVariant>
 
 #include "../common/log.h"
 
@@ -34,15 +34,15 @@ const QLatin1String CONNMAN_SERVICE("net.connman");
 const QLatin1String CONNMAN_INTERFACE("net.connman.Clock");
 const QLatin1String CONNMAN_METHOD("SetProperty");
 
-NtpController::NtpController(bool enable, QObject *parent) :
-    QObject(parent), m_enable(enable)
+NtpController::NtpController(bool enable, QObject *parent)
+    : QObject(parent)
+    , m_enable(enable)
 {
     m_connmanWatcher = new QDBusServiceWatcher(CONNMAN_SERVICE,
                                                QDBusConnection::systemBus(),
                                                QDBusServiceWatcher::WatchForRegistration,
                                                this);
-    connect(m_connmanWatcher, SIGNAL(serviceRegistered(QString)),
-            this, SLOT(serviceRegistered()));
+    connect(m_connmanWatcher, SIGNAL(serviceRegistered(QString)), this, SLOT(serviceRegistered()));
 
     if (QDBusConnection::systemBus().interface()->isServiceRegistered(CONNMAN_SERVICE))
         enableNtpTimeAdjustment(m_enable);
@@ -64,10 +64,8 @@ void NtpController::enableNtpTimeAdjustment(bool enable)
 
 void NtpController::setConnmanProperty(QString key, QString value)
 {
-    QDBusMessage request = QDBusMessage::createMethodCall(CONNMAN_SERVICE,
-                                                          "/",
-                                                          CONNMAN_INTERFACE,
-                                                          CONNMAN_METHOD);
+    QDBusMessage request
+        = QDBusMessage::createMethodCall(CONNMAN_SERVICE, "/", CONNMAN_INTERFACE, CONNMAN_METHOD);
     QList<QVariant> arguments;
     arguments << key << QVariant::fromValue(QDBusVariant(value));
     request.setArguments(arguments);
@@ -75,8 +73,10 @@ void NtpController::setConnmanProperty(QString key, QString value)
     QDBusPendingReply<void> reply = QDBusConnection::systemBus().asyncCall(request);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
 
-    QObject::connect(watcher,SIGNAL(finished(QDBusPendingCallWatcher*)),
-                     this, SLOT(propertiesReply(QDBusPendingCallWatcher*)));
+    QObject::connect(watcher,
+                     SIGNAL(finished(QDBusPendingCallWatcher *)),
+                     this,
+                     SLOT(propertiesReply(QDBusPendingCallWatcher *)));
 }
 
 void NtpController::serviceRegistered()

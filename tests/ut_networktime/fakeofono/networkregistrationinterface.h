@@ -25,7 +25,8 @@
 #include <QDBusAbstractAdaptor>
 #include <QDBusVariant>
 
-class NetworkRegistrationInterface : public QDBusAbstractAdaptor {
+class NetworkRegistrationInterface : public QDBusAbstractAdaptor
+{
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.fakeofono.NetworkRegistration")
 
@@ -43,7 +44,6 @@ signals:
 private:
     QString m_mcc;
     QString m_mnc;
-
 };
 
 #endif // NETWORKREGISTRATIONINTERFACE_H

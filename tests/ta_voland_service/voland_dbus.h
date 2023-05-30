@@ -8,13 +8,13 @@
 #define VOLAND_DBUS_H_
 
 /** D-Bus name of voland service */
-# define VOLAND_DBUS_SERVICE   "com.nokia.voland"
+#define VOLAND_DBUS_SERVICE "com.nokia.voland"
 
 /** Name of voland interface on D-Bus */
-# define VOLAND_DBUS_INTERFACE "com.nokia.voland"
+#define VOLAND_DBUS_INTERFACE "com.nokia.voland"
 
 /** Default voland object path on D-Bus */
-# define VOLAND_DBUS_PATH      "/com/nokia/voland"
+#define VOLAND_DBUS_PATH "/com/nokia/voland"
 
 /** Open dialogs request
  *
@@ -91,7 +91,7 @@
  * ]
  *
  */
-# define VOLAND_DBUS_METHOD_OPEN  "open"
+#define VOLAND_DBUS_METHOD_OPEN "open"
 
 /** Close dialog request
  *
@@ -99,7 +99,7 @@
  *
  * @return BOOLEAN ok
  */
-# define VOLAND_DBUS_METHOD_CLOSE "close"
+#define VOLAND_DBUS_METHOD_CLOSE "close"
 
 #endif /* VOLAND_DBUS_H_ */
 /*

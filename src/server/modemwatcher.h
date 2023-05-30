@@ -22,9 +22,9 @@
 #ifndef MODEMWATCHER_H
 #define MODEMWATCHER_H
 
+#include <QDBusVariant>
 #include <QObject>
 #include <QVariant>
-#include <QDBusVariant>
 
 class QDBusInterface;
 class QDBusPendingCallWatcher;

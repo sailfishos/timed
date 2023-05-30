@@ -23,11 +23,9 @@
 
 NetworkRegistrationInterface::NetworkRegistrationInterface(QObject *parent)
     : QDBusAbstractAdaptor(parent)
-{
-}
+{}
 
-void NetworkRegistrationInterface::emulateNetworkRegistration(const QString mnc,
-                                                              const QString mcc)
+void NetworkRegistrationInterface::emulateNetworkRegistration(const QString mnc, const QString mcc)
 {
     m_mcc = mcc;
     m_mnc = mnc;

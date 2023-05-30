@@ -27,21 +27,20 @@
 #include <exception>
 #include <string>
 
-namespace Maemo
+namespace Maemo {
+namespace Timed {
+class Exception : public std::exception
 {
-  namespace Timed
-  {
-    class Exception : public std::exception
-    {
-      std::string msg, fnc, human_readable ;
-    public:
-      Exception(const char *func, const char *message) throw () ;
-     ~Exception() throw () ;
-      const char *what() const throw() ;
-      virtual const char *message() const throw() ;
-      virtual const char *function() const throw() ;
-    } ;
-  }
-}
+    std::string msg, fnc, human_readable;
+
+public:
+    Exception(const char *func, const char *message) throw();
+    ~Exception() throw();
+    const char *what() const throw();
+    virtual const char *message() const throw();
+    virtual const char *function() const throw();
+};
+} // namespace Timed
+} // namespace Maemo
 
 #endif

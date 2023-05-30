@@ -25,24 +25,30 @@
 
 #include "../common/log.h"
 
-#include "ofonoconstants.h"
 #include "networktimewatcher.h"
+#include "ofonoconstants.h"
 
-NetworkTimeWatcher::NetworkTimeWatcher(const QString path, QObject *parent) :
-    ModemWatcher(path, OfonoConstants::OFONO_NETWORKTIME_INTERFACE, parent)
+NetworkTimeWatcher::NetworkTimeWatcher(const QString path, QObject *parent)
+    : ModemWatcher(path, OfonoConstants::OFONO_NETWORKTIME_INTERFACE, parent)
 {
-    QDBusConnection::systemBus().connect(OfonoConstants::OFONO_SERVICE, objectPath(),
-                                         interface(), "NetworkTimeChanged",
-                                         this, SLOT(onNetworkTimeChanged(QVariantMap)));
+    QDBusConnection::systemBus().connect(OfonoConstants::OFONO_SERVICE,
+                                         objectPath(),
+                                         interface(),
+                                         "NetworkTimeChanged",
+                                         this,
+                                         SLOT(onNetworkTimeChanged(QVariantMap)));
 
     QObject::connect(this, SIGNAL(interfaceAvailableChanged(bool)), this, SLOT(queryNetworkTime()));
 }
 
 NetworkTimeWatcher::~NetworkTimeWatcher()
 {
-    QDBusConnection::systemBus().disconnect(OfonoConstants::OFONO_SERVICE, objectPath(),
-                                            interface(), "NetworkTimeChanged",
-                                            this, SLOT(onNetworkTimeChanged(QVariantMap)));
+    QDBusConnection::systemBus().disconnect(OfonoConstants::OFONO_SERVICE,
+                                            objectPath(),
+                                            interface(),
+                                            "NetworkTimeChanged",
+                                            this,
+                                            SLOT(onNetworkTimeChanged(QVariantMap)));
 }
 
 void NetworkTimeWatcher::queryNetworkTime()
@@ -50,7 +56,9 @@ void NetworkTimeWatcher::queryNetworkTime()
     if (!interfaceAvailable())
         return;
 
-    QDBusInterface dbusInterface(OfonoConstants::OFONO_SERVICE, objectPath(), interface(),
+    QDBusInterface dbusInterface(OfonoConstants::OFONO_SERVICE,
+                                 objectPath(),
+                                 interface(),
                                  QDBusConnection::systemBus());
     if (!dbusInterface.isValid()) {
         log_error("Dbus interface %s of path %s is invalid.",
@@ -61,8 +69,10 @@ void NetworkTimeWatcher::queryNetworkTime()
 
     QDBusPendingCall async = dbusInterface.asyncCall("GetNetworkTime");
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(async, this);
-    QObject::connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                     this, SLOT(queryNetworkTimeCallback(QDBusPendingCallWatcher*)));
+    QObject::connect(watcher,
+                     SIGNAL(finished(QDBusPendingCallWatcher *)),
+                     this,
+                     SLOT(queryNetworkTimeCallback(QDBusPendingCallWatcher *)));
 }
 
 void NetworkTimeWatcher::queryNetworkTimeCallback(QDBusPendingCallWatcher *watcher)
@@ -85,4 +95,3 @@ void NetworkTimeWatcher::onNetworkTimeChanged(QVariantMap map)
 {
     emit networkTimeChanged(map);
 }
-

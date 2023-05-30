@@ -19,19 +19,19 @@
 **                                                                        **
 ***************************************************************************/
 
-#include <QTest>
-#include <QDBusReply>
 #include <QDBusError>
+#include <QDBusReply>
 #include <QDateTime>
 #include <QFile>
 #include <QMap>
 #include <QSignalSpy>
+#include <QTest>
 
-#include "../../src/lib/interface.h"
 #include "../../src/lib/event-declarations.h"
+#include "../../src/lib/interface.h"
 
-#include "tst_events.h"
 #include "simplevolandadaptor.h"
+#include "tst_events.h"
 
 #define APPNAME "tst_events"
 #define PATH "/var/tmp/" APPNAME
@@ -49,10 +49,10 @@
         QTest::qWait(__timeDelta); \
     } while (0);
 
-tst_Events::tst_Events(QObject *parent) :
-    QObject(parent), m_simpleVolandAdaptor(new SimpleVolandAdaptor(this))
-{
-}
+tst_Events::tst_Events(QObject *parent)
+    : QObject(parent)
+    , m_simpleVolandAdaptor(new SimpleVolandAdaptor(this))
+{}
 
 void tst_Events::initTestCase()
 {
@@ -95,9 +95,7 @@ Maemo::Timed::Event tst_Events::createEvent(const qint64 timestamp, const int du
     act.setSendCookieFlag();
     // Timed will replace <COOKIE> with the cookie of the event that triggers this action
     QString message = QString(ACTIONSTRING).arg(timestamp).arg("<COOKIE>");
-    act.runCommand(QString("echo -n %1 > %2")
-                   .arg(message)
-                   .arg(PATH));
+    act.runCommand(QString("echo -n %1 > %2").arg(message).arg(PATH));
     act.whenTriggered();
 
     return event;
@@ -123,8 +121,10 @@ bool tst_Events::addEvent(const qint64 timestamp, const int dueInSeconds, uint &
     return true;
 }
 
-bool tst_Events::replaceEvent(const uint oldCookie, const qint64 timestamp,
-                              const int dueInSeconds, uint &cookie)
+bool tst_Events::replaceEvent(const uint oldCookie,
+                              const qint64 timestamp,
+                              const int dueInSeconds,
+                              uint &cookie)
 {
     Maemo::Timed::Event event = createEvent(timestamp, dueInSeconds);
 
@@ -144,13 +144,13 @@ bool tst_Events::replaceEvent(const uint oldCookie, const qint64 timestamp,
     return true;
 }
 
-bool tst_Events::verifyVolandDialog(const qint64 timestamp, const QList<QVariant> arguments,
+bool tst_Events::verifyVolandDialog(const qint64 timestamp,
+                                    const QList<QVariant> arguments,
                                     const uint cookie)
 {
-    return (arguments.count() == 3)
-            && arguments.at(0).toUInt() == cookie
-            && arguments.at(1).toString().compare(QString(APPNAME)) == 0
-            && arguments.at(2).toString().compare(QString("%1").arg(timestamp)) == 0;
+    return (arguments.count() == 3) && arguments.at(0).toUInt() == cookie
+           && arguments.at(1).toString().compare(QString(APPNAME)) == 0
+           && arguments.at(2).toString().compare(QString("%1").arg(timestamp)) == 0;
 }
 
 bool tst_Events::dismissEvent(const uint cookie)
@@ -198,13 +198,13 @@ void tst_Events::cancelAllEvents()
 
 QList<uint> tst_Events::queryEvents()
 {
-    QMap<QString,QVariant> parameters;
+    QMap<QString, QVariant> parameters;
     parameters.insert("APPLICATION", QVariant(QString(APPNAME)));
 
     Maemo::Timed::Interface timedIface;
-    QDBusReply<QList<QVariant> > queryReply = timedIface.query_sync(parameters);
+    QDBusReply<QList<QVariant>> queryReply = timedIface.query_sync(parameters);
     QList<uint> cookieList;
-    if(!queryReply.isValid()) {
+    if (!queryReply.isValid()) {
         qWarning() << "query call failed" << timedIface.lastError();
         return cookieList;
     }
@@ -226,13 +226,11 @@ void tst_Events::test_addEvent()
     qint64 timestamp = QDateTime::currentDateTime().toMSecsSinceEpoch();
     QSignalSpy spy(m_simpleVolandAdaptor, SIGNAL(openAlarmDialog(uint, QString, QString)));
     uint cookie = 0;
-    QVERIFY2(addEvent(timestamp, 2, cookie),
-             "Adding event failed, DBus error");
+    QVERIFY2(addEvent(timestamp, 2, cookie), "Adding event failed, DBus error");
     QVERIFY2(cookie != 0, "Adding event failed, cookie is 0");
 
     QList<uint> cookieList = queryEvents();
-    QVERIFY(cookieList.count() == 1
-            && cookieList.contains(cookie));
+    QVERIFY(cookieList.count() == 1 && cookieList.contains(cookie));
 
     // The event should be triggered while waiting
     WAITFOR(spy.count() >= 1, 2200);
@@ -273,11 +271,8 @@ void tst_Events::test_replaceEvent()
     QVERIFY(spy.count() == 0);
 
     QList<uint> cookieList = queryEvents();
-    QVERIFY(cookieList.count() == 3
-            && cookieList.contains(cookie)
-            && cookieList.contains(cookie2)
+    QVERIFY(cookieList.count() == 3 && cookieList.contains(cookie) && cookieList.contains(cookie2)
             && cookieList.contains(cookie3));
-
 
     qint64 newTimestamp = QDateTime::currentDateTime().toMSecsSinceEpoch();
     uint newCookie = 0;
@@ -285,9 +280,7 @@ void tst_Events::test_replaceEvent()
     QVERIFY(replaceEvent(cookie2, newTimestamp, 2, newCookie));
 
     cookieList = queryEvents();
-    QVERIFY(cookieList.count() == 3
-            && cookieList.contains(cookie)
-            && cookieList.contains(cookie3)
+    QVERIFY(cookieList.count() == 3 && cookieList.contains(cookie) && cookieList.contains(cookie3)
             && cookieList.contains(newCookie));
 
     QVERIFY(spy.count() == 0); // make sure that the events have not been triggered yet
@@ -314,9 +307,7 @@ void tst_Events::test_replaceEvent()
     QVERIFY(byteArray == QString(ACTIONSTRING).arg(timestamp3).arg(cookie3));
 
     cookieList = queryEvents();
-    QVERIFY(cookieList.count() == 3
-            && cookieList.contains(cookie)
-            && cookieList.contains(cookie3)
+    QVERIFY(cookieList.count() == 3 && cookieList.contains(cookie) && cookieList.contains(cookie3)
             && cookieList.contains(newCookie));
 
     QVERIFY2(dismissEvent(cookie), "Failed to dismiss event");
@@ -346,17 +337,13 @@ void tst_Events::test_cancelEvent()
     QVERIFY(spy.count() == 0);
 
     QList<uint> cookieList = queryEvents();
-    QVERIFY(cookieList.count() == 3
-            && cookieList.contains(cookie)
-            && cookieList.contains(cookie2)
+    QVERIFY(cookieList.count() == 3 && cookieList.contains(cookie) && cookieList.contains(cookie2)
             && cookieList.contains(cookie3));
 
     QVERIFY(cancelEvent(cookie2));
 
     cookieList = queryEvents();
-    QVERIFY(cookieList.count() == 2
-            && cookieList.contains(cookie)
-            && cookieList.contains(cookie3));
+    QVERIFY(cookieList.count() == 2 && cookieList.contains(cookie) && cookieList.contains(cookie3));
 
     QVERIFY(spy.count() == 0); // make sure that the events have not been triggered yet
 
@@ -376,9 +363,7 @@ void tst_Events::test_cancelEvent()
     QVERIFY(byteArray == QString(ACTIONSTRING).arg(timestamp3).arg(cookie3));
 
     cookieList = queryEvents();
-    QVERIFY(cookieList.count() == 2
-            && cookieList.contains(cookie)
-            && cookieList.contains(cookie3));
+    QVERIFY(cookieList.count() == 2 && cookieList.contains(cookie) && cookieList.contains(cookie3));
 
     QVERIFY2(dismissEvent(cookie), "Failed to dismiss event");
     QVERIFY2(dismissEvent(cookie3), "Failed to dismiss event");

@@ -19,30 +19,34 @@
 **                                                                        **
 ***************************************************************************/
 
-#include <QtDebug>
 #include <QStringList>
+#include <QtDebug>
 
 #include "../common/log.h"
 
 #include "networkoperator.h"
 #include "networkregistrationwatcher.h"
 
-NetworkOperator::NetworkOperator(QObject *parent) :
-    QObject(parent)
+NetworkOperator::NetworkOperator(QObject *parent)
+    : QObject(parent)
 {
     foreach (const QString objectPath, m_modemManager.getModemList())
         onModemAdded(objectPath);
 
-    QObject::connect(&m_modemManager, SIGNAL(modemAdded(QString)),
-                     this, SLOT(onModemAdded(QString)));
+    QObject::connect(&m_modemManager,
+                     SIGNAL(modemAdded(QString)),
+                     this,
+                     SLOT(onModemAdded(QString)));
 
-    QObject::connect(&m_modemManager, SIGNAL(modemRemoved(QString)),
-                     this, SLOT(onModemRemoved(QString)));
+    QObject::connect(&m_modemManager,
+                     SIGNAL(modemRemoved(QString)),
+                     this,
+                     SLOT(onModemRemoved(QString)));
 }
 
 NetworkOperator::~NetworkOperator()
 {
-    foreach (NetworkRegistrationWatcher* watcher, m_watcherMap)
+    foreach (NetworkRegistrationWatcher *watcher, m_watcherMap)
         delete watcher;
 
     m_watcherMap.clear();
@@ -65,7 +69,8 @@ QString NetworkOperator::mnc(const QString &modem) const
         if (m_operatorInfo.contains(modem)) {
             return m_operatorInfo[modem].mnc;
         }
-        log_debug("modem specified but not known, returning empty mnc: %s", modem.toStdString().c_str());
+        log_debug("modem specified but not known, returning empty mnc: %s",
+                  modem.toStdString().c_str());
         return QString();
     }
 
@@ -94,7 +99,8 @@ QString NetworkOperator::mcc(const QString &modem) const
         if (m_operatorInfo.contains(modem)) {
             return m_operatorInfo[modem].mcc;
         }
-        log_debug("modem specified but not known, returning empty mcc: %s", modem.toStdString().c_str());
+        log_debug("modem specified but not known, returning empty mcc: %s",
+                  modem.toStdString().c_str());
         return QString();
     }
 
@@ -119,11 +125,13 @@ QString NetworkOperator::mcc(const QString &modem) const
 bool NetworkOperator::isValid(const QString &modem) const
 {
     if (!modem.isEmpty()) {
-        return m_operatorInfo.contains(modem) && !(m_operatorInfo[modem].mcc.isEmpty() || m_operatorInfo[modem].mnc.isEmpty());
+        return m_operatorInfo.contains(modem)
+               && !(m_operatorInfo[modem].mcc.isEmpty() || m_operatorInfo[modem].mnc.isEmpty());
     }
 
     if (!m_defaultModem.isEmpty()) {
-        return !(m_operatorInfo[m_defaultModem].mcc.isEmpty() || m_operatorInfo[m_defaultModem].mnc.isEmpty());
+        return !(m_operatorInfo[m_defaultModem].mcc.isEmpty()
+                 || m_operatorInfo[m_defaultModem].mnc.isEmpty());
     }
 
     Q_FOREACH (const QString &mdm, m_operatorInfo.keys()) {
@@ -144,8 +152,10 @@ void NetworkOperator::onModemAdded(QString objectPath)
         return;
 
     NetworkRegistrationWatcher *watcher = new NetworkRegistrationWatcher(objectPath, this);
-    QObject::connect(watcher, SIGNAL(propertyChanged(QString, QString, QVariant)),
-                     this, SLOT(onWatcherPropertyChanged(QString, QString, QVariant)));
+    QObject::connect(watcher,
+                     SIGNAL(propertyChanged(QString, QString, QVariant)),
+                     this,
+                     SLOT(onWatcherPropertyChanged(QString, QString, QVariant)));
     m_watcherMap.insert(objectPath, watcher);
     m_operatorInfo.insert(objectPath, OperatorInfo());
     watcher->getProperties();
@@ -175,7 +185,7 @@ void NetworkOperator::onModemRemoved(QString objectPath)
 void NetworkOperator::onWatcherPropertyChanged(QString objectPath, QString name, QVariant value)
 {
     if (!m_operatorInfo.contains(objectPath)
-            && (name.compare("MobileCountryCode") == 0 || name.compare("MobileNetworkCode") == 0)) {
+        && (name.compare("MobileCountryCode") == 0 || name.compare("MobileNetworkCode") == 0)) {
         m_operatorInfo.insert(objectPath, OperatorInfo());
     }
 
@@ -201,6 +211,8 @@ void NetworkOperator::onWatcherPropertyChanged(QString objectPath, QString name,
                   m_operatorInfo[objectPath].mnc.toStdString().c_str(),
                   m_operatorInfo[objectPath].mcc.toStdString().c_str(),
                   objectPath.toStdString().c_str());
-        emit operatorChanged(objectPath, m_operatorInfo[objectPath].mnc, m_operatorInfo[objectPath].mcc);
+        emit operatorChanged(objectPath,
+                             m_operatorInfo[objectPath].mnc,
+                             m_operatorInfo[objectPath].mcc);
     }
 }

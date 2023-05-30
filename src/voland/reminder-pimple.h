@@ -33,30 +33,24 @@
 #include "../lib/qmacro.h"
 #include "interface.h"
 
-namespace Maemo
+namespace Maemo {
+namespace Timed {
+namespace Voland {
+struct button_io_t
 {
-  namespace Timed
-  {
-    namespace Voland
-    {
-      struct button_io_t
-      {
-        QMap<QString, QString> attr ;
-      } ;
-      struct reminder_pimple_t
-      {
-        uint32_t cookie, flags ;
-        QMap<QString, QString> attr ;
-        QVector<button_io_t> buttons ;
-        reminder_pimple_t()
-        {
-          cookie = flags = 0 ;
-        }
-      } ;
-    }
-  }
-}
+    QMap<QString, QString> attr;
+};
+struct reminder_pimple_t
+{
+    uint32_t cookie, flags;
+    QMap<QString, QString> attr;
+    QVector<button_io_t> buttons;
+    reminder_pimple_t() { cookie = flags = 0; }
+};
+} // namespace Voland
+} // namespace Timed
+} // namespace Maemo
 
-declare_qtdbus_io(Maemo::Timed::Voland::button_io_t) ;
+declare_qtdbus_io(Maemo::Timed::Voland::button_io_t);
 
 #endif

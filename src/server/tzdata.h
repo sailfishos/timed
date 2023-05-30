@@ -24,24 +24,23 @@
 #ifndef MAEMO_TIMED_TZDATA_H
 #define MAEMO_TIMED_TZDATA_H
 
-#include <string>
 #include <set>
+#include <string>
 
-class olson ;
+class olson;
 
-namespace tzdata
-{
-  enum zone_type { All_Zones, Main_Zones, Real_Zones } ;
+namespace tzdata {
+enum zone_type { All_Zones, Main_Zones, Real_Zones };
 
-  std::string iso_3166_1_alpha2_by_mcc(const std::string &mcc) ;
-  int by_country(const std::string &alpha2, enum zone_type type, std::set<olson*> &out) ;
-  olson* country_default(const std::string &alpha2) ;
-  olson* device_default() ;
-  int filter(const std::set<olson*> &in, time_t moment, int offset, int dst, std::set<olson*> &out) ;
-  bool is_single_zone_country(const std::string &alpha2) ;
+std::string iso_3166_1_alpha2_by_mcc(const std::string &mcc);
+int by_country(const std::string &alpha2, enum zone_type type, std::set<olson *> &out);
+olson *country_default(const std::string &alpha2);
+olson *device_default();
+int filter(const std::set<olson *> &in, time_t moment, int offset, int dst, std::set<olson *> &out);
+bool is_single_zone_country(const std::string &alpha2);
 
-  std::string set_str(const std::set<olson*> &) ;
-  void init(const std::string &default_tz) ;
-}
+std::string set_str(const std::set<olson *> &);
+void init(const std::string &default_tz);
+} // namespace tzdata
 
-#endif//MAEMO_TIMED_TZDATA_H
+#endif //MAEMO_TIMED_TZDATA_H

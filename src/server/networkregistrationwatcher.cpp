@@ -21,30 +21,35 @@
 
 #include <QDBusInterface>
 #include <QDBusPendingCallWatcher>
-#include <QDBusReply>
 #include <QDBusPendingReply>
+#include <QDBusReply>
 
 #include "../common/log.h"
 
-#include "ofonoconstants.h"
 #include "networkregistrationwatcher.h"
+#include "ofonoconstants.h"
 
-NetworkRegistrationWatcher::NetworkRegistrationWatcher(const QString path, QObject *parent) :
-    ModemWatcher(path, OfonoConstants::OFONO_NETWORKREGISTRATION_INTERFACE, parent)
+NetworkRegistrationWatcher::NetworkRegistrationWatcher(const QString path, QObject *parent)
+    : ModemWatcher(path, OfonoConstants::OFONO_NETWORKREGISTRATION_INTERFACE, parent)
 {
-    QDBusConnection::systemBus().connect(OfonoConstants::OFONO_SERVICE, objectPath(),
-                                         interface(), "PropertyChanged",
-                                         this, SLOT(onPropertyChanged(QString, QDBusVariant)));
+    QDBusConnection::systemBus().connect(OfonoConstants::OFONO_SERVICE,
+                                         objectPath(),
+                                         interface(),
+                                         "PropertyChanged",
+                                         this,
+                                         SLOT(onPropertyChanged(QString, QDBusVariant)));
 
-    QObject::connect(this, SIGNAL(interfaceAvailableChanged(bool)),
-                     this, SLOT(getProperties()));
+    QObject::connect(this, SIGNAL(interfaceAvailableChanged(bool)), this, SLOT(getProperties()));
 }
 
 NetworkRegistrationWatcher::~NetworkRegistrationWatcher()
 {
-    QDBusConnection::systemBus().disconnect(OfonoConstants::OFONO_SERVICE, objectPath(),
-                                            interface(), "PropertyChanged",
-                                            this, SLOT(onPropertyChanged(QString, QDBusVariant)));
+    QDBusConnection::systemBus().disconnect(OfonoConstants::OFONO_SERVICE,
+                                            objectPath(),
+                                            interface(),
+                                            "PropertyChanged",
+                                            this,
+                                            SLOT(onPropertyChanged(QString, QDBusVariant)));
 }
 
 void NetworkRegistrationWatcher::getProperties()
@@ -52,7 +57,9 @@ void NetworkRegistrationWatcher::getProperties()
     if (!interfaceAvailable())
         return;
 
-    QDBusInterface dbusInterface(OfonoConstants::OFONO_SERVICE, objectPath(), interface(),
+    QDBusInterface dbusInterface(OfonoConstants::OFONO_SERVICE,
+                                 objectPath(),
+                                 interface(),
                                  QDBusConnection::systemBus());
     if (!dbusInterface.isValid()) {
         log_error("Dbus interface %s of path %s is invalid.",
@@ -63,8 +70,10 @@ void NetworkRegistrationWatcher::getProperties()
 
     QDBusPendingCall async = dbusInterface.asyncCall("GetProperties");
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(async, this);
-    QObject::connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                     this, SLOT(getPropertiesCallback(QDBusPendingCallWatcher*)));
+    QObject::connect(watcher,
+                     SIGNAL(finished(QDBusPendingCallWatcher *)),
+                     this,
+                     SLOT(getPropertiesCallback(QDBusPendingCallWatcher *)));
 }
 
 void NetworkRegistrationWatcher::getPropertiesCallback(QDBusPendingCallWatcher *watcher)
