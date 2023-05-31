@@ -24,6 +24,15 @@
 #ifndef CLUSTER_H
 #define CLUSTER_H
 
+#include <stdint.h>
+#include <string>
+#include <set>
+#include <QMap>
+#include <QString>
+#include <QVariant>
+
+#include "flags.h"
+
 struct machine_t;
 struct event_t;
 
@@ -31,7 +40,7 @@ struct abstract_cluster_t
 {
     machine_t *machine;
     uint32_t bit;
-    string name;
+    std::string name;
     abstract_cluster_t(machine_t *owner, uint32_t b, const char *n)
         : machine(owner)
         , bit(b)
@@ -55,7 +64,7 @@ struct cluster_queue_t : public abstract_cluster_t
 
 struct cluster_dialog_t : public abstract_cluster_t
 {
-    set<event_t *> bootup_events;
+    std::set<event_t *> bootup_events;
     cluster_dialog_t(machine_t *m)
         : abstract_cluster_t(m, EventFlags::Cluster_Dialog, "DIALOG")
     {}
