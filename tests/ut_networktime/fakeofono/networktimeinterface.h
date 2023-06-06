@@ -25,15 +25,21 @@
 #include <QDBusAbstractAdaptor>
 #include <QVariant>
 
-class NetworkTimeInterface : public QDBusAbstractAdaptor {
+class NetworkTimeInterface : public QDBusAbstractAdaptor
+{
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.fakeofono.NetworkTime")
 
 public:
     explicit NetworkTimeInterface(QObject *parent = 0);
 
-    void emulateNetworkTimeChange(qlonglong utc, qlonglong received, int timezone,
-                                  uint dst, QString mcc, QString mnc, QString modem);
+    void emulateNetworkTimeChange(qlonglong utc,
+                                  qlonglong received,
+                                  int timezone,
+                                  uint dst,
+                                  QString mcc,
+                                  QString mnc,
+                                  QString modem);
 
 public slots:
     QVariantMap GetNetworkTime();

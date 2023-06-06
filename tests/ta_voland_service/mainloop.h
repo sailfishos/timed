@@ -5,19 +5,19 @@
  * ------------------------------------------------------------------------- */
 
 #ifndef MAINLOOP_H_
-# define MAINLOOP_H_
+#define MAINLOOP_H_
 
-# ifdef __cplusplus
+#ifdef __cplusplus
 extern "C" {
-# elif 0
+#elif 0
 } /* fool JED indentation ... */
-# endif
+#endif
 
 void mainloop_stop(int exit_code);
-int  mainloop_run(void);
+int mainloop_run(void);
 
-# ifdef __cplusplus
+#ifdef __cplusplus
 };
-# endif
+#endif
 
 #endif /* MAINLOOP_H_ */

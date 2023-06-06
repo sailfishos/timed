@@ -19,19 +19,19 @@
 **                                                                        **
 ***************************************************************************/
 
+#include <QList>
 #include <QtDBus/QDBusArgument>
-#include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusConnectionInterface>
+#include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusMetaType>
 #include <QtDBus/QDBusReply>
 #include <QtDBus/QDBusServiceWatcher>
-#include <QtDBus/QDBusConnectionInterface>
-#include <QList>
 
 #include "../common/log.h"
 
-#include "ofonomodemmanager.h"
 #include "ofonoconstants.h"
+#include "ofonomodemmanager.h"
 
 struct OfonoModemProperties
 {
@@ -60,27 +60,30 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, OfonoModemPropert
 Q_DECLARE_METATYPE(OfonoModemProperties)
 Q_DECLARE_METATYPE(OfonoModemList)
 
-OfonoModemManager::OfonoModemManager(QObject *parent) :
-    QObject(parent)
+OfonoModemManager::OfonoModemManager(QObject *parent)
+    : QObject(parent)
 {
     qDBusRegisterMetaType<OfonoModemProperties>();
     qDBusRegisterMetaType<OfonoModemList>();
 
     QDBusConnection::systemBus().connect(OfonoConstants::OFONO_SERVICE,
                                          OfonoConstants::OFONO_MANAGER_PATH,
-                                         OfonoConstants::OFONO_MANAGER_INTERFACE, "ModemAdded",
-                                         this, SLOT(onModemAdded(QDBusObjectPath, QVariantMap)));
+                                         OfonoConstants::OFONO_MANAGER_INTERFACE,
+                                         "ModemAdded",
+                                         this,
+                                         SLOT(onModemAdded(QDBusObjectPath, QVariantMap)));
     QDBusConnection::systemBus().connect(OfonoConstants::OFONO_SERVICE,
                                          OfonoConstants::OFONO_MANAGER_PATH,
-                                         OfonoConstants::OFONO_MANAGER_INTERFACE, "ModemRemoved",
-                                         this, SLOT(onModemRemoved(QDBusObjectPath)));
+                                         OfonoConstants::OFONO_MANAGER_INTERFACE,
+                                         "ModemRemoved",
+                                         this,
+                                         SLOT(onModemRemoved(QDBusObjectPath)));
 
     m_ofonoWatcher = new QDBusServiceWatcher(OfonoConstants::OFONO_SERVICE,
                                              QDBusConnection::systemBus(),
                                              QDBusServiceWatcher::WatchForRegistration,
                                              this);
-    connect(m_ofonoWatcher, SIGNAL(serviceRegistered(QString)),
-            this, SLOT(serviceRegistered()));
+    connect(m_ofonoWatcher, SIGNAL(serviceRegistered(QString)), this, SLOT(serviceRegistered()));
 
     if (QDBusConnection::systemBus().interface()->isServiceRegistered(OfonoConstants::OFONO_SERVICE))
         getModems();
@@ -90,12 +93,16 @@ OfonoModemManager::~OfonoModemManager()
 {
     QDBusConnection::systemBus().disconnect(OfonoConstants::OFONO_SERVICE,
                                             OfonoConstants::OFONO_MANAGER_PATH,
-                                            OfonoConstants::OFONO_MANAGER_INTERFACE, "ModemAdded",
-                                            this, SLOT(onModemAdded(QDBusObjectPath, QVariantMap)));
+                                            OfonoConstants::OFONO_MANAGER_INTERFACE,
+                                            "ModemAdded",
+                                            this,
+                                            SLOT(onModemAdded(QDBusObjectPath, QVariantMap)));
     QDBusConnection::systemBus().disconnect(OfonoConstants::OFONO_SERVICE,
                                             OfonoConstants::OFONO_MANAGER_PATH,
-                                            OfonoConstants::OFONO_MANAGER_INTERFACE, "ModemRemoved",
-                                            this, SLOT(onModemRemoved(QDBusObjectPath)));
+                                            OfonoConstants::OFONO_MANAGER_INTERFACE,
+                                            "ModemRemoved",
+                                            this,
+                                            SLOT(onModemRemoved(QDBusObjectPath)));
 }
 
 bool OfonoModemManager::addModem(QString objectPath)
@@ -120,8 +127,10 @@ void OfonoModemManager::getModems()
                                                           "GetModems");
     QDBusPendingReply<OfonoModemList> reply = QDBusConnection::systemBus().asyncCall(request);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-    QObject::connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                     this, SLOT(getModemsReply(QDBusPendingCallWatcher*)));
+    QObject::connect(watcher,
+                     SIGNAL(finished(QDBusPendingCallWatcher *)),
+                     this,
+                     SLOT(getModemsReply(QDBusPendingCallWatcher *)));
 }
 
 void OfonoModemManager::getModemsReply(QDBusPendingCallWatcher *call)

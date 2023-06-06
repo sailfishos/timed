@@ -23,6 +23,4 @@
 ***************************************************************************/
 #include "customization.h"
 
-customization_t::customization_t()
-{
-}
+customization_t::customization_t() {}

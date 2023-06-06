@@ -5,21 +5,21 @@
  * ------------------------------------------------------------------------- */
 
 #ifndef TA_VOLAND_H_
-# define TA_VOLAND_H_
+#define TA_VOLAND_H_
 
 #include "ta_voland_dbus.h"
 
-# ifdef __cplusplus
+#ifdef __cplusplus
 extern "C" {
-# elif 0
+#elif 0
 } /* fool JED indentation ... */
-# endif
+#endif
 
 bool ta_voland_init(void);
 void ta_voland_quit(void);
 
-# ifdef __cplusplus
+#ifdef __cplusplus
 };
-# endif
+#endif
 
 #endif /* TA_VOLAND_H_ */

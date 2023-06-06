@@ -19,30 +19,34 @@
 **                                                                        **
 ***************************************************************************/
 
+#include <QtDBus/QDBusConnectionInterface>
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusReply>
 #include <QtDBus/QDBusServiceWatcher>
-#include <QtDBus/QDBusConnectionInterface>
 
 #include "../common/log.h"
 
-#include "ofonoconstants.h"
 #include "modemwatcher.h"
+#include "ofonoconstants.h"
 
-ModemWatcher::ModemWatcher(const QString objectPath, const QString interface, QObject *parent) :
-    QObject(parent), m_objectPath(objectPath), m_interface(interface), m_interfaceAvailable(false)
+ModemWatcher::ModemWatcher(const QString objectPath, const QString interface, QObject *parent)
+    : QObject(parent)
+    , m_objectPath(objectPath)
+    , m_interface(interface)
+    , m_interfaceAvailable(false)
 {
-    QDBusConnection::systemBus().connect(OfonoConstants::OFONO_SERVICE, m_objectPath,
+    QDBusConnection::systemBus().connect(OfonoConstants::OFONO_SERVICE,
+                                         m_objectPath,
                                          OfonoConstants::OFONO_MODEM_INTERFACE,
-                                         "PropertyChanged", this,
+                                         "PropertyChanged",
+                                         this,
                                          SLOT(onModemPropertyChanged(QString, QDBusVariant)));
 
     m_ofonoWatcher = new QDBusServiceWatcher(OfonoConstants::OFONO_SERVICE,
                                              QDBusConnection::systemBus(),
                                              QDBusServiceWatcher::WatchForRegistration,
                                              this);
-    connect(m_ofonoWatcher, SIGNAL(serviceRegistered(QString)),
-            this, SLOT(getProperties()));
+    connect(m_ofonoWatcher, SIGNAL(serviceRegistered(QString)), this, SLOT(getProperties()));
 
     if (QDBusConnection::systemBus().interface()->isServiceRegistered(OfonoConstants::OFONO_SERVICE))
         getProperties();
@@ -56,8 +60,10 @@ void ModemWatcher::getProperties()
                                                           "GetProperties");
     QDBusPendingReply<QVariantMap> reply = QDBusConnection::systemBus().asyncCall(request);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-    QObject::connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                     this, SLOT(getPropertiesReply(QDBusPendingCallWatcher*)));
+    QObject::connect(watcher,
+                     SIGNAL(finished(QDBusPendingCallWatcher *)),
+                     this,
+                     SLOT(getPropertiesReply(QDBusPendingCallWatcher *)));
 }
 
 void ModemWatcher::getPropertiesReply(QDBusPendingCallWatcher *call)
@@ -78,9 +84,12 @@ void ModemWatcher::getPropertiesReply(QDBusPendingCallWatcher *call)
 
 ModemWatcher::~ModemWatcher()
 {
-    QDBusConnection::systemBus().disconnect(OfonoConstants::OFONO_SERVICE, m_objectPath,
-                                            OfonoConstants::OFONO_MODEM_INTERFACE, "PropertyChanged",
-                                            this, SLOT(onModemPropertyChanged(QString, QDBusVariant)));
+    QDBusConnection::systemBus().disconnect(OfonoConstants::OFONO_SERVICE,
+                                            m_objectPath,
+                                            OfonoConstants::OFONO_MODEM_INTERFACE,
+                                            "PropertyChanged",
+                                            this,
+                                            SLOT(onModemPropertyChanged(QString, QDBusVariant)));
 }
 
 bool ModemWatcher::interfaceAvailable() const

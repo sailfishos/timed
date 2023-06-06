@@ -24,19 +24,19 @@
 #ifndef CUSTOMIZATION_H
 #define CUSTOMIZATION_H
 
-#include <iodata/storage>
 #include <iodata/iodata>
+#include <iodata/storage>
 
 struct customization_t
 {
-  bool format24() { return format_24_value ; }
-  bool useNitz() { return use_nitz_value ; }
-  bool autoTime() { return auto_time_value ; }
-  bool guessTz() { return guess_tz_value ; }
+    bool format24() { return format_24_value; }
+    bool useNitz() { return use_nitz_value; }
+    bool autoTime() { return auto_time_value; }
+    bool guessTz() { return guess_tz_value; }
 
-  customization_t() ;
-  iodata::storage *file ;
-  iodata::record *rec ;
-} ;
+    customization_t();
+    iodata::storage *file;
+    iodata::record *rec;
+};
 
 #endif

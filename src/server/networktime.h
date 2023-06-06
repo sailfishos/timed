@@ -38,7 +38,7 @@ class NetworkTime : public QObject
     Q_OBJECT
 
 public:
-    explicit NetworkTime (QObject *parent=0);
+    explicit NetworkTime(QObject *parent = 0);
     ~NetworkTime();
     QString defaultModem() const;
     NetworkTimeInfo timeInfo(const QString &modemPath = QString()) const;
@@ -52,7 +52,7 @@ signals:
 private:
     mutable QString m_defaultModem;
     QMap<QString, NetworkTimeInfo> m_networkTimeInfo;
-    QMap<QString, NetworkTimeWatcher*> m_watcherMap;
+    QMap<QString, NetworkTimeWatcher *> m_watcherMap;
     NetworkTimeInfo parseNetworkTimeInfoFromMap(QVariantMap map, const QString &modemPath);
     OfonoModemManager m_modemManager;
 

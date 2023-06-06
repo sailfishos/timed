@@ -25,18 +25,18 @@
 #include <cstdio>
 
 #define log_debug(msg, ...) \
-do { \
-    printf("log_debug: " msg "\n", ##__VA_ARGS__); \
-} while(0) \
+    do { \
+        printf("log_debug: " msg "\n", ##__VA_ARGS__); \
+    } while (0)
 
 #define log_warning(msg, ...) \
-do { \
-    printf("log_warning: " msg "\n", ##__VA_ARGS__); \
-} while(0) \
+    do { \
+        printf("log_warning: " msg "\n", ##__VA_ARGS__); \
+    } while (0)
 
 #define log_error(msg, ...) \
-do { \
-    printf("log_error: " msg "\n", ##__VA_ARGS__); \
-} while(0) \
+    do { \
+        printf("log_error: " msg "\n", ##__VA_ARGS__); \
+    } while (0)
 
 #endif

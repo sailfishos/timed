@@ -25,28 +25,26 @@
 
 #include "exception.h"
 
-Maemo::Timed::Exception::Exception(const char *function, const char *message) throw ()
+Maemo::Timed::Exception::Exception(const char *function, const char *message) throw()
 {
-  msg = message ;
-  fnc = function ;
-  human_readable = msg + " in " + fnc ;
+    msg = message;
+    fnc = function;
+    human_readable = msg + " in " + fnc;
 }
 
-Maemo::Timed::Exception::~Exception() throw ()
-{
-}
+Maemo::Timed::Exception::~Exception() throw() {}
 
 const char *Maemo::Timed::Exception::what() const throw()
 {
-  return human_readable.c_str() ;
+    return human_readable.c_str();
 }
 
 const char *Maemo::Timed::Exception::message() const throw()
 {
-  return msg.c_str() ;
+    return msg.c_str();
 }
 
 const char *Maemo::Timed::Exception::function() const throw()
 {
-  return fnc.c_str() ;
+    return fnc.c_str();
 }

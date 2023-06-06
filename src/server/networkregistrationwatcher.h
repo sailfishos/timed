@@ -22,9 +22,9 @@
 #ifndef NETWORKREGISTRATIONRWATCHER_H
 #define NETWORKREGISTRATIONRWATCHER_H
 
+#include <QDBusVariant>
 #include <QObject>
 #include <QVariantMap>
-#include <QDBusVariant>
 
 #include "modemwatcher.h"
 

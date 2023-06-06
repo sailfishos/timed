@@ -22,18 +22,22 @@
 #ifndef NETWORKTIMEINFO_H
 #define NETWORKTIMEINFO_H
 
+#include <time.h>
 #include <QDateTime>
 #include <QString>
-#include <time.h>
 
 // See http://harmattan-dev.nokia.com/docs/platform-api-reference/xml/daily-docs/libcellular-qt/classCellular_1_1NetworkTimeInfo.html
 class NetworkTimeInfo
 {
 public:
-    NetworkTimeInfo(const QDateTime &dateTime, const int daylightAdjustment,
-                    const int offsetFromUtc, const qlonglong timestampSeconds,
+    NetworkTimeInfo(const QDateTime &dateTime,
+                    const int daylightAdjustment,
+                    const int offsetFromUtc,
+                    const qlonglong timestampSeconds,
                     const qlonglong timestampNanoSeconds,
-                    const QString &mnc, const QString &mcc, const QString &modem);
+                    const QString &mnc,
+                    const QString &mcc,
+                    const QString &modem);
     NetworkTimeInfo(const NetworkTimeInfo &other);
     NetworkTimeInfo();
     ~NetworkTimeInfo();
