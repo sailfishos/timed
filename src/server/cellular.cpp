@@ -122,7 +122,11 @@ cellular_time_t::cellular_time_t(const NetworkTimeInfo &cnti)
     , ts(0)
 {
     if (cnti.isValid() and cnti.dateTime().isValid()) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+        value = cnti.dateTime().toSecsSinceEpoch();
+#else
         value = cnti.dateTime().toTime_t();
+#endif
         ts = nanotime_t::from_timespec(*cnti.timestamp());
     }
     log_debug("constructed %s out of %s",
@@ -178,7 +182,11 @@ cellular_offset_t::cellular_offset_t(const NetworkTimeInfo &cnti)
 
         if (cnti.dateTime().isValid() and cnti.dateTime().timeSpec() == Qt::UTC) {
             sender_time = true;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            timestamp = cnti.dateTime().toSecsSinceEpoch();
+#else
             timestamp = cnti.dateTime().toTime_t();
+#endif
         } else {
             // the exact moment of sending isn't clear, let's guess it
             nanotime_t monotonic_received = nanotime_t::from_timespec(*cnti.timestamp());

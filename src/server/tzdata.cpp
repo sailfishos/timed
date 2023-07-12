@@ -21,10 +21,14 @@
 **   License along with Timed. If not, see http://www.gnu.org/licenses/   **
 **                                                                        **
 ***************************************************************************/
-
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <iodata-qt6/validator>
+#include <iodata-qt6/storage>
+#else
 #include <iodata-qt5/storage>
 #include <iodata-qt5/validator>
-#include <QtGlobal>
+#endif
 
 #include <map>
 #include <set>

@@ -1322,7 +1322,11 @@ static QList<uint> do_search(char *args)
             fprintf(stderr, "missing attribute key or value: %s=%s\n", key, val);
             continue;
         }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        attributes.insert(key, QChar(*val));
+#else
         attributes.insert(key, val);
+#endif
     }
 
     QList<uint> cookieList = cookies_get(attributes);

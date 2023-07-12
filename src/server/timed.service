@@ -6,7 +6,7 @@ After=dbus.socket
 # Service type should be dbus, but timed dbus API is on the system bus, which systemd does not detect
 [Service]
 Type=notify
-ExecStart=/usr/bin/timed-qt5 --systemd
+ExecStart=/usr/bin/timed --systemd
 Restart=always
 RestartSec=1
 

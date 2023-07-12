@@ -118,7 +118,28 @@ struct Maemo::Timed::event_list_io_t
 {
     QVector<event_io_t> ee;
 };
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::attribute_io_t &x);
+const QDBusArgument &operator>>(const QDBusArgument &in,Maemo::Timed::attribute_io_t &x);
 
+QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::cred_modifier_io_t &x);
+const QDBusArgument &operator>>(const QDBusArgument &in,Maemo::Timed::cred_modifier_io_t &x);
+
+QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::action_io_t &x);
+const QDBusArgument &operator>>(const QDBusArgument &in,Maemo::Timed::action_io_t &x);
+
+QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::button_io_t &x);
+const QDBusArgument &operator>>(const QDBusArgument &in,Maemo::Timed::button_io_t &x);
+
+QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::recurrence_io_t &x);
+const QDBusArgument &operator>>(const QDBusArgument &in,Maemo::Timed::recurrence_io_t &x);
+
+QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::event_io_t &x);
+const QDBusArgument &operator>>(const QDBusArgument &in,Maemo::Timed::event_io_t &x);
+
+QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::event_list_io_t &x);
+const QDBusArgument &operator>>(const QDBusArgument &in,Maemo::Timed::event_list_io_t &x);
+#else
 declare_qtdbus_io(Maemo::Timed::attribute_io_t);
 declare_qtdbus_io(Maemo::Timed::cred_modifier_io_t);
 declare_qtdbus_io(Maemo::Timed::action_io_t);
@@ -126,5 +147,5 @@ declare_qtdbus_io(Maemo::Timed::button_io_t);
 declare_qtdbus_io(Maemo::Timed::recurrence_io_t);
 declare_qtdbus_io(Maemo::Timed::event_io_t);
 declare_qtdbus_io(Maemo::Timed::event_list_io_t);
-
+#endif
 #endif

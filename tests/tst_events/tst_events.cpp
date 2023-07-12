@@ -88,7 +88,11 @@ Maemo::Timed::Event tst_Events::createEvent(const qint64 timestamp, const int du
     event.setReminderFlag();
     QDateTime dateTime;
     dateTime.setMSecsSinceEpoch(timestamp);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+    event.setTicker(dateTime.toSecsSinceEpoch() + dueInSeconds);
+#else
     event.setTicker(dateTime.toTime_t() + dueInSeconds);
+#endif
 
     // Add an action to the event, the action writes a message to a file when the event is triggered
     Maemo::Timed::Event::Action &act = event.addAction();

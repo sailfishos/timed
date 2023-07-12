@@ -1,0 +1,5 @@
+Name: libtimed-qt6
+Description: timed communication library
+Version: 3.6
+Requires: Qt6DBus
+Libs: -ltimed-qt6

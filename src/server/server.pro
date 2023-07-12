@@ -3,14 +3,14 @@ QT += dbus
 
 TEMPLATE = app
 
-TARGET = timed-qt5
+TARGET = timed
 
 VERSION = $$(TIMED_VERSION)
 
 INCLUDEPATH += ../h
 
 QMAKE_LIBDIR_FLAGS += -L../lib -L../voland
-LIBS += -ltimed-qt5 -ltimed-voland-qt5
+LIBS += -ltimed-qt$${QT_MAJOR_VERSION} -ltimed-voland-qt$${QT_MAJOR_VERSION} -liodata-qt$${QT_MAJOR_VERSION}
 
 IODATA_TYPES = queue.type config.type settings.type customization.type tzdata.type
 
@@ -81,7 +81,7 @@ HEADERS += tz.h
 SOURCES += notification.cpp
 HEADERS += notification.h
 
-CONFIG += link_pkgconfig iodata-qt5
+CONFIG += link_pkgconfig iodata-qt$${QT_MAJOR_VERSION}
 PKGCONFIG += libpcrecpp libsystemd
 PKGCONFIG += sailfishaccesscontrol
 
@@ -92,16 +92,16 @@ CONFIG(dsme_dbus_if) {
 target.path = $$(DESTDIR)/usr/bin
 
 timedrc.path  = $$(DESTDIR)/etc
-timedrc.files = timed-qt5.rc
+timedrc.files = timed.rc
 
 dbusconf.path  = $$(DESTDIR)/etc/dbus-1/system.d
-dbusconf.files = timed-qt5.conf
+dbusconf.files = timed.conf
 
 systemd.path = $$(DESTDIR)/usr/lib/systemd/user
-systemd.files = timed-qt5.service
+systemd.files = timed.service
 
 oneshot.path = $$(DESTDIR)/usr/lib/oneshot.d
-oneshot.files = setcaps-timed-qt5.sh
+oneshot.files = setcaps-timed.sh
 
 INSTALLS += target xml timedrc dbusconf systemd oneshot
 

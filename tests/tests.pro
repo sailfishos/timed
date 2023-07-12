@@ -1,4 +1,4 @@
-PACKAGENAME = timed-qt5
+PACKAGENAME = timed-qt$${QT_MAJOR_VERSION}
 
 TEMPLATE = subdirs
 
