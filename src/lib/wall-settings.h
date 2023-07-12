@@ -26,27 +26,27 @@
 
 #include <stdint.h>
 
-#include "wall-declarations.h"
 #include "qmacro.h"
+#include "wall-declarations.h"
 
 #include "nanotime.h"
 
 struct Maemo::Timed::WallClock::wall_settings_pimple_t
 {
-  bool valid ;
-  uint32_t opcodes ;
-  nanotime_t time_at_zero ;
-  int32_t offset ;
-  QString zone ;
-  wall_settings_pimple_t()
-  {
-    valid = true ;
-    opcodes = 0 ;
-    offset = 0 ;
-  }
-  QString str() const ;
-} ;
+    bool valid;
+    uint32_t opcodes;
+    nanotime_t time_at_zero;
+    int32_t offset;
+    QString zone;
+    wall_settings_pimple_t()
+    {
+        valid = true;
+        opcodes = 0;
+        offset = 0;
+    }
+    QString str() const;
+};
 
-declare_qtdbus_io(Maemo::Timed::WallClock::wall_settings_pimple_t) ;
+declare_qtdbus_io(Maemo::Timed::WallClock::wall_settings_pimple_t);
 
 #endif

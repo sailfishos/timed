@@ -5,16 +5,16 @@
  * ------------------------------------------------------------------------- */
 
 #ifndef XTIMED_DBUS_H_
-# define XTIMED_DBUS_H_
+#define XTIMED_DBUS_H_
 
 /** D-Bus name of timed service */
-# define TIMED_DBUS_SERVICE   "com.nokia.time"
+#define TIMED_DBUS_SERVICE "com.nokia.time"
 
 /** Name of timed interface on D-Bus */
-# define TIMED_DBUS_INTERFACE "com.nokia.time"
+#define TIMED_DBUS_INTERFACE "com.nokia.time"
 
 /** Default timed object path on D-Bus */
-# define TIMED_DBUS_PATH      "/com/nokia/time"
+#define TIMED_DBUS_PATH "/com/nokia/time"
 
 /** Report user responce to alarm back to timed
  *

@@ -21,9 +21,9 @@
 
 #include "modeminterface.h"
 
-ModemInterface::ModemInterface(QObject *parent) : QDBusAbstractAdaptor(parent)
-{
-}
+ModemInterface::ModemInterface(QObject *parent)
+    : QDBusAbstractAdaptor(parent)
+{}
 
 void ModemInterface::addInterface(const QString interface)
 {
@@ -34,6 +34,6 @@ void ModemInterface::addInterface(const QString interface)
 QVariantMap ModemInterface::GetProperties()
 {
     QVariantMap props;
-    props.insert("Interfaces",QVariant(m_interfaceList));
+    props.insert("Interfaces", QVariant(m_interfaceList));
     return props;
 }

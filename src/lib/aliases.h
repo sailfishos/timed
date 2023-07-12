@@ -26,14 +26,12 @@
 
 #include <string>
 
-namespace Maemo
-{
-  namespace Timed
-  {
-    void free_tz_list() ;
-    bool is_tz_name(const std::string &tz) ;
-    std::string tz_alias_to_name(const std::string &tz) ;
-  }
-}
+namespace Maemo {
+namespace Timed {
+void free_tz_list();
+bool is_tz_name(const std::string &tz);
+std::string tz_alias_to_name(const std::string &tz);
+} // namespace Timed
+} // namespace Maemo
 
 #endif // MAEMO_TIMED_ALIASES_H

@@ -5,17 +5,17 @@
  * ------------------------------------------------------------------------- */
 
 #ifndef STAB_H_
-# define STAB_H_
+#define STAB_H_
 
 #include <stddef.h>
 
-# include "attr.h"
+#include "attr.h"
 
-# ifdef __cplusplus
+#ifdef __cplusplus
 extern "C" {
-# elif 0
+#elif 0
 } /* fool JED indentation ... */
-# endif
+#endif
 
 /* ------------------------------------------------------------------------- *
  * stab_t
@@ -24,15 +24,15 @@ extern "C" {
 typedef struct stab_t stab_t;
 
 stab_t *stab_create(void);
-void    stab_delete(stab_t *self);
-void    stab_delete_cb(void *self);
+void stab_delete(stab_t *self);
+void stab_delete_cb(void *self);
 
-size_t  stab_count(const stab_t *self);
+size_t stab_count(const stab_t *self);
 
-void    stab_add(stab_t *self, attr_t *attr);
+void stab_add(stab_t *self, attr_t *attr);
 attr_t *stab_get(const stab_t *self, size_t i);
 
-# ifdef __cplusplus
+#ifdef __cplusplus
 };
 #endif
 

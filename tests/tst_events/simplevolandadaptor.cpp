@@ -23,8 +23,7 @@
 
 SimpleVolandAdaptor::SimpleVolandAdaptor(QObject *parent)
     : Maemo::Timed::Voland::AbstractAdaptor(parent)
-{
-}
+{}
 
 bool SimpleVolandAdaptor::open(const Maemo::Timed::Voland::Reminder &data)
 {

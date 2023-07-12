@@ -24,42 +24,52 @@
 #ifndef CREDENTIALS_H
 #define CREDENTIALS_H
 
-# ifndef __cplusplus
-#  error This is a C++ only header
-# endif
+#ifndef __cplusplus
+#error This is a C++ only header
+#endif
 
-#include <string>
 #include <set>
-using namespace std ;
+#include <string>
+using namespace std;
 
 #include <sys/types.h>
-#include <QDBusMessage>
 #include <QDBusConnection>
+#include <QDBusMessage>
 
 #include <iodata-qt5/iodata>
 
-uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString &name) ;
+uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString &name);
 
 struct credentials_t
 {
-  string uid, gid ;
-  set<string> tokens ;
+    string uid, gid;
+    set<string> tokens;
 
-  // TODO: make nobody/nobody run-time option: /etc/timed.rc
-  credentials_t() : uid("nobody"), gid("nobody") { }
-  credentials_t(const credentials_t &x) : uid(x.uid), gid(x.gid), tokens(x.tokens) { }
-  credentials_t(const string &u, const string &g) : uid(u), gid(g) { }
+    // TODO: make nobody/nobody run-time option: /etc/timed.rc
+    credentials_t()
+        : uid("nobody")
+        , gid("nobody")
+    {}
+    credentials_t(const credentials_t &x)
+        : uid(x.uid)
+        , gid(x.gid)
+        , tokens(x.tokens)
+    {}
+    credentials_t(const string &u, const string &g)
+        : uid(u)
+        , gid(g)
+    {}
 
-  bool apply() const ; // set the credentials for the current process
-  bool apply_and_compare() ; // set the credentials and check if they are really set
+    bool apply() const;       // set the credentials for the current process
+    bool apply_and_compare(); // set the credentials and check if they are really set
 
-  static credentials_t from_current_process() ; // get the credentials of the current process
-  credentials_t(const QDBusMessage &msg) ; // get from dbus client
+    static credentials_t from_current_process(); // get the credentials of the current process
+    credentials_t(const QDBusMessage &msg);      // get from dbus client
 
-  iodata::record *save() const ;
-  credentials_t(const iodata::record *r) ; // load
+    iodata::record *save() const;
+    credentials_t(const iodata::record *r); // load
 
-  std::string str() const ;
-} ;
+    std::string str() const;
+};
 
 #endif // CREDENTIALS_H

@@ -28,12 +28,21 @@
 
 class simple_timer : public QTimer
 {
-  unsigned period ;
-  Q_OBJECT ;
+    unsigned period;
+    Q_OBJECT;
+
 public:
-  simple_timer(unsigned p, QObject *parent=NULL) : QTimer(parent), period(p) { setSingleShot(true) ; }
-  void start() { QTimer::start(period) ; }
-  QString status() { return QString("%1, period=%2").arg(isActive()?"active":"sleeping").arg(period) ; }
-} ;
+    simple_timer(unsigned p, QObject *parent = NULL)
+        : QTimer(parent)
+        , period(p)
+    {
+        setSingleShot(true);
+    }
+    void start() { QTimer::start(period); }
+    QString status()
+    {
+        return QString("%1, period=%2").arg(isActive() ? "active" : "sleeping").arg(period);
+    }
+};
 
 #endif

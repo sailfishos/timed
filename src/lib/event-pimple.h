@@ -32,43 +32,43 @@
 
 struct Maemo::Timed::event_pimple_t
 {
- ~event_pimple_t() ;
-  struct event_io_t eio ;
-  event_pimple_t() {} ;
-  event_pimple_t(const event_io_t &e_io) ;
-  std::vector<event_action_pimple_t*> a ;
-  std::vector<event_button_pimple_t*> b ;
-  std::vector<event_recurrence_pimple_t*> r ;
-} ;
+    ~event_pimple_t();
+    struct event_io_t eio;
+    event_pimple_t(){};
+    event_pimple_t(const event_io_t &e_io);
+    std::vector<event_action_pimple_t *> a;
+    std::vector<event_button_pimple_t *> b;
+    std::vector<event_recurrence_pimple_t *> r;
+};
 
 struct Maemo::Timed::event_action_pimple_t
 {
-  unsigned action_no ;
-  std::auto_ptr<Event::Action> ptr ;
-  event_io_t *eio ;
-  action_io_t *aio() { return & eio->actions[action_no] ; }
-} ;
+    unsigned action_no;
+    std::unique_ptr<Event::Action> ptr;
+    event_io_t *eio;
+    action_io_t *aio() { return &eio->actions[action_no]; }
+};
 
 struct Maemo::Timed::event_button_pimple_t
 {
-  unsigned button_no ;
-  std::auto_ptr<Event::Button> ptr ;
-  event_io_t *eio ;
-  button_io_t *bio() { return & eio->buttons[button_no] ; }
-} ;
+    unsigned button_no;
+    std::unique_ptr<Event::Button> ptr;
+    event_io_t *eio;
+    button_io_t *bio() { return &eio->buttons[button_no]; }
+};
 
 struct Maemo::Timed::event_recurrence_pimple_t
 {
-  unsigned recurrence_no ;
-  std::auto_ptr<Event::Recurrence> ptr ;
-  event_io_t *eio ;
-  recurrence_io_t *rio() { return & eio->recrs[recurrence_no] ; }
-} ;
+    unsigned recurrence_no;
+    std::unique_ptr<Event::Recurrence> ptr;
+    event_io_t *eio;
+    recurrence_io_t *rio() { return &eio->recrs[recurrence_no]; }
+};
 
 struct Maemo::Timed::event_list_pimple_t
 {
- ~event_list_pimple_t() ;
- std::vector<Event *> events ;
-} ;
+    ~event_list_pimple_t();
+    std::vector<Event *> events;
+};
 
 #endif

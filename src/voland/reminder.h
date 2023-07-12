@@ -24,44 +24,48 @@
 #ifndef MAEMO_TIMED_VOLAND_REMINDER_H
 #define MAEMO_TIMED_VOLAND_REMINDER_H
 
-#include <QString>
 #include <QDBusMetaType>
+#include <QString>
 
-#include <QtGlobal>
 #include <timed-qt5/qmacro.h>
+#include <QtGlobal>
 
-namespace Maemo { namespace Timed { namespace Voland { class Reminder ; } } }
-
-declare_qtdbus_io(Maemo::Timed::Voland::Reminder) ;
-
-namespace Maemo
-{
-  namespace Timed
-  {
-    namespace Voland
-    {
-      class Reminder
-      {
-        struct reminder_pimple_t *p ;
-        declare_qtdbus_io_friends(Reminder) ;
-      public:
-        Reminder() ;
-        Reminder(reminder_pimple_t *) ;
-        Reminder(const Reminder &) ;
-        Reminder & operator=(const Reminder &) ;
-        unsigned cookie() const ;
-        QString attr(const QString &key) const ;
-        const QMap<QString,QString> & attributes() const ;
-        unsigned buttonAmount() const ;
-        bool suppressTimeoutSnooze() const ;
-        bool hideSnoozeButton1() const ;
-        bool hideCancelButton2() const ;
-        bool isMissed() const ;
-        QString buttonAttr(int x, const QString &key) const ;
-       ~Reminder() ;
-      } ;
-    }
-  }
+namespace Maemo {
+namespace Timed {
+namespace Voland {
+class Reminder;
 }
+} // namespace Timed
+} // namespace Maemo
+
+declare_qtdbus_io(Maemo::Timed::Voland::Reminder);
+
+namespace Maemo {
+namespace Timed {
+namespace Voland {
+class Reminder
+{
+    struct reminder_pimple_t *p;
+    declare_qtdbus_io_friends(Reminder);
+
+public:
+    Reminder();
+    Reminder(reminder_pimple_t *);
+    Reminder(const Reminder &);
+    Reminder &operator=(const Reminder &);
+    unsigned cookie() const;
+    QString attr(const QString &key) const;
+    const QMap<QString, QString> &attributes() const;
+    unsigned buttonAmount() const;
+    bool suppressTimeoutSnooze() const;
+    bool hideSnoozeButton1() const;
+    bool hideCancelButton2() const;
+    bool isMissed() const;
+    QString buttonAttr(int x, const QString &key) const;
+    ~Reminder();
+};
+} // namespace Voland
+} // namespace Timed
+} // namespace Maemo
 
 #endif

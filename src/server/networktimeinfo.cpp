@@ -29,9 +29,12 @@ NetworkTimeInfo::NetworkTimeInfo(const QDateTime &dateTime,
                                  const QString &mnc,
                                  const QString &mcc,
                                  const QString &modem)
-    : m_dateTime(dateTime), m_daylightAdjustment(daylightAdjustment),
-      m_offsetFromUtc(offsetFromUtc),
-      m_mnc(mnc), m_mcc(mcc), m_modem(modem)
+    : m_dateTime(dateTime)
+    , m_daylightAdjustment(daylightAdjustment)
+    , m_offsetFromUtc(offsetFromUtc)
+    , m_mnc(mnc)
+    , m_mcc(mcc)
+    , m_modem(modem)
 {
     m_timespec.tv_sec = timestampSeconds;
     m_timespec.tv_nsec = timestampNanoSeconds;
@@ -54,9 +57,7 @@ NetworkTimeInfo::NetworkTimeInfo()
     memset(&m_timespec, 0, sizeof(struct timespec));
 }
 
-NetworkTimeInfo::~NetworkTimeInfo()
-{
-}
+NetworkTimeInfo::~NetworkTimeInfo() {}
 
 QDateTime NetworkTimeInfo::dateTime() const
 {
@@ -73,7 +74,7 @@ int NetworkTimeInfo::daylightAdjustment() const
     return m_daylightAdjustment;
 }
 
-const timespec* NetworkTimeInfo::timestamp() const
+const timespec *NetworkTimeInfo::timestamp() const
 {
     return &m_timespec;
 }
@@ -104,12 +105,12 @@ QString NetworkTimeInfo::toString() const
         return QString("Invalid");
 
     return QString("%1, UTC offset: %2, DST: %3, MNC: %4, MCC: %5, Modem: %6, Received: %7.%8")
-            .arg(m_dateTime.toString())
-            .arg(m_offsetFromUtc)
-            .arg(m_daylightAdjustment)
-            .arg(m_mnc)
-            .arg(m_mcc)
-            .arg(m_modem)
-            .arg(m_timespec.tv_sec)
-            .arg(m_timespec.tv_nsec);
+        .arg(m_dateTime.toString())
+        .arg(m_offsetFromUtc)
+        .arg(m_daylightAdjustment)
+        .arg(m_mnc)
+        .arg(m_mcc)
+        .arg(m_modem)
+        .arg(m_timespec.tv_sec)
+        .arg(m_timespec.tv_nsec);
 }

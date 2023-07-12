@@ -23,12 +23,15 @@
 
 NetworkTimeInterface::NetworkTimeInterface(QObject *parent)
     : QDBusAbstractAdaptor(parent)
-{
-}
+{}
 
-void NetworkTimeInterface::emulateNetworkTimeChange(qlonglong utc, qlonglong received,
-                                                    int timezone, uint dst, QString mcc,
-                                                    QString mnc, QString modem)
+void NetworkTimeInterface::emulateNetworkTimeChange(qlonglong utc,
+                                                    qlonglong received,
+                                                    int timezone,
+                                                    uint dst,
+                                                    QString mcc,
+                                                    QString mnc,
+                                                    QString modem)
 {
     m_utc = utc;
     m_received = received;

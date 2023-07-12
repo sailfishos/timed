@@ -27,7 +27,8 @@
 #include <QStringList>
 #include <QVariant>
 
-class ModemInterface : public QDBusAbstractAdaptor {
+class ModemInterface : public QDBusAbstractAdaptor
+{
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.fakeofono.Modem")
 

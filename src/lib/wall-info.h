@@ -33,28 +33,28 @@
 
 struct Maemo::Timed::WallClock::wall_info_pimple_t
 {
-  bool flag_time_nitz ;
-  bool flag_local_cellular ;
-  bool flag_auto_dst ;
-  bool flag_format_24 ;
+    bool flag_time_nitz;
+    bool flag_local_cellular;
+    bool flag_auto_dst;
+    bool flag_format_24;
 
-  QVector<nanotime_t> clocks ;
-  QVector<QString> zones ;
-  QVector<int> offsets ;
+    QVector<nanotime_t> clocks;
+    QVector<QString> zones;
+    QVector<int> offsets;
 
-  QVector<int> data_sources ;
-  enum { CL=0,ZO=1,OF=2,N_DATA=3, N_CLOCKS=4, N_ZONES=2, N_OFFSETS=2 } ;
+    QVector<int> data_sources;
+    enum { CL = 0, ZO = 1, OF = 2, N_DATA = 3, N_CLOCKS = 4, N_ZONES = 2, N_OFFSETS = 2 };
 
-  QString localtime_symlink ; // "/usr/share/zoneinfo/Europe/Helsinki"
-  QString human_readable_tz ; // "Europe/Babruisk" or "GMT+5:30"
-  int seconds_east_of_gmt ;  // -6x3600 (USA), 3x3600 (MSK), 5.5x3600 (India)
-  QString abbreviation ; // "MSK", "EEST", "UTC"
+    QString localtime_symlink; // "/usr/share/zoneinfo/Europe/Helsinki"
+    QString human_readable_tz; // "Europe/Babruisk" or "GMT+5:30"
+    int seconds_east_of_gmt;   // -6x3600 (USA), 3x3600 (MSK), 5.5x3600 (India)
+    QString abbreviation;      // "MSK", "EEST", "UTC"
 
-  bool nitz_supported ;
-  QString default_timezone ;
+    bool nitz_supported;
+    QString default_timezone;
 
-  nanotime_t systime_diff ;
-} ;
+    nanotime_t systime_diff;
+};
 
 // declare_qtdbus_io(Maemo::Timed::WallClock::Info) ;
 

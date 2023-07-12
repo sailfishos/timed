@@ -8,23 +8,22 @@
 
 struct kernel_notification_t : public QObject
 {
-  QSocketNotifier *timerfd ;
-  int fd ;
+    QSocketNotifier *timerfd;
+    int fd;
 
-  bool is_running ;
-  nanotime_t time_at_zero ;
+    bool is_running;
+    nanotime_t time_at_zero;
 
-  kernel_notification_t(QObject *parent = 0);
- ~kernel_notification_t() ;
-  void start() ;
-  void stop() ;
-  Q_OBJECT ;
+    kernel_notification_t(QObject *parent = 0);
+    ~kernel_notification_t();
+    void start();
+    void stop();
+    Q_OBJECT;
 private Q_SLOTS:
-  void ready_to_read(int fd) ;
+    void ready_to_read(int fd);
 Q_SIGNALS:
-  void system_time_changed(const nanotime_t &) ;
-  void restart_alarm_timer();
-} ;
+    void system_time_changed(const nanotime_t &);
+    void restart_alarm_timer();
+};
 
-
-#endif//TIMED_NOTIFICATION_H
+#endif //TIMED_NOTIFICATION_H

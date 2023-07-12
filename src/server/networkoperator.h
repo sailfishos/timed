@@ -22,8 +22,8 @@
 #ifndef NETWORKOPERATOR_H
 #define NETWORKOPERATOR_H
 
-#include <QObject>
 #include <QMap>
+#include <QObject>
 #include <QVariant>
 
 #include "ofonomodemmanager.h"
@@ -46,15 +46,23 @@ public:
 
 signals:
     void operatorChanged(const QString &modem, const QString &mnc, const QString &mcc);
-    
+
 private:
     OfonoModemManager m_modemManager;
-    QMap<QString, NetworkRegistrationWatcher*> m_watcherMap;
+    QMap<QString, NetworkRegistrationWatcher *> m_watcherMap;
 
-    struct OperatorInfo {
-        OperatorInfo() : mncUpdated(false), mccUpdated(false) {}
+    struct OperatorInfo
+    {
+        OperatorInfo()
+            : mncUpdated(false)
+            , mccUpdated(false)
+        {}
         OperatorInfo(const OperatorInfo &other)
-            : mnc(other.mnc), mcc(other.mcc), mncUpdated(other.mncUpdated), mccUpdated(other.mccUpdated) {}
+            : mnc(other.mnc)
+            , mcc(other.mcc)
+            , mncUpdated(other.mncUpdated)
+            , mccUpdated(other.mccUpdated)
+        {}
         QString mnc;
         QString mcc;
         bool mncUpdated;

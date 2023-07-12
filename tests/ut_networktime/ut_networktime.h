@@ -39,8 +39,13 @@ private Q_SLOTS:
     void test_networkoperator();
 
 private:
-    bool verifyNetworkTimeInfo(const NetworkTimeInfo timeInfo, const qlonglong utc,
-                               const qlonglong received, const int offsetFromUtc, const uint dst,
-                               const QString mcc, const QString mnc, const QString modem);
+    bool verifyNetworkTimeInfo(const NetworkTimeInfo timeInfo,
+                               const qlonglong utc,
+                               const qlonglong received,
+                               const int offsetFromUtc,
+                               const uint dst,
+                               const QString mcc,
+                               const QString mnc,
+                               const QString modem);
 };
 #endif //UT_NETWORKTIME

@@ -25,49 +25,33 @@
 #include "interface.h"
 
 Maemo::Timed::Voland::Interface::Interface(QObject *parent)
-  : QDBusAbstractInterface
-    (
-     Maemo::Timed::Voland::service(),
-     Maemo::Timed::Voland::objpath(),
-     Maemo::Timed::Voland::interface(),
-     Maemo::Timed::Voland::bus(),
-     parent
-    )
-{
-}
+    : QDBusAbstractInterface(Maemo::Timed::Voland::service(),
+                             Maemo::Timed::Voland::objpath(),
+                             Maemo::Timed::Voland::interface(),
+                             Maemo::Timed::Voland::bus(),
+                             parent)
+{}
 
 Maemo::Timed::Voland::Interface::Interface(QDBusConnection bus_connection, QObject *parent)
-  : QDBusAbstractInterface
-    (
-     Maemo::Timed::Voland::service(),
-     Maemo::Timed::Voland::objpath(),
-     Maemo::Timed::Voland::interface(),
-     bus_connection,
-     parent
-    )
-{
-}
+    : QDBusAbstractInterface(Maemo::Timed::Voland::service(),
+                             Maemo::Timed::Voland::objpath(),
+                             Maemo::Timed::Voland::interface(),
+                             bus_connection,
+                             parent)
+{}
 
 Maemo::Timed::Voland::TaInterface::TaInterface(QObject *parent)
-  : QDBusAbstractInterface
-    (
-     Maemo::Timed::Voland::service(),
-     Maemo::Timed::Voland::ta_objpath(),
-     Maemo::Timed::Voland::ta_interface(),
-     Maemo::Timed::Voland::bus(),
-     parent
-    )
-{
-}
+    : QDBusAbstractInterface(Maemo::Timed::Voland::service(),
+                             Maemo::Timed::Voland::ta_objpath(),
+                             Maemo::Timed::Voland::ta_interface(),
+                             Maemo::Timed::Voland::bus(),
+                             parent)
+{}
 
 Maemo::Timed::Voland::ActivationInterface::ActivationInterface(QObject *parent)
-  : QDBusAbstractInterface
-    (
-     Maemo::Timed::Voland::activation_service(),
-     Maemo::Timed::Voland::activation_objpath(),
-     Maemo::Timed::Voland::activation_interface(),
-     Maemo::Timed::Voland::bus(),
-     parent
-    )
-{
-}
+    : QDBusAbstractInterface(Maemo::Timed::Voland::activation_service(),
+                             Maemo::Timed::Voland::activation_objpath(),
+                             Maemo::Timed::Voland::activation_interface(),
+                             Maemo::Timed::Voland::bus(),
+                             parent)
+{}

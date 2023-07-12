@@ -22,17 +22,17 @@
 #ifndef FAKEOFONO_H
 #define FAKEOFONO_H
 
-#include <QObject>
 #include <QDBusObjectPath>
-#include <QVariant>
 #include <QMap>
+#include <QObject>
 #include <QString>
+#include <QVariant>
 
 #include "../../../src/server/ofonoconstants.h"
 
+#include "modeminterface.h"
 #include "networkregistrationinterface.h"
 #include "networktimeinterface.h"
-#include "modeminterface.h"
 
 class QDBusInterface;
 struct OfonoModemProperties;
@@ -44,7 +44,11 @@ class FakeOfono : public QObject
 
 public:
     explicit FakeOfono(QObject *parent = 0);
-    ~FakeOfono() { Q_FOREACH (const QString &m, m_modemPaths.keys()) m_modemPaths[m].cleanup(); }
+    ~FakeOfono()
+    {
+        Q_FOREACH (const QString &m, m_modemPaths.keys())
+            m_modemPaths[m].cleanup();
+    }
 
     struct OfonoModemProperties
     {
@@ -57,8 +61,13 @@ public:
     void addModem(const QString modemPath);
     void enableInterfaces(const QString modemPath);
     void emulateNetworkRegistration(const QString modem, const QString mnc, const QString mcc);
-    void emulateNetworkTimeChange(qlonglong utc, qlonglong received, int timezone, uint dst,
-                                  QString mcc, QString mnc, QString modem);
+    void emulateNetworkTimeChange(qlonglong utc,
+                                  qlonglong received,
+                                  int timezone,
+                                  uint dst,
+                                  QString mcc,
+                                  QString mnc,
+                                  QString modem);
 signals:
     void ModemAdded(QDBusObjectPath path, QVariantMap properties);
     void ModemRemoved(QDBusObjectPath path);
@@ -67,14 +76,27 @@ public slots:
     OfonoModemList GetModems();
 
 private:
-    struct OfonoInfo {
-        OfonoInfo() : dbusParentObject(NULL), networkRegistration(NULL), networkTimeInterface(NULL), modem(NULL) {}
+    struct OfonoInfo
+    {
+        OfonoInfo()
+            : dbusParentObject(NULL)
+            , networkRegistration(NULL)
+            , networkTimeInterface(NULL)
+            , modem(NULL)
+        {}
         OfonoInfo(QObject *parent)
             : dbusParentObject(new QObject(parent))
             , networkRegistration(new NetworkRegistrationInterface(dbusParentObject))
             , networkTimeInterface(new NetworkTimeInterface(dbusParentObject))
-            , modem(new ModemInterface(dbusParentObject)) {}
-        void cleanup() { delete networkRegistration; delete networkTimeInterface; delete modem; delete dbusParentObject; } // not dtor since copies will be destroyed.
+            , modem(new ModemInterface(dbusParentObject))
+        {}
+        void cleanup()
+        {
+            delete networkRegistration;
+            delete networkTimeInterface;
+            delete modem;
+            delete dbusParentObject;
+        } // not dtor since copies will be destroyed.
         QObject *dbusParentObject;
         NetworkRegistrationInterface *networkRegistration;
         NetworkTimeInterface *networkTimeInterface;

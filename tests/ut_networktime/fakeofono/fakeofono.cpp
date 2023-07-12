@@ -27,7 +27,8 @@
 
 #include "fakeofono.h"
 
-QDBusArgument &operator<<(QDBusArgument &argument, const FakeOfono::OfonoModemProperties &modemProperties)
+QDBusArgument &operator<<(QDBusArgument &argument,
+                          const FakeOfono::OfonoModemProperties &modemProperties)
 {
     argument.beginStructure();
     argument << modemProperties.name << modemProperties.dict;
@@ -35,7 +36,8 @@ QDBusArgument &operator<<(QDBusArgument &argument, const FakeOfono::OfonoModemPr
     return argument;
 }
 
-const QDBusArgument &operator>>(const QDBusArgument &argument, FakeOfono::OfonoModemProperties &modemProperties)
+const QDBusArgument &operator>>(const QDBusArgument &argument,
+                                FakeOfono::OfonoModemProperties &modemProperties)
 {
     argument.beginStructure();
     argument >> modemProperties.name >> modemProperties.dict;
@@ -43,8 +45,8 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, FakeOfono::OfonoM
     return argument;
 }
 
-FakeOfono::FakeOfono(QObject *parent) :
-    QObject(parent)
+FakeOfono::FakeOfono(QObject *parent)
+    : QObject(parent)
 {
     qDBusRegisterMetaType<OfonoModemProperties>();
     qDBusRegisterMetaType<OfonoModemList>();
@@ -55,15 +57,18 @@ FakeOfono::FakeOfono(QObject *parent) :
     }
 
     if (!QDBusConnection::systemBus().registerService(OfonoConstants::OFONO_SERVICE)) {
-        qDebug() << Q_FUNC_INFO << QString("Failed to register service: %1, error %2")
-                    .arg(OfonoConstants::OFONO_SERVICE)
-                    .arg(QDBusConnection::systemBus().lastError().message());
+        qDebug() << Q_FUNC_INFO
+                 << QString("Failed to register service: %1, error %2")
+                        .arg(OfonoConstants::OFONO_SERVICE)
+                        .arg(QDBusConnection::systemBus().lastError().message());
         return;
     }
 
-    if (!QDBusConnection::systemBus().registerObject(OfonoConstants::OFONO_MANAGER_PATH, this,
+    if (!QDBusConnection::systemBus().registerObject(OfonoConstants::OFONO_MANAGER_PATH,
+                                                     this,
                                                      QDBusConnection::ExportAllContents)) {
-        qDebug() << Q_FUNC_INFO << "Failed to register object at" << OfonoConstants::OFONO_MANAGER_PATH;
+        qDebug() << Q_FUNC_INFO << "Failed to register object at"
+                 << OfonoConstants::OFONO_MANAGER_PATH;
         return;
     }
 }
@@ -71,7 +76,8 @@ FakeOfono::FakeOfono(QObject *parent) :
 void FakeOfono::addModem(const QString modemPath)
 {
     m_modemPaths.insert(modemPath, OfonoInfo(this));
-    if (!QDBusConnection::systemBus().registerObject(modemPath, m_modemPaths[modemPath].dbusParentObject,
+    if (!QDBusConnection::systemBus().registerObject(modemPath,
+                                                     m_modemPaths[modemPath].dbusParentObject,
                                                      QDBusConnection::ExportAdaptors)) {
         qDebug() << Q_FUNC_INFO << "Failed to register object (adaptors) at " << modemPath;
         return;
@@ -82,7 +88,8 @@ void FakeOfono::addModem(const QString modemPath)
 void FakeOfono::enableInterfaces(const QString modemPath)
 {
     if (!m_modemPaths.contains(modemPath)) {
-        qWarning() << Q_FUNC_INFO << "invalid modem:" << modemPath << ", have:" << m_modemPaths.keys();
+        qWarning() << Q_FUNC_INFO << "invalid modem:" << modemPath
+                   << ", have:" << m_modemPaths.keys();
         return;
     }
 
@@ -115,14 +122,23 @@ void FakeOfono::emulateNetworkRegistration(const QString modem, const QString mn
     m_modemPaths[modem].networkRegistration->emulateNetworkRegistration(mnc, mcc);
 }
 
-void FakeOfono::emulateNetworkTimeChange(qlonglong utc, qlonglong received, int timezone,
-                                  uint dst, QString mcc, QString mnc, QString modem)
+void FakeOfono::emulateNetworkTimeChange(qlonglong utc,
+                                         qlonglong received,
+                                         int timezone,
+                                         uint dst,
+                                         QString mcc,
+                                         QString mnc,
+                                         QString modem)
 {
     if (!m_modemPaths.contains(modem)) {
         qWarning() << Q_FUNC_INFO << "invalid modem:" << modem << ", have:" << m_modemPaths.keys();
         return;
     }
-    m_modemPaths[modem].networkTimeInterface->emulateNetworkTimeChange(utc, received, timezone, dst, mcc, mnc, modem);
+    m_modemPaths[modem].networkTimeInterface->emulateNetworkTimeChange(utc,
+                                                                       received,
+                                                                       timezone,
+                                                                       dst,
+                                                                       mcc,
+                                                                       mnc,
+                                                                       modem);
 }
-
-

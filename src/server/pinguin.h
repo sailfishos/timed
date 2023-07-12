@@ -30,19 +30,20 @@
 
 class pinguin_t : public QObject
 {
-  Q_OBJECT ;
-  unsigned max_num ;
-  unsigned counter ;
-  bool needed ;
-  simple_timer *timer ;
+    Q_OBJECT;
+    unsigned max_num;
+    unsigned counter;
+    bool needed;
+    simple_timer *timer;
 private Q_SLOTS:
-  void timeout() ;
-  void voland_needed() ;
-  void voland_registered() ;
+    void timeout();
+    void voland_needed();
+    void voland_registered();
+
 public:
-  pinguin_t(unsigned p, unsigned n, QObject *parent);
- ~pinguin_t() ;
-  void ping() ;
-} ;
+    pinguin_t(unsigned p, unsigned n, QObject *parent);
+    ~pinguin_t();
+    void ping();
+};
 
 #endif

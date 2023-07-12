@@ -33,27 +33,28 @@
 
 class UnixSignal : public QObject
 {
-  UnixSignal() ;
- ~UnixSignal() ;
-  static UnixSignal *static_object ;
-  Q_OBJECT ;
-  int pipe[2] ;
-  int read_fd() { return pipe[0] ; }
-  int write_fd() { return pipe[1] ; }
-  std::set<int> pending ;
-  std::set<int> handled ;
-  QSocketNotifier *notifier ;
-  static void handler(int signo) ;
-  void restore_handler(int signo) ;
-  void disable_signal(int signo) ;
+    UnixSignal();
+    ~UnixSignal();
+    static UnixSignal *static_object;
+    Q_OBJECT;
+    int pipe[2];
+    int read_fd() { return pipe[0]; }
+    int write_fd() { return pipe[1]; }
+    std::set<int> pending;
+    std::set<int> handled;
+    QSocketNotifier *notifier;
+    static void handler(int signo);
+    void restore_handler(int signo);
+    void disable_signal(int signo);
+
 public:
-  static UnixSignal *object() ;
-  int handle(int signo, bool enable=true) ;
-  static void uninitialize() ;
+    static UnixSignal *object();
+    int handle(int signo, bool enable = true);
+    static void uninitialize();
 private slots:
-  void process_signal(int fd) ;
+    void process_signal(int fd);
 signals:
-  void signal(int signo) ;
-} ;
+    void signal(int signo);
+};
 
 #endif

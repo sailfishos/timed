@@ -5,29 +5,29 @@
  * ------------------------------------------------------------------------- */
 
 #ifndef VOLAND_H_
-# define VOLAND_H_
+#define VOLAND_H_
 
-# include <stdbool.h>
+#include <stdbool.h>
 
-# include "voland_dbus.h"
+#include "voland_dbus.h"
 
-# ifdef __cplusplus
+#ifdef __cplusplus
 extern "C" {
-# elif 0
+#elif 0
 } /* fool JED indentation ... */
-# endif
+#endif
 
 bool voland_init(void);
 void voland_quit(void);
 
 /* hooks for test automation ta_voland */
-int      voland_pid(void);
-bool     voland_answer(unsigned cookie, int button);
+int voland_pid(void);
+bool voland_answer(unsigned cookie, int button);
 unsigned voland_top(void);
-void     voland_set_ta_mode(bool active);
+void voland_set_ta_mode(bool active);
 
-# ifdef __cplusplus
+#ifdef __cplusplus
 };
-# endif
+#endif
 
 #endif /* VOLAND_H_ */
