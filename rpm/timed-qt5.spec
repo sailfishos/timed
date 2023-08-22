@@ -73,13 +73,13 @@ rm -rf %{buildroot}
 
 # The file %{buildroot}%{_userunitdir}/%{name}.service is installed by make install
 install -d %{buildroot}%{_userunitdir}/pre-user-session.target.wants/
-ln -s ../%{name}.service %{buildroot}%{_userunitdir}/pre-user-session.target.wants/%{name}.service
+ln -s ../timed.service %{buildroot}%{_userunitdir}/pre-user-session.target.wants/timed.service
 
 mkdir -p %{buildroot}%{_datadir}/mapplauncherd/privileges.d
 install -m 644 -p %{SOURCE1} %{buildroot}%{_datadir}/mapplauncherd/privileges.d/
 
 # Missing executable flags.
-chmod 755 %{buildroot}%{_oneshotdir}/setcaps-%{name}.sh
+chmod 755 %{buildroot}%{_oneshotdir}/setcaps-timed.sh
 
 # Timed changes time zone by linking /var/lib/timed/localtime to zones in /usr/share/zoneinfo.
 # Initial links are done in the post section
@@ -97,37 +97,37 @@ rm -f /var/lib/timed/localtime
 cp /usr/share/zoneinfo/UTC /var/lib/timed/localtime
 
 /sbin/ldconfig
-add-oneshot --now setcaps-%{name}.sh
+add-oneshot --now setcaps-timed.sh
 if [ "$1" -ge 1 ]; then
 systemctl-user daemon-reload || :
-systemctl-user restart %{name}.service || :
+systemctl-user restart timed.service || :
 fi
 
 %preun
 if [ "$1" -eq 0 ]; then
-  systemctl-user stop %{name}.service || :
+  systemctl-user stop timed.service || :
 fi
 
 %postun
 /sbin/ldconfig
 if [ "$1" -eq 0 ]; then
-  systemctl-user stop {%name}.service || :
+  systemctl-user stop timed.service || :
   systemctl-user daemon-reload || :
 fi
 
 %files
 %defattr(-,root,root,-)
 %license COPYING copyright
-%{_sysconfdir}/dbus-1/system.d/%{name}.conf
-%{_sysconfdir}/%{name}.rc
+%{_sysconfdir}/dbus-1/system.d/timed.conf
+%{_sysconfdir}/timed.rc
 %{_sysconfdir}/localtime
-%{_bindir}/%{name}
+%{_bindir}/timed
 %{_libdir}/lib%{name}.so.*
 %{_libdir}/libtimed-voland-qt5.so.*
 %{_datadir}/mapplauncherd/privileges.d/*
-%{_userunitdir}/%{name}.service
-%{_userunitdir}/pre-user-session.target.wants/%{name}.service
-%{_oneshotdir}/setcaps-%{name}.sh
+%{_userunitdir}/timed.service
+%{_userunitdir}/pre-user-session.target.wants/timed.service
+%{_oneshotdir}/setcaps-timed.sh
 %dir %attr(0775,-,timed) /var/lib/timed
 %dir %attr(02770,root,sailfish-alarms) /var/lib/timed/shared_events
 %dir %attr(02775,root,sailfish-datetime) /var/lib/timed/shared_settings

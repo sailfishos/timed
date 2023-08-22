@@ -50,7 +50,12 @@ struct reminder_pimple_t
 } // namespace Voland
 } // namespace Timed
 } // namespace Maemo
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::Voland::button_io_t &x);
+const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::Voland::button_io_t &x);
 
+Q_DECLARE_METATYPE(Maemo::Timed::Voland::button_io_t)
+#else
 declare_qtdbus_io(Maemo::Timed::Voland::button_io_t);
-
+#endif
 #endif

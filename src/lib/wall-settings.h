@@ -47,6 +47,12 @@ struct Maemo::Timed::WallClock::wall_settings_pimple_t
     QString str() const;
 };
 
-declare_qtdbus_io(Maemo::Timed::WallClock::wall_settings_pimple_t);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::WallClock::wall_settings_pimple_t &x);
+const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::WallClock::wall_settings_pimple_t &x);
 
+Q_DECLARE_METATYPE(Maemo::Timed::WallClock::wall_settings_pimple_t)
+#else
+declare_qtdbus_io(Maemo::Timed::WallClock::wall_settings_pimple_t);
+#endif
 #endif

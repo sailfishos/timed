@@ -1,0 +1,5 @@
+Name: libtimed-voland-qt6
+Description: timed-voland communication library
+Version: 3.6
+Libs: -ltimed-voland-qt6
+

@@ -331,9 +331,12 @@ private:
     List(const event_list_io_t &eeio);
     QVariant dbus_output() const;
 };
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::Event::Triggers &x);
+const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::Event::Triggers &x);
+#else
 declare_qtdbus_io(Maemo::Timed::Event::Triggers);
-
+#endif
 class Maemo::Timed::Event::Triggers : public QMap<quint32, quint32>
 {
 public:
@@ -341,6 +344,9 @@ public:
         : QMap<quint32, quint32>()
     {}
 };
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+Q_DECLARE_METATYPE(Maemo::Timed::Event::Triggers)
+#endif
 
 #if NOT_DONE_YET
 void foo()

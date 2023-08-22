@@ -43,9 +43,12 @@ enum OffsetSource { OffsetManual, OffsetNitz };
 } // namespace WallClock
 } // namespace Timed
 } // namespace Maemo
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::WallClock::Info &x);
+const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::WallClock::Info &x);
+#else
 declare_qtdbus_io(Maemo::Timed::WallClock::Info);
-
+#endif
 class Maemo::Timed::WallClock::Info
 {
     declare_qtdbus_io_friends(Info);
@@ -89,8 +92,13 @@ public:
     QString defaultTimezone() const;
 
     QString str() const;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    declare_qtdbus_io_friends(Info);
+#endif
 };
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+Q_DECLARE_METATYPE(Maemo::Timed::WallClock::Info)
+#endif
 // struct wall_settings_pimple_t ;
 
 class Maemo::Timed::WallClock::Settings

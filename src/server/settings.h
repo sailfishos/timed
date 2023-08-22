@@ -25,9 +25,13 @@
 #define SETTINGS_H
 
 #include <string>
-
-#include <iodata-qt5/iodata>
 #include <QtGlobal>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <iodata-qt6/iodata>
+#else
+#include <iodata-qt5/iodata>
+#endif
 
 #include "../lib/nanotime.h"
 #include "../lib/wall-declarations.h"

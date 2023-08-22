@@ -27,8 +27,11 @@
 #include <string>
 #include <QObject>
 using namespace std;
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <iodata-qt6/iodata>
+#else
 #include <iodata-qt5/iodata>
+#endif
 
 struct recurrence_pattern_t;
 

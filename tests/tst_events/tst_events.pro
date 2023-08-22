@@ -7,7 +7,7 @@ QT -= gui
 INCLUDEPATH += ../../src/h
 
 QMAKE_LIBDIR_FLAGS += -L../../src/lib -L../../src/voland
-LIBS += -ltimed-qt5 -ltimed-voland-qt5
+LIBS += -ltimed-qt$${QT_MAJOR_VERSION} -ltimed-voland-qt$${QT_MAJOR_VERSION}
 
 HEADERS += tst_events.h \
            simplevolandadaptor.h

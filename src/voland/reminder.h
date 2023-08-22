@@ -26,8 +26,11 @@
 
 #include <QDBusMetaType>
 #include <QString>
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <timed-qt6/qmacro.h>
+#else
 #include <timed-qt5/qmacro.h>
+#endif
 #include <QtGlobal>
 
 namespace Maemo {
@@ -37,9 +40,12 @@ class Reminder;
 }
 } // namespace Timed
 } // namespace Maemo
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+QDBusArgument &operator<<(QDBusArgument &out, const Maemo::Timed::Voland::Reminder &x);
+const QDBusArgument &operator>>(const QDBusArgument &in, Maemo::Timed::Voland::Reminder &x);
+#else
 declare_qtdbus_io(Maemo::Timed::Voland::Reminder);
-
+#endif
 namespace Maemo {
 namespace Timed {
 namespace Voland {
@@ -63,9 +69,14 @@ public:
     bool isMissed() const;
     QString buttonAttr(int x, const QString &key) const;
     ~Reminder();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    declare_qtdbus_io_friends(Reminder);
+#endif
 };
 } // namespace Voland
 } // namespace Timed
 } // namespace Maemo
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+Q_DECLARE_METATYPE(Maemo::Timed::Voland::Reminder)
+#endif
 #endif

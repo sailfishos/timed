@@ -30,10 +30,13 @@
 #include <QDBusConnectionInterface>
 #include <QDBusServiceWatcher>
 #include <QMetaMethod>
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <iodata-qt6/storage>
+#include <iodata-qt6/validator>
+#else
 #include <iodata-qt5/storage>
 #include <iodata-qt5/validator>
-
+#endif
 #include "event.h"
 #include "machine.h"
 #include "settings.h"
@@ -55,7 +58,7 @@ class csd_t;
 struct Timed : public QCoreApplication
 {
 public:
-    inline const char *configuration_path() { return "/etc/timed-qt5.rc"; }
+    inline const char *configuration_path() { return "/etc/timed.rc"; }
     // inline const char *configuration_type() { return  "/usr/share/timed/typeinfo/config.type" ; }
 
     inline const char *customization_path()
