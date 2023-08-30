@@ -68,7 +68,6 @@ ln -sf ../../lib/qmacro.h src/h/timed-qt5
 make %{?_smp_mflags}
 
 %install
-rm -rf %{buildroot}
 %qmake5_install
 
 # The file %{buildroot}%{_userunitdir}/%{name}.service is installed by make install
@@ -148,9 +147,9 @@ fi
 %defattr(-,root,root,-)
 %{_includedir}/%{name}
 %{_includedir}/timed-voland-qt5
-%{_libdir}/lib%{name}.so
-%{_libdir}/libtimed-voland-qt5.so
-%{_libdir}/pkgconfig/timed-qt5.pc
-%{_libdir}/pkgconfig/timed-voland-qt5.pc
-%{_datadir}/qt5/mkspecs/features/%{name}.prf
-%{_datadir}/qt5/mkspecs/features/timed-voland-qt5.prf
+%{_qt5_libdir}/lib%{name}.so
+%{_qt5_libdir}/libtimed-voland-qt5.so
+%{_qt5_libdir}/pkgconfig/timed-qt5.pc
+%{_qt5_libdir}/pkgconfig/timed-voland-qt5.pc
+%{_qt5_archdatadir}/mkspecs/features/%{name}.prf
+%{_qt5_archdatadir}/mkspecs/features/timed-voland-qt5.prf
