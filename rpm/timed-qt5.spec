@@ -4,7 +4,7 @@ Summary:    Time daemon
 Version:    3.6
 Release:    1
 License:    LGPLv2
-URL:        https://git.sailfishos.org/mer-core/timed
+URL:        https://github.com/sailfishos/timed
 Source0:    %{name}-%{version}.tar.bz2
 Source1:    %{name}.privileges
 Requires:   tzdata
@@ -62,13 +62,11 @@ export TIMED_VERSION=%{version}
 mkdir -p src/h/timed-qt5
 ln -sf ../../lib/qmacro.h src/h/timed-qt5
 
-%qmake5  \
-    -recursive "CONFIG += dsme_dbus_if ofono"
+%qmake5 -recursive "CONFIG += dsme_dbus_if ofono"
 
-make %{?_smp_mflags}
+%make_build
 
 %install
-rm -rf %{buildroot}
 %qmake5_install
 
 # The file %{buildroot}%{_userunitdir}/%{name}.service is installed by make install
@@ -99,8 +97,8 @@ cp /usr/share/zoneinfo/UTC /var/lib/timed/localtime
 /sbin/ldconfig
 add-oneshot --now setcaps-timed.sh
 if [ "$1" -ge 1 ]; then
-systemctl-user daemon-reload || :
-systemctl-user restart timed.service || :
+  systemctl-user daemon-reload || :
+  systemctl-user restart timed.service || :
 fi
 
 %preun
@@ -116,7 +114,6 @@ if [ "$1" -eq 0 ]; then
 fi
 
 %files
-%defattr(-,root,root,-)
 %license COPYING copyright
 %{_sysconfdir}/dbus-1/system.d/timed.conf
 %{_sysconfdir}/timed.rc
@@ -136,16 +133,13 @@ fi
 %ghost /var/lib/timed/shared_settings/settings.data
 
 %files tests
-%defattr(-,root,root,-)
 /opt/tests/%{name}-tests
 %{_sysconfdir}/dbus-1/system.d/org.fakeofono.conf
 
 %files tools
-%defattr(-,root,root,-)
 %{_bindir}/timedclient-qt5
 
 %files devel
-%defattr(-,root,root,-)
 %{_includedir}/%{name}
 %{_includedir}/timed-voland-qt5
 %{_libdir}/lib%{name}.so
