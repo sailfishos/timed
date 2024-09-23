@@ -60,7 +60,7 @@ void cluster_dialog_t::enter(event_t *e)
 {
     bool is_bootup = e->flags & EventFlags::Boot;
     if (is_bootup)
-        log_debug("insertng [%d]  to  cluster_dialog", e->cookie.value());
+        log_debug("inserting [%d]  to  cluster_dialog", e->cookie.value());
     if (is_bootup)
         bootup_events.insert(e);
 }

@@ -72,9 +72,6 @@ inline QDBusConnection bus()
 class Interface : public QDBusAbstractInterface
 {
     Q_OBJECT;
-    // struct signal_receiver *receiver ;
-private slots:
-    // void xxx(bool yyy) { /* emit settings_changed_1(yyy) ; */ }
 signals:
     void settings_changed(const Maemo::Timed::WallClock::Info &info, bool time_changed);
     void alarm_present_changed(bool present);
