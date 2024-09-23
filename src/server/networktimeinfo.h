@@ -41,6 +41,8 @@ public:
     NetworkTimeInfo();
     ~NetworkTimeInfo();
 
+    NetworkTimeInfo &operator=(const NetworkTimeInfo&) = default;
+
     QDateTime dateTime() const;
     int offsetFromUtc() const;
     int daylightAdjustment() const;

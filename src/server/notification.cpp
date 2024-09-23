@@ -128,5 +128,5 @@ void kernel_notification_t::ready_to_read(int fd)
         log_error("unexpected successful read in kernel_notification_t::ready_to_read: res=%d, "
                   "counter=%llu",
                   res,
-                  counter);
+                  static_cast<unsigned long long int>(counter));
 }
