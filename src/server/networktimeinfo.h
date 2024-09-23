@@ -26,7 +26,6 @@
 #include <QDateTime>
 #include <QString>
 
-// See http://harmattan-dev.nokia.com/docs/platform-api-reference/xml/daily-docs/libcellular-qt/classCellular_1_1NetworkTimeInfo.html
 class NetworkTimeInfo
 {
 public:
@@ -41,6 +40,8 @@ public:
     NetworkTimeInfo(const NetworkTimeInfo &other);
     NetworkTimeInfo();
     ~NetworkTimeInfo();
+
+    NetworkTimeInfo &operator=(const NetworkTimeInfo&) = default;
 
     QDateTime dateTime() const;
     int offsetFromUtc() const;

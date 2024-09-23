@@ -103,7 +103,7 @@ systemd.files = timed.service
 oneshot.path = $$(DESTDIR)/usr/lib/oneshot.d
 oneshot.files = setcaps-timed.sh
 
-INSTALLS += target xml timedrc dbusconf systemd oneshot
+INSTALLS += target timedrc dbusconf systemd oneshot
 
 QMAKE_CXXFLAGS  += -Wall
 
