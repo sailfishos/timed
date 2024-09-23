@@ -30,7 +30,6 @@
 
 class NetworkRegistrationWatcher;
 
-// See http://harmattan-dev.nokia.com/docs/platform-api-reference/xml/daily-docs/libcellular-qt/classCellular_1_1NetworkOperator.html
 class NetworkOperator : public QObject
 {
     Q_OBJECT

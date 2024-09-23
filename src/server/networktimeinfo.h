@@ -26,7 +26,6 @@
 #include <QDateTime>
 #include <QString>
 
-// See http://harmattan-dev.nokia.com/docs/platform-api-reference/xml/daily-docs/libcellular-qt/classCellular_1_1NetworkTimeInfo.html
 class NetworkTimeInfo
 {
 public:
