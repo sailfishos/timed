@@ -127,10 +127,8 @@ void OfonoModemManager::getModems()
                                                           "GetModems");
     QDBusPendingReply<OfonoModemList> reply = QDBusConnection::systemBus().asyncCall(request);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-    QObject::connect(watcher,
-                     SIGNAL(finished(QDBusPendingCallWatcher *)),
-                     this,
-                     SLOT(getModemsReply(QDBusPendingCallWatcher *)));
+    QObject::connect(watcher, &QDBusPendingCallWatcher::finished,
+                     this, &OfonoModemManager::getModemsReply);
 }
 
 void OfonoModemManager::getModemsReply(QDBusPendingCallWatcher *call)

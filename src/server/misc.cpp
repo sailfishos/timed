@@ -111,6 +111,8 @@ string str_printf(const char *format, ...)
         int res = vsnprintf(p, size, format, varg);
         if (res < 0) {
             log_error("Can't format string, vsnprintf() failed");
+            if (iteration > 0)
+                delete[] p;
             return format;
         }
         if (res < size) {
