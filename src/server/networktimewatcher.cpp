@@ -69,15 +69,14 @@ void NetworkTimeWatcher::queryNetworkTime()
 
     QDBusPendingCall async = dbusInterface.asyncCall("GetNetworkTime");
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(async, this);
-    QObject::connect(watcher,
-                     SIGNAL(finished(QDBusPendingCallWatcher *)),
-                     this,
-                     SLOT(queryNetworkTimeCallback(QDBusPendingCallWatcher *)));
+    QObject::connect(watcher, &QDBusPendingCallWatcher::finished,
+                     this, &NetworkTimeWatcher::queryNetworkTimeCallback);
 }
 
 void NetworkTimeWatcher::queryNetworkTimeCallback(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
+    watcher->deleteLater();
     if (reply.error().isValid()) {
         log_error("DBus call to interface %s function GetNetworkTime of path %s failed: %s",
                   interface().toStdString().c_str(),
@@ -88,7 +87,6 @@ void NetworkTimeWatcher::queryNetworkTimeCallback(QDBusPendingCallWatcher *watch
 
     QVariantMap map = reply.argumentAt<0>();
     emit networkTimeQueryCompleted(map);
-    watcher->deleteLater();
 }
 
 void NetworkTimeWatcher::onNetworkTimeChanged(QVariantMap map)

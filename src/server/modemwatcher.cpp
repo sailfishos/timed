@@ -60,10 +60,8 @@ void ModemWatcher::getProperties()
                                                           "GetProperties");
     QDBusPendingReply<QVariantMap> reply = QDBusConnection::systemBus().asyncCall(request);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-    QObject::connect(watcher,
-                     SIGNAL(finished(QDBusPendingCallWatcher *)),
-                     this,
-                     SLOT(getPropertiesReply(QDBusPendingCallWatcher *)));
+    QObject::connect(watcher, &QDBusPendingCallWatcher::finished,
+                     this, &ModemWatcher::getPropertiesReply);
 }
 
 void ModemWatcher::getPropertiesReply(QDBusPendingCallWatcher *call)

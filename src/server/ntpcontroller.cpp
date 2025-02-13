@@ -73,10 +73,8 @@ void NtpController::setConnmanProperty(QString key, QString value)
     QDBusPendingReply<void> reply = QDBusConnection::systemBus().asyncCall(request);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
 
-    QObject::connect(watcher,
-                     SIGNAL(finished(QDBusPendingCallWatcher *)),
-                     this,
-                     SLOT(propertiesReply(QDBusPendingCallWatcher *)));
+    QObject::connect(watcher, &QDBusPendingCallWatcher::finished,
+                     this, &NtpController::propertiesReply);
 }
 
 void NtpController::serviceRegistered()

@@ -424,8 +424,17 @@ cookie_t machine_t::add_event(const Maemo::Timed::event_io_t *eio,
     //   usually confuses people (though working just fine)
 
     if (event_t *e = event_t::from_dbus_iface(eio)) {
-        if (e->actions.size() > 0)
-            e->client_creds = creds ? new credentials_t(*creds) : new credentials_t(*p_message);
+        if (e->actions.size() > 0) {
+            if (creds) {
+                e->client_creds = new credentials_t(*creds);
+            } else {
+                if (!p_message) {
+                    log_warning("add_event missing creds and dbus message info");
+                    return cookie_t(0);
+                }
+                e->client_creds = new credentials_t(*p_message);
+            }
+        }
 
         register_event(e);
 

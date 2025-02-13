@@ -70,15 +70,15 @@ void NetworkRegistrationWatcher::getProperties()
 
     QDBusPendingCall async = dbusInterface.asyncCall("GetProperties");
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(async, this);
-    QObject::connect(watcher,
-                     SIGNAL(finished(QDBusPendingCallWatcher *)),
-                     this,
-                     SLOT(getPropertiesCallback(QDBusPendingCallWatcher *)));
+    QObject::connect(watcher, &QDBusPendingCallWatcher::finished,
+                     this, &NetworkRegistrationWatcher::getPropertiesCallback);
 }
 
 void NetworkRegistrationWatcher::getPropertiesCallback(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
+    watcher->deleteLater();
+
     if (reply.error().isValid()) {
         log_error("DBus call to interface %s function GetProperties of path %s failed: %s",
                   interface().toStdString().c_str(),
@@ -91,8 +91,6 @@ void NetworkRegistrationWatcher::getPropertiesCallback(QDBusPendingCallWatcher *
     foreach (const QString &key, map.keys()) {
         emit propertyChanged(objectPath(), key, map.value(key));
     }
-
-    watcher->deleteLater();
 }
 
 void NetworkRegistrationWatcher::onPropertyChanged(QString name, QDBusVariant value)
