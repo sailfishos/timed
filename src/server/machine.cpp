@@ -39,6 +39,117 @@
 #include "state.h"
 #include "timed.h"
 
+namespace {
+
+const int AlarmPreAlertNone = 0;
+const int AlarmPreAlertHour = 1;
+const int AlarmPreAlertPinned = 2;
+const int AlarmPreAlertSnoozed = 3;
+
+const int AlarmPreAlertHourSeconds = 60 * 60;
+const int AlarmPreAlertPinnedSeconds = 10 * 60;
+const int AlarmPreAlertRetrySeconds = 60;
+
+bool is_clock_alarm_event(event_t *e)
+{
+    return e && (e->flags & EventFlags::Alarm)
+            && e->attr("APPLICATION") == "nemoalarms"
+            && e->attr("type") == "clock";
+}
+
+bool is_calendar_alarm_event(event_t *e)
+{
+    return e && (e->flags & EventFlags::Reminder)
+            && e->attr("APPLICATION") == "libextendedkcal"
+            && e->attr("PLUGIN") == "libCalendarReminder";
+}
+
+bool is_upcoming_alarm_event(event_t *e)
+{
+    return is_clock_alarm_event(e) || is_calendar_alarm_event(e);
+}
+
+QString alarm_type(event_t *e)
+{
+    if (is_clock_alarm_event(e))
+        return QStringLiteral("clock");
+    if (is_calendar_alarm_event(e))
+        return QStringLiteral("calendar");
+    return QString();
+}
+
+bool reset_alarm_prealert_stage(event_t *e)
+{
+    if (e->alarm_prealert_trigger.value() == e->trigger.value())
+        return false;
+
+    e->alarm_prealert_trigger = e->trigger;
+    e->alarm_prealert_stage = AlarmPreAlertNone;
+    return true;
+}
+
+int alarm_prealert_stage(event_t *e, ticker_t now)
+{
+    if (!is_upcoming_alarm_event(e) || !e->trigger.is_valid())
+        return AlarmPreAlertNone;
+
+    if (e->flags & EventFlags::Snoozing)
+        return AlarmPreAlertSnoozed;
+
+    const int seconds = e->trigger - now;
+    if (seconds <= AlarmPreAlertPinnedSeconds)
+        return AlarmPreAlertPinned;
+    if (seconds <= AlarmPreAlertHourSeconds)
+        return AlarmPreAlertHour;
+    return AlarmPreAlertNone;
+}
+
+ticker_t alarm_prealert_time(event_t *e)
+{
+    if (!is_upcoming_alarm_event(e) || !e->trigger.is_valid())
+        return ticker_t();
+
+    if (e->flags & EventFlags::Snoozing) {
+        if (e->alarm_prealert_stage < AlarmPreAlertSnoozed)
+            return now() + AlarmPreAlertRetrySeconds;
+        return ticker_t();
+    }
+
+    if (e->alarm_prealert_stage < AlarmPreAlertHour)
+        return e->trigger + (-AlarmPreAlertHourSeconds);
+    if (e->alarm_prealert_stage < AlarmPreAlertPinned)
+        return e->trigger + (-AlarmPreAlertPinnedSeconds);
+    return ticker_t();
+}
+
+int alarm_snooze_length(event_t *e, const Timed *timed)
+{
+    int snooze = e->snooze.empty() ? 0 : e->snooze[0];
+    if (snooze == +1 || snooze <= 0)
+        snooze = timed->settings->get_app_snooze(e->attr("APPLICATION"));
+    return snooze;
+}
+
+void request_alarm_prealert(machine_t *machine, event_t *e, int stage)
+{
+    emit machine->alarm_prealert(uint(e->cookie.value()),
+                                 uint(e->trigger.value()),
+                                 QString::fromStdString(e->attr("TITLE")),
+                                 stage,
+                                 alarm_type(e));
+}
+
+bool alarm_occurrence_matches(event_t *e, ticker_t expected_trigger)
+{
+    return is_upcoming_alarm_event(e)
+            && e->trigger.is_valid()
+            && expected_trigger.is_valid()
+            && e->trigger.value() == expected_trigger.value()
+            && (e->flags & EventFlags::Cluster_Queue);
+}
+
+}
+
 machine_t::machine_t(const Timed *daemon)
     : timed(daemon)
 {
@@ -651,6 +762,57 @@ bool machine_t::dismiss_by_cookie(cookie_t c)
     return true;
 }
 
+bool machine_t::skip_alarm_occurrence(cookie_t c, ticker_t expected_trigger)
+{
+    event_t *e = find_event(c);
+
+    if (!alarm_occurrence_matches(e, expected_trigger)) {
+        log_warning("stale skip_alarm_occurrence(cookie=%d, expected=%ld)",
+                    c.value(),
+                    expected_trigger.value());
+        return false;
+    }
+
+    e->last_triggered = expected_trigger;
+    e->flags &= ~EventFlags::Snoozing;
+    e->alarm_prealert_trigger = ticker_t();
+    e->alarm_prealert_stage = AlarmPreAlertNone;
+
+    request_state(e, state_served);
+    invoke_process_transition_queue();
+    return true;
+}
+
+bool machine_t::snooze_alarm_occurrence(cookie_t c, ticker_t expected_trigger)
+{
+    event_t *e = find_event(c);
+
+    if (!alarm_occurrence_matches(e, expected_trigger) || (e->flags & EventFlags::Snoozing)) {
+        log_warning("stale snooze_alarm_occurrence(cookie=%d, expected=%ld)",
+                    c.value(),
+                    expected_trigger.value());
+        return false;
+    }
+
+    int snooze = alarm_snooze_length(e, timed);
+    if (snooze <= 0) {
+        log_warning("cannot snooze alarm occurrence [%d]: snooze length is %d",
+                    c.value(),
+                    snooze);
+        return false;
+    }
+
+    e->last_triggered = expected_trigger;
+    e->ticker = expected_trigger + snooze;
+    e->flags |= EventFlags::Snoozing;
+    e->alarm_prealert_trigger = ticker_t();
+    e->alarm_prealert_stage = AlarmPreAlertNone;
+
+    request_state(e, state_scheduler);
+    invoke_process_transition_queue();
+    return true;
+}
+
 event_t *machine_t::find_event(cookie_t c)
 {
     log_assert(!transition_in_progress());
@@ -768,6 +930,8 @@ void machine_t::load_events(const iodata::array *events_data, bool trusted_sourc
             e->b_attr[i].load(a->get(i)->rec()->get("attr")->arr());
 
         e->last_triggered = ticker_t(ee->get("dialog_time")->value());
+        e->alarm_prealert_trigger = ticker_t(ee->get("alarm_prealert_time")->value());
+        e->alarm_prealert_stage = ee->get("alarm_prealert_stage")->value();
         e->tsz_max = ee->get("tsz_max")->value();
         e->tsz_counter = ee->get("tsz_counter")->value();
         if (trusted_source) {
@@ -783,6 +947,74 @@ void machine_t::load_events(const iodata::array *events_data, bool trusted_sourc
             e->invalidate_t();
 
         register_event(e);
+    }
+}
+
+void machine_t::process_alarm_prealerts()
+{
+    ticker_t time_now = now();
+    bool changed = false;
+
+    for (state_queued_t::event_set_t::const_iterator it = state_queued->queue.begin();
+         it != state_queued->queue.end();
+         ++it) {
+        event_t *e = it->second;
+
+        if (!is_upcoming_alarm_event(e))
+            continue;
+
+        if (reset_alarm_prealert_stage(e))
+            changed = true;
+
+        int stage = alarm_prealert_stage(e, time_now);
+        if (stage != AlarmPreAlertNone && e->alarm_prealert_stage < stage)
+            request_alarm_prealert(this, e, stage);
+    }
+
+    if (changed)
+        emit queue_to_be_saved();
+}
+
+ticker_t machine_t::next_alarm_prealert_wakeup()
+{
+    ticker_t best;
+    ticker_t time_now = now();
+
+    for (state_queued_t::event_set_t::const_iterator it = state_queued->queue.begin();
+         it != state_queued->queue.end();
+         ++it) {
+        event_t *e = it->second;
+        ticker_t prealert_time = alarm_prealert_time(e);
+
+        if (!prealert_time.is_valid())
+            continue;
+
+        if (prealert_time <= time_now)
+            prealert_time = time_now + AlarmPreAlertRetrySeconds;
+
+        if (!best.is_valid() || prealert_time < best)
+            best = prealert_time;
+    }
+
+    return best;
+}
+
+void machine_t::mark_alarm_prealert_sent(cookie_t c, ticker_t trigger, int stage)
+{
+    event_t *e = find_event(c);
+
+    if (!alarm_occurrence_matches(e, trigger)) {
+        log_info("ignored stale alarm pre-alert acknowledgement for cookie=%d trigger=%ld stage=%d",
+                 c.value(),
+                 trigger.value(),
+                 stage);
+        return;
+    }
+
+    if (stage > e->alarm_prealert_stage) {
+        e->alarm_prealert_trigger = trigger;
+        e->alarm_prealert_stage = stage;
+        emit queue_to_be_saved();
     }
 }
 

@@ -98,6 +98,14 @@ public:
     qtdbus_method(cancel, (uint32_t cookie), cookie);
     qtdbus_method(cancel_events, (const QList<uint> &cookies), QVariant::fromValue(cookies));
     qtdbus_method(dismiss, (uint32_t cookie), cookie);
+    qtdbus_method(skip_alarm_occurrence,
+                  (uint32_t cookie, uint32_t expected_trigger),
+                  cookie,
+                  expected_trigger);
+    qtdbus_method(snooze_alarm_occurrence,
+                  (uint32_t cookie, uint32_t expected_trigger),
+                  cookie,
+                  expected_trigger);
     qtdbus_method(replace_event,
                   (const Maemo::Timed::Event &e, uint32_t cookie),
                   e.dbus_output(__PRETTY_FUNCTION__),

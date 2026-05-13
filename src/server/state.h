@@ -198,10 +198,11 @@ struct state_queued_t : public abstract_io_state_t
     void timer_stop();
     QTimer *alarm_timer;
     typedef std::pair<ticker_t, event_t *> event_pair;
+    typedef std::set<event_pair> event_set_t;
     ticker_t next_bootup();
     ticker_t next_event_without_bootflag();
-    std::set<event_pair> queue;
-    std::set<event_pair> bootup;
+    event_set_t queue;
+    event_set_t bootup;
     uint32_t cluster_bits() { return EventFlags::Cluster_Queue; }
     Q_OBJECT;
 public Q_SLOTS:
@@ -280,7 +281,7 @@ struct state_recurred_t : public abstract_state_t
     ticker_t apply_pattern(const broken_down_t &t,
                            int wday,
                            const recurrence_pattern_t *p,
-                           qlonglong offset = 0);
+                           time_t threshold);
 };
 
 struct state_armed_t : public abstract_gate_state_t

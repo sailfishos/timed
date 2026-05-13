@@ -93,10 +93,15 @@ struct machine_t : public QObject
     void cancel_events(const QList<uint> &cookies, QList<uint> &failed);
     void cancel_event(event_t *e);
     bool dismiss_by_cookie(cookie_t c);
+    bool skip_alarm_occurrence(cookie_t c, ticker_t expected_trigger);
+    bool snooze_alarm_occurrence(cookie_t c, ticker_t expected_trigger);
     event_t *find_event(cookie_t c);
     void alarm_gate(bool open);
     bool dialog_response(cookie_t c, int value);
     Q_INVOKABLE void process_transition_queue();
+    void process_alarm_prealerts();
+    ticker_t next_alarm_prealert_wakeup();
+    void mark_alarm_prealert_sent(cookie_t c, ticker_t trigger, int stage);
     ticker_t calculate_bootup();
     void send_bootup_signal();
     void invoke_process_transition_queue();
@@ -118,6 +123,7 @@ Q_SIGNALS:
     void child_created(unsigned, int);
     void alarm_present(bool present);
     void alarm_trigger(QMap<QString, QVariant> triggers);
+    void alarm_prealert(uint cookie, uint trigger, const QString &title, int stage, const QString &alarmType);
 
 public:
     void emit_child_created(unsigned cookie, int pid) { emit child_created(cookie, pid); }

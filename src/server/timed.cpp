@@ -33,9 +33,13 @@
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QDBusInterface>
+#include <QDBusMessage>
+#include <QDBusPendingCallWatcher>
+#include <QDBusPendingReply>
 #include <QDateTime>
 #include <QDir>
 #include <QFile>
+#include <QVariantList>
 
 #include "../voland/interface.h"
 
@@ -542,6 +546,10 @@ void Timed::init_create_event_machine()
                      SIGNAL(alarm_trigger(QMap<QString, QVariant>)),
                      this,
                      SLOT(set_alarm_trigger(QMap<QString, QVariant>)));
+    QObject::connect(am,
+                     SIGNAL(alarm_prealert(uint, uint, QString, int, QString)),
+                     this,
+                     SLOT(publish_alarm_prealert(uint, uint, QString, int, QString)));
 }
 
 void Timed::stop_voland_watcher()
@@ -880,6 +888,41 @@ void Timed::system_owner_changed(const QString &name,
                   Maemo::Timed::Voland::service(),
                   name.toStdString().c_str());
 #undef __qstr
+}
+
+void Timed::publish_alarm_prealert(uint cookie,
+                                   uint trigger,
+                                   const QString &title,
+                                   int stage,
+                                   const QString &alarmType)
+{
+    QDBusMessage message = QDBusMessage::createMethodCall(QStringLiteral("com.jolla.alarm.ui"),
+                                                          QStringLiteral("/com/jolla/alarm/ui"),
+                                                          QStringLiteral("com.jolla.alarm.ui"),
+                                                          QStringLiteral("publishUpcomingAlarm"));
+    message.setArguments(QVariantList() << cookie << trigger << title << stage << alarmType);
+
+    QDBusConnection bus = QDBusConnection::sessionBus();
+    if (!bus.isConnected()) {
+        log_error("Unable to publish alarm pre-alert: session bus is not connected");
+        return;
+    }
+
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(bus.asyncCall(message, 5000), this);
+    QObject::connect(watcher,
+                     &QDBusPendingCallWatcher::finished,
+                     this,
+                     [this, cookie, trigger, stage](QDBusPendingCallWatcher *watcher) {
+        QDBusPendingReply<bool> reply = *watcher;
+        watcher->deleteLater();
+
+        if (reply.isValid() && reply.value()) {
+            am->mark_alarm_prealert_sent(cookie_t(cookie), ticker_t(trigger), stage);
+        } else {
+            string err = reply.isValid() ? "false returned" : reply.error().message().toStdString();
+            log_error("Alarm pre-alert publish failed, message: '%s'", err.c_str());
+        }
+    });
 }
 
 void Timed::event_queue_changed()

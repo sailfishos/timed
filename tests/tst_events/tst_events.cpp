@@ -19,6 +19,7 @@
 **                                                                        **
 ***************************************************************************/
 
+#include <QDBusConnection>
 #include <QDBusError>
 #include <QDBusReply>
 #include <QDateTime>
@@ -34,6 +35,8 @@
 #include "tst_events.h"
 
 #define APPNAME "tst_events"
+#define CLOCKAPP "nemoalarms"
+#define CALENDARAPP "libextendedkcal"
 #define PATH "/var/tmp/" APPNAME
 #define ACTIONSTRING "timestamp: %1, cookie: %2"
 
@@ -52,6 +55,7 @@
 tst_Events::tst_Events(QObject *parent)
     : QObject(parent)
     , m_simpleVolandAdaptor(new SimpleVolandAdaptor(this))
+    , m_simpleAlarmUiAdaptor(new SimpleAlarmUiAdaptor(this))
 {}
 
 void tst_Events::initTestCase()
@@ -61,6 +65,12 @@ void tst_Events::initTestCase()
 
     if (!Maemo::Timed::Voland::bus().registerObject(Maemo::Timed::Voland::objpath(), this))
         qWarning() << "Cannot register voland object";
+
+    if (!QDBusConnection::sessionBus().registerService(QStringLiteral("com.jolla.alarm.ui")))
+        qWarning() << "Cannot register alarm-ui service";
+
+    if (!QDBusConnection::sessionBus().registerObject(QStringLiteral("/com/jolla/alarm/ui"), this))
+        qWarning() << "Cannot register alarm-ui object";
 }
 
 QByteArray tst_Events::readFile(const QString path)
@@ -83,6 +93,7 @@ Maemo::Timed::Event tst_Events::createEvent(const qint64 timestamp, const int du
     // Create an event, which will go off in dueInSeconds
     Maemo::Timed::Event event;
     event.setAttribute("APPLICATION", APPNAME);
+    event.setAttribute("TEST", APPNAME);
     event.setAttribute("TITLE", QString("%1").arg(timestamp));
     event.setAlarmFlag();
     event.setReminderFlag();
@@ -105,6 +116,43 @@ Maemo::Timed::Event tst_Events::createEvent(const qint64 timestamp, const int du
     return event;
 }
 
+Maemo::Timed::Event tst_Events::createClockEvent(const int dueInSeconds, const int snoozeSeconds)
+{
+    Maemo::Timed::Event event;
+    event.setAttribute("APPLICATION", CLOCKAPP);
+    event.setAttribute("TEST", APPNAME);
+    event.setAttribute("type", "clock");
+    event.setAttribute("TITLE", "Clock");
+    event.setAlarmFlag();
+    event.setTimeoutSnooze(snoozeSeconds);
+    const QDateTime dateTime = QDateTime::currentDateTime();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+    event.setTicker(dateTime.toSecsSinceEpoch() + dueInSeconds);
+#else
+    event.setTicker(dateTime.toTime_t() + dueInSeconds);
+#endif
+    return event;
+}
+
+Maemo::Timed::Event tst_Events::createCalendarEvent(const int dueInSeconds, const int snoozeSeconds)
+{
+    Maemo::Timed::Event event;
+    event.setAttribute("APPLICATION", CALENDARAPP);
+    event.setAttribute("TEST", APPNAME);
+    event.setAttribute("PLUGIN", "libCalendarReminder");
+    event.setAttribute("type", "event");
+    event.setAttribute("TITLE", "Calendar");
+    event.setReminderFlag();
+    event.setTimeoutSnooze(snoozeSeconds);
+    const QDateTime dateTime = QDateTime::currentDateTime();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+    event.setTicker(dateTime.toSecsSinceEpoch() + dueInSeconds);
+#else
+    event.setTicker(dateTime.toTime_t() + dueInSeconds);
+#endif
+    return event;
+}
+
 bool tst_Events::addEvent(const qint64 timestamp, const int dueInSeconds, uint &cookie)
 {
     Maemo::Timed::Event event = createEvent(timestamp, dueInSeconds);
@@ -121,6 +169,46 @@ bool tst_Events::addEvent(const qint64 timestamp, const int dueInSeconds, uint &
         qWarning() << "Adding event failed: %1" << reply.error().message();
         return false;
     }
+    cookie = reply.value();
+    return true;
+}
+
+bool tst_Events::addClockEvent(const int dueInSeconds, uint &cookie, const int snoozeSeconds)
+{
+    Maemo::Timed::Event event = createClockEvent(dueInSeconds, snoozeSeconds);
+
+    Maemo::Timed::Interface timedIface;
+    if (!timedIface.isValid()) {
+        qWarning() << "Invalid timed interface:" << timedIface.lastError().message();
+        return false;
+    }
+
+    QDBusReply<uint> reply = timedIface.add_event_sync(event);
+    if (!reply.isValid()) {
+        qWarning() << "Adding clock event failed:" << reply.error().message();
+        return false;
+    }
+
+    cookie = reply.value();
+    return true;
+}
+
+bool tst_Events::addCalendarEvent(const int dueInSeconds, uint &cookie, const int snoozeSeconds)
+{
+    Maemo::Timed::Event event = createCalendarEvent(dueInSeconds, snoozeSeconds);
+
+    Maemo::Timed::Interface timedIface;
+    if (!timedIface.isValid()) {
+        qWarning() << "Invalid timed interface:" << timedIface.lastError().message();
+        return false;
+    }
+
+    QDBusReply<uint> reply = timedIface.add_event_sync(event);
+    if (!reply.isValid()) {
+        qWarning() << "Adding calendar event failed:" << reply.error().message();
+        return false;
+    }
+
     cookie = reply.value();
     return true;
 }
@@ -183,6 +271,25 @@ bool tst_Events::cancelEvent(const uint cookie)
     return retval;
 }
 
+bool tst_Events::triggerForCookie(const uint cookie, uint &trigger)
+{
+    Maemo::Timed::Interface timedIface;
+    QDBusReply<Maemo::Timed::Event::Triggers> triggerReply = timedIface.get_alarm_triggers_sync();
+    if (!triggerReply.isValid()) {
+        qWarning() << "Failed to get alarm triggers:" << timedIface.lastError();
+        return false;
+    }
+
+    const Maemo::Timed::Event::Triggers triggers = triggerReply.value();
+    if (!triggers.contains(cookie)) {
+        qWarning() << "Alarm trigger not found for cookie" << cookie;
+        return false;
+    }
+
+    trigger = triggers.value(cookie);
+    return true;
+}
+
 void tst_Events::removeActionOutputFile()
 {
     QFile file(PATH);
@@ -198,12 +305,26 @@ void tst_Events::cancelAllEvents()
     foreach (const uint &cookie, queryEvents())
         if (!cancelEvent(cookie))
             qWarning() << "Failed to cancel event";
+
+    foreach (const uint &cookie, queryEvents(CLOCKAPP))
+        if (!cancelEvent(cookie))
+            qWarning() << "Failed to cancel clock event";
+
+    foreach (const uint &cookie, queryEvents(CALENDARAPP))
+        if (!cancelEvent(cookie))
+            qWarning() << "Failed to cancel calendar event";
 }
 
 QList<uint> tst_Events::queryEvents()
 {
+    return queryEvents(QString(APPNAME));
+}
+
+QList<uint> tst_Events::queryEvents(const QString &application)
+{
     QMap<QString, QVariant> parameters;
-    parameters.insert("APPLICATION", QVariant(QString(APPNAME)));
+    parameters.insert("APPLICATION", QVariant(application));
+    parameters.insert("TEST", QVariant(QString(APPNAME)));
 
     Maemo::Timed::Interface timedIface;
     QDBusReply<QList<QVariant>> queryReply = timedIface.query_sync(parameters);
@@ -253,6 +374,102 @@ void tst_Events::test_addEvent()
     QVERIFY(queryEvents().count() == 0);
 }
 
+void tst_Events::test_upcomingAlarmPreAlerts()
+{
+    uint cookie = 0;
+    QSignalSpy spy(m_simpleAlarmUiAdaptor,
+                   SIGNAL(upcomingAlarm(uint,uint,QString,int,QString)));
+
+    QVERIFY2(addClockEvent(11 * 60, cookie), "Adding clock event failed");
+    QVERIFY2(cookie != 0, "Adding clock event failed, cookie is 0");
+
+    WAITFOR(spy.count() >= 1, 1000);
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).toUInt(), cookie);
+    QCOMPARE(spy.at(0).at(3).toInt(), 1);
+    QCOMPARE(spy.at(0).at(4).toString(), QStringLiteral("clock"));
+
+    QVERIFY(cancelEvent(cookie));
+
+    cookie = 0;
+    spy.clear();
+
+    QVERIFY2(addClockEvent(9 * 60, cookie), "Adding clock event failed");
+    QVERIFY2(cookie != 0, "Adding clock event failed, cookie is 0");
+
+    WAITFOR(spy.count() >= 1, 1000);
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).toUInt(), cookie);
+    QCOMPARE(spy.at(0).at(3).toInt(), 2);
+    QCOMPARE(spy.at(0).at(4).toString(), QStringLiteral("clock"));
+
+    QVERIFY(cancelEvent(cookie));
+
+    cookie = 0;
+    spy.clear();
+
+    QVERIFY2(addCalendarEvent(9 * 60, cookie), "Adding calendar event failed");
+    QVERIFY2(cookie != 0, "Adding calendar event failed, cookie is 0");
+
+    WAITFOR(spy.count() >= 1, 1000);
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).toUInt(), cookie);
+    QCOMPARE(spy.at(0).at(3).toInt(), 2);
+    QCOMPARE(spy.at(0).at(4).toString(), QStringLiteral("calendar"));
+
+    QVERIFY(cancelEvent(cookie));
+}
+
+void tst_Events::test_alarmOccurrenceActions()
+{
+    const int snoozeSeconds = 120;
+    uint cookie = 0;
+    QSignalSpy spy(m_simpleAlarmUiAdaptor,
+                   SIGNAL(upcomingAlarm(uint,uint,QString,int,QString)));
+
+    QVERIFY2(addClockEvent(60, cookie, snoozeSeconds), "Adding clock event failed");
+    QVERIFY2(cookie != 0, "Adding clock event failed, cookie is 0");
+
+    WAITFOR(spy.count() >= 1, 1000);
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).toUInt(), cookie);
+    QCOMPARE(spy.at(0).at(3).toInt(), 2);
+    QCOMPARE(spy.at(0).at(4).toString(), QStringLiteral("clock"));
+
+    uint trigger = 0;
+    QVERIFY(triggerForCookie(cookie, trigger));
+
+    Maemo::Timed::Interface timedIface;
+    QDBusReply<bool> staleReply = timedIface.skip_alarm_occurrence_sync(cookie, trigger + 1);
+    QVERIFY(staleReply.isValid());
+    QCOMPARE(staleReply.value(), false);
+    QVERIFY(queryEvents(CLOCKAPP).contains(cookie));
+
+    QDBusReply<bool> snoozeReply = timedIface.snooze_alarm_occurrence_sync(cookie, trigger);
+    QVERIFY(snoozeReply.isValid());
+    QCOMPARE(snoozeReply.value(), true);
+
+    WAITFOR(spy.count() >= 2, 1000);
+
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.at(1).at(0).toUInt(), cookie);
+    QCOMPARE(spy.at(1).at(1).toUInt(), trigger + snoozeSeconds);
+    QCOMPARE(spy.at(1).at(3).toInt(), 3);
+    QCOMPARE(spy.at(1).at(4).toString(), QStringLiteral("clock"));
+
+    QDBusReply<bool> skipReply = timedIface.skip_alarm_occurrence_sync(cookie,
+                                                                       trigger + snoozeSeconds);
+    QVERIFY(skipReply.isValid());
+    QCOMPARE(skipReply.value(), true);
+
+    WAITFOR(!queryEvents(CLOCKAPP).contains(cookie), 1000);
+    QVERIFY(!queryEvents(CLOCKAPP).contains(cookie));
+}
+
 // Add three events, modify the middle one, and verify that all events go off
 void tst_Events::test_replaceEvent()
 {
@@ -289,21 +506,21 @@ void tst_Events::test_replaceEvent()
 
     QVERIFY(spy.count() == 0); // make sure that the events have not been triggered yet
 
-    WAITFOR(spy.count() == 1, 1500);
+    WAITFOR(spy.count() >= 1, 1500);
 
     QVERIFY(spy.count() == 1);
     QVERIFY(verifyVolandDialog(timestamp, spy.at(0), cookie));
     QByteArray byteArray = readFile(PATH);
     QVERIFY(byteArray == QString(ACTIONSTRING).arg(timestamp).arg(cookie));
 
-    WAITFOR(spy.count() == 2, 1000);
+    WAITFOR(spy.count() >= 2, 2200);
 
     QVERIFY(spy.count() == 2);
     QVERIFY(verifyVolandDialog(newTimestamp, spy.at(1), newCookie));
     byteArray = readFile(PATH);
     QVERIFY(byteArray == QString(ACTIONSTRING).arg(newTimestamp).arg(newCookie));
 
-    WAITFOR(spy.count() == 3, 1000);
+    WAITFOR(spy.count() >= 3, 2200);
 
     QVERIFY(spy.count() == 3);
     QVERIFY(verifyVolandDialog(timestamp3, spy.at(2), cookie3));
@@ -381,6 +598,8 @@ void tst_Events::cleanupTestCase()
         qWarning() << "Cannot unregister voland service";
 
     Maemo::Timed::Voland::bus().unregisterObject(Maemo::Timed::Voland::objpath());
+    QDBusConnection::sessionBus().unregisterObject(QStringLiteral("/com/jolla/alarm/ui"));
+    QDBusConnection::sessionBus().unregisterService(QStringLiteral("com.jolla.alarm.ui"));
 
     removeActionOutputFile();
 }

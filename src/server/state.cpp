@@ -365,14 +365,21 @@ void state_queued_t::timer_start()
         return;
     }
 
-    nanotime_t time_to_wait = nanotime_t(queue.begin()->first.value(), 0)
-                              - nanotime_t::systime_now();
+    machine->process_alarm_prealerts();
+
+    ticker_t wakeup_time = queue.begin()->first;
+    ticker_t prealert_time = machine->next_alarm_prealert_wakeup();
+    if (prealert_time.is_valid() && prealert_time < wakeup_time)
+        wakeup_time = prealert_time;
+
+    nanotime_t time_to_wait = nanotime_t(wakeup_time.value(), 0) - nanotime_t::systime_now();
     bool no_sleep = false;
     if (time_to_wait < 0) {
-        log_notice("no sleep today: an alarm is %s seconds overdue", (-time_to_wait).str().c_str());
+        log_notice("no sleep today: an alarm check is %s seconds overdue",
+                   (-time_to_wait).str().c_str());
         no_sleep = true;
     } else
-        log_notice("go to sleep, next alarm in %s seconds", time_to_wait.str().c_str());
+        log_notice("go to sleep, next alarm check in %s seconds", time_to_wait.str().c_str());
 
     if (no_sleep)
         QMetaObject::invokeMethod(this, "alarm_timeout", Qt::QueuedConnection);
@@ -576,13 +583,12 @@ static ticker_t recur_regular_day(const broken_down_t &day,
 ticker_t state_recurred_t::apply_pattern(const broken_down_t &start,
                                          int wday,
                                          const recurrence_pattern_t *p,
-                                         qlonglong offset)
+                                         time_t threshold)
 {
     broken_down_t day = start;
     unsigned nxt_year = day.year + 1;
     if (broken_down_t::YEARX <= nxt_year)
         --nxt_year;
-    time_t threshold = machine->transition_started().value() - offset;
     for (bool today_flag = true; day.find_a_good_day(p, wday, today_flag, nxt_year);
          today_flag = false) {
         if (not today_flag)
@@ -606,9 +612,13 @@ void state_recurred_t::enter(event_t *e)
         offset = RenameMeNameSpace::Missing_Threshold - machine->running_time();
 
     now.from_time_t(machine->transition_started().value() - offset, &now_wday);
+    time_t threshold = machine->transition_started().value() - offset;
+    if (e->last_triggered.is_valid() && e->last_triggered.value() > threshold)
+        threshold = e->last_triggered.value();
+
     ticker_t best_ticker = ticker_t(0);
     for (unsigned i = 0; i < e->recrs.size(); ++i) {
-        ticker_t res = apply_pattern(now, now_wday, &e->recrs[i], offset);
+        ticker_t res = apply_pattern(now, now_wday, &e->recrs[i], threshold);
         if (res.is_valid() && (!best_ticker.is_valid() || res < best_ticker))
             best_ticker = res;
     }

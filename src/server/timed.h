@@ -136,6 +136,14 @@ public:
         am->cancel_events(cookies, failed);
     }
     bool dismiss(cookie_t c) { return am->dismiss_by_cookie(c); }
+    bool skip_alarm_occurrence(cookie_t c, ticker_t expected_trigger)
+    {
+        return am->skip_alarm_occurrence(c, expected_trigger);
+    }
+    bool snooze_alarm_occurrence(cookie_t c, ticker_t expected_trigger)
+    {
+        return am->snooze_alarm_occurrence(c, expected_trigger);
+    }
     void alarm_gate(bool value) { return am->alarm_gate(value); }
     int default_snooze(int value) { return settings->default_snooze(value); }
     bool get_alarm_present();
@@ -149,6 +157,11 @@ public:
 public Q_SLOTS:
     void system_owner_changed(const QString &name, const QString &oldowner, const QString &newowner);
     void register_child(unsigned cookie, int pid) { children[pid] = cookie; }
+    void publish_alarm_prealert(uint cookie,
+                                uint trigger,
+                                const QString &title,
+                                int stage,
+                                const QString &alarmType);
 Q_SIGNALS:
     void voland_registered();
     void voland_unregistered();

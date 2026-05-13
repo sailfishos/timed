@@ -24,6 +24,8 @@
 
 #include "../../src/voland/interface.h"
 
+#include <QDBusAbstractAdaptor>
+
 /** Minimalistic Voland service
   *
   * Emits the openAlarmDialog() signal when timed asks the service to
@@ -43,6 +45,27 @@ public:
 signals:
     void openAlarmDialog(uint cookie, QString application, QString title);
     void closeAlarmDialog(uint cookie);
+};
+
+class SimpleAlarmUiAdaptor : public QDBusAbstractAdaptor
+{
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "com.jolla.alarm.ui")
+
+public:
+    SimpleAlarmUiAdaptor(QObject *parent);
+
+public slots:
+    bool publishUpcomingClockAlarm(uint cookie, uint trigger, const QString &title, int stage);
+    bool publishUpcomingAlarm(uint cookie,
+                              uint trigger,
+                              const QString &title,
+                              int stage,
+                              const QString &alarmType);
+
+signals:
+    void upcomingClockAlarm(uint cookie, uint trigger, QString title, int stage);
+    void upcomingAlarm(uint cookie, uint trigger, QString title, int stage, QString alarmType);
 };
 
 #endif // SIMPLEVOLANDADAPTOR_H

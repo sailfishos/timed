@@ -31,6 +31,10 @@ event_t =
   // start of user notification, needed to discard old events
   { name = "dialog_time", type = $integer, value=0 },
 
+  // upcoming alarm pre-alert state for the current occurrence
+  { name = "alarm_prealert_time", type = $integer, value=0 },
+  { name = "alarm_prealert_stage", type = $integer, value=0 },
+
   // timeout snooze, maximum and counter
   { name = "tsz_max",     type = $integer, value=0 },
   { name = "tsz_counter", type = $integer, value=0 },

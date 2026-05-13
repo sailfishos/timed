@@ -59,3 +59,28 @@ bool SimpleVolandAdaptor::close(uint cookie)
     emit closeAlarmDialog(cookie);
     return true;
 }
+
+SimpleAlarmUiAdaptor::SimpleAlarmUiAdaptor(QObject *parent)
+    : QDBusAbstractAdaptor(parent)
+{
+}
+
+bool SimpleAlarmUiAdaptor::publishUpcomingClockAlarm(uint cookie,
+                                                     uint trigger,
+                                                     const QString &title,
+                                                     int stage)
+{
+    emit upcomingClockAlarm(cookie, trigger, title, stage);
+    emit upcomingAlarm(cookie, trigger, title, stage, QStringLiteral("clock"));
+    return true;
+}
+
+bool SimpleAlarmUiAdaptor::publishUpcomingAlarm(uint cookie,
+                                                uint trigger,
+                                                const QString &title,
+                                                int stage,
+                                                const QString &alarmType)
+{
+    emit upcomingAlarm(cookie, trigger, title, stage, alarmType);
+    return true;
+}

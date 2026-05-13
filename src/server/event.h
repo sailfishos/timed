@@ -172,6 +172,8 @@ struct event_t
 
     ticker_t trigger, last_triggered;
     int to_be_snoozed;
+    ticker_t alarm_prealert_trigger;
+    int alarm_prealert_stage;
     abstract_state_t *state;
     request_watcher_t *request_watcher;
 

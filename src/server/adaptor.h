@@ -252,6 +252,26 @@ public slots:
         return timed->dismiss(cookie_t(cookie));
     }
 
+    bool skip_alarm_occurrence(uint cookie, uint expectedTrigger, const QDBusMessage &message)
+    {
+        Q_UNUSED(message);
+        log_notice("DBUS::com.nokia.time.skip_alarm_occurrence(cookie=%u, expectedTrigger=%u) by %s",
+                   cookie,
+                   expectedTrigger,
+                   PEER);
+        return timed->skip_alarm_occurrence(cookie_t(cookie), ticker_t(expectedTrigger));
+    }
+
+    bool snooze_alarm_occurrence(uint cookie, uint expectedTrigger, const QDBusMessage &message)
+    {
+        Q_UNUSED(message);
+        log_notice("DBUS::com.nokia.time.snooze_alarm_occurrence(cookie=%u, expectedTrigger=%u) by %s",
+                   cookie,
+                   expectedTrigger,
+                   PEER);
+        return timed->snooze_alarm_occurrence(cookie_t(cookie), ticker_t(expectedTrigger));
+    }
+
     QString ping(const QDBusMessage &message)
     {
         Q_UNUSED(message);

@@ -45,6 +45,7 @@ event_t::event_t()
     request_watcher = NULL;
     cookie = cookie_t(0); // paranoid
     trigger_if_missed = false;
+    alarm_prealert_stage = 0;
 }
 
 event_t::~event_t()
@@ -865,6 +866,8 @@ iodata::record *event_t::save(bool for_backup)
     r->add("b_attr", ba);
 
     r->add("dialog_time", (flags & EventFlags::In_Dialog) ? last_triggered.value() : 0);
+    r->add("alarm_prealert_time", alarm_prealert_trigger.value());
+    r->add("alarm_prealert_stage", alarm_prealert_stage);
     r->add("tsz_max", tsz_max);
     r->add("tsz_counter", tsz_counter);
 
